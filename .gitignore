@@ -1,0 +1,31 @@
+# directories checked out by manage_externals, and other files created
+# by manage_externals
+manage_externals.log
+cime/
+components/
+
+# ignore svn directories
+**/.svn/**
+.svn/
+
+# binary files
+*.nc
+
+# editor files
+*.swp
+*~
+
+# mac files
+.DS_Store
+
+# cmake generated files
+build/
+CMakeFiles/
+
+# build output
+*.o
+*.mod
+core.*
+*.gz
+*.log !run.log
+*.pyc

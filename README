@@ -1,0 +1,25 @@
+=============================================================================================
+Important files in main directories:
+=============================================================================================
+
+Externals.cfg --------------- File for management of the main high level externals
+Externals_CLM.cfg ----------- File for management of the CLM specific externals (i.e. FATES)
+
+bld/configure --------------- Script to prepare CLM to be built.
+
+=============================================================================================
+    QUICKSTART: using the CPL7 scripts:
+=============================================================================================
+
+         cd cime/scripts
+         ./create_newcase            # get help on how to run create_newcase
+         ./create_newcase --case testI --res f19_g16 --compset I2000Clm50BgcCrop --mach cheyenne
+                                     # create new "I" case for cheyenne_intel at 1.9x2.5_gx1v7 res
+                                     # "I2000Clm50BgcCrop" case is clm5_0 active, datm8, and inactive ice/ocn
+         cd testI
+         ./case.setup                # create the $CASE.run file
+         ./case.build                # build model and create namelists
+         ./case.submit               # submit script
+                                     # (NOTE: ./xmlchange RESUBMIT=10 to set RESUBMIT to number
+                                     # #  of times to automatically resubmit -- 10 in this example)
+
