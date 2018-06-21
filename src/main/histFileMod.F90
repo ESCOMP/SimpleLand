@@ -2028,6 +2028,10 @@ contains
     call ncd_defdim(lnfid, 'string_length', hist_dim_name_length, strlen_dimid)
     call ncd_defdim(lnfid, 'scale_type_string_length', scale_type_strlen, dimid)
     call ncd_defdim( lnfid, 'levdcmp', nlevdecomp_full, dimid)
+    ! MML: adding a mml soiz dimension:
+    call ncd_defdim(lnfid, 'mml_lev', 10, dimid); ! hard-coded for 10 soil layers; make more clever.
+    call ncd_defdim(lnfid, 'mml_dust', 4, dimid); ! hard-coded for 4 dust bins
+    ! MML: end add new dimension
     
     if(use_fates)then
        call ncd_defdim(lnfid, 'fates_levscag', nlevsclass * nlevage, dimid)
@@ -2503,8 +2507,37 @@ contains
     integer :: status
     real(r8) :: zsoi_1d(1)
     character(len=*),parameter :: subname = 'htape_timeconst'
+    
+    ! MML soil z:
+    real(r8)	 :: mml_zsoi(10)	! MML soil levels (hard coding to have 6...)
+    integer  :: mml_nsoi
+    
+    integer :: ind
+    
     !-----------------------------------------------------------------------
 
+	! MML: define mml zsoil levels:
+	
+	mml_nsoi = 10
+	
+	do ind = 1, mml_nsoi
+		
+		mml_zsoi(ind) =  -0.025 * (exp(0.5*(ind-0.5)) - 1.0);
+		
+	enddo
+	
+	
+	!mml_zoi = (/ -0.05, -0.2, -0.5, -1.1, -2.3, -4.7 /) 	! MML don't know if this is the right way to do fortran vectors
+	! that didn't work, try it a super non-elegant way!
+!	mml_zsoi(1) = -0.05
+!	mml_zsoi(2) = -0.2
+!	mml_zsoi(3) = -0.5
+!	mml_zsoi(4) = -1.1
+!	mml_zsoi(5) = -2.3
+!	mml_zsoi(6) = -4.7
+	
+	
+	
     !-------------------------------------------------------------------------------
     !***     Time constant grid variables only on first time-sample of file ***
     !-------------------------------------------------------------------------------
@@ -2519,6 +2552,13 @@ contains
                long_name='coordinate lake levels', units='m', ncid=nfid(t))
           call ncd_defvar(varname='levdcmp', xtype=tape(t)%ncprec, dim1name='levdcmp', &
                long_name='coordinate soil levels', units='m', ncid=nfid(t))
+
+      	  ! Add MML soil layers
+          call ncd_defvar(varname='mml_lev', xtype=tape(t)%ncprec, dim1name='mml_lev', &
+               long_name='mml soil levels', units='m', ncid=nfid(t))
+          ! Add MML dust bins
+          call ncd_defvar(varname='mml_dust', xtype=tape(t)%ncprec, dim1name='mml_dust', &
+               long_name='mml dust bins', units='unknown', ncid=nfid(t))
       
           if(use_fates)then
              
@@ -2582,7 +2622,9 @@ contains
              call ncd_io(varname='fates_lfmap_levcnlfpf',data=fates_hdim_lfmap_levcnlfpf, ncid=nfid(t), flag='write')
              call ncd_io(varname='fates_pftmap_levcnlfpf',data=fates_hdim_pftmap_levcnlfpf, ncid=nfid(t), flag='write')
           end if
-
+		   ! Add MML soil layers
+          call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')
+          
        endif
     endif
 
@@ -4620,7 +4662,7 @@ contains
                         ptr_gcell, ptr_lunit, ptr_col, ptr_patch, ptr_lnd, ptr_atm, &
                         p2c_scale_type, c2l_scale_type, l2g_scale_type, &
                         set_lake, set_nolake, set_urb, set_nourb, set_spec, &
-                        no_snow_behavior, default)
+                        no_snow_behavior, mml_dim, default)
     !
     ! !DESCRIPTION:
     ! Initialize a single level history field. The pointer, ptrhist,
@@ -4659,6 +4701,7 @@ contains
     character(len=*), optional, intent(in) :: p2c_scale_type   ! scale type for subgrid averaging of pfts to column
     character(len=*), optional, intent(in) :: c2l_scale_type   ! scale type for subgrid averaging of columns to landunits
     character(len=*), optional, intent(in) :: l2g_scale_type   ! scale type for subgrid averaging of landunits to gridcells
+    integer			, optional, intent(in) :: mml_dim		   ! size of second dimension for MML variables
     character(len=*), optional, intent(in) :: default          ! if set to 'inactive, field will not appear on primary tape
     !
     ! !LOCAL VARIABLES:
@@ -4756,6 +4799,11 @@ contains
        num2d = nlevsno
     case ('nlevcan')
         num2d = nlevcan 
+    ! MML: adding my own 
+    case ('mml_lev')
+    	num2d = 10 !mml_nsoi ! mml_dim ! mml_nsoi not defined in this subroutine, so hard coding until I get more clever...
+    case ('mml_dust')
+    	num2d = 4
     case ('nvegwcs')
         num2d = nvegwcs
     case default

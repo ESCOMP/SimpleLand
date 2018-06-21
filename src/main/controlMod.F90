@@ -149,6 +149,14 @@ contains
          fsurdat, &
          paramfile, fsnowoptics, fsnowaging
 
+	! MML Input datasets for simple model
+    namelist /clm_inparm/ &
+    	 mml_surdat			
+    	 ! MML forcing file w/ albedo, roughness, etc
+    	 ! /glade/p/work/mlague/cesm_source/cesm1_5_beta05_mml_land/components/clm/bld/namelist_files/namelist_defaults.xml
+    	 ! I think I need to modify one of the namelis_defaults xml files in the above folder in order for 
+    	 ! the model to know to accept my new namelist var... 
+
     ! History, restart options
 
     namelist /clm_inparm/  &
@@ -593,6 +601,9 @@ contains
     call mpi_bcast (fsnowoptics, len(fsnowoptics),  MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (fsnowaging,  len(fsnowaging),   MPI_CHARACTER, 0, mpicom, ier)
 
+	! mml input file vars for simple model
+	call mpi_bcast (mml_surdat,  len(mml_surdat),   MPI_CHARACTER, 0, mpicom, ier)
+	
     ! Irrigation
     call mpi_bcast(irrigate, 1, MPI_LOGICAL, 0, mpicom, ier)
 
@@ -796,6 +807,11 @@ contains
        write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
     else
        write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
+    end if
+    if (mml_surdat == ' ') then
+       write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
+    else
+       write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
     end if
     if (use_cn) then
        if (suplnitro /= suplnNon)then

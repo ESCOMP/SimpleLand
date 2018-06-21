@@ -94,6 +94,11 @@ module clm_varctl
   character(len=fname_len), public :: fsnowaging   = ' '      ! snow aging parameters file name
 
   !----------------------------------------------------------
+  ! MML input files
+  !----------------------------------------------------------
+  character(len=fname_len), public :: mml_surdat   = ' '      ! MML surface data file for simple model
+  	
+  !----------------------------------------------------------
   ! Flag to read ndep rather than obtain it from coupler
   !----------------------------------------------------------
   

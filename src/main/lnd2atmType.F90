@@ -10,7 +10,7 @@ module lnd2atmType
   use shr_log_mod   , only : errMsg => shr_log_errMsg
   use abortutils    , only : endrun
   use decompMod     , only : bounds_type
-  use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.
+  use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins. 	! MML: ndst = 4 from clm varpar
   use clm_varcon    , only : spval
   use clm_varctl    , only : iulog, use_lch4
   use shr_megan_mod , only : shr_megan_mechcomps_n
@@ -35,11 +35,15 @@ module lnd2atmType
 
      ! lnd->atm
      real(r8), pointer :: t_rad_grc          (:)   => null() ! radiative temperature (Kelvin)
+     ! MML check tech note for examples on how to calculate this; use MO theory
      real(r8), pointer :: t_ref2m_grc        (:)   => null() ! 2m surface air temperature (Kelvin)
      real(r8), pointer :: q_ref2m_grc        (:)   => null() ! 2m surface specific humidity (kg/kg)
      real(r8), pointer :: u_ref10m_grc       (:)   => null() ! 10m surface wind speed (m/sec)
      real(r8), pointer :: h2osno_grc         (:)   => null() ! snow water (mm H2O)
+     ! MML: change this so when its allocated it is size (:,mml_nsoi) ... in which case the dust would have to be the same size... hmm...
      real(r8), pointer :: h2osoi_vol_grc     (:,:) => null() ! volumetric soil water (0~watsat, m3/m3, nlevgrnd) (for dust model)
+     ! MML: albedo (:,:) -> albd is direct, albd(:,1) direct vis, albd(:,2) direct nir
+     ! 					 -> albi is diffuse, albi(:,1) diffuse vis, albi(:,2) diffuse nir (I THINK) 
      real(r8), pointer :: albd_grc           (:,:) => null() ! (numrad) surface albedo (direct)
      real(r8), pointer :: albi_grc           (:,:) => null() ! (numrad) surface albedo (diffuse)
      real(r8), pointer :: taux_grc           (:)   => null() ! wind stress: e-w (kg/m/s**2)
