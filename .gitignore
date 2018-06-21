@@ -29,3 +29,6 @@ core.*
 *.gz
 *.log !run.log
 *.pyc
+
+# Ignore fates
+src/fates
