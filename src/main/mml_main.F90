@@ -689,7 +689,7 @@ contains
      
      
      ! Make output albedo to be a combination of all 4 albedo streams:
-     albedo_fin = fsr(:) / ( fsds_dir(:,1) + fsds_dir(:,2) + fsds_dif(:,1) + alb_nir_dif * fsds_dif(:,2) )
+     albedo_fin = fsr(:) / ( fsds_dir(:,1) + fsds_dir(:,2) + fsds_dif(:,1) +  fsds_dif(:,2) )
      ! temporary fix:
      !lw_abs(begg:endg) = lwdn(begg:endg)
      !sw_abs(begg:endg) = 0.7*fsds(begg:endg)
