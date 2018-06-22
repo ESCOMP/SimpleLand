@@ -20,6 +20,7 @@
 # 2012-07-01  Kluzek           Add some common CESM namelist options
 # 2013-12     Andre            Refactor everything into subroutines
 # 2013-12     Muszala          Add Ecosystem Demography functionality
+# 2017-08-17  Lague			   Add namelist options for simple land model (MML)
 #--------------------------------------------------------------------------------------------
 
 package CLMBuildNamelist;
@@ -2223,6 +2224,10 @@ sub setup_logic_surface_dataset {
                 'sim_year'=>$nl_flags->{'sim_year'}, 'irrigate'=>$nl_flags->{'irrigate'},
                 'use_crop'=>$nl_flags->{'use_crop'}, 'glc_nec'=>$nl_flags->{'glc_nec'});
   }
+  
+  # MML: try and add my own namelist variable for mml_surdat forcing file
+  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'mml_surdat');
+  
 }
 
 #-------------------------------------------------------------------------------

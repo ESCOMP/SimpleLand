@@ -46,7 +46,7 @@ contains
     use clm_varpar       , only: clm_varpar_init, natpft_lb, natpft_ub, cft_lb, cft_ub, maxpatch_glcmec
     use clm_varcon       , only: clm_varcon_init
     use landunit_varcon  , only: landunit_varcon_init, max_lunit
-    use clm_varctl       , only: fsurdat, fatmlndfrc, noland, version  
+    use clm_varctl       , only: fsurdat, fatmlndfrc, noland, version, mml_surdat  
     use pftconMod        , only: pftcon       
     use decompInitMod    , only: decompInit_lnd, decompInit_clumps, decompInit_glcp
     use domainMod        , only: domain_check, ldomain, domain_init
@@ -264,7 +264,7 @@ contains
     use accumulMod            , only : print_accum_fields 
     use clm_varpar            , only : nlevsno
     use clm_varcon            , only : spval
-    use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat
+    use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat, mml_surdat
     use clm_varctl            , only : use_century_decomp, single_column, scmlat, scmlon, use_cn, use_fates
     use clm_varctl            , only : use_crop, ndep_from_cpl
     use clm_varorb            , only : eccen, mvelpp, lambm0, obliqr

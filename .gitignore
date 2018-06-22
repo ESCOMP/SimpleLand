@@ -15,6 +15,10 @@ components/
 *.swp
 *~
 
+# cime_config
+buildnmlc
+buildcppc
+
 # mac files
 .DS_Store
 
@@ -29,3 +33,6 @@ core.*
 *.gz
 *.log !run.log
 *.pyc
+
+# Ignore fates
+src/fates

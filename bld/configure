@@ -120,7 +120,7 @@ my $commandline = "$cfgdir/configure @ARGV";
 # Parse command-line options.
 my %opts = (
 	    cache       => "config_cache.xml",
-            phys        => "clm5_0",
+            phys        => "clm4_0",
             nofire      => undef,
             noio        => undef,
             cimeroot    => undef,
@@ -645,7 +645,7 @@ sub write_filepath_cesmbld
 	if ( ! &is_valid_directory( "$srcdir", %opts )  ) { die "** source directory does not exist: $srcdir\n"; }
 
 	# source directories under root
-	my @dirs = ( "main" );
+	my @dirs = ( "main", "biogeophys", "biogeochem" );
 	foreach my $dir ( @dirs ) {
 	    if ( &is_valid_directory( "$srcdir/$dir", %opts )  ) {
 		print $fh "$srcdir/$dir\n";
@@ -660,6 +660,16 @@ sub write_filepath_cesmbld
 
 	# source directories under root
 	my @dirs = ( "main", 
+		     "biogeophys", 
+		     "biogeochem", 
+		     "soilbiogeochem", 
+		     "dyn_subgrid",
+		     "init_interp",
+		     "fates", 
+		     "fates/main", 
+		     "fates/biogeophys", 
+		     "fates/biogeochem", 
+		     "fates/fire", 
 		     "utils", 
 		     "cpl" );
 

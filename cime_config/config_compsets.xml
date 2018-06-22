@@ -34,6 +34,73 @@
     - science_support  (if this compset is supported scientifically with control simulations)
   </help>
 
+  <!-- F MML compsets (coupled to atmosphere) -->
+  
+  <!-- CAM6 -->
+  <compset>
+    <alias>H_MML_2000_CAM6</alias>
+    <lname>2000_CAM60_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>H_MML_1850_CAM6</alias>
+    <lname>1850_CAM60_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  
+  <!-- CAM5 -->
+  <compset>
+    <alias>H_MML_2000_CAM5</alias>
+    <lname>2000_CAM50_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>H_MML_1850_CAM5</alias>
+    <lname>1850_CAM50_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>H_MML_1850_2000_CAM5</alias>
+    <lname>1850-2000_CAM50_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+
+  
+  <!-- CAM5 with BGC -->
+  <compset>
+    <alias>H_MML_2000_CAM5BGC</alias>
+    <lname>2000_CAM50_CLM50%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>H_MML_1850_CAM5BGC</alias>
+    <lname>1850_CAM50_CLM50%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  
+  <!-- CAM5 with CLM45 BGC -->
+  <compset>
+    <alias>H_MML_2000_CAM5_CLM45BGC</alias>
+    <lname>2000_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>H_MML_1850_CAM5_CLM45BGC</alias>
+    <lname>1850_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  
+  <!-- I MML compsets for running offline -->
+  <compset>
+    <alias>K1850MMLOFFLINE_CPLHIST</alias>
+    <lname>1850_DATM%CPLHIST_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>K2000MMLOFFLINE_CPLHIST</alias>
+    <lname>2000_DATM%CPLHIST_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>K1850MMLOFFLINE_CRUv7</alias>
+    <lname>1850_DATM%CRUv7_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+  </compset>
+  
+  <!-- I single point forcing -->
+
+  <compset>
+    <alias>I1PtClm50SpGs</alias>
+    <lname>2000_DATM%1PT_CLM50%SP_SICE_SOCN_MOSART_SGLC_SWAV</lname>
+  </compset>
 
   <compset>
     <alias>I1PtClm45SpGs</alias>

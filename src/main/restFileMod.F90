@@ -529,7 +529,12 @@ contains
     end if
     call ncd_defdim(ncid , 'string_length', 64        ,  dimid)
     call ncd_defdim(ncid , 'glc_nec', maxpatch_glcmec, dimid)
-
+	
+	! mml add my soil dimension
+    call ncd_defdim(ncid , 'mml_lev'  , 10        ,  dimid) ! mml: hard coded for six soil layers
+    ! mml add my dust dimension
+    call ncd_defdim(ncid , 'mml_dust'  , 4        ,  dimid) ! mml: hard coded for six soil layers
+    
     ! Define global attributes
 
     call ncd_putatt(ncid, NCD_GLOBAL, 'Conventions', trim(conventions))
@@ -719,6 +724,10 @@ contains
     call check_dim(ncid, 'levgrnd' , nlevgrnd)
     call check_dim(ncid, 'levurb'  , nlevurb)
     call check_dim(ncid, 'levlak'  , nlevlak) 
+    ! mml add check for my dim?
+    call check_dim(ncid, 'mml_lev'  , 10) 
+    ! mml add check for my dust dim?
+    call check_dim(ncid, 'mml_dust'  , 4)
 
   end subroutine restFile_dimcheck
 
