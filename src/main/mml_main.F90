@@ -269,7 +269,7 @@ contains
      rhoair		=> atm2lnd_inst%mml_atm_rhoair_grc    	,	&
      cpair		=> atm2lnd_inst%mml_atm_cp_grc    		,	& ! MML: this is in 
      pco2		=> atm2lnd_inst%mml_atm_pco2			,	&
-     prec_liq	=> atm2lnd_inst%mml_atm_prec_liq_grc    ,   &
+     prec_liq	=> atm2lnd_inst%mml_atm_prec_liq_grc    ,   &	! MML: in mm/s
      prec_frz	=> atm2lnd_inst%mml_atm_prec_frz_grc    ,   &
      ! lnd variables
      tsrf 		=> atm2lnd_inst%mml_lnd_ts_grc			,   &

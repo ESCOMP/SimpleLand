@@ -1207,12 +1207,12 @@ contains
          ptr_lnd=this%mml_atm_pco2)
          
     this%mml_atm_prec_liq_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_prec_liq', units='m/s',  &	! or mm/s? 
+    call hist_addfld1d (fname='MML_prec_liq', units='mm/s',  &	! or mm/s? 
          avgflag='A', long_name='MML rate of liquid precipitation (rain)', &
          ptr_lnd=this%mml_atm_prec_liq_grc)
     
     this%mml_atm_prec_frz_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_prec_frz', units='m/s',  &
+    call hist_addfld1d (fname='MML_prec_frz', units='mm/s',  &
          avgflag='A', long_name='MML rate of frozen precipitation (snow)', &
          ptr_lnd=this%mml_atm_prec_frz_grc)
     
