@@ -46,53 +46,44 @@
     <lname>1850_CAM60_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   
-  <!-- CAM5 -->
+  <!-- CAM5 with CLM45 SP -->
   <compset>
     <alias>H_MML_2000_CAM5</alias>
-    <lname>2000_CAM50_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>2000_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>H_MML_1850_CAM5</alias>
-    <lname>1850_CAM50_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
-  </compset>
-  <compset>
-    <alias>H_MML_1850_2000_CAM5</alias>
-    <lname>1850-2000_CAM50_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>1850_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
 
   
-  <!-- CAM5 with BGC -->
-  <compset>
-    <alias>H_MML_2000_CAM5BGC</alias>
-    <lname>2000_CAM50_CLM50%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
-  </compset>
-  <compset>
-    <alias>H_MML_1850_CAM5BGC</alias>
-    <lname>1850_CAM50_CLM50%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
-  </compset>
-  
   <!-- CAM5 with CLM45 BGC -->
   <compset>
-    <alias>H_MML_2000_CAM5_CLM45BGC</alias>
+    <alias>H_MML_2000_CAM5_BGC</alias>
     <lname>2000_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
-    <alias>H_MML_1850_CAM5_CLM45BGC</alias>
+    <alias>H_MML_1850_CAM5_BGC</alias>
     <lname>1850_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
+
   
   <!-- I MML compsets for running offline -->
   <compset>
     <alias>K1850MMLOFFLINE_CPLHIST</alias>
-    <lname>1850_DATM%CPLHIST_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>1850_DATM%CPLHIST_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>K2000MMLOFFLINE_CPLHIST</alias>
-    <lname>2000_DATM%CPLHIST_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>2000_DATM%CPLHIST_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
-    <alias>K1850MMLOFFLINE_CRUv7</alias>
-    <lname>1850_DATM%CRUv7_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <alias>K1850MMLOFFLINE_CRU</alias>
+    <lname>1850_DATM%CRUv7_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>K1850MMLOFFLINE_GSWP3</alias>
+    <lname>1850_DATM%GSWP3v1_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- I single point forcing -->
