@@ -1276,7 +1276,7 @@ contains
     
     this%mml_lnd_lhflx_grc(begg:endg) = spval
     call hist_addfld1d (fname='MML_lhflx', units='W/m2',  &
-         avgflag='A', long_name='MML latent heat  flux', &
+         avgflag='A', long_name='MML latent heat flux', &
          ptr_lnd=this%mml_lnd_lhflx_grc)
     
     this%mml_lnd_gsoi_grc(begg:endg) = spval
