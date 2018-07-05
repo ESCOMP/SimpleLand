@@ -212,6 +212,9 @@ module atm2lndType
 	real(r8), pointer :: mml_lnd_obu_grc	 	(:)   => null() ! obukhov length [m]
 	real(r8), pointer :: mml_lnd_ram_grc	 	(:)   => null() ! aerodynamic resistance for momentum (and moisture) [s/m]
 	real(r8), pointer :: mml_lnd_rah_grc	 	(:)   => null() ! aerodynamic resistance for heat [s/m]
+	real(r8), pointer :: mml_lnd_res_grc	 	(:)   => null() ! evap_rs (lid resistance) + rah (aerodynamic resistance) [s/m]
+	real(r8), pointer :: mml_lnd_effective_res_grc	 	(:)   => null() ! 1/ beta * ( evap_rs + rah)  [s/m]
+	real(r8), pointer :: mml_lnd_beta_grc	 	(:)   => null() ! beta [unitless] from 0 to 1, resistance due to bucket fullness
 	real(r8), pointer :: mml_lnd_disp_grc	 	(:)   => null() ! displacement height [m] (MML - what is this? do I use this?)
 	real(r8), pointer :: mml_lnd_z0m_grc	 	(:)   => null() ! roughness length for momentum [m]
 	real(r8), pointer :: mml_lnd_z0h_grc	 	(:)   => null() ! roughness length for heat [m]
@@ -781,6 +784,9 @@ contains
 	allocate(this%mml_lnd_obu_grc    	(begg:endg))     	; this%mml_lnd_obu_grc    (:)   = ival
 	allocate(this%mml_lnd_ram_grc    	(begg:endg))     	; this%mml_lnd_ram_grc    (:)   = ival
 	allocate(this%mml_lnd_rah_grc    	(begg:endg))     	; this%mml_lnd_rah_grc    (:)   = ival
+	allocate(this%mml_lnd_res_grc    	(begg:endg))     	; this%mml_lnd_res_grc    (:)   = ival
+	allocate(this%mml_lnd_effective_res_grc    	(begg:endg))     	; this%mml_lnd_effective_res_grc    (:)   = ival
+	allocate(this%mml_lnd_beta_grc    	(begg:endg))     	; this%mml_lnd_beta_grc    (:)   = ival
 	allocate(this%mml_lnd_disp_grc    	(begg:endg))     	; this%mml_lnd_disp_grc   (:)   = ival
 	allocate(this%mml_lnd_z0m_grc    	(begg:endg))     	; this%mml_lnd_z0m_grc    (:)   = ival
 	allocate(this%mml_lnd_z0h_grc    	(begg:endg))     	; this%mml_lnd_z0h_grc    (:)   = ival
@@ -1328,7 +1334,22 @@ contains
     call hist_addfld1d (fname='MML_rah', units='s/m',  &
          avgflag='A', long_name='MML aerodynamic resistance for heat', &
          ptr_lnd=this%mml_lnd_rah_grc)
-    
+         
+    this%mml_lnd_res_grc(begg:endg) = spval
+    call hist_addfld1d (fname='MML_res_tot', units='s/m',  &
+         avgflag='A', long_name='MML lid resistance + aerodynamic resistance for heat (MML_evap_rs + MML_rah)', &
+         ptr_lnd=this%mml_lnd_res_grc)
+
+    this%mml_lnd_effective_res_grc(begg:endg) = spval
+    call hist_addfld1d (fname='MML_res_effective', units='s/m',  &
+         avgflag='A', long_name='MML effective surface resistance = 1/beta * (MML_evap_rs + MML_rah)', &
+         ptr_lnd=this%mml_lnd_effective_res_grc)
+
+    this%mml_lnd_beta_grc(begg:endg) = spval
+    call hist_addfld1d (fname='MML_beta', units='unitless',  &
+         avgflag='A', long_name='MML beta factor for resistance due to bucket emptiness (between 0 and 1)', &
+         ptr_lnd=this%mml_lnd_beta_grc)
+                     
     this%mml_lnd_z0m_grc(begg:endg) = spval
     call hist_addfld1d (fname='MML_z0m', units='m',  &
          avgflag='A', long_name='MML roughness length for momentum', &
@@ -1778,6 +1799,9 @@ contains
 	this%mml_lnd_obu_grc    (:)   = ival
 	this%mml_lnd_ram_grc    (:)   = ival
 	this%mml_lnd_rah_grc    (:)   = ival
+	this%mml_lnd_res_grc    (:)   = ival
+	this%mml_lnd_effective_res_grc    (:)   = ival
+	this%mml_lnd_beta_grc    (:)   = ival
 	this%mml_lnd_disp_grc   (:)   = ival
 	this%mml_lnd_z0m_grc    (:)   = ival
 	this%mml_lnd_z0h_grc    (:)   = ival
@@ -2529,6 +2553,9 @@ contains
 	deallocate(this%mml_lnd_obu_grc    )
 	deallocate(this%mml_lnd_ram_grc    )
 	deallocate(this%mml_lnd_rah_grc    )
+	deallocate(this%mml_lnd_res_grc    )
+	deallocate(this%mml_lnd_effective_res_grc    )
+	deallocate(this%mml_lnd_beta_grc    )
 	deallocate(this%mml_lnd_disp_grc   )
 	deallocate(this%mml_lnd_z0m_grc    )
 	deallocate(this%mml_lnd_z0h_grc    )

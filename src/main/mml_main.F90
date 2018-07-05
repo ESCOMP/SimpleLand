@@ -765,6 +765,10 @@ contains
      ram(:)		=	uref / (ustar * ustar)				! [s/m] = [m/s] / ([m/s] * [m/s])
      rah(:)		=	(thref - tsrf) / (ustar * tstar)	! [s/m] = [K] / ([m/s] * [K])
      res(:)		=  	(evaprs + rah)						! [s/m]
+     
+     ! save out res for the netcdf 
+     atm2lnd_inst%mml_lnd_res_grc(:) = res(:)
+     
      ! GBB: See what GFDL does for its evaporative resistance; should be a function
 	 ! of stomatal conductance and LAI
 	 
@@ -912,6 +916,11 @@ contains
 		dlhflx(:) 	= 0._r8								! [W/m2/K]
 	end where
 	
+	! save beta out for netcdf
+	atm2lnd_inst%mml_lnd_beta_grc(:) = beta(:)
+	
+	! and 1/beta * (rs + rah)  1/beta * res , the effective resistnace
+	atm2lnd_inst%mml_lnd_effective_res_grc(:) = res(:) / beta(:)
 	
 	! Net flux of energy into soil [W/m2] and temperature derivative [W/m2/K] from the 
 	! surface energy imbalance given other fluxes:
