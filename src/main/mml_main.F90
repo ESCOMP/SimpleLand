@@ -1526,6 +1526,20 @@ contains
         atm2lnd_inst%mml_out_qref2m_grc(g) = qref(g) - qstar(g) / vkc * &
      			( log((zref(g) - h_disp(g))/(z0h(g) + 2)) - &
      			  psi_h((zref(g) - h_disp(g))/obu(g)) + psi_h((z0h(g) + 2)/obu(g))  )
+     	! MML problems with passing a nan here to the coupler - check if nan, if so print more info
+     	
+     	if( isnan(atm2lnd_inst%mml_out_qref2m_grc(g)) ) then
+    		write(iulog,*)subname, 'MML ERROR: mml_out_qref2m_grc is a nan \n', &
+    					'err = ', err(g), &
+    					'\n qref = ', qref(g), &
+    					'\n qstar = ', qstar(g), &
+    					'\n zref = ', zref(g), &
+    					'\n h_disp = ', h_disp(g), &
+    					'\n z0h = ', z0h(g), &
+    					'\n obu = ', obu(g)
+    		call endrun(msg=errmsg(__FILE__, __LINE__))
+    	end if
+     	
      	
      
      	! GBB: Did you check this?
