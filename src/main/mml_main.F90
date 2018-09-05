@@ -937,17 +937,17 @@ contains
                         atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
                 end if
                 ! if beta smaller than 0.01 set it larger 
-                if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
-                        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
-                end if
+                !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
+                !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+                !end if
                 
                 atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
                 if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
                         atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
                 end if
-                if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
-                end if
+                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
+                !end if
                 
         end do
 
