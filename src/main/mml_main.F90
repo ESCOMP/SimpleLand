@@ -766,7 +766,10 @@ contains
      rah(:)		=	(thref - tsrf) / (ustar * tstar)	! [s/m] = [K] / ([m/s] * [K])
      res(:)		=  	(evaprs + rah)						! [s/m]
      
-
+     ! cap res at 100,000 ()
+     where ( res > 100000. )
+		res(:) = 100000.0_r8
+	 end where
 
 
      ! GBB: See what GFDL does for its evaporative resistance; should be a function
@@ -891,11 +894,17 @@ contains
 
 	where ( snow <= 0 )
 		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
+		! add minimum beta value in case water is negative?
 		!lhflx(:) 	= cpair / gamma * (esat - eref) / res * beta * rhoair 	! [W/m2] = [J/kg/K] / [Pa/K] * [Pa] / [s/m] * [unitless] * [kg/m3] 
 		!dlhflx(:) 	= cpair / gamma * desat / res * beta * rhoair			! [W/m2/K]
 		lhflx(:)	= rhoair * lambda * (qsrf - qref) * beta / res 	! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
 		dlhflx(:) 	= rhoair * lambda * dqsrf * beta / res			! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
 		! got here doing unit analysis - make sure this is actually the right equation!!!  
+	end where
+	
+	! make sure beta isn't negative (if neg, set equal to 0)
+	where ( beta <= 0. )
+		beta(:) = 0.0_r8
 	end where
 	
 	where ( snow > 0 ) ! go where there is snow and overwrite the value of lhflx and dlhflx
@@ -1612,20 +1621,20 @@ contains
     do g = begg,endg
                 atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
                 if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
-                        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+                        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.0 ! something very small
                 end if
                 ! if beta smaller than 0.01 set it larger 
-                if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
-                        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
-                end if
+                !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
+                !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+                !end if
                 
                 atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
                 if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
-                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
+                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 100000.0
                 end if
-                if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
-                end if
+                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
+                !end if
                 !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
                 !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
                 !end if
