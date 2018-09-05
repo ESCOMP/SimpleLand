@@ -767,8 +767,16 @@ contains
      res(:)		=  	(evaprs + rah)						! [s/m]
      
      ! save out res for the netcdf 
-     atm2lnd_inst%mml_lnd_res_grc(:) = res(:)
+     !atm2lnd_inst%mml_lnd_res_grc(:) = res(:)
      
+     do g = begg,endg
+          atm2lnd_inst%mml_lnd_res_grc(g) = res(g)
+          if( isnan(atm2lnd_inst%mml_lnd_res_grc(g)) ) then
+              atm2lnd_inst%mml_lnd_res_grc(g) = 10000.
+          end if 
+     end do
+
+
      ! GBB: See what GFDL does for its evaporative resistance; should be a function
 	 ! of stomatal conductance and LAI
 	 
@@ -916,11 +924,34 @@ contains
 		dlhflx(:) 	= 0._r8								! [W/m2/K]
 	end where
 	
-	! save beta out for netcdf
-	atm2lnd_inst%mml_lnd_beta_grc(:) = beta(:)
-	
-	! and 1/beta * (rs + rah)  1/beta * res , the effective resistnace
-	atm2lnd_inst%mml_lnd_effective_res_grc(:) = res(:) / beta(:)
+!	! save beta out for netcdf
+!	atm2lnd_inst%mml_lnd_beta_grc(:) = beta(:)
+!        	
+!	! and 1/beta * (rs + rah)  1/beta * res , the effective resistnace
+!	atm2lnd_inst%mml_lnd_effective_res_grc(:) = res(:) / beta(:)
+
+! save beta out for netcdf
+        do g = begg,endg
+                atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
+                if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
+                        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+                end if
+                ! if beta smaller than 0.01 set it larger 
+                if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
+                        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+                end if
+                
+                atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
+                if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
+                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
+                end if
+                if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
+                end if
+                
+        end do
+
+
 	
 	! Net flux of energy into soil [W/m2] and temperature derivative [W/m2/K] from the 
 	! surface energy imbalance given other fluxes:
