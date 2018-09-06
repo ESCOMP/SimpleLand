@@ -891,9 +891,14 @@ contains
 		!
 		! MML: plan - use qsat instead of esat, by calling CLM function QSat. Modify these
 		! equations accordingly (and check units!!!!) 
-
+	
+	! Initialize beta = 1.0 (no extra bucket resistance) everywhere. Overwrite with smaller values where appropriate.
+	beta(:) = 1.0_r8
+	
 	where ( snow <= 0 )
 		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
+		! OH I bet the problem is that I only end up defining beta in places where snow<0 -- hence the nan problem!!! So I should initialize
+		! a starting beta matrix where everywhere is 1.0 or something! 
 		! add minimum beta value in case water is negative?
 		!lhflx(:) 	= cpair / gamma * (esat - eref) / res * beta * rhoair 	! [W/m2] = [J/kg/K] / [Pa/K] * [Pa] / [s/m] * [unitless] * [kg/m3] 
 		!dlhflx(:) 	= cpair / gamma * desat / res * beta * rhoair			! [W/m2/K]
@@ -903,8 +908,8 @@ contains
 	end where
 	
 	! make sure beta isn't negative (if neg, set equal to 0)
-	where ( beta <= 0.01 )
-		beta(:) = 0.01_r8
+	where ( beta <= 0.0 )
+		beta(:) = 0.0r8
 	end where
 	
 	where ( snow > 0 ) ! go where there is snow and overwrite the value of lhflx and dlhflx
