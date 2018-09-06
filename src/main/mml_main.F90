@@ -909,7 +909,7 @@ contains
 	
 	! make sure beta isn't negative (if neg, set equal to 0)
 	where ( beta <= 0.0 )
-		beta(:) = 0.0r8
+		beta(:) = 0.0_r8
 	end where
 	
 	where ( snow > 0 ) ! go where there is snow and overwrite the value of lhflx and dlhflx
