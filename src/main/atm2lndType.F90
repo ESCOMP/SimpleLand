@@ -2383,7 +2383,7 @@ contains
          long_name='Dust flux to atm (from netcdf file)', units='unknown', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_dust_grc) 
     
-    
+    write(iulog,*)  ' MML end of 1d restart vars '
     
     ! 3d restart var example (soilbiogeochem carbon mod):
     !call restartvar(ncid=ncid, flag=flag, varname='col_ctrunc_vr', xtype=ncd_double,  &
