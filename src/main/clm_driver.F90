@@ -1213,6 +1213,9 @@ contains
 	    write(iulog,*)  'MML: after restart call '
 	    
     end if
+    
+    ! MML:
+	write(iulog,*)  'MML: end clm_drv routine '
 
   end subroutine clm_drv
 
