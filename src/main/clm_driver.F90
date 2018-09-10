@@ -1202,9 +1202,16 @@ contains
           call restFile_write( bounds_proc, filer, rdate=rdate )
 
           call t_stopf('clm_drv_io_wrest')
+          
+          ! MML:
+          write(iulog,*)  'MML: end of restart if statment '
+          
        end if
        call t_stopf('clm_drv_io')
 
+	   ! MML:
+	    write(iulog,*)  'MML: after restart call '
+	    
     end if
 
   end subroutine clm_drv
