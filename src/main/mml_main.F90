@@ -894,6 +894,10 @@ contains
 	
 	! Initialize beta = 1.0 (no extra bucket resistance) everywhere. Overwrite with smaller values where appropriate.
 	beta(:) = 1.0_r8
+
+	! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
+	atm2lnd_inst%mml_lnd_effective_res_grc = 9999.99_r8
+	atm2lnd_inst%mml_lnd_res_grc = 9999.99_r8 
 	
 	where ( snow <= 0 )
 		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
