@@ -897,8 +897,8 @@ contains
 	beta(:) = 1.0_r8
 
 	! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
-	!atm2lnd_inst%mml_lnd_effective_res_grc = 9999.99_r8
-	!atm2lnd_inst%mml_lnd_res_grc = 9999.99_r8 
+	atm2lnd_inst%mml_lnd_effective_res_grc = 9999.99_r8
+	atm2lnd_inst%mml_lnd_res_grc = 9999.99_r8 
 	
 	where ( snow <= 0 )
 		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
@@ -1627,37 +1627,37 @@ contains
 !	! and 1/beta * (rs + rah)  1/beta * res , the effective resistnace
 !	atm2lnd_inst%mml_lnd_effective_res_grc(:) = res(:) / beta(:)
 
-!! save beta out for netcdf
-!    do g = begg,endg
-!                atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
-!                if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
-!                        atm2lnd_inst%mml_lnd_beta_grc(g) = 1.0e36_r8 ! something very small
-!                end if
-!                ! if beta smaller than 0.01 set it larger 
-!                !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
-!                !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
-!                !end if
-!                
-!                atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
-!                if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
-!                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0e36_r8
-!                end if
-!                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-!                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
-!                !end if
-!                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-!                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
-!                !end if
-!                
-!                atm2lnd_inst%mml_lnd_res_grc(g) = res(g)
-!    	      	if( isnan(atm2lnd_inst%mml_lnd_res_grc(g)) ) then
-!    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
-!     		    end if
-!     		    if( atm2lnd_inst%mml_lnd_res_grc(g)>10000. ) then
-!    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
-!     		    end if
-!                
-!     end do
+! save beta out for netcdf
+    do g = begg,endg
+                atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
+                if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
+                        atm2lnd_inst%mml_lnd_beta_grc(g) = 1.0e36_r8 ! something very small
+                end if
+                ! if beta smaller than 0.01 set it larger 
+                !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
+                !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+                !end if
+                
+                atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
+                if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
+                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0e36_r8
+                end if
+                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
+                !end if
+                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
+                !end if
+                
+                atm2lnd_inst%mml_lnd_res_grc(g) = res(g)
+    	      	if( isnan(atm2lnd_inst%mml_lnd_res_grc(g)) ) then
+    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
+     		    end if
+     		    if( atm2lnd_inst%mml_lnd_res_grc(g)>10000. ) then
+    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
+     		    end if
+                
+     end do
      
           ! save out res for the netcdf 
      !atm2lnd_inst%mml_lnd_res_grc(:) = res(:)
