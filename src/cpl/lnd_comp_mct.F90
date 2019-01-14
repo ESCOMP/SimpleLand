@@ -121,12 +121,14 @@ contains
 
     call spmd_init( mpicom_lnd, LNDID )
 
+	write(iulog,*) "MML: about to call lnd_init_mct? "
 #if (defined _MEMTRACE)
     if(masterproc) then
        lbnum=1
        call memmon_dump_fort('memmon.out','lnd_init_mct:start::',lbnum)
     endif
-#endif                      
+#endif     
+	write(iulog,*) "MML: back from what might be the call to lnd_init_mct? "                 
 
     inst_name   = seq_comm_name(LNDID)
     inst_index  = seq_comm_inst(LNDID)
@@ -230,10 +232,12 @@ contains
     ! Finish initializing clm
 
     call initialize2()
+    write(iulog,*)'MML back from initialize2'
 
     ! Check that clm internal dtime aligns with clm coupling interval
 
     call seq_timemgr_EClockGetData(EClock, dtime=dtime_sync )
+    write(iulog,*)'MML back from seq_timemgr_EClockGetData'
     dtime_clm = get_step_size()
     if (masterproc) then
        write(iulog,*)'dtime_sync= ',dtime_sync,&
@@ -244,20 +248,25 @@ contains
             dtime_sync,' never align'
        call endrun( sub//' ERROR: time out of sync' )
     end if
+    write(iulog,*)'MML back from seq_timemgr_EClockGetData if statements'
 
     ! Create land export state 
 
     call lnd_export(bounds, lnd2atm_inst, lnd2glc_inst, l2x_l%rattr)
+    write(iulog,*)'MML back from lnd_export'
 
     ! Fill in infodata settings
 
     call seq_infodata_PutData(infodata, lnd_prognostic=.true.)
     call seq_infodata_PutData(infodata, lnd_nx=ldomain%ni, lnd_ny=ldomain%nj)
+    write(iulog,*)'MML back from Fill in infodata settings'
+
 
     ! Get infodata info
 
     call seq_infodata_GetData(infodata, nextsw_cday=nextsw_cday )
     call set_nextsw_cday(nextsw_cday)
+	write(iulog,*)'MML back from getin infodata info'
 
     ! Reset shr logging to original values
 
@@ -272,6 +281,8 @@ contains
        call memmon_reset_addr()
     endif
 #endif
+
+	write(iulog,*)'MML end of lnd_init_mct'
 
   end subroutine lnd_init_mct
 
@@ -352,12 +363,16 @@ contains
 
     call get_proc_bounds(bounds)
 
+	write(*,*)'MML just before memmon_dump_fort'
+	
 #if (defined _MEMTRACE)
     if(masterproc) then
        lbnum=1
        call memmon_dump_fort('memmon.out','lnd_run_mct:start::',lbnum)
     endif
 #endif
+
+	write(*,*)'MML just before memmon_dump_fort'
 
     ! Reset shr logging to my log file
     call shr_file_getLogUnit (shrlogunit)
@@ -392,6 +407,7 @@ contains
     
     ! Map to clm (only when state and/or fluxes need to be updated)
 
+	write(*,*)'MML just before lc_lnd_impoft'
     call t_startf ('lc_lnd_import')
     call lnd_import( bounds, &
          x2l = x2l_l%rattr, &
@@ -400,6 +416,8 @@ contains
          glc2lnd_inst = glc2lnd_inst)
     call t_stopf ('lc_lnd_import')
 
+	write(*,*)'MML just after lc_lnd_impoft'
+	
     ! Use infodata to set orbital values if updated mid-run
 
     call seq_infodata_GetData( infodata, orb_eccen=eccen, orb_mvelpp=mvelpp, &
@@ -492,6 +510,8 @@ contains
 
     first_call  = .false.
 
+	write(*,*)'MML end lnd_run_mct'
+	
   end subroutine lnd_run_mct
 
   !====================================================================================
@@ -548,6 +568,8 @@ contains
     
     allocate(gindex(bounds%begg:bounds%endg),stat=ier)
 
+	write(*,*)'MML start lnd_SetgsMap_mct'
+	
     ! number the local grid
 
     do n = bounds%begg, bounds%endg
@@ -559,6 +581,7 @@ contains
     call mct_gsMap_init( gsMap_lnd, gindex, mpicom_lnd, LNDID, lsize, gsize )
 
     deallocate(gindex)
+    write(*,*)'MML end lnd_SetgsMap_mct'
 
   end subroutine lnd_SetgsMap_mct
 
@@ -589,6 +612,7 @@ contains
     integer , pointer :: idata(:) ! temporary
     !---------------------------------------------------------------------------
     !
+    write(*,*)'MML start lnd_domain_mct'
     ! Initialize mct domain type
     ! lat/lon in degrees,  area in radians^2, mask is 1 (land), 0 (non-land)
     ! Note that in addition land carries around landfrac for the purposes of domain checking
@@ -651,7 +675,9 @@ contains
 
     deallocate(data)
     deallocate(idata)
-
+    
+	write(*,*)'MML end lnd_domain_mct'
+	
   end subroutine lnd_domain_mct
 
 end module lnd_comp_mct
