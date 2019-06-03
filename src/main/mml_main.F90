@@ -368,6 +368,20 @@ contains
      
      ! Maximum allowed snow:
      snowcap = 5000.0    ! somewhat arbitrary... thats 10m of snow at 500 kg/m3 (mid-value for a firn)
+     ! Paterson, W.S.B. 1994. The Physics of Glaciers
+     ! kg/m3
+     ! 
+     ! New snow (immediately after falling in calm)	50-70
+     ! Damp new snow	100-200
+     ! Settled snow	200-300
+     ! Depth hoar	100-300
+     ! Wind packed snow	350-400
+     ! Firn	400-830
+     ! Very wet snow and firn	700-800
+     ! Glacier ice	830-917
+     !
+     
+     
      
 !    ! GBB: You probably do not have to allocate memory if these variabls are local
 !	! to this routine. You should be able to use: 
