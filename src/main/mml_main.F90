@@ -145,6 +145,9 @@ contains
    	
    	real(r8)	tol, obu0, obu1
    	
+   	! Force-set a maximum snow value
+   	real(r8)	:: snowcap
+   	
    	
    	! Formerly "allocate" "deallocate" variables:
    	
@@ -362,6 +365,9 @@ contains
      begg = bounds%begg
      endg = bounds%endg
      mml_nsoi = 10
+     
+     ! Maximum allowed snow:
+     snowcap = 5000.0    ! somewhat arbitrary... thats 10m of snow at 500 kg/m3 (mid-value for a firn)
      
 !    ! GBB: You probably do not have to allocate memory if these variabls are local
 !	! to this routine. You should be able to use: 
@@ -1442,6 +1448,24 @@ contains
 		end if
 	end do
 	
+	!---------------------------------------
+	! Snow build-up: if there is too much snow, send extra to runoff 
+	! 	(note, not using any energy to melt it or anything - its getting sent as ice to runoff)
+	do g = begg, endg
+		if (snow(g) > snowcap ) then 
+			runoff(g) = runoff(g) + (snow(g) - snowcap)
+			snow(g) = snowcap
+		end if
+		
+		if (snow(g) < 0) then
+			write(iulog,*)subname, 'MML WARNING snow went negative after implementing snow cap... '
+		end if
+		
+		if (snow(g) > snowcap) then
+			write(iulog,*)subname, 'MML WARNING snow exceeds snow cap after implementing snow cap... '
+		end if
+		
+	end do
 	
 	! -------------------------------------------------------------
     ! Now what now what now what? This is so exciting :)

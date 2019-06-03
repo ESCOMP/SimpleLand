@@ -509,7 +509,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <mml_surdat>/glade/u/home/mlague/cesmruns/simple_land/inputs/mml_1.9x2.5_default.nc</mml_surdat> 
 
 
-
 <!--
      1850 preindustrial IC (if use_init_interp is added and set to .true. then MUST still interpolate even on an exact match)
                            (if it will work on an exact match, leave use_init_interp off)
