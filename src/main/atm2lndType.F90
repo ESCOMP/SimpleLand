@@ -1781,8 +1781,11 @@ contains
 	! (except vars I initialized on purpose above :p )
 	
 	! land flux data
-	!this%mml_lnd_ts_grc     (:)   = ival
-	!this%mml_lnd_qs_grc     (:)   = ival
+	
+	! these 2 were commented...
+	this%mml_lnd_ts_grc     (:)   = ival
+	this%mml_lnd_qs_grc     (:)   = ival
+	
 	this%mml_lnd_qa_grc     (:)   = ival
 	this%mml_lnd_swabs_grc  (:)   = ival
 	this%mml_lnd_fsr_grc   (:)   = ival
@@ -1810,10 +1813,7 @@ contains
 	this%mml_lnd_flns_grc    (:)   = ival
 	this%mml_lnd_snowmelt    (:)   = 0.0_r8
 	
-	! soil data
-	!this%mml_soil_t_grc      (:,:)   = ival 
-	!this%mml_soil_dz_grc     (:,:)   = ival 
-	!this%mml_soil_zh_grc     (:,:)   = ival 
+	! soil data 
 	this%mml_soil_tk_grc     (:,:)   = ival 
 	this%mml_soil_tk_1d_grc     (:)   = ival 
 	this%mml_soil_tkh_grc     (:,:)   = ival 
@@ -1822,9 +1822,13 @@ contains
 	this%mml_soil_cv_1d_grc     (:)   = ival 
 	this%mml_glc_tk_1d_grc     (:)   = ival
 	this%mml_glc_cv_1d_grc     (:)   = ival
-	!this%mml_soil_water_grc  (:)   	 = ival
-	!this%mml_soil_snow_grc   (:)   	 = ival
-	!this%mml_soil_runoff_grc (:)   	 = ival
+	! these were commented:
+	this%mml_soil_t_grc      (:,:)   = ival 
+	this%mml_soil_dz_grc     (:,:)   = ival 
+	this%mml_soil_zh_grc     (:,:)   = ival
+	this%mml_soil_water_grc  (:)   	 = ival
+	this%mml_soil_snow_grc   (:)   	 = ival
+	this%mml_soil_runoff_grc (:)   	 = ival
   	
   	this%mml_out_tref2m_grc	 (:)		= ival
 	this%mml_out_qref2m_grc	 (:)		= ival
@@ -1836,18 +1840,19 @@ contains
 	! so for now I'll manually prescribe the initial values, but this is 
 	! NOT a robust way of doing things!!!
 	! we'll put it all in liquid, for now
-	!this%mml_soil_ice_grc    (:,:)   = 0.0 
+	! (was commented... )
+	this%mml_soil_ice_grc    (:,:)   = 0.0 
 	
-	!this%mml_soil_liq_grc    (:,1)   = 0.0 
-	!this%mml_soil_liq_grc    (:,2)   = 0.082736907779029 
-	!this%mml_soil_liq_grc    (:,3)   = 0.136410099727240
-	!this%mml_soil_liq_grc    (:,4)   = 0.224902232958626
-	!this%mml_soil_liq_grc    (:,5)   = 0.370801095306842
-	!this%mml_soil_liq_grc    (:,6)   = 0.611347653031295
-	!this%mml_soil_liq_grc    (:,7)   = 1.007941879345298 
-	!this%mml_soil_liq_grc    (:,8)   = 1.661815216106055
-	!this%mml_soil_liq_grc    (:,9)   = 2.739870094767183
-	!this%mml_soil_liq_grc    (:,10)  = 3.410915413537486
+	this%mml_soil_liq_grc    (:,1)   = 0.0 
+	this%mml_soil_liq_grc    (:,2)   = 0.082736907779029 
+	this%mml_soil_liq_grc    (:,3)   = 0.136410099727240
+	this%mml_soil_liq_grc    (:,4)   = 0.224902232958626
+	this%mml_soil_liq_grc    (:,5)   = 0.370801095306842
+	this%mml_soil_liq_grc    (:,6)   = 0.611347653031295
+	this%mml_soil_liq_grc    (:,7)   = 1.007941879345298 
+	this%mml_soil_liq_grc    (:,8)   = 1.661815216106055
+	this%mml_soil_liq_grc    (:,9)   = 2.739870094767183
+	this%mml_soil_liq_grc    (:,10)  = 3.410915413537486
 
   
   end subroutine InitCold
