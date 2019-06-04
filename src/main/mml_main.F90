@@ -146,7 +146,7 @@ contains
    	real(r8)	tol, obu0, obu1
    	
 !    	!Force-set a maximum snow value
-!    	real(r8)	:: snowcap
+	real(r8)	:: snowcap
 !    	
    	
    	! Formerly "allocate" "deallocate" variables:
