@@ -1471,8 +1471,9 @@ contains
 			snow(g) = snowcap
 		end if
 		
-		if (snow(g) < 0) then
+		if (snow(g) <  -1.0e-02) then
 			write(iulog,*)subname, 'MML WARNING snow went negative after implementing snow cap... '
+			snow(g) = 0.0
 		end if
 		
 		if (snow(g) > snowcap) then
