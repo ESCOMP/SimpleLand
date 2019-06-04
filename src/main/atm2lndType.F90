@@ -1783,8 +1783,8 @@ contains
 	! land flux data
 	
 	! these 2 were commented...
-	this%mml_lnd_ts_grc     (:)   = ival
-	this%mml_lnd_qs_grc     (:)   = ival
+	!this%mml_lnd_ts_grc     (:)   = ival
+	!this%mml_lnd_qs_grc     (:)   = ival
 	
 	this%mml_lnd_qa_grc     (:)   = ival
 	this%mml_lnd_swabs_grc  (:)   = ival
