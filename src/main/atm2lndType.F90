@@ -1782,7 +1782,7 @@ contains
 	
 	! land flux data
 	
-	! these 2 were commented...
+	! these 2 are commented because we already initialize them with somethign sensible above
 	!this%mml_lnd_ts_grc     (:)   = ival
 	!this%mml_lnd_qs_grc     (:)   = ival
 	
