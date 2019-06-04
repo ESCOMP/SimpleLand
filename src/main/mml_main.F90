@@ -367,7 +367,7 @@ contains
      mml_nsoi = 10
      
      ! Maximum allowed snow:
-     snowcap = 5000.0_r8    ! somewhat arbitrary... thats 10m of snow at 500 kg/m3 (mid-value for a firn)
+!     snowcap = 5000.0_r8    ! somewhat arbitrary... thats 10m of snow at 500 kg/m3 (mid-value for a firn)
      ! Paterson, W.S.B. 1994. The Physics of Glaciers
      ! kg/m3
      ! 
@@ -1465,22 +1465,22 @@ contains
 	!---------------------------------------
 	! Snow build-up: if there is too much snow, send extra to runoff 
 	! 	(note, not using any energy to melt it or anything - its getting sent as ice to runoff)
-	do g = begg, endg
-		if (snow(g) > snowcap ) then 
-			runoff(g) = runoff(g) + (snow(g) - snowcap)
-			snow(g) = snowcap
-		end if
-		
-		if (snow(g) <  -1.0e-02) then
-			write(iulog,*)subname, 'MML WARNING snow went negative after implementing snow cap... '
-			snow(g) = 0.0
-		end if
-		
-		if (snow(g) > snowcap) then
-			write(iulog,*)subname, 'MML WARNING snow exceeds snow cap after implementing snow cap... '
-		end if
-		
-	end do
+!	do g = begg, endg 
+!		if (snow(g) > snowcap ) then  
+!			runoff(g) = runoff(g) + (snow(g) - snowcap) 
+!			snow(g) = snowcap 
+!		end if 
+!		 
+!		if (snow(g) <  -1.0e-02) then 
+!			write(iulog,*)subname, 'MML WARNING snow went negative after implementing snow cap... ' 
+!			snow(g) = 0.0 
+!		end if 
+!		 
+!		if (snow(g) > snowcap) then 
+!			write(iulog,*)subname, 'MML WARNING snow exceeds snow cap after implementing snow cap... ' 
+!		end if 
+!		 
+!	end do 
 	
 	! -------------------------------------------------------------
     ! Now what now what now what? This is so exciting :)
