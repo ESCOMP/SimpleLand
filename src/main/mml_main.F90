@@ -1463,7 +1463,7 @@ contains
 		
 		if( isnan(snow(g)) ) then
     		write(iulog,*)subname, 'MML ERROR:snow is a nan \n', &
-    		call endrun(msg=errmsg(__FILE__, __LINE__))
+    		!call endrun(msg=errmsg(__FILE__, __LINE__))
     	end if
     
 	end do
