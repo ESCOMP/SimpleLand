@@ -2228,9 +2228,6 @@ sub setup_logic_surface_dataset {
   # MML: try and add my own namelist variable for mml_surdat forcing file
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'mml_surdat');
   
-  # MML: add a namelist variable that gets a value for the maximum snow
-  # ... not quite sure how to do this in namelist_defaults, so I'll hard code it for now... 
-  #add_default($opts, $nl_flags->{'mml_snowcap'}, $definition, $defaults, $nl, 'mml_snowcap');
   
 }
 
