@@ -145,9 +145,9 @@ contains
    	
    	real(r8)	tol, obu0, obu1
    	
-   	! Force-set a maximum snow value
-   	real(r8)	:: snowcap
-   	
+!    	!Force-set a maximum snow value
+!    	real(r8)	:: snowcap
+!    	
    	
    	! Formerly "allocate" "deallocate" variables:
    	
@@ -1460,6 +1460,12 @@ contains
        	if ( snow(g) < -1e-02  .or. water(g) < -1e-02  ) then
 			write(iulog,*)subname, 'MML WARNING snow or water bucket went negative, uhoh (after runoff)'
 		end if
+		
+		if( isnan(snow(g)) ) then
+    		write(iulog,*)subname, 'MML ERROR:snow is a nan \n', &
+    		call endrun(msg=errmsg(__FILE__, __LINE__))
+    	end if
+    
 	end do
 	
 	!---------------------------------------
