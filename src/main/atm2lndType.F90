@@ -1823,12 +1823,12 @@ contains
 	this%mml_glc_tk_1d_grc     (:)   = ival
 	this%mml_glc_cv_1d_grc     (:)   = ival
 	! these were commented:
-	this%mml_soil_t_grc      (:,:)   = ival 
-	this%mml_soil_dz_grc     (:,:)   = ival 
-	this%mml_soil_zh_grc     (:,:)   = ival
-	this%mml_soil_water_grc  (:)   	 = ival
-	this%mml_soil_snow_grc   (:)   	 = ival
-	this%mml_soil_runoff_grc (:)   	 = ival
+!	this%mml_soil_t_grc      (:,:)   = ival 
+! 	this%mml_soil_dz_grc     (:,:)   = ival 
+! 	this%mml_soil_zh_grc     (:,:)   = ival
+! 	this%mml_soil_water_grc  (:)   	 = ival
+! 	this%mml_soil_snow_grc   (:)   	 = ival
+! 	this%mml_soil_runoff_grc (:)   	 = ival
   	
   	this%mml_out_tref2m_grc	 (:)		= ival
 	this%mml_out_qref2m_grc	 (:)		= ival
