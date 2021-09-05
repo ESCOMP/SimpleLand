@@ -239,6 +239,7 @@ contains
    					fsds_dif(bounds%begg:bounds%endg,2)	, 	&
    					sw_abs_dir(bounds%begg:bounds%endg,2)	, 	&
    					sw_abs_dif(bounds%begg:bounds%endg,2)	
+   real(r8) :: fsds_tot      ! Total solar
    
    !-----------------------------------------------------------------------
    ! MML: associate the simple land model variables with their counterparts in atm2lnd
@@ -710,7 +711,12 @@ contains
      
      ! Make output albedo to be a combination of all 4 albedo streams:
      albedo_fin(:) = 1.0e36_r8
-     albedo_fin(:) = fsr(:) / ( fsds_dir(:,1) + fsds_dir(:,2) + fsds_dif(:,1) +  fsds_dif(:,2) )
+     do g = begg, endg
+        fsds_tot = fsds_dir(g,1) + fsds_dir(g,2) + fsds_dif(g,1) +  fsds_dif(g,2)
+        if ( fsds_tot > 0.0_r8 )then
+           albedo_fin(g) = fsr(g) / fsds_tot
+        end if
+     end do
      ! temporary fix:
      !lw_abs(begg:endg) = lwdn(begg:endg)
      !sw_abs(begg:endg) = 0.7*fsds(begg:endg)
