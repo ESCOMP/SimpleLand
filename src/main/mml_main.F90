@@ -1986,37 +1986,41 @@ end do
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst1', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-1, failed ', readvar
+    else
+	dust(begg:endg,1) = nc_dust
 	end if 
 	
-	dust(begg:endg,1) = nc_dust
 	
 	! second dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst2', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-2, failed ', readvar
+    else
+	dust(begg:endg,2) = nc_dust
 	end if 
 	
-	dust(begg:endg,2) = nc_dust
 	
 	! third dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst3', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-3, failed ', readvar
+    else
+	dust(begg:endg,3) = nc_dust
 	end if 
 	
-	dust(begg:endg,3) = nc_dust
 
 	! fourth dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst4', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-4, failed ', readvar
+    else
+	dust(begg:endg,4) = nc_dust
 	end if 
 	
-	dust(begg:endg,4) = nc_dust
 	
 	
     ! Albedo Direct
