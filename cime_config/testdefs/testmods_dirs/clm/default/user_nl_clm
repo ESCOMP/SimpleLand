@@ -15,3 +15,5 @@
 'MML_lh_excess',
          'MML_q_demand', 'MML_lh_demand', 'mml_err_h2o', 'mml_err_h2osno', 'mml_err_seb', 'mml_err_soi', 'mml_err_sol', 'WIND',
          'THBOT', 'RAIN', 'SNOW', 'RH'
+ hist_fexcl1 = 'HR_vr', 'O_SCALAR', 'LITR3N_vr', 'LITR3C_vr', 'LITR2N_vr', 'LITR2C_vr', 'LITR1N_vr', 'LITR1C_vr', 'H2OSOI',
+         'PCT_CFT', 'PCT_GLC_MEC', 'PCT_LANDUNIT', 'PCT_NAT_PFT'
