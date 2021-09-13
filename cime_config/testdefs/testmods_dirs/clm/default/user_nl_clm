@@ -1,6 +1,8 @@
  hist_ndens     = 1
  hist_nhtfrq    =-24
  hist_mfilt     = 5
+! Empty the default history tapes and just output the MML fields
+ hist_empty_htapes = .true.
  hist_fincl1 = 'MML_snowmaskdepth', 'MML_evap_rs', 'MML_bucket_cap', 'MML_soiltype', 'MML_roughness', 'MML_fsds', 'MML_fsdsnd',
 'MML_fsdsni',
          'MML_fsdsvd', 'MML_fsdsvi', 'MML_lwdn', 'MML_zref', 'MML_tbot', 'MML_thref', 'MML_qbot', 'MML_uref',
@@ -15,5 +17,3 @@
 'MML_lh_excess',
          'MML_q_demand', 'MML_lh_demand', 'mml_err_h2o', 'mml_err_h2osno', 'mml_err_seb', 'mml_err_soi', 'mml_err_sol', 'WIND',
          'THBOT', 'RAIN', 'SNOW', 'RH'
- hist_fexcl1 = 'HR_vr', 'O_SCALAR', 'LITR3N_vr', 'LITR3C_vr', 'LITR2N_vr', 'LITR2C_vr', 'LITR1N_vr', 'LITR1C_vr', 'H2OSOI',
-         'PCT_CFT', 'PCT_GLC_MEC', 'PCT_LANDUNIT', 'PCT_NAT_PFT'
