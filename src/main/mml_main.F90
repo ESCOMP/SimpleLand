@@ -1131,10 +1131,6 @@ contains
 	
 	lwup(:) = lwup + lwrad	! reflected longwave (0 at the moment) plus sigma*T^4
 	
-	! LHFLX in water units [kg/m2/s = mm/s]
-	! update evap(g) 
-	!evap(:) = lhflx * dt / lambda
-	evap(:)	= lhflx / lambda	! kg/m2/s or mm/s, NOT times dt!!!!
 	
 	! -------------------------------------------------------------
 	! TO DO:
@@ -1156,6 +1152,14 @@ contains
 	end do
 	
 	
+        ! MML 2021.09.13: move update of evap (in water units) to AFTER the lh/sh check - otherwise lh and evap won't match (once put into proper units)
+        
+        ! LHFLX in water units [kg/m2/s = mm/s]
+        ! update evap(g) 
+        !evap(:) = lhflx * dt / lambda
+        evap(:) = lhflx / lambda        ! kg/m2/s or mm/s, NOT times dt!!!!
+
+
 	! -------------------------------------------------------------
 	!	Check that dew doesn't exceed water available in lowest atm level
 	! -------------------------------------------------------------
