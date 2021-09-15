@@ -129,6 +129,11 @@
   </compset>
 
 
+  <compset>
+    <alias>I2000SlimRsGs</alias>
+    <lname>2000_DATM%GSWP3v1_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+  </compset>
+
   <!-- changes to driver xml variables - in case of a tie in the values matches the last match is taken -->
 
   <entries>
