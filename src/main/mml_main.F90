@@ -1488,7 +1488,7 @@ do g = begg, endg
 		snow(g) = snowcap 
 	end if 
 	 
-	if (snow(g) <  -1.0e-02) then 
+	if (snow(g) <  0.0) then 
 		write(iulog,*)subname, 'MML WARNING snow went negative after implementing snow cap... ' 
 		snow(g) = 0.0 
 	end if 
@@ -1497,7 +1497,7 @@ do g = begg, endg
 		write(iulog,*)subname, 'MML WARNING snow exceeds snow cap after implementing snow cap... ' 
 	end if 
 	 
-       if (water(g) <  -1.0e-02) then
+       if (water(g) <  0.0) then
                 write(iulog,*)subname, 'MML WARNING water went negative, set to zero...  '
                 water(g) = 0.0
         end if
