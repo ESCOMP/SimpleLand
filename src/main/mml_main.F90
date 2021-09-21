@@ -1416,7 +1416,7 @@ contains
     	! steal excess water we need from soil bucket
     	wat2snow(:) = evap*dt - snow0
     	! remove wat2snow from water bucket
-    	water(:) = water - wat2snow			! POSSIBLE that this could go negative at one time step, but shouldn't blow up
+    	water(:) = water0 - wat2snow			! POSSIBLE that this could go negative at one time step, but shouldn't blow up
     	! give snow wat2snow and remove evap (should equal zero)
     	snow(:) = snow0 + wat2snow - evap*dt
 
@@ -1427,7 +1427,7 @@ contains
     ! Snow-free Evaporation:
     
     where (snow0 <= 0 )
-    	water(:) = water - evap*dt
+    	water(:) = water0 - evap*dt
     	! NOTE: IF lhflx < 0, then evap < 0, so this will ADD water to the bucket (sucking it out of the atmosphere)
     end where
     
