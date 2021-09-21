@@ -1403,21 +1403,22 @@ contains
     snow0  = snow
     water0 = water
     
-    where (snow > 0 .and. evap*dt <= snow)
+    where (snow0 > 0 .and. evap*dt <= snow0)
     	! where snow is enough to cover all evaporation, take lhflx out of snow bucket
-    	snow(:) = snow(:) - evap(:)*dt	! here I need to say evap*dt to get kg/m2 not kg/m2/s
+    	snow(:) = snow0(:) - evap(:)*dt	! here I need to say evap*dt to get kg/m2 not kg/m2/s
     	! NOTE: IF lhflx < 0, then evap < 0, so this will ADD snow to snow bucket (sucking water out of atm)
     end where
-    
-    where (snow > 0 .and. evap*dt > snow)
+   
+    ! MML 2021.09.21: changed from using snow to using snow0 in the where statments, otherwise I'm going to evaproate twice, aren't I?  
+    where (snow0 > 0 .and. evap*dt > snow0)
     	! where snow isn't enough to cover all evaporation
     	
     	! steal excess water we need from soil bucket
-    	wat2snow(:) = evap*dt - snow
+    	wat2snow(:) = evap*dt - snow0
     	! remove wat2snow from water bucket
     	water(:) = water - wat2snow			! POSSIBLE that this could go negative at one time step, but shouldn't blow up
     	! give snow wat2snow and remove evap (should equal zero)
-    	snow(:) = snow + wat2snow - evap*dt
+    	snow(:) = snow0 + wat2snow - evap*dt
 
 		! NOTE: IF lhflx < 0, then evap < 0, so this will ADD water to the bucket (sucking it out of the atmosphere)
    		! 		... shouldn't actually happen in this case b/c evap*dt < 0 shouldn't also be > snow
@@ -1425,7 +1426,7 @@ contains
     
     ! Snow-free Evaporation:
     
-    where (snow <= 0 )
+    where (snow0 <= 0 )
     	water(:) = water - evap*dt
     	! NOTE: IF lhflx < 0, then evap < 0, so this will ADD water to the bucket (sucking it out of the atmosphere)
     end where
@@ -1490,6 +1491,10 @@ do g = begg, endg
 		write(iulog,*)subname, 'MML WARNING snow exceeds snow cap after implementing snow cap... ' 
 	end if 
 	 
+       if (water(g) <  -1.0e-02) then
+                write(iulog,*)subname, 'MML WARNING water went negative, set to zero...  '
+                water(g) = 0.0
+        end if
 end do 
 	
 	! -------------------------------------------------------------
