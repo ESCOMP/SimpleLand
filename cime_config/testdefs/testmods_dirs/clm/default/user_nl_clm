@@ -1,0 +1,19 @@
+ hist_ndens     = 1
+ hist_nhtfrq    =-24
+ hist_mfilt     = 5
+! Empty the default history tapes and just output the MML fields
+ hist_empty_htapes = .true.
+ hist_fincl1 = 'MML_snowmaskdepth', 'MML_evap_rs', 'MML_bucket_cap', 'MML_soiltype', 'MML_roughness', 'MML_fsds', 'MML_fsdsnd',
+'MML_fsdsni',
+         'MML_fsdsvd', 'MML_fsdsvi', 'MML_lwdn', 'MML_zref', 'MML_tbot', 'MML_thref', 'MML_qbot', 'MML_uref',
+         'MML_eref', 'MML_pbot', 'MML_psrf', 'MML_pco2', 'MML_rhomol', 'MML_rhoair', 'MML_cpair', 'MML_prec_liq',
+         'MML_prec_frz', 'MML_ts', 'MML_qs', 'MML_qa', 'MML_swabs', 'MML_fsr', 'MML_fsrnd', 'MML_fsrni',
+         'MML_fsrvd', 'MML_fsrvi', 'MML_snowmelt', 'MML_l2a_taux', 'MML_l2a_tauy', 'MML_lwup', 'MML_shflx', 'MML_lhflx',
+         'MML_gsoi', 'MML_gsnow', 'MML_evap', 'MML_ustar', 'MML_tstar', 'MML_qstar', 'MML_tvstar', 'MML_obu',
+         'MML_ram', 'MML_rah', 'MML_z0m', 'MML_z0h', 'MML_alb', 'MML_fsns', 'MML_flns', 'MML_maxice',
+         'MML_soilz', 'MML_soil_t', 'MML_soil_liq', 'MML_soil_ice', 'MML_dz', 'MML_zh', 'MML_tk', 'MML_tkh',
+         'MML_dtsoi', 'MML_cv', 'MML_water', 'MML_snow', 'MML_runoff', 'MML_l2a_tref2m', 'MML_l2a_qref2m', 'MML_l2a_uref10m',
+         'MML_diag1_1d', 'MML_diag2_1d', 'MML_diag3_1d', 'MML_diag1_2d', 'MML_diag2_2d', 'MML_diag3_2d', 'MML_q_excess',
+'MML_lh_excess',
+         'MML_q_demand', 'MML_lh_demand', 'mml_err_h2o', 'mml_err_h2osno', 'mml_err_seb', 'mml_err_soi', 'mml_err_sol', 'WIND',
+         'THBOT', 'RAIN', 'SNOW', 'RH'

@@ -239,6 +239,7 @@ contains
    					fsds_dif(bounds%begg:bounds%endg,2)	, 	&
    					sw_abs_dir(bounds%begg:bounds%endg,2)	, 	&
    					sw_abs_dif(bounds%begg:bounds%endg,2)	
+   real(r8) :: fsds_tot      ! Total solar
    
    !-----------------------------------------------------------------------
    ! MML: associate the simple land model variables with their counterparts in atm2lnd
@@ -710,7 +711,12 @@ contains
      
      ! Make output albedo to be a combination of all 4 albedo streams:
      albedo_fin(:) = 1.0e36_r8
-     albedo_fin(:) = fsr(:) / ( fsds_dir(:,1) + fsds_dir(:,2) + fsds_dif(:,1) +  fsds_dif(:,2) )
+     do g = begg, endg
+        fsds_tot = fsds_dir(g,1) + fsds_dir(g,2) + fsds_dif(g,1) +  fsds_dif(g,2)
+        if ( fsds_tot > 0.0_r8 )then
+           albedo_fin(g) = fsr(g) / fsds_tot
+        end if
+     end do
      ! temporary fix:
      !lw_abs(begg:endg) = lwdn(begg:endg)
      !sw_abs(begg:endg) = 0.7*fsds(begg:endg)
@@ -1995,37 +2001,41 @@ end do
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst1', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-1, failed ', readvar
+    else
+	dust(begg:endg,1) = nc_dust
 	end if 
 	
-	dust(begg:endg,1) = nc_dust
 	
 	! second dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst2', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-2, failed ', readvar
+    else
+	dust(begg:endg,2) = nc_dust
 	end if 
 	
-	dust(begg:endg,2) = nc_dust
 	
 	! third dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst3', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-3, failed ', readvar
+    else
+	dust(begg:endg,3) = nc_dust
 	end if 
 	
-	dust(begg:endg,3) = nc_dust
 
 	! fourth dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst4', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
     if ( .NOT. readvar) then
-		write(iulog,*)subname, 'MML tried to read dust, failed ', readvar
+		write(iulog,*)subname, 'MML tried to read dust-4, failed ', readvar
+    else
+	dust(begg:endg,4) = nc_dust
 	end if 
 	
-	dust(begg:endg,4) = nc_dust
 	
 	
     ! Albedo Direct

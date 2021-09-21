@@ -1,0 +1,38 @@
+      <dataSource>
+         GENERIC
+      </dataSource>
+      <domainInfo>
+         <variableNames>
+            time    time
+            xc      lon
+            yc      lat
+            area    area
+            mask    mask
+         </variableNames>
+         <filePath>
+            /gpfs/fs1/work/mlague/CESM/som/qflux
+         </filePath>
+         <fileNames>
+            pop_frc.b.e11.B1850C5CN.f09_g16.005.082914_j.nc
+         </fileNames>
+      </domainInfo>
+      <fieldInfo>
+         <variableNames>
+            T     t
+            U     u
+            V     v
+            dhdx  dhdx
+            dhdy  dhdy
+            hblt  h
+            qdp   qbot
+         </variableNames>
+         <filePath>
+            /gpfs/fs1/work/mlague/CESM/som/qflux
+         </filePath>
+         <fileNames>
+            pop_frc.b.e11.B1850C5CN.f09_g16.005.082914_j.nc
+         </fileNames>
+         <offset>
+            0
+         </offset>
+      </fieldInfo>

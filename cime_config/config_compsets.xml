@@ -117,8 +117,8 @@
        faster datm throughput, which is particularly relevant for single-point
        cases (where datm dominates the runtime) -->
   <compset>
-    <alias>IHistClm45BgcCropQianGs</alias>
-    <lname>HIST_DATM%QIA_CLM45%BGC-CROP_SICE_SOCN_RTM_SGLC_SWAV</lname>
+    <alias>IHistClm45BgcQianGs</alias>
+    <lname>HIST_DATM%QIA_CLM45%BGC_SICE_SOCN_RTM_SGLC_SWAV</lname>
   </compset>
 
   <!-- Stub glacier needed for regional / single-point -->
@@ -128,6 +128,11 @@
     <lname>1850_DATM%GSWP3v1_CLM45%BGC_SICE_SOCN_RTM_SGLC_SWAV</lname>
   </compset>
 
+
+  <compset>
+    <alias>I2000SlimRsGs</alias>
+    <lname>2000_DATM%GSWP3v1_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+  </compset>
 
   <!-- changes to driver xml variables - in case of a tie in the values matches the last match is taken -->
 
