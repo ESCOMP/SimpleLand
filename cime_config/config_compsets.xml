@@ -45,6 +45,11 @@
     <alias>H_MML_1850_CAM6</alias>
     <lname>1850_CAM60_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
+
+  <compset>
+    <alias>F2000Cam6SlimRsGs</alias>
+    <lname>2000_CAM60_CLM50%SP_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
+  </compset>
   
   <!-- CAM5 with CLM45 SP -->
   <compset>
@@ -133,6 +138,7 @@
     <alias>I2000SlimRsGs</alias>
     <lname>2000_DATM%GSWP3v1_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
+
 
   <!-- changes to driver xml variables - in case of a tie in the values matches the last match is taken -->
 
