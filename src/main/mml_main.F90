@@ -610,26 +610,30 @@ contains
      
      !temp(begg:endg) = snow(begg:endg)/(snow(begg:endg) + snowmask(begg:endg)) ! snow masking factor
      !diag3_1d = temp
+    
      
+ 
      do g = begg, endg
+          ! MML 2021.09.29: initialize temp as all zeros, otherwise it might just not have a value in some places!
+          temp(g) = 0.0_r8	 
+  	  if ( snow(g) < 0.0_r8 ) then
+  	       temp(g) = 0.0_r8
+  	       write(iulog,*)'warning: snow<0, setting snowmasking factor to zero. (snow(g) = ',snow(g),', overwriting so snow(g)=0.0)'
+               snow(g) = 0.0_r8
+  	  else
+  	       temp(g) = snow(g) / ( snow(g) + snowmask(g) )
+  	  end if
   	 
-  	 	if ( snow(g) < 0 ) then
-  	 		temp(g) = 0
-  	 		write(iulog,*)'warning: snow<0, setting snowmasking factor to zero. (snow(g) = ',snow(g),')'
-  	 	else
-  	 		temp(g) = snow(g) / ( snow(g) + snowmask(g) )
-  	 	end if
-  	 	
-  	 	diag3_1d(g) = temp(g)
-  	 	
-  	  	if ( temp(g) < 0 ) then
-            write(iulog,*)'Error: snow masking factor < 0 (should be between 0 and 1) \n ', &
-            				'Instead, snowmasking factor = ',temp(g)
-            call endrun(msg=errmsg(__FILE__, __LINE__))
-        elseif ( temp(g) > 1 ) then
-           write(iulog,*)'Error: snow masking factor > 1 (should be between 0 and 1)  \n ', &
-            				'Instead, snowmasking factor = ',temp(g)
-            call endrun(msg=errmsg(__FILE__, __LINE__))
+  	  diag3_1d(g) = temp(g)
+  	 
+  	  if ( temp(g) < 0 ) then
+                 write(iulog,*)'Error: snow masking factor < 0 (should be between 0 and 1) \n ', &
+                       	'Instead, snowmasking factor = ',temp(g)
+                 call endrun(msg=errmsg(__FILE__, __LINE__))
+          elseif ( temp(g) > 1 ) then
+                 write(iulog,*)'Error: snow masking factor > 1 (should be between 0 and 1)  \n ', &
+                  'Instead, snowmasking factor = ',temp(g)
+                 call endrun(msg=errmsg(__FILE__, __LINE__))
         end if
   	 
   	 end do
@@ -1441,17 +1445,19 @@ contains
     do g = begg, endg
     	! Check that snow = 0 (ish) if we were supposed to evaporate it all
     	! if   evap more than init snow    .and.    still have snow    -> error
-    	if ( evap(g)*dt > snow0(g) .and. abs(snow(g)) > 1.0e-02) then
+    	if ( evap(g)*dt > snow0(g) .and. abs(snow(g)) > 1.0e-06) then
     		write(iulog,*)subname, 'MML WARNING evaporation - snow should be 0, and its not! snow = ', snow(g)
     	end if
     	! Check if water went negative, if so, say something!
-    	if ( water(g) < -1e-02 ) then
+    	if ( water(g) < 0.0_r8 ) then
     		! changed from < 0 since it was tripping with values of -6e-18 ... 
-    		write(iulog,*)subname, 'MML WARNING evaporation - water(g) < 0; water(g) = ', water(g)	
+    		write(iulog,*)subname, 'MML WARNING evaporation - water(g) < 0; water(g) = ', water(g), 'setting water(g) = 0.0'
+                water(g) = 0.0_r8
     	end if
     	! Check if snow went negative, if so, say something!
-    	if ( snow(g) < -1e-02 ) then
-    		write(iulog,*)subname, 'MML WARNING evaporation - snow(g) < 0; snow(g) = ', snow(g)	
+    	if ( snow(g) < 0.0_r8 ) then
+    		write(iulog,*)subname, 'MML WARNING evaporation - snow(g) < 0; snow(g) = ', snow(g),', setting snow(g)=0.0'
+                snow(g) = 0.0_r8
     	end if
     end do   
 
@@ -1468,7 +1474,7 @@ contains
     
 	! Check we didn't let snow or water go negative
 	do g = begg, endg
-       	if ( snow(g) < -1e-02  .or. water(g) < -1e-02  ) then
+       	if ( snow(g) < 0.0_r8  .or. water(g) < 0.0_r8  ) then
 			write(iulog,*)subname, 'MML WARNING snow or water bucket went negative, uhoh (after runoff)'
 		end if
 		
