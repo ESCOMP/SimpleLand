@@ -619,7 +619,7 @@ contains
 
           if (snowmask(g) < 0.0_r8) then
                ! this should not happen. Never feed in negative snowmask! But a person technically could do so, so catch it here:
-               write(iulog,*)'warning: user provided snowmask(g)<0 (snowmask(g) = ',snowmask(g),', setting snowmask(g)=0'
+               write(iulog,*)'warning: user provided snowmask(g)<0 (snowmask(g) = ',snowmask(g),'), setting snowmask(g)=0'
                snowmask(g) = 0.0_r8
           end if
  
