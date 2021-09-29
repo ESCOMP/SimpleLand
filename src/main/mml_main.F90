@@ -615,7 +615,14 @@ contains
  
      do g = begg, endg
           ! MML 2021.09.29: initialize temp as all zeros, otherwise it might just not have a value in some places!
-          temp(g) = 0.0_r8	 
+          temp(g) = 0.0_r8	
+
+          if (snowmask(g) < 0.0_r8) then
+               ! this should not happen. Never feed in negative snowmask! But a person technically could do so, so catch it here:
+               write(iulog,*)'warning: user provided snowmask(g)<0 (snowmask(g) = ',snowmask(g),', setting snowmask(g)=0'
+               snowmask(g) = 0.0_r8
+          end if
+ 
   	  if ( snow(g) < 0.0_r8 ) then
   	       temp(g) = 0.0_r8
   	       write(iulog,*)'warning: snow<0, setting snowmasking factor to zero. (snow(g) = ',snow(g),', overwriting so snow(g)=0.0)'
