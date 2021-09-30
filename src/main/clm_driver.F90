@@ -1182,11 +1182,25 @@ contains
        ! Create history and write history tapes if appropriate
        call t_startf('clm_drv_io_htapes')
 
+       !write(iulog,*)'MML: about to call htapes_wrapup, prepare to die, my name is inigio montoya... also wtf does it want the soilstate for? '
+
+       ! MML workaround to try and avoid the soilstate leading to crashing - this is CLM's soil state, not SLIM's, so the values shouldn't be meaningful anyhow
+       !soilstate_inst%watsat_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
+       !soilstate_inst%sucsat_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
+       !soilstate_inst%bsw_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
+       !soilstate_inst%hksat_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
+
+       !write(iulog,*)'MML: clobbered the soilstate_inst values, call hist_htapes_wrapup now'
+
+       !write(iulog,*)'MML: rstwr = ',rstwr,', nlend = ',nlend
+
        call hist_htapes_wrapup( rstwr, nlend, bounds_proc,                    &
             soilstate_inst%watsat_col(bounds_proc%begc:bounds_proc%endc, 1:), &
             soilstate_inst%sucsat_col(bounds_proc%begc:bounds_proc%endc, 1:), &
             soilstate_inst%bsw_col(bounds_proc%begc:bounds_proc%endc, 1:),    &
             soilstate_inst%hksat_col(bounds_proc%begc:bounds_proc%endc, 1:))
+
+       !write(iulog,*)'MML: back from wrapup, yet we are still running'
 
        call t_stopf('clm_drv_io_htapes')
 
@@ -1196,6 +1210,7 @@ contains
 
        ! Write restart/initial files if appropriate
        if (rstwr) then
+          !write(iulog,*)'MML: write restart file'
           call t_startf('clm_drv_io_wrest')
           filer = restFile_filename(rdate=rdate)
 
@@ -1204,18 +1219,18 @@ contains
           call t_stopf('clm_drv_io_wrest')
           
           ! MML:
-          write(iulog,*)  'MML: end of restart if statment '
+         ! write(iulog,*)  'MML: end of restart if statment '
           
        end if
        call t_stopf('clm_drv_io')
 
 	   ! MML:
-	    write(iulog,*)  'MML: after restart call '
+       !write(iulog,*)  'MML: after restart call '
 	    
     end if
     
     ! MML:
-	write(iulog,*)  'MML: end clm_drv routine '
+    !write(iulog,*)  'MML: end clm_drv routine '
 
   end subroutine clm_drv
 
