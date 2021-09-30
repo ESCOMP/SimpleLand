@@ -569,10 +569,13 @@ contains
  					emiss(begg:endg), glc_mask(begg:endg), dust(begg:endg,:), &
  					soil_tk_1d(begg:endg), soil_cv_1d(begg:endg), &
  					glc_tk_1d(begg:endg), glc_cv_1d(begg:endg)   ) !, &
+
+                       write(iulog,*)'read netcdf'
  					
 		end if
 	call t_stopf('mml_nc_import')
 	
+
 		! Hard code snowmask and see if it'll run with the new files using that
 		!snowmask(begg:endg) = 100.0_r8
 			
@@ -588,7 +591,9 @@ contains
      !						Check with Gordon and GFDL
      !				- get radiative forcing (sw in and lw in, with albedo accounted for)
      ! -------------------------------------------------------------
-     
+ 
+     !write(iulog,*)'MML: Commence actually running the model!'    
+ 
      ! displacement height
      		! for now, set equal to 0.7 * canopy height
      h_disp = 0.7_r8 * roughness
@@ -619,8 +624,8 @@ contains
 
           if (snowmask(g) < 0.0_r8) then
                ! this should not happen. Never feed in negative snowmask! But a person technically could do so, so catch it here:
-               write(iulog,*)'warning: user provided snowmask(g)<0 (snowmask(g) = ',snowmask(g),'), setting snowmask(g)=0'
-               snowmask(g) = 0.0_r8
+               write(iulog,*)'warning: user provided snowmask(g)<0 (snowmask(g) = ',snowmask(g),'), setting snowmask(g)=100.0'
+               snowmask(g) = 100.0_r8
           end if
  
   	  if ( snow(g) < 0.0_r8 ) then
@@ -653,11 +658,11 @@ contains
      ! for consistent coding, shove vis and nir into a (:,2) sized matrix
      alb_vis_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvd(begg:endg) + &
      							temp(begg:endg) * albedo_svd(begg:endg)
-	 alb_nir_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnd(begg:endg) + &
+     alb_nir_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnd(begg:endg) + &
 	 							temp(begg:endg) * albedo_snd(begg:endg)
-	 alb_vis_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvf(begg:endg) + &
+     alb_vis_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvf(begg:endg) + &
 	 							temp(begg:endg) * albedo_svf(begg:endg)
-	 alb_nir_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnf(begg:endg) + &
+     alb_nir_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnf(begg:endg) + &
 	 							temp(begg:endg) * albedo_snf(begg:endg)
 	 
 	 ! for now, output one of these as albedo_fin just so there is a value:
@@ -934,8 +939,8 @@ contains
 	beta(:) = 1.0_r8
 
 	! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
-	atm2lnd_inst%mml_lnd_effective_res_grc = 9999.99_r8
-	atm2lnd_inst%mml_lnd_res_grc = 9999.99_r8 
+	atm2lnd_inst%mml_lnd_effective_res_grc = 1.0_r8 !9999.99_r8
+	atm2lnd_inst%mml_lnd_res_grc = 1.0_r8 ! 9999.99_r8 
 	
 	where ( snow <= 0 )
 		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
@@ -1702,33 +1707,44 @@ end do
 
 ! save beta out for netcdf
     do g = begg,endg
-                atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
-                if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
-                        atm2lnd_inst%mml_lnd_beta_grc(g) = 1.0e36_r8 ! something very small
-                end if
-                ! if beta smaller than 0.01 set it larger 
-                !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
-                !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
-                !end if
-                
-                atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
-                if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
-                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0e36_r8
-                end if
-                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
-                !end if
-                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
-                !end if
-                
-                atm2lnd_inst%mml_lnd_res_grc(g) = res(g)
-    	      	if( isnan(atm2lnd_inst%mml_lnd_res_grc(g)) ) then
-    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
-     		    end if
-     		    if( atm2lnd_inst%mml_lnd_res_grc(g)>10000. ) then
-    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
-     		    end if
+
+         atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0_r8 ! this is not the actual value, but a nan is showing up in here so for now, just comment out the calculation - should be res/beta
+         atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) 
+         atm2lnd_inst%mml_lnd_res_grc(g) = res(g) 
+
+        if (beta(g) < 1.0e-3) then
+           atm2lnd_inst%mml_lnd_effective_res_grc(g) = 999999.0_r8
+        else
+           atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g)
+        end if
+
+        !        atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
+        !        if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
+        !                atm2lnd_inst%mml_lnd_beta_grc(g) = 1.0e-8_r8 !1.0e36_r8 ! something very small
+        !        end if
+        !        ! if beta smaller than 0.01 set it larger 
+        !        !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
+        !        !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+        !        !end if
+        !        
+        !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
+        !        if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
+        !                atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0e-8_r8 !1.!0e36_r8
+        !        end if
+        !        !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+        !        !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
+        !        !end if
+        !        !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+        !        !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
+        !        !end if
+        !        
+        !        atm2lnd_inst%mml_lnd_res_grc(g) = res(g)
+    	!      	if( isnan(atm2lnd_inst%mml_lnd_res_grc(g)) ) then
+    	!        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.0e-8_r8 ! 1.e36_r8
+     !		    end if
+    ! 		    if( atm2lnd_inst%mml_lnd_res_grc(g)>10000. ) then
+   ! 	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.0e-8_r8 !1.e36_r8
+   !  		    end if
                 
      end do
      
@@ -1744,7 +1760,8 @@ end do
      
      ! To be sure of what is actually being sent to the atmosphere, see subroutine lnd_export
      ! in /glade/p/work/mlague/cesm_source/cesm1_5_beta05_mml_land/components/clm/src/cpl/lnd_import_export.F90 
-     
+    
+ 
      ! lnd -> atm
      lnd2atm_inst%t_rad_grc = tsrf									! radiative temperature (Kelvin)
      lnd2atm_inst%t_ref2m_grc = atm2lnd_inst%mml_out_tref2m_grc 	! 2m surface air temperature (Kelvin)
