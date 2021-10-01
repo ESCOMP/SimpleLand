@@ -569,10 +569,13 @@ contains
  					emiss(begg:endg), glc_mask(begg:endg), dust(begg:endg,:), &
  					soil_tk_1d(begg:endg), soil_cv_1d(begg:endg), &
  					glc_tk_1d(begg:endg), glc_cv_1d(begg:endg)   ) !, &
+
+                       write(iulog,*)'read netcdf'
  					
 		end if
 	call t_stopf('mml_nc_import')
 	
+
 		! Hard code snowmask and see if it'll run with the new files using that
 		!snowmask(begg:endg) = 100.0_r8
 			
@@ -588,7 +591,9 @@ contains
      !						Check with Gordon and GFDL
      !				- get radiative forcing (sw in and lw in, with albedo accounted for)
      ! -------------------------------------------------------------
-     
+ 
+     !write(iulog,*)'MML: Commence actually running the model!'    
+ 
      ! displacement height
      		! for now, set equal to 0.7 * canopy height
      h_disp = 0.7_r8 * roughness
@@ -610,26 +615,37 @@ contains
      
      !temp(begg:endg) = snow(begg:endg)/(snow(begg:endg) + snowmask(begg:endg)) ! snow masking factor
      !diag3_1d = temp
+    
      
+ 
      do g = begg, endg
+          ! MML 2021.09.29: initialize temp as all zeros, otherwise it might just not have a value in some places!
+          temp(g) = 0.0_r8	
+
+          if (snowmask(g) < 0.0_r8) then
+               ! this should not happen. Never feed in negative snowmask! But a person technically could do so, so catch it here:
+               write(iulog,*)'warning: user provided snowmask(g)<0 (snowmask(g) = ',snowmask(g),'), setting snowmask(g)=100.0'
+               snowmask(g) = 100.0_r8
+          end if
+ 
+  	  if ( snow(g) < 0.0_r8 ) then
+  	       temp(g) = 0.0_r8
+  	       write(iulog,*)'warning: snow<0, setting snowmasking factor to zero. (snow(g) = ',snow(g),', overwriting so snow(g)=0.0)'
+               snow(g) = 0.0_r8
+  	  else
+  	       temp(g) = snow(g) / ( snow(g) + snowmask(g) )
+  	  end if
   	 
-  	 	if ( snow(g) < 0 ) then
-  	 		temp(g) = 0
-  	 		write(iulog,*)'warning: snow<0, setting snowmasking factor to zero. (snow(g) = ',snow(g),')'
-  	 	else
-  	 		temp(g) = snow(g) / ( snow(g) + snowmask(g) )
-  	 	end if
-  	 	
-  	 	diag3_1d(g) = temp(g)
-  	 	
-  	  	if ( temp(g) < 0 ) then
-            write(iulog,*)'Error: snow masking factor < 0 (should be between 0 and 1) \n ', &
-            				'Instead, snowmasking factor = ',temp(g)
-            call endrun(msg=errmsg(__FILE__, __LINE__))
-        elseif ( temp(g) > 1 ) then
-           write(iulog,*)'Error: snow masking factor > 1 (should be between 0 and 1)  \n ', &
-            				'Instead, snowmasking factor = ',temp(g)
-            call endrun(msg=errmsg(__FILE__, __LINE__))
+  	  diag3_1d(g) = temp(g)
+  	 
+  	  if ( temp(g) < 0 ) then
+                 write(iulog,*)'Error: snow masking factor < 0 (should be between 0 and 1) \n ', &
+                       	'Instead, snowmasking factor = ',temp(g)
+                 call endrun(msg=errmsg(__FILE__, __LINE__))
+          elseif ( temp(g) > 1 ) then
+                 write(iulog,*)'Error: snow masking factor > 1 (should be between 0 and 1)  \n ', &
+                  'Instead, snowmasking factor = ',temp(g)
+                 call endrun(msg=errmsg(__FILE__, __LINE__))
         end if
   	 
   	 end do
@@ -642,11 +658,11 @@ contains
      ! for consistent coding, shove vis and nir into a (:,2) sized matrix
      alb_vis_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvd(begg:endg) + &
      							temp(begg:endg) * albedo_svd(begg:endg)
-	 alb_nir_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnd(begg:endg) + &
+     alb_nir_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnd(begg:endg) + &
 	 							temp(begg:endg) * albedo_snd(begg:endg)
-	 alb_vis_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvf(begg:endg) + &
+     alb_vis_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvf(begg:endg) + &
 	 							temp(begg:endg) * albedo_svf(begg:endg)
-	 alb_nir_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnf(begg:endg) + &
+     alb_nir_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnf(begg:endg) + &
 	 							temp(begg:endg) * albedo_snf(begg:endg)
 	 
 	 ! for now, output one of these as albedo_fin just so there is a value:
@@ -923,8 +939,8 @@ contains
 	beta(:) = 1.0_r8
 
 	! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
-	atm2lnd_inst%mml_lnd_effective_res_grc = 9999.99_r8
-	atm2lnd_inst%mml_lnd_res_grc = 9999.99_r8 
+	atm2lnd_inst%mml_lnd_effective_res_grc = 1.0_r8 !9999.99_r8
+	atm2lnd_inst%mml_lnd_res_grc = 1.0_r8 ! 9999.99_r8 
 	
 	where ( snow <= 0 )
 		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
@@ -1441,17 +1457,19 @@ contains
     do g = begg, endg
     	! Check that snow = 0 (ish) if we were supposed to evaporate it all
     	! if   evap more than init snow    .and.    still have snow    -> error
-    	if ( evap(g)*dt > snow0(g) .and. abs(snow(g)) > 1.0e-02) then
+    	if ( evap(g)*dt > snow0(g) .and. abs(snow(g)) > 1.0e-06) then
     		write(iulog,*)subname, 'MML WARNING evaporation - snow should be 0, and its not! snow = ', snow(g)
     	end if
     	! Check if water went negative, if so, say something!
-    	if ( water(g) < -1e-02 ) then
+    	if ( water(g) < 0.0_r8 ) then
     		! changed from < 0 since it was tripping with values of -6e-18 ... 
-    		write(iulog,*)subname, 'MML WARNING evaporation - water(g) < 0; water(g) = ', water(g)	
+    		write(iulog,*)subname, 'MML WARNING evaporation - water(g) < 0; water(g) = ', water(g), 'setting water(g) = 0.0'
+                water(g) = 0.0_r8
     	end if
     	! Check if snow went negative, if so, say something!
-    	if ( snow(g) < -1e-02 ) then
-    		write(iulog,*)subname, 'MML WARNING evaporation - snow(g) < 0; snow(g) = ', snow(g)	
+    	if ( snow(g) < 0.0_r8 ) then
+    		write(iulog,*)subname, 'MML WARNING evaporation - snow(g) < 0; snow(g) = ', snow(g),', setting snow(g)=0.0'
+                snow(g) = 0.0_r8
     	end if
     end do   
 
@@ -1468,7 +1486,7 @@ contains
     
 	! Check we didn't let snow or water go negative
 	do g = begg, endg
-       	if ( snow(g) < -1e-02  .or. water(g) < -1e-02  ) then
+       	if ( snow(g) < 0.0_r8  .or. water(g) < 0.0_r8  ) then
 			write(iulog,*)subname, 'MML WARNING snow or water bucket went negative, uhoh (after runoff)'
 		end if
 		
@@ -1488,7 +1506,7 @@ do g = begg, endg
 		snow(g) = snowcap 
 	end if 
 	 
-	if (snow(g) <  -1.0e-02) then 
+	if (snow(g) <  0.0) then 
 		write(iulog,*)subname, 'MML WARNING snow went negative after implementing snow cap... ' 
 		snow(g) = 0.0 
 	end if 
@@ -1497,7 +1515,7 @@ do g = begg, endg
 		write(iulog,*)subname, 'MML WARNING snow exceeds snow cap after implementing snow cap... ' 
 	end if 
 	 
-       if (water(g) <  -1.0e-02) then
+       if (water(g) <  0.0) then
                 write(iulog,*)subname, 'MML WARNING water went negative, set to zero...  '
                 water(g) = 0.0
         end if
@@ -1689,33 +1707,44 @@ end do
 
 ! save beta out for netcdf
     do g = begg,endg
-                atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
-                if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
-                        atm2lnd_inst%mml_lnd_beta_grc(g) = 1.0e36_r8 ! something very small
-                end if
-                ! if beta smaller than 0.01 set it larger 
-                !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
-                !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
-                !end if
-                
-                atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
-                if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
-                        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0e36_r8
-                end if
-                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
-                !end if
-                !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
-                !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
-                !end if
-                
-                atm2lnd_inst%mml_lnd_res_grc(g) = res(g)
-    	      	if( isnan(atm2lnd_inst%mml_lnd_res_grc(g)) ) then
-    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
-     		    end if
-     		    if( atm2lnd_inst%mml_lnd_res_grc(g)>10000. ) then
-    	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.e36_r8
-     		    end if
+
+         atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0_r8 ! this is not the actual value, but a nan is showing up in here so for now, just comment out the calculation - should be res/beta
+         atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) 
+         atm2lnd_inst%mml_lnd_res_grc(g) = res(g) 
+
+        if (beta(g) < 1.0e-3) then
+           atm2lnd_inst%mml_lnd_effective_res_grc(g) = 999999.0_r8
+        else
+           atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g)
+        end if
+
+        !        atm2lnd_inst%mml_lnd_beta_grc(g) = beta(g) !beta(:)
+        !        if(isnan(atm2lnd_inst%mml_lnd_beta_grc(g))) then
+        !                atm2lnd_inst%mml_lnd_beta_grc(g) = 1.0e-8_r8 !1.0e36_r8 ! something very small
+        !        end if
+        !        ! if beta smaller than 0.01 set it larger 
+        !        !if(atm2lnd_inst%mml_lnd_beta_grc(g)<0.01) then
+        !        !        atm2lnd_inst%mml_lnd_beta_grc(g) = 0.01 ! something very small
+        !        !end if
+        !        
+        !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = res(g) / beta(g) 
+        !        if(isnan(atm2lnd_inst%mml_lnd_effective_res_grc(g))) then
+        !                atm2lnd_inst%mml_lnd_effective_res_grc(g) = 1.0e-8_r8 !1.!0e36_r8
+        !        end if
+        !        !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+        !        !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10001.0
+        !        !end if
+        !        !if(atm2lnd_inst%mml_lnd_effective_res_grc(g)>10000.) then
+        !        !        atm2lnd_inst%mml_lnd_effective_res_grc(g) = 10000.0
+        !        !end if
+        !        
+        !        atm2lnd_inst%mml_lnd_res_grc(g) = res(g)
+    	!      	if( isnan(atm2lnd_inst%mml_lnd_res_grc(g)) ) then
+    	!        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.0e-8_r8 ! 1.e36_r8
+     !		    end if
+    ! 		    if( atm2lnd_inst%mml_lnd_res_grc(g)>10000. ) then
+   ! 	        	atm2lnd_inst%mml_lnd_res_grc(g) = 1.0e-8_r8 !1.e36_r8
+   !  		    end if
                 
      end do
      
@@ -1731,7 +1760,8 @@ end do
      
      ! To be sure of what is actually being sent to the atmosphere, see subroutine lnd_export
      ! in /glade/p/work/mlague/cesm_source/cesm1_5_beta05_mml_land/components/clm/src/cpl/lnd_import_export.F90 
-     
+    
+ 
      ! lnd -> atm
      lnd2atm_inst%t_rad_grc = tsrf									! radiative temperature (Kelvin)
      lnd2atm_inst%t_ref2m_grc = atm2lnd_inst%mml_out_tref2m_grc 	! 2m surface air temperature (Kelvin)

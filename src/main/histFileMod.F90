@@ -2884,7 +2884,7 @@ contains
 !-----------------------------------------------------------------------
 
     ! Write/define 1d topological info
-
+    !write(iulog,*)'MML in hfields_write at 1d info'
     if (.not. tape(t)%dov2xy) then
        if (mode == 'define') then
           call hfields_1dinfo(t, mode='define')
@@ -2894,13 +2894,15 @@ contains
     end if
 
     ! Define time-dependent variables create variables and attributes for field list
-
+    !write(iulog,*)'MML define time dependent in hfields_write'
     do f = 1,tape(t)%nflds
 
        ! Set history field variables
 
        varname    = tape(t)%hlist(f)%field%name
+       write(iulog,*)'MML the var we are trying is: ',varname
        long_name  = tape(t)%hlist(f)%field%long_name
+       write(iulog,*)'MML var longname is: ',long_name
        units      = tape(t)%hlist(f)%field%units
        avgflag    = tape(t)%hlist(f)%avgflag
        type1d     = tape(t)%hlist(f)%field%type1d
@@ -2915,7 +2917,7 @@ contains
        nt         = tape(t)%ntimes
 
        if (mode == 'define') then
-
+          !write(iulog,*)'MML define variable in file'
           select case (avgflag)
           case ('A')
              avgstr = 'mean'
@@ -2971,7 +2973,7 @@ contains
        else if (mode == 'write') then
 
           ! Determine output buffer
-
+          !write(iulog,*)'MML: writing variable'
           histo => tape(t)%hlist(f)%hbuf
 
           ! Allocate dynamic memory
@@ -3401,6 +3403,8 @@ contains
 
        ! Skip nstep=0 if monthly average
 
+       !write(iulog,*)'MML ahoy'
+
        if (nstep==0 .and. tape(t)%nhtfrq==0) cycle
 
        ! Determine if end of history interval
@@ -3411,16 +3415,19 @@ contains
           if (mod(nstep,tape(t)%nhtfrq) == 0) tape(t)%is_endhist = .true.
        end if
 
+       !write(iulog,*)'MML ahoy 2.0'
        ! If end of history interval
 
        if (tape(t)%is_endhist) then
 
           ! Normalize history buffer if time averaged
 
+          !write(iulog,*)'MML normalize'
           call hfields_normalize(t)
 
           ! Increment current time sample counter.
 
+          !write(iulog,*)'MML tick tock'
           tape(t)%ntimes = tape(t)%ntimes + 1
 
           ! Create history file if appropriate and build time comment
@@ -3428,11 +3435,12 @@ contains
           ! If first time sample, generate unique history file name, open file,
           ! define dims, vars, etc.
 
-
+          !write(iulog,*)'MML if ntimes=1'
           if (tape(t)%ntimes == 1) then
              call t_startf('hist_htapes_wrapup_define')
              locfnh(t) = set_hist_filename (hist_freq=tape(t)%nhtfrq, &
                                             hist_mfilt=tape(t)%mfilt, hist_file=t)
+             !write(iulog,*)'MML if masterproc'
              if (masterproc) then
                 write(iulog,*) trim(subname),' : Creating history file ', trim(locfnh(t)), &
                      ' at nstep = ',get_nstep()
@@ -3443,6 +3451,7 @@ contains
              ! Define time-constant field variables
              call htape_timeconst(t, mode='define')
 
+             !write(iulog,*)'MML define 3D'
              ! Define 3D time-constant field variables only to first primary tape
              if ( do_3Dtconst .and. t == 1 ) then
                 call htape_timeconst3D(t, &
@@ -3450,18 +3459,22 @@ contains
                 TimeConst3DVars_Filename = trim(locfnh(t))
              end if
 
+             !write(iulog,*)'MML define model field vars'
              ! Define model field variables
              call hfields_write(t, mode='define')
 
+             !write(iulog,*)'MML run away'
              ! Exit define model
              call ncd_enddef(nfid(t))
              call t_stopf('hist_htapes_wrapup_define')
           endif
 
+          !write(iulog,*)'MML before htape_teimconst'
           call t_startf('hist_htapes_wrapup_tconst')
           ! Write time constant history variables
           call htape_timeconst(t, mode='write')
 
+          !write(iulog,*)'MML write 3D time const'
           ! Write 3D time constant history variables only to first primary tape
           if ( do_3Dtconst .and. t == 1 .and. tape(t)%ntimes == 1 )then
              call htape_timeconst3D(t, &
@@ -3479,22 +3492,27 @@ contains
              call shr_sys_flush(iulog)
           endif
 
+
           ! Update beginning time of next interval
           tape(t)%begtime = time
           call t_stopf('hist_htapes_wrapup_tconst')
 
           ! Write history time samples
           call t_startf('hist_htapes_wrapup_write')
+          !write(iulog,*)'MML: I bet it is going to crash on the next line'
           call hfields_write(t, mode='write')
+          !write(iulog,*)'MML: jk it made it past that line'
           call t_stopf('hist_htapes_wrapup_write')
 
           ! Zero necessary history buffers
           call hfields_zero(t)
+          !write(iulog,*)'MML: made it past zeroing the buffers'
 
        end if
 
     end do  ! end loop over history tapes
 
+    !write(iulog,*)'MML: managed to loop over all the tapes'
     ! Determine if file needs to be closed
 
     call hist_do_disp (ntapes, tape(:)%ntimes, tape(:)%mfilt, if_stop, if_disphist, rstwr, nlend)
@@ -3525,6 +3543,8 @@ contains
           endif
        endif
     end do
+    
+    !write(iulog,*)'MML: managed to close all the history files'
 
     ! Reset number of time samples to zero if file is full 
     
@@ -3534,6 +3554,8 @@ contains
        end if
     end do
     
+    !write(iulog,*)'MML: managed to finish htapes_wrapup'
+
   end subroutine hist_htapes_wrapup
 
   !-----------------------------------------------------------------------
