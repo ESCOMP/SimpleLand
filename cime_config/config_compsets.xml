@@ -56,22 +56,17 @@
     <alias>H_MML_2000_CAM5</alias>
     <lname>2000_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
-  <compset>
-    <alias>H_MML_1850_CAM5</alias>
-    <lname>1850_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
-  </compset>
-
   
   <!-- CAM5 with CLM45 BGC -->
   <compset>
     <alias>H_MML_2000_CAM5_BGC</alias>
     <lname>2000_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
-  <compset>
-    <alias>H_MML_1850_CAM5_BGC</alias>
-    <lname>1850_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
-  </compset>
 
+  <compset>
+    <alias>FHistCam5SlimRsGs</alias>
+    <lname>HIST_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
   
   <!-- I MML compsets for running offline -->
   <compset>
