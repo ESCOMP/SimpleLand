@@ -29,6 +29,30 @@
 
   <!-- aux_slim test suite failures -->
 
+  <test name="ERS_D_Ld60.f19_g16.H_MML_2000_CAM5_BGC.cheyenne_gnu.clm-global_uniform_g16_SOM">
+    <phase name="COMPARE_base_rest">
+      <status>FAIL</status>
+      <issue>marysa/SimpleLand#14</issue>
+    </phase>
+  </test>
+  <test name="ERS_D_Ld60.f19_g16.H_MML_2000_CAM5_BGC.cheyenne_intel.clm-global_uniform_g16_SOM">
+    <phase name="COMPARE_base_rest">
+      <status>FAIL</status>
+      <issue>marysa/SimpleLand#14</issue>
+    </phase>
+  </test>
+  <test name="ERS_D_Ld60.f19_g17.IHistClm45BgcQianGs.cheyenne_gnu.clm-realistic_fromCLM5_1850">
+    <phase name="COMPARE_base_rest">
+      <status>FAIL</status>
+      <issue>marysa/SimpleLand#14</issue>
+    </phase>
+  </test>
+  <test name="ERS_D_Ld60.f19_g17.IHistClm45BgcQianGs.cheyenne_intel.clm-realistic_fromCLM5_1850">
+    <phase name="COMPARE_base_rest">
+      <status>FAIL</status>
+      <issue>marysa/SimpleLand#14</issue>
+    </phase>
+  </test>
   <test name="ERS_Ld60.f19_g16.H_MML_2000_CAM6.cheyenne_intel.clm-global_uniform_g16_SOM">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
