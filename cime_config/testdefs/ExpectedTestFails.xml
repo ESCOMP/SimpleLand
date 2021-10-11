@@ -53,7 +53,7 @@
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_Ld60.f19_g16.H_MML_2000_CAM6.cheyenne_intel.clm-global_uniform_g16_SOM">
+  <test name="ERS_Lm3.f19_g16.H_MML_2000_CAM6.cheyenne_intel.clm-global_uniform_g16_SOM">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
@@ -65,7 +65,7 @@
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_Lf60.f19_g16.F2000Cam6SlimRsGs.cheyenne_intel.clm-2000_CMIP6_AMIP_1deg_ensemble">
+  <test name="ERS_Ld60.f19_g16.F2000Cam6SlimRsGs.cheyenne_intel.clm-2000_CMIP6_AMIP_1deg_ensemble">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
@@ -107,13 +107,13 @@
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERI_D_Ld60.f19_g17.I1850Clm45BgcGs.cheyenne_intel.clm-realistic_fromCLM5_1850">
+  <test name="ERI_D_Ld90.f19_g17.I1850Clm45BgcGs.cheyenne_intel.clm-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERI_D_Ld60.f19_g17.I1850Clm45BgcGs.hobart_intel.clm-realistic_fromCLM5_1850">
+  <test name="ERI_D_Ld90.f19_g17.I1850Clm45BgcGs.hobart_intel.clm-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
