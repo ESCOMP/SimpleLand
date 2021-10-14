@@ -107,13 +107,13 @@
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERI_D_Ld90.f19_g17.I1850Clm45BgcGs.cheyenne_intel.clm-realistic_fromCLM5_1850">
+  <test name="ERP_D_Ld60.f19_g17.I1850Clm45BgcGs.cheyenne_intel.clm-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERI_D_Ld90.f19_g17.I1850Clm45BgcGs.hobart_intel.clm-realistic_fromCLM5_1850">
+  <test name="ERP_D_Ld60.f19_g17.I1850Clm45BgcGs.hobart_intel.clm-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
