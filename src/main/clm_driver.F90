@@ -9,77 +9,27 @@ module clm_driver
   !
   ! !USES:
   use shr_kind_mod           , only : r8 => shr_kind_r8
-  use clm_varctl             , only : wrtdia, iulog, use_fates
-  use clm_varctl             , only : use_cn, use_lch4, use_noio, use_c13, use_c14
-  use clm_varctl             , only : use_crop, ndep_from_cpl
-  use clm_varctl             , only : is_cold_start, is_interpolated_start
-  use clm_time_manager       , only : get_nstep, is_beg_curr_day
-  use clm_time_manager       , only : get_prev_date, is_first_step
-  use clm_varpar             , only : nlevsno, nlevgrnd
+  use clm_varctl             , only : wrtdia, iulog
+  use clm_varctl             , only : use_cn, use_noio
+  use clm_time_manager       , only : get_nstep
   use spmdMod                , only : masterproc, mpicom
   use decompMod              , only : get_proc_clumps, get_clump_bounds, get_proc_bounds, bounds_type
-  use filterMod              , only : filter, filter_inactive_and_active
-  use filterMod              , only : setExposedvegpFilter
+  use filterMod              , only : filter_inactive_and_active
   use histFileMod            , only : hist_update_hbuf, hist_htapes_wrapup
   use restFileMod            , only : restFile_write, restFile_filename
   use abortutils             , only : endrun
   !
-  use dynSubgridDriverMod    , only : dynSubgrid_driver, dynSubgrid_wrapup_weight_changes
-  use BalanceCheckMod        , only : BeginWaterBalance, BalanceCheck
-  !
-  use CanopyTemperatureMod   , only : CanopyTemperature ! (formerly Biogeophysics1Mod)
-  use UrbanTimeVarType       , only : urbantv_type
-  use SoilTemperatureMod     , only : SoilTemperature
-  use LakeTemperatureMod     , only : LakeTemperature
-  !
-  use BareGroundFluxesMod    , only : BareGroundFluxes
-  use CanopyFluxesMod        , only : CanopyFluxes
-  use SoilFluxesMod          , only : SoilFluxes ! (formerly Biogeophysics2Mod)
-  use UrbanFluxesMod         , only : UrbanFluxes 
-  use LakeFluxesMod          , only : LakeFluxes
-  !
-  use HydrologyNoDrainageMod , only : HydrologyNoDrainage ! (formerly Hydrology2Mod)
-  use HydrologyDrainageMod   , only : HydrologyDrainage   ! (formerly Hydrology2Mod)
-  use CanopyHydrologyMod     , only : CanopyHydrology     ! (formerly Hydrology1Mod)
-  use LakeHydrologyMod       , only : LakeHydrology
-  !
-  use AerosolMod             , only : AerosolMasses  
-  use SnowSnicarMod          , only : SnowAge_grain
-  use SurfaceAlbedoMod       , only : SurfaceAlbedo
-  use UrbanAlbedoMod         , only : UrbanAlbedo
-  !
-  use SurfaceRadiationMod    , only : SurfaceRadiation, CanopySunShadeFracs
-  use UrbanRadiationMod      , only : UrbanRadiation
-  !
   use SoilBiogeochemVerticalProfileMod   , only : SoilBiogeochemVerticalProfile
-  use SatellitePhenologyMod  , only : SatellitePhenology, interpMonthlyVeg
-  use ndepStreamMod          , only : ndep_interp
   use ActiveLayerMod         , only : alt_calc
-  use ch4Mod                 , only : ch4, ch4_init_balance_check
-  use DUSTMod                , only : DustDryDep, DustEmission
-  use VOCEmissionMod         , only : VOCEmission
   !
-  use filterMod              , only : setFilters
-  !
-  use atm2lndMod             , only : downscale_forcings
-  use lnd2atmMod             , only : lnd2atm
-  use lnd2glcMod             , only : lnd2glc_type
-  !
-  use seq_drydep_mod         , only : n_drydep, drydep_method, DD_XLND
-  use DryDepVelocity         , only : depvel_compute
-  !
-  use DaylengthMod           , only : UpdateDaylength
   use perf_mod				! MML: this is where t_startf and t_stopf are 
   !
-  use clm_initializeMod      , only : nutrient_competition_method
-  use GridcellType           , only : grc                
-  use LandunitType           , only : lun                
-  use ColumnType             , only : col                
-  use PatchType              , only : patch                
-  use clm_instMod
-  use clm_initializeMod      , only : soil_water_retention_curve
-  use EDBGCDynMod            , only : EDBGCDyn, EDBGCDynSummary
-  
+  use clm_instMod            , only : temperature_inst, canopystate_inst
+  use clm_instMod            , only : soilstate_inst, soilbiogeochem_state_inst
+  use clm_instMod            , only : bgc_vegetation_inst
+  use clm_instMod            , only : atm2lnd_inst, lnd2atm_inst
+  use clm_instMod            , only : soilstate_inst
+
   ! MML: add use simple land model module
   use mml_mainMod			 , only : mml_main	! MML if I don't say "only", it'll be fine, yes?
 										!  GBB: The 'only' is not required. It means that only 'mml_main' in the
@@ -95,8 +45,6 @@ module clm_driver
   public :: clm_drv            ! Main clm driver 
   !
   ! !PRIVATE MEMBER FUNCTIONS:
-  private :: clm_drv_patch2col
-  private :: clm_drv_init      ! Initialization of variables needed from previous timestep
   private :: write_diagnostic  ! Write diagnostic information to log file
 
   character(len=*), parameter, private :: sourcefile = &
@@ -135,31 +83,10 @@ contains
     integer              :: nstep                   ! time step number
     integer              :: nc, c, p, l, g          ! indices
     integer              :: nclumps                 ! number of clumps on this processor
-    integer              :: yr                      ! year (0, ...)
-    integer              :: mon                     ! month (1, ..., 12)
-    integer              :: day                     ! day of month (1, ..., 31)
-    integer              :: sec                     ! seconds of the day
-    integer              :: yr_prev                 ! year (0, ...) at start of timestep
-    integer              :: mon_prev                ! month (1, ..., 12) at start of timestep
-    integer              :: day_prev                ! day of month (1, ..., 31) at start of timestep
-    integer              :: sec_prev                ! seconds of the day at start of timestep
     character(len=256)   :: filer                   ! restart file name
     integer              :: ier                     ! error code
-    logical              :: need_glacier_initialization ! true if we need to initialize glacier areas in this time step
     type(bounds_type)    :: bounds_clump    
     type(bounds_type)    :: bounds_proc     
-
-    ! COMPILER_BUG(wjs, 2016-02-24, pgi 15.10) These temporary allocatable arrays are
-    ! needed to work around pgi compiler bugs, as noted below
-    real(r8), allocatable :: downreg_patch(:)
-    real(r8), allocatable :: leafn_patch(:)
-    real(r8), allocatable :: agnpp_patch(:)
-    real(r8), allocatable :: bgnpp_patch(:)
-    real(r8), allocatable :: annsum_npp_patch(:)
-    real(r8), allocatable :: rr_patch(:)
-    real(r8), allocatable :: net_carbon_exchange_grc(:)
-    real(r8), allocatable :: froot_carbon(:)
-    real(r8), allocatable :: croot_carbon(:)
 
     ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) Workaround for internal compiler error with
     ! pgi 14.7 ('normalize_forall_array: non-conformable'), which appears in the call to
@@ -1233,204 +1160,6 @@ contains
     !write(iulog,*)  'MML: end clm_drv routine '
 
   end subroutine clm_drv
-
-  !-----------------------------------------------------------------------
-  subroutine clm_drv_init(bounds, &
-       num_nolakec, filter_nolakec, &
-       num_nolakep, filter_nolakep, &
-       num_soilp  , filter_soilp, &
-       canopystate_inst, waterstate_inst, waterflux_inst, energyflux_inst)
-    !
-    ! !DESCRIPTION:
-    ! Initialization of clm driver variables needed from previous timestep
-    !
-    ! !USES:
-    use shr_kind_mod       , only : r8 => shr_kind_r8
-    use shr_infnan_mod     , only : nan => shr_infnan_nan, assignment(=)
-    use clm_varpar         , only : nlevsno
-    use CanopyStateType    , only : canopystate_type
-    use WaterStateType     , only : waterstate_type
-    use WaterFluxType      , only : waterflux_type
-    use EnergyFluxType     , only : energyflux_type
-    !
-    ! !ARGUMENTS:
-    type(bounds_type)     , intent(in)    :: bounds  
-    integer               , intent(in)    :: num_nolakec       ! number of non-lake points in column filter
-    integer               , intent(in)    :: filter_nolakec(:) ! column filter for non-lake points
-    integer               , intent(in)    :: num_nolakep       ! number of non-lake points in patch filter
-    integer               , intent(in)    :: filter_nolakep(:) ! patch filter for non-lake points
-    integer               , intent(in)    :: num_soilp         ! number of soil points in patch filter
-    integer               , intent(in)    :: filter_soilp(:)   ! patch filter for soil points
-    type(canopystate_type), intent(inout) :: canopystate_inst
-    type(waterstate_type) , intent(inout) :: waterstate_inst
-    type(waterflux_type)  , intent(inout) :: waterflux_inst
-    type(energyflux_type) , intent(inout) :: energyflux_inst
-    !
-    ! !LOCAL VARIABLES:
-    integer :: c, p, f, j              ! indices
-    integer :: fp, fc                  ! filter indices
-    !-----------------------------------------------------------------------
-
-!====== MML turning off CLM ========
-!    associate(                                                             & 
-!         snl                => col%snl                                   , & ! Input:  [integer  (:)   ]  number of snow layers                    
-!        
-!         h2osno             => waterstate_inst%h2osno_col                , & ! Input:  [real(r8) (:)   ]  snow water (mm H2O)                     
-!         h2osoi_ice         => waterstate_inst%h2osoi_ice_col            , & ! Input:  [real(r8) (:,:) ]  ice lens (kg/m2)                      
-!         h2osoi_liq         => waterstate_inst%h2osoi_liq_col            , & ! Input:  [real(r8) (:,:) ]  liquid water (kg/m2)                  
-!         h2osno_old         => waterstate_inst%h2osno_old_col            , & ! Output: [real(r8) (:)   ]  snow water (mm H2O) at previous time step
-!         frac_iceold        => waterstate_inst%frac_iceold_col           , & ! Output: [real(r8) (:,:) ]  fraction of ice relative to the tot water
-!
-!         elai               => canopystate_inst%elai_patch               , & ! Input:  [real(r8) (:)   ]  one-sided leaf area index with burying by snow    
-!         esai               => canopystate_inst%esai_patch               , & ! Input:  [real(r8) (:)   ]  one-sided stem area index with burying by snow    
-!         frac_veg_nosno     => canopystate_inst%frac_veg_nosno_patch     , & ! Output: [integer  (:)   ]  fraction of vegetation not covered by snow (0 OR 1) [-]
-!         frac_veg_nosno_alb => canopystate_inst%frac_veg_nosno_alb_patch , & ! Output: [integer  (:)   ]  fraction of vegetation not covered by snow (0 OR 1) [-]
-!
-!         eflx_bot           => energyflux_inst%eflx_bot_col              , & ! Output: [real(r8) (:)   ]  heat flux from beneath soil/ice column (W/m**2)
-!
-!         cisun_z            => photosyns_inst%cisun_z_patch              , & ! Output: [real(r8) (:)   ]  intracellular sunlit leaf CO2 (Pa)
-!         cisha_z            => photosyns_inst%cisha_z_patch                & ! Output: [real(r8) (:)   ]  intracellular shaded leaf CO2 (Pa)
-!         )
-!
-!      ! Initialize intracellular CO2 (Pa) parameters each timestep for use in VOCEmission
-!      do p = bounds%begp,bounds%endp
-!         cisun_z(p,:) = -999._r8
-!         cisha_z(p,:) = -999._r8
-!      end do
-!
-!      do c = bounds%begc,bounds%endc
-!         ! Save snow mass at previous time step
-!         h2osno_old(c) = h2osno(c)
-!
-!         ! Reset flux from beneath soil/ice column 
-!         eflx_bot(c)  = 0._r8
-!      end do
-!
-!      ! Initialize fraction of vegetation not covered by snow 
-!
-!      do p = bounds%begp,bounds%endp
-!         if (patch%active(p)) then
-!            frac_veg_nosno(p) = frac_veg_nosno_alb(p)
-!         else
-!            frac_veg_nosno(p) = 0._r8
-!         end if
-!      end do
-!
-!      ! Initialize set of previous time-step variables
-!      ! Ice fraction of snow at previous time step
-!      
-!      do j = -nlevsno+1,0
-!         do f = 1, num_nolakec
-!            c = filter_nolakec(f)
-!            if (j >= snl(c) + 1) then
-!               frac_iceold(c,j) = h2osoi_ice(c,j)/(h2osoi_liq(c,j)+h2osoi_ice(c,j))
-!            end if
-!         end do
-!      end do
-!
-!    end associate
-
-  end subroutine clm_drv_init
-  
-  !-----------------------------------------------------------------------
-  subroutine clm_drv_patch2col (bounds, &
-       num_allc, filter_allc, num_nolakec, filter_nolakec, &
-       energyflux_inst, waterflux_inst)
-    !
-    ! !DESCRIPTION:
-    ! Averages over all patches for variables defined over both soil and lake to provide
-    ! the column-level averages of flux variables defined at the patch level.
-    !
-    ! !USES:
-    use WaterStateType , only : waterstate_type
-    use WaterFluxType  , only : waterflux_type
-    use EnergyFluxType , only : energyflux_type
-    use subgridAveMod  , only : p2c
-    use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-    !
-    ! !ARGUMENTS:
-    type(bounds_type)     , intent(in)    :: bounds  
-    integer               , intent(in)    :: num_allc          ! number of column points in allc filter
-    integer               , intent(in)    :: filter_allc(:)    ! column filter for all active points
-    integer               , intent(in)    :: num_nolakec       ! number of column non-lake points in column filter
-    integer               , intent(in)    :: filter_nolakec(:) ! column filter for non-lake points
-    type(waterflux_type)  , intent(inout) :: waterflux_inst
-    type(energyflux_type) , intent(inout) :: energyflux_inst
-    !
-    ! !LOCAL VARIABLES:
-    integer :: c,fc              ! indices
-    ! -----------------------------------------------------------------
-
-    ! Note: lake points are excluded from many of the following
-    ! averages. For some fields, this is because the field doesn't
-    ! apply over lakes. However, for many others, this is because the
-    ! field is computed in LakeHydrologyMod, which is called after
-    ! this routine; thus, for lakes, the column-level values of these
-    ! fields are explicitly set in LakeHydrologyMod. (The fields that
-    ! are included here for lakes are computed elsewhere, e.g., in
-    ! LakeFluxesMod.)
-
-    ! Averaging for patch evaporative flux variables
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_ev_snow_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_ev_snow_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_ev_soil_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_ev_soil_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_ev_h2osfc_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_ev_h2osfc_col(bounds%begc:bounds%endc))
-
-    ! Averaging for patch water flux variables
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_evap_soi_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_evap_soi_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_evap_tot_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_evap_tot_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_rain_grnd_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_rain_grnd_col(bounds%begc:bounds%endc))
-    
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_snow_grnd_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_snow_grnd_col(bounds%begc:bounds%endc))
-    
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_tran_veg_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_tran_veg_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_evap_grnd_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_evap_grnd_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_allc, filter_allc, &
-         waterflux_inst%qflx_evap_soi_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_evap_soi_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_prec_grnd_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_prec_grnd_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_dew_grnd_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_dew_grnd_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_sub_snow_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_sub_snow_col(bounds%begc:bounds%endc))
-
-    call p2c (bounds, num_nolakec, filter_nolakec, &
-         waterflux_inst%qflx_dew_snow_patch(bounds%begp:bounds%endp), &
-         waterflux_inst%qflx_dew_snow_col(bounds%begc:bounds%endc))
-
-  end subroutine clm_drv_patch2col
 
   !------------------------------------------------------------------------
   subroutine write_diagnostic (bounds, wrtdia, nstep, lnd2atm_inst)
