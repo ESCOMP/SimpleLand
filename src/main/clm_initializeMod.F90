@@ -272,7 +272,7 @@ contains
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 
     use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart, is_restart
     use CIsoAtmTimeseriesMod  , only : C14_init_BombSpike, use_c14_bombspike, C13_init_TimeSeries, use_c13_timeseries
-    use DaylengthMod          , only : InitDaylength, daylength
+    !use DaylengthMod          , only : InitDaylength, daylength
 !    use dynSubgridDriverMod   , only : dynSubgrid_init
     use fileutils             , only : getfil
     use initInterpMod         , only : initInterp
@@ -281,7 +281,7 @@ contains
     use histFileMod           , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     use restFileMod           , only : restFile_getfile, restFile_open, restFile_close
     use restFileMod           , only : restFile_read, restFile_write 
-    use ndepStreamMod         , only : ndep_init, ndep_interp
+    !use ndepStreamMod         , only : ndep_init, ndep_interp
     use LakeCon               , only : LakeConInit 
     use SatellitePhenologyMod , only : SatellitePhenologyInit, readAnnualVegetation, interpMonthlyVeg
     use SnowSnicarMod         , only : SnowAge_init, SnowOptics_init
@@ -372,7 +372,7 @@ contains
 
     call t_stopf('init_orbd')
     
-    call InitDaylength(bounds_proc, declin=declin, declinm1=declinm1)
+    !call InitDaylength(bounds_proc, declin=declin, declinm1=declinm1)
              
     ! Initialize maximum daylength, based on latitude and maximum declination
     ! given by the obliquity use negative value for S. Hem
@@ -380,7 +380,7 @@ contains
     do g = bounds_proc%begg,bounds_proc%endg
        max_decl = obliqr
        if (grc%lat(g) < 0._r8) max_decl = -max_decl
-       grc%max_dayl(g) = daylength(grc%lat(g), max_decl)
+       !grc%max_dayl(g) = daylength(grc%lat(g), max_decl)
     end do
 
     ! History file variables
@@ -567,8 +567,8 @@ contains
     if (use_cn) then
        call t_startf('init_ndep')
        if (.not. ndep_from_cpl) then
-          call ndep_init(bounds_proc, NLFilename)
-          call ndep_interp(bounds_proc, atm2lnd_inst)
+          !call ndep_init(bounds_proc, NLFilename)
+          !call ndep_interp(bounds_proc, atm2lnd_inst)
        end if
        call t_stopf('init_ndep')
     end if
