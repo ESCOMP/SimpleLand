@@ -145,7 +145,7 @@ module clm_instMod
   type(drydepvel_type)                    :: drydepvel_inst
 
   ! FATES
-  type(hlm_fates_interface_type)          :: clm_fates
+  !type(hlm_fates_interface_type)          :: clm_fates
 
   !
   public :: clm_instInit       ! Initialize
@@ -401,7 +401,7 @@ contains
     ! Initialize the Functionaly Assembled Terrestrial Ecosystem Simulator (FATES)
     ! 
     if (use_fates) then
-       call clm_fates%Init(bounds)
+       !call clm_fates%Init(bounds)
     end if
 
     deallocate (h2osno_col)
@@ -540,10 +540,10 @@ contains
 
     if (use_fates) then
 
-       call clm_fates%restart(bounds, ncid, flag=flag,  &
-            waterstate_inst=waterstate_inst, &
-            canopystate_inst=canopystate_inst, &
-            frictionvel_inst=frictionvel_inst)
+       !call clm_fates%restart(bounds, ncid, flag=flag,  &
+            !waterstate_inst=waterstate_inst, &
+            !canopystate_inst=canopystate_inst, &
+            !frictionvel_inst=frictionvel_inst)
 
     end if
 

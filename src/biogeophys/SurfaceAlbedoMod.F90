@@ -920,9 +920,9 @@ contains
 
     if (use_fates) then
           
-       call clm_fates%wrap_canopy_radiation(bounds, nc, &
-            num_vegsol, filter_vegsol, &
-            coszen_patch(bounds%begp:bounds%endp), surfalb_inst)
+       !call clm_fates%wrap_canopy_radiation(bounds, nc, &
+            !num_vegsol, filter_vegsol, &
+            !coszen_patch(bounds%begp:bounds%endp), surfalb_inst)
 
     else
 

@@ -568,7 +568,7 @@ contains
       ! -----------------------------------------------------------------
 
       if (use_fates) then
-         call clm_fates%prep_canopyfluxes(nc, fn, filterp, photosyns_inst)
+         !call clm_fates%prep_canopyfluxes(nc, fn, filterp, photosyns_inst)
       end if
 
       ! Initialize
@@ -643,8 +643,8 @@ contains
       ! --------------------------------------------------------------------------
       
       if(use_fates)then
-         call clm_fates%wrap_btran(nc, fn, filterc_tmp(1:fn), soilstate_inst, waterstate_inst, &
-               temperature_inst, energyflux_inst, soil_water_retention_curve)
+         !call clm_fates%wrap_btran(nc, fn, filterc_tmp(1:fn), soilstate_inst, waterstate_inst, &
+               !temperature_inst, energyflux_inst, soil_water_retention_curve)
          
       else
          
@@ -839,10 +839,10 @@ contains
 
          if ( use_fates ) then      
             
-            call clm_fates%wrap_photosynthesis(nc, bounds, fn, filterp(1:fn), &
-                 svpts(begp:endp), eah(begp:endp), o2(begp:endp), &
-                 co2(begp:endp), rb(begp:endp), dayl_factor(begp:endp), &
-                 atm2lnd_inst, temperature_inst, canopystate_inst, photosyns_inst)
+            !call clm_fates%wrap_photosynthesis(nc, bounds, fn, filterp(1:fn), &
+                 !svpts(begp:endp), eah(begp:endp), o2(begp:endp), &
+                 !co2(begp:endp), rb(begp:endp), dayl_factor(begp:endp), &
+                 !atm2lnd_inst, temperature_inst, canopystate_inst, photosyns_inst)
 
          else ! not use_fates
 
@@ -1266,9 +1266,9 @@ contains
       if ( use_fates ) then
          
          
-         call clm_fates%wrap_accumulatefluxes(nc,fn,filterp(1:fn))
-         call clm_fates%wrap_hydraulics_drive(bounds,nc,soilstate_inst, &
-               waterstate_inst,waterflux_inst,solarabs_inst,energyflux_inst)
+         !call clm_fates%wrap_accumulatefluxes(nc,fn,filterp(1:fn))
+         !call clm_fates%wrap_hydraulics_drive(bounds,nc,soilstate_inst, &
+               !waterstate_inst,waterflux_inst,solarabs_inst,energyflux_inst)
 
       else
 
