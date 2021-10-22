@@ -476,7 +476,6 @@ contains
     use ncdio_pio   , only : ncd_inqdid, ncd_inqdlen
     use clm_varctl  , only : paramfile, use_fates, use_flexibleCN, use_dynroot
     use spmdMod     , only : masterproc
-    use CLMFatesParamInterfaceMod, only : FatesReadPFTs
     !
     ! !ARGUMENTS:
     class(pftcon_type) :: this
@@ -1004,8 +1003,6 @@ contains
     end if
    
     call ncd_pio_closefile(ncid)
-
-    call FatesReadPFTs()
 
     do i = 0, mxpft
        if (.not. use_fates)then
