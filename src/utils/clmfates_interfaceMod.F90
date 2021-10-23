@@ -32,9 +32,6 @@ module CLMFatesInterfaceMod
    !  use ed_driver_interface, only: 
    
    ! Used CLM Modules
-   use shr_kind_mod      , only : r8 => shr_kind_r8
-   use clm_varctl        , only : iulog
-!   use SoilWaterPlantSinkMod, only : Compute_EffecRootFrac_And_VertTranSink_Default
 
    ! Used FATES Modules
 
@@ -72,9 +69,4 @@ module CLMFatesInterfaceMod
 
    end type hlm_fates_interface_type
 
-   logical :: DEBUG  = .false.
-
-   character(len=*), parameter, private :: sourcefile = &
-        __FILE__
-   
 end module CLMFatesInterfaceMod
