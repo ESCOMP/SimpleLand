@@ -205,7 +205,7 @@ contains
     use shr_orb_mod
     use clm_time_manager   , only : get_nstep
     use abortutils         , only : endrun
-    use clm_varctl         , only : subgridflag, use_snicar_frc, use_fates
+    use clm_varctl         , only : subgridflag, use_snicar_frc
     use CLMFatesInterfaceMod, only : hlm_fates_interface_type
 
     ! !ARGUMENTS:
@@ -918,21 +918,11 @@ contains
     ! Calculate surface albedos and fluxes
     ! Only perform on vegetated pfts where coszen > 0
 
-    if (use_fates) then
-          
-       !call clm_fates%wrap_canopy_radiation(bounds, nc, &
-            !num_vegsol, filter_vegsol, &
-            !coszen_patch(bounds%begp:bounds%endp), surfalb_inst)
-
-    else
-
-       call TwoStream (bounds, filter_vegsol, num_vegsol, &
-            coszen_patch(bounds%begp:bounds%endp), &
-            rho(bounds%begp:bounds%endp, :), &
-            tau(bounds%begp:bounds%endp, :), &
-            canopystate_inst, temperature_inst, waterstate_inst, surfalb_inst)
-
-    endif
+    call TwoStream (bounds, filter_vegsol, num_vegsol, &
+         coszen_patch(bounds%begp:bounds%endp), &
+         rho(bounds%begp:bounds%endp, :), &
+         tau(bounds%begp:bounds%endp, :), &
+         canopystate_inst, temperature_inst, waterstate_inst, surfalb_inst)
 
     ! Determine values for non-vegetated patches where coszen > 0
 

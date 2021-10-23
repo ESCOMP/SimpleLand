@@ -8,7 +8,7 @@ module clm_instMod
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use decompMod       , only : bounds_type
   use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
-  use clm_varctl      , only : use_cn, use_c13, use_c14, use_lch4, use_cndv, use_fates
+  use clm_varctl      , only : use_cn, use_c13, use_c14, use_lch4, use_cndv
   use clm_varctl      , only : use_century_decomp, use_crop
   use clm_varcon      , only : bdsno, c13ratio, c14ratio
   use landunit_varcon , only : istice_mec, istsoil
@@ -72,7 +72,6 @@ module clm_instMod
   use LandunitType                    , only : lun                
   use ColumnType                      , only : col                
   use PatchType                       , only : patch                
-  use CLMFatesInterfaceMod            , only : hlm_fates_interface_type
   use SoilWaterRetentionCurveMod      , only : soil_water_retention_curve_type
   use NutrientCompetitionMethodMod    , only : nutrient_competition_method_type
   !
@@ -145,7 +144,6 @@ module clm_instMod
   type(drydepvel_type)                    :: drydepvel_inst
 
   ! FATES
-  !type(hlm_fates_interface_type)          :: clm_fates
 
   !
   public :: clm_instInit       ! Initialize
@@ -164,7 +162,7 @@ contains
     ! Read in any namelists that must be read for any clm object instances that need it
     call canopystate_inst%ReadNML( NLFilename )
     call photosyns_inst%ReadNML(   NLFilename )
-    if (use_cn .or. use_fates) then
+    if (use_cn) then
        call crop_inst%ReadNML(     NLFilename )
     end if
 
@@ -333,7 +331,7 @@ contains
 
     call drydepvel_inst%Init(bounds)
 
-    if (use_cn .or. use_fates ) then
+    if (use_cn ) then
 
        ! Initialize soilbiogeochem_state_inst
 
@@ -373,7 +371,7 @@ contains
 
     end if
 
-    if ( use_cn .or. use_fates) then 
+    if ( use_cn ) then
 
        ! Initalize soilbiogeochem nitrogen types
 
@@ -393,17 +391,11 @@ contains
     ! Note - always call Init for bgc_vegetation_inst: some pieces need to be initialized always
     call bgc_vegetation_inst%Init(bounds, nlfilename)
 
-    if (use_cn .or. use_fates) then
+    if (use_cn ) then
        call crop_inst%Init(bounds)
     end if
 
     
-    ! Initialize the Functionaly Assembled Terrestrial Ecosystem Simulator (FATES)
-    ! 
-    if (use_fates) then
-       !call clm_fates%Init(bounds)
-    end if
-
     deallocate (h2osno_col)
     deallocate (snow_depth_col)
 
@@ -519,7 +511,7 @@ contains
        call crop_inst%restart(bounds, ncid, flag=flag)
     end if
 
-    if (use_cn .or. use_fates) then
+    if (use_cn ) then
 
        call soilbiogeochem_state_inst%restart(bounds, ncid, flag=flag)
        call soilbiogeochem_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c12', &
@@ -537,15 +529,6 @@ contains
        end if
        call soilbiogeochem_carbonflux_inst%restart(bounds, ncid, flag=flag)
     endif
-
-    if (use_fates) then
-
-       !call clm_fates%restart(bounds, ncid, flag=flag,  &
-            !waterstate_inst=waterstate_inst, &
-            !canopystate_inst=canopystate_inst, &
-            !frictionvel_inst=frictionvel_inst)
-
-    end if
 
  end subroutine clm_instRest
 

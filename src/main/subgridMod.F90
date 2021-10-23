@@ -17,7 +17,6 @@ module subgridMod
   use clm_varctl     , only : iulog
   use clm_instur     , only : wt_lunit, urban_valid, wt_cft
   use glcBehaviorMod , only : glc_behavior_type
-  !use FatesInterfaceMod, only : fates_maxElementsPerSite
 
   implicit none
   private   

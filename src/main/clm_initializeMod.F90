@@ -12,7 +12,7 @@ module clm_initializeMod
   use clm_varctl      , only : nsrest, nsrStartup, nsrContinue, nsrBranch
   use clm_varctl      , only : is_cold_start, is_interpolated_start
   use clm_varctl      , only : iulog
-  use clm_varctl      , only : use_lch4, use_cn, use_cndv, use_c13, use_c14, use_fates
+  use clm_varctl      , only : use_lch4, use_cn, use_cndv, use_c13, use_c14
   use clm_instur      , only : wt_lunit, urban_valid, wt_nat_patch, wt_cft, fert_cft, wt_glc_mec, topo_glc_mec
   use perf_mod        , only : t_startf, t_stopf
   use readParamsMod   , only : readParameters
@@ -23,7 +23,6 @@ module clm_initializeMod
   use PatchType       , only : patch         ! instance            
   use reweightMod     , only : reweight_wrapup
   use filterMod       , only : allocFilters, filter
-  !use FatesInterfaceMod, only : set_fates_global_elements
 
   use clm_instMod       
   ! 
@@ -172,22 +171,6 @@ contains
     call surfrd_get_data(begg, endg, ldomain, fsurdat)
 
     ! ------------------------------------------------------------------------
-    ! Ask Fates to evaluate its own dimensioning needs.
-    ! This determines the total amount of space it requires in its largest
-    ! dimension.  We are currently calling that the "cohort" dimension, but
-    ! it is really a utility dimension that captures the models largest
-    ! size need.
-    ! Sets:
-    ! fates_maxElementsPerPatch
-    ! fates_maxElementsPerSite (where a site is roughly equivalent to a column)
-    ! 
-    ! (Note: fates_maxELementsPerSite is the critical variable used by CLM
-    ! to allocate space)
-    ! ------------------------------------------------------------------------
-    
-    !call set_fates_global_elements(use_fates)
-
-    ! ------------------------------------------------------------------------
     ! Determine decomposition of subgrid scale landunits, columns, patches
     ! ------------------------------------------------------------------------
 
@@ -265,12 +248,12 @@ contains
     use clm_varpar            , only : nlevsno
     use clm_varcon            , only : spval
     use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat, mml_surdat
-    use clm_varctl            , only : use_century_decomp, single_column, scmlat, scmlon, use_cn, use_fates
+    use clm_varctl            , only : use_century_decomp, single_column, scmlat, scmlon, use_cn
     use clm_varctl            , only : use_crop, ndep_from_cpl
     use clm_varorb            , only : eccen, mvelpp, lambm0, obliqr
     use clm_time_manager      , only : get_step_size, get_curr_calday
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 
-    use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart, is_restart
+    use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart
     use CIsoAtmTimeseriesMod  , only : C14_init_BombSpike, use_c14_bombspike, C13_init_TimeSeries, use_c13_timeseries
     use DaylengthMod          , only : InitDaylength, daylength
 !    use dynSubgridDriverMod   , only : dynSubgrid_init
@@ -288,7 +271,6 @@ contains
     use lnd2atmMod            , only : lnd2atm_minimal
     use NutrientCompetitionFactoryMod, only : create_nutrient_competition_method
     use controlMod            , only : NLFilename
-    !use clm_instMod           , only : clm_fates
     !
     ! !ARGUMENTS    
     !
@@ -657,14 +639,6 @@ contains
     ! initialize2 for some consistency checking; now it can be deallocated
 
     deallocate(wt_nat_patch)
-
-    ! --------------------------------------------------------------
-    ! Initialise the fates model state structure
-    ! --------------------------------------------------------------
-   
-    if ( use_fates .and. .not.is_restart() .and. finidat == ' ') then
-       !call clm_fates%init_coldstart(waterstate_inst,canopystate_inst,soilstate_inst, frictionvel_inst)
-    end if
 
     ! topo_glc_mec was allocated in initialize1, but needed to be kept around through
     ! initialize2 because it is used to initialize other variables; now it can be

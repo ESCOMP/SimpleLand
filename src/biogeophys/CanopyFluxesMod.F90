@@ -13,7 +13,7 @@ module CanopyFluxesMod
   use shr_kind_mod          , only : r8 => shr_kind_r8
   use shr_log_mod           , only : errMsg => shr_log_errMsg
   use abortutils            , only : endrun
-  use clm_varctl            , only : iulog, use_cn, use_lch4, use_c13, use_c14, use_cndv, use_fates, &
+  use clm_varctl            , only : iulog, use_cn, use_lch4, use_c13, use_c14, use_cndv, &
                                      use_luna, use_hydrstress
   use clm_varpar            , only : nlevgrnd, nlevsno
   use clm_varcon            , only : namep 
@@ -322,7 +322,6 @@ contains
     integer  :: fporig(bounds%endp-bounds%begp+1)    ! temporary filter
     integer  :: fnold                                ! temporary copy of patch count
     integer  :: f                                    ! filter index
-    logical  :: found                                ! error flag for canopy above forcing hgt
     integer  :: index                                ! patch index for error
     real(r8) :: egvf                                 ! effective green vegetation fraction
     real(r8) :: lt                                   ! elai+esai
@@ -543,19 +542,12 @@ contains
       ! non-lake, non-urban patches that are not covered by ice. The
       ! filter is set over a few steps:
       !
-      ! 1a) for CN: 
+      ! 1)  for CN: 
       !             clm_drv() -> 
       !             bgc_vegetation_inst%EcosystemDynamicsPostDrainage() ->
       !             CNVegStructUpdate()
       !    if(elai(p)+esai(p)>0) frac_veg_nosno_alb(p) = 1
       !    
-      ! 1b) for FATES:
-      !              clm_drv() -> 
-      !              clm_fates%dynamics_driv() -> 
-      !              ed_clm_link() -> 
-      !              ed_clm_leaf_area_profile():
-      !    if(elai(p)+esai(p)>0) frac_veg_nosno_alb(p) = 1
-      !
       ! 2) during clm_drv()->clm_drv_init():
       !    frac_veg_nosno_alb(p) is then combined with the active(p)
       !    flag via union to create frac_veg_nosno_patch(p)
@@ -563,10 +555,6 @@ contains
       !    the list used here "exposedvegp(fe)" is incremented if 
       !    frac_veg_nosno_patch > 0
       ! -----------------------------------------------------------------
-
-      if (use_fates) then
-         !call clm_fates%prep_canopyfluxes(nc, fn, filterp, photosyns_inst)
-      end if
 
       ! Initialize
 
@@ -627,39 +615,18 @@ contains
       !set up perchroot options
       call set_perchroot_opt(perchroot, perchroot_alt)
 
-      ! --------------------------------------------------------------------------
-      ! if this is a FATES simulation
-      ! ask fates to calculate btran functions and distribution of uptake
-      ! this will require boundary conditions from CLM, boundary conditions which
-      ! may only be available from a smaller subset of patches that meet the
-      ! exposed veg.  
-      ! calc_root_moist_stress already calculated root soil water stress 'rresis'
-      ! this is the input boundary condition to calculate the transpiration
-      ! wetness factor btran and the root weighting factors for FATES.  These
-      ! values require knowledge of the belowground root structure.
-      ! --------------------------------------------------------------------------
-      
-      if(use_fates)then
-         !call clm_fates%wrap_btran(nc, fn, filterc_tmp(1:fn), soilstate_inst, waterstate_inst, &
-               !temperature_inst, energyflux_inst, soil_water_retention_curve)
-         
-      else
-         
-         !calculate root moisture stress
-         call calc_root_moist_stress(bounds,     &
-            nlevgrnd = nlevgrnd,               &
-            fn = fn,                           &
-            filterp = filterp,                 &
-            canopystate_inst=canopystate_inst, &
-            energyflux_inst=energyflux_inst,   &
-            soilstate_inst=soilstate_inst,     &
-            temperature_inst=temperature_inst, &
-            waterstate_inst=waterstate_inst,   &
-              soil_water_retention_curve=soil_water_retention_curve)
-
+      !calculate root moisture stress
+      call calc_root_moist_stress(bounds,     &
+         nlevgrnd = nlevgrnd,               &
+         fn = fn,                           &
+         filterp = filterp,                 &
+         canopystate_inst=canopystate_inst, &
+         energyflux_inst=energyflux_inst,   &
+         soilstate_inst=soilstate_inst,     &
+         temperature_inst=temperature_inst, &
+         waterstate_inst=waterstate_inst,   &
+           soil_water_retention_curve=soil_water_retention_curve)
      
-      end if
-
       ! Modify aerodynamic parameters for sparse/dense canopy (X. Zeng)
       do f = 1, fn
          p = filterp(f)
@@ -673,7 +640,6 @@ contains
          z0qv(p)   = z0mv(p)
       end do
 
-      found = .false.
       do f = 1, fn
          p = filterp(f)
          c = patch%column(p)
@@ -714,20 +680,7 @@ contains
          dthv(p) = dth(p)*(1._r8+0.61_r8*forc_q(c))+0.61_r8*forc_th(c)*dqh(p)
          zldis(p) = forc_hgt_u_patch(p) - displa(p)
 
-         ! Check to see if the forcing height is below the canopy height
-         if (zldis(p) < 0._r8) then
-            found = .true.
-            index = p
-         end if
-
       end do
-
-      if (found) then
-         if ( .not. use_fates ) then
-            write(iulog,*)'Error: Forcing height is below canopy height for patch index '
-            call endrun(decomp_index=index, clmlevel=namep, msg=errmsg(sourcefile, __LINE__))
-         end if
-      end if
 
       do f = 1, fn
          p = filterp(f)
@@ -782,12 +735,8 @@ contains
             uaf(p) = um(p)*sqrt( 1._r8/(ram1(p)*um(p)) )
 
             ! Use pft parameter for leaf characteristic width
-            ! dleaf_patch if this is not an fates patch.
-            ! Otherwise, the value has already been loaded
-            ! during the FATES dynamics call
-            if(.not.patch%is_fates(p)) then  
-               dleaf_patch(p) = dleaf(patch%itype(p))
-            end if
+            ! dleaf_patch
+            dleaf_patch(p) = dleaf(patch%itype(p))
 
             cf  = 0.01_r8/(sqrt(uaf(p))*sqrt( dleaf_patch(p) ))
             rb(p)  = 1._r8/(cf*uaf(p))
@@ -834,51 +783,40 @@ contains
             rhaf(p) = eah(p)/svpts(p)
          end do
 
-         if ( use_fates ) then      
-            
-            !call clm_fates%wrap_photosynthesis(nc, bounds, fn, filterp(1:fn), &
-                 !svpts(begp:endp), eah(begp:endp), o2(begp:endp), &
-                 !co2(begp:endp), rb(begp:endp), dayl_factor(begp:endp), &
-                 !atm2lnd_inst, temperature_inst, canopystate_inst, photosyns_inst)
+         if ( use_hydrstress ) then
+            call PhotosynthesisHydraulicStress (bounds, fn, filterp, &
+                 svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), bsun(begp:endp), &
+                 bsha(begp:endp), btran(begp:endp), dayl_factor(begp:endp), leafn_patch(begp:endp), &
+                 qsatl(begp:endp), qaf(begp:endp),     &
+                 atm2lnd_inst, temperature_inst, soilstate_inst, waterstate_inst, surfalb_inst, solarabs_inst,    &
+                 canopystate_inst, ozone_inst, photosyns_inst, waterflux_inst, froot_carbon(begp:endp), croot_carbon(begp:endp))
+         else
+            call Photosynthesis (bounds, fn, filterp, &
+                 svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), btran(begp:endp), &
+                 dayl_factor(begp:endp), leafn_patch(begp:endp), &
+                 atm2lnd_inst, temperature_inst, surfalb_inst, solarabs_inst, &
+                 canopystate_inst, ozone_inst, photosyns_inst, phase='sun')
+         endif
 
-         else ! not use_fates
+         if ( use_cn .and. use_c13 ) then
+            call Fractionation (bounds, fn, filterp, downreg_patch(begp:endp), &
+                 atm2lnd_inst, canopystate_inst, solarabs_inst, surfalb_inst, photosyns_inst, &
+                 phase='sun')
+         endif
 
-            if ( use_hydrstress ) then
-               call PhotosynthesisHydraulicStress (bounds, fn, filterp, &
-                    svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), bsun(begp:endp), &
-                    bsha(begp:endp), btran(begp:endp), dayl_factor(begp:endp), leafn_patch(begp:endp), &
-                    qsatl(begp:endp), qaf(begp:endp),     &
-                    atm2lnd_inst, temperature_inst, soilstate_inst, waterstate_inst, surfalb_inst, solarabs_inst,    &
-                    canopystate_inst, ozone_inst, photosyns_inst, waterflux_inst, froot_carbon(begp:endp), croot_carbon(begp:endp))
-            else
-               call Photosynthesis (bounds, fn, filterp, &
-                    svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), btran(begp:endp), &
-                    dayl_factor(begp:endp), leafn_patch(begp:endp), &
-                    atm2lnd_inst, temperature_inst, surfalb_inst, solarabs_inst, &
-                    canopystate_inst, ozone_inst, photosyns_inst, phase='sun')
-            endif
+         if ( .not.(use_hydrstress) ) then
+            call Photosynthesis (bounds, fn, filterp, &
+                 svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), btran(begp:endp), &
+                 dayl_factor(begp:endp), leafn_patch(begp:endp), &
+                 atm2lnd_inst, temperature_inst, surfalb_inst, solarabs_inst, &
+                 canopystate_inst, ozone_inst, photosyns_inst, phase='sha')
+         end if
 
-            if ( use_cn .and. use_c13 ) then
-               call Fractionation (bounds, fn, filterp, downreg_patch(begp:endp), &
-                    atm2lnd_inst, canopystate_inst, solarabs_inst, surfalb_inst, photosyns_inst, &
-                    phase='sun')
-            endif
-
-            if ( .not.(use_hydrstress) ) then
-               call Photosynthesis (bounds, fn, filterp, &
-                    svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), btran(begp:endp), &
-                    dayl_factor(begp:endp), leafn_patch(begp:endp), &
-                    atm2lnd_inst, temperature_inst, surfalb_inst, solarabs_inst, &
-                    canopystate_inst, ozone_inst, photosyns_inst, phase='sha')
-            end if
-
-            if ( use_cn .and. use_c13 ) then
-               call Fractionation (bounds, fn, filterp, downreg_patch(begp:endp), &
-                    atm2lnd_inst, canopystate_inst, solarabs_inst, surfalb_inst, photosyns_inst, &
-                    phase='sha')
-            end if
-
-         end if ! end of if use_fates
+         if ( use_cn .and. use_c13 ) then
+            call Fractionation (bounds, fn, filterp, downreg_patch(begp:endp), &
+                 atm2lnd_inst, canopystate_inst, solarabs_inst, surfalb_inst, photosyns_inst, &
+                 phase='sha')
+         end if
 
          do f = 1, fn
             p = filterp(f)
@@ -1260,30 +1198,21 @@ contains
 
       end do
       
-      if ( use_fates ) then
+      ! Determine total photosynthesis
          
+      call PhotosynthesisTotal(fn, filterp, &
+           atm2lnd_inst, canopystate_inst, photosyns_inst)
          
-         !call clm_fates%wrap_accumulatefluxes(nc,fn,filterp(1:fn))
-         !call clm_fates%wrap_hydraulics_drive(bounds,nc,soilstate_inst, &
-               !waterstate_inst,waterflux_inst,solarabs_inst,energyflux_inst)
-
-      else
-
-         ! Determine total photosynthesis
-         
-         call PhotosynthesisTotal(fn, filterp, &
-              atm2lnd_inst, canopystate_inst, photosyns_inst)
-         
-         ! Calculate ozone stress. This needs to be done after rssun and rsshade are
-         ! computed by the Photosynthesis routine. However, Photosynthesis also uses the
-         ! ozone stress computed here. Thus, the ozone stress computed in timestep i is
-         ! applied in timestep (i+1).
-         
-         ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) The following dummy variable assignment is
-         ! needed with pgi 14.7 on yellowstone; without it, forc_pbot_downscaled_col gets
-         ! resized inappropriately in the following subroutine call, due to a compiler bug.
-         dummy_to_make_pgi_happy = ubound(atm2lnd_inst%forc_pbot_downscaled_col, 1)
-         call ozone_inst%CalcOzoneStress( &
+      ! Calculate ozone stress. This needs to be done after rssun and rsshade are
+      ! computed by the Photosynthesis routine. However, Photosynthesis also uses the
+      ! ozone stress computed here. Thus, the ozone stress computed in timestep i is
+      ! applied in timestep (i+1).
+      
+      ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) The following dummy variable assignment is
+      ! needed with pgi 14.7 on yellowstone; without it, forc_pbot_downscaled_col gets
+      ! resized inappropriately in the following subroutine call, due to a compiler bug.
+      dummy_to_make_pgi_happy = ubound(atm2lnd_inst%forc_pbot_downscaled_col, 1)
+      call ozone_inst%CalcOzoneStress( &
               bounds, fn, filterp, &
               forc_pbot = atm2lnd_inst%forc_pbot_downscaled_col(bounds%begc:bounds%endc), &
               forc_th   = atm2lnd_inst%forc_th_downscaled_col(bounds%begc:bounds%endc), &
@@ -1293,45 +1222,44 @@ contains
               ram       = frictionvel_inst%ram1_patch(bounds%begp:bounds%endp), &
               tlai      = canopystate_inst%tlai_patch(bounds%begp:bounds%endp))
          
-         !---------------------------------------------------------
-         !update Vc,max and Jmax by LUNA model
-         if(use_luna)then
-            call Acc24_Climate_LUNA(bounds, fn, filterp, &
+      !---------------------------------------------------------
+      !update Vc,max and Jmax by LUNA model
+      if(use_luna)then
+         call Acc24_Climate_LUNA(bounds, fn, filterp, &
+              canopystate_inst, photosyns_inst, &
+              surfalb_inst, solarabs_inst, &
+              temperature_inst)
+            
+         if(is_end_day)then
+               
+            call Acc240_Climate_LUNA(bounds, fn, filterp, &
+                 o2(begp:endp), &
+                 co2(begp:endp), &
+                 rb(begp:endp), &
+                 rhaf(begp:endp),&
+                 temperature_inst, & 
+                 photosyns_inst, &
+                 surfalb_inst, &
+                 solarabs_inst, &
+                 waterstate_inst,&
+                 frictionvel_inst) 
+               
+            call Update_Photosynthesis_Capacity(bounds, fn, filterp, &
+                 dayl_factor(begp:endp), &
+                 atm2lnd_inst, &
+                 temperature_inst, & 
+                 canopystate_inst, &
+                 photosyns_inst, &
+                 surfalb_inst, &
+                 solarabs_inst, &
+                 waterstate_inst,&
+                 frictionvel_inst)        
+            
+            call Clear24_Climate_LUNA(bounds, fn, filterp, &
                  canopystate_inst, photosyns_inst, &
                  surfalb_inst, solarabs_inst, &
                  temperature_inst)
-            
-            if(is_end_day)then
-               
-               call Acc240_Climate_LUNA(bounds, fn, filterp, &
-                    o2(begp:endp), &
-                    co2(begp:endp), &
-                    rb(begp:endp), &
-                    rhaf(begp:endp),&
-                    temperature_inst, & 
-                    photosyns_inst, &
-                    surfalb_inst, &
-                    solarabs_inst, &
-                    waterstate_inst,&
-                    frictionvel_inst) 
-               
-               call Update_Photosynthesis_Capacity(bounds, fn, filterp, &
-                    dayl_factor(begp:endp), &
-                    atm2lnd_inst, &
-                    temperature_inst, & 
-                    canopystate_inst, &
-                    photosyns_inst, &
-                    surfalb_inst, &
-                    solarabs_inst, &
-                    waterstate_inst,&
-                    frictionvel_inst)        
-               
-               call Clear24_Climate_LUNA(bounds, fn, filterp, &
-                    canopystate_inst, photosyns_inst, &
-                    surfalb_inst, solarabs_inst, &
-                    temperature_inst)
-            endif
-            
+         
          endif
       end if
 

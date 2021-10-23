@@ -11,7 +11,7 @@ module decompInitMod
   use shr_log_mod     , only : errMsg => shr_log_errMsg
   use spmdMod         , only : masterproc, iam, npes, mpicom, comp_id
   use abortutils      , only : endrun
-  use clm_varctl      , only : iulog, use_fates
+  use clm_varctl      , only : iulog
   use clm_varcon      , only : grlnd
   use GridcellType    , only : grc
   use LandunitType    , only : lun                
@@ -20,7 +20,6 @@ module decompInitMod
   use glcBehaviorMod  , only : glc_behavior_type
   use decompMod
   use mct_mod         , only : mct_gsMap_init, mct_gsMap_ngseg, mct_gsMap_nlseg, mct_gsmap_gsize
-  !use FatesInterfaceMod, only : fates_maxElementsPerSite
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -521,7 +520,6 @@ contains
     integer, pointer :: lstart(:),  lcount(:)
     integer, pointer :: cstart(:),  ccount(:)
     integer, pointer :: pstart(:),  pcount(:)
-    integer, pointer :: coStart(:), coCount(:)
     integer, pointer :: ioff(:)
     integer, parameter :: dbug=1      ! 0 = min, 1=normal, 2=much, 3=max
     character(len=32), parameter :: subname = 'decompInit_glcp'
@@ -551,12 +549,6 @@ contains
     pstart(:) = 0
     allocate(pcount(begg:endg))
     pcount(:) = 0
-    if ( use_fates ) then
-       allocate(coStart(begg:endg))
-       coStart(:) = 0
-    endif
-    allocate(coCount(begg:endg))
-    coCount(:) = 0
     allocate(ioff(begg:endg)) 
     ioff(:) = 0
 
@@ -569,10 +561,9 @@ contains
        lcount(gi)  = ilunits   ! number of landunits for local gridcell index gi
        ccount(gi)  = icols     ! number of columns for local gridcell index gi
        pcount(gi)  = ipatches  ! number of patches for local gridcell index gi
-       coCount(gi) = icohorts  ! number of fates cohorts for local gricell index gi
     enddo
 
-    ! Determine gstart, lstart, cstart, pstart, coStart for the OUTPUT 1d data structures
+    ! Determine gstart, lstart, cstart, pstart for the OUTPUT 1d data structures
 
     ! gather the gdc subgrid counts to masterproc in glo order
     ! compute glo ordered start indices from the counts
@@ -636,21 +627,6 @@ contains
        enddo
     endif
     call scatter_data_from_master(pstart, arrayglob, grlnd)
-
-    if ( use_fates ) then
-       arrayglob(:) = 0
-       call gather_data_to_master(coCount, arrayglob, grlnd)
-       if (masterproc) then
-          val1 = arrayglob(1)
-          arrayglob(1) = 1
-          do n = 2,ng
-             val2 = arrayglob(n)
-             arrayglob(n) = arrayglob(n-1) + val1
-             val1 = val2
-          enddo
-       endif
-       call scatter_data_from_master(coStart, arrayglob, grlnd)
-    endif
 
     deallocate(arrayglob)
 
@@ -725,31 +701,11 @@ contains
     call mct_gsMap_init(gsmap_patch_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
     deallocate(gindex)
 
-    ! FATES gsmap for the cohort/element vector
-    
-    if ( use_fates ) then
-       !allocate(gindex(begCohort:endCohort))
-       !ioff(:) = 0
-       !gi = begg
-       !do coi = begCohort,endCohort
-          !gindex(coi) = coStart(gi) + ioff(gi)
-          !ioff(gi) = ioff(gi) + 1
-          !if ( mod(coi, fates_maxElementsPerSite ) == 0 ) gi = gi + 1
-       !enddo
-       !locsize = endCohort-begCohort+1
-       !globsize = numCohort
-       !call mct_gsMap_init(gsMap_cohort_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
-       !deallocate(gindex)
-    endif
-
     ! Deallocate start/count arrays
     deallocate(gstart, gcount)
     deallocate(lstart, lcount)
     deallocate(cstart, ccount)
     deallocate(pstart, pcount)
-    if ( use_fates ) then
-       deallocate(coStart,coCount)
-    endif
     deallocate(ioff)
 
     ! Diagnostic output

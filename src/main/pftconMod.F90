@@ -474,7 +474,7 @@ contains
     use fileutils   , only : getfil
     use ncdio_pio   , only : ncd_io, ncd_pio_closefile, ncd_pio_openfile, file_desc_t
     use ncdio_pio   , only : ncd_inqdid, ncd_inqdlen
-    use clm_varctl  , only : paramfile, use_fates, use_flexibleCN, use_dynroot
+    use clm_varctl  , only : paramfile, use_flexibleCN, use_dynroot
     use spmdMod     , only : masterproc
     !
     ! !ARGUMENTS:
@@ -1005,12 +1005,10 @@ contains
     call ncd_pio_closefile(ncid)
 
     do i = 0, mxpft
-       if (.not. use_fates)then
-          if ( trim(adjustl(pftname(i))) /= trim(expected_pftnames(i)) )then
-             write(iulog,*)'pftconrd: pftname is NOT what is expected, name = ', &
-                  trim(pftname(i)), ', expected name = ', trim(expected_pftnames(i))
-             call endrun(msg='pftconrd: bad name for pft on paramfile dataset'//errMsg(sourcefile, __LINE__))
-          end if
+       if ( trim(adjustl(pftname(i))) /= trim(expected_pftnames(i)) )then
+          write(iulog,*)'pftconrd: pftname is NOT what is expected, name = ', &
+               trim(pftname(i)), ', expected name = ', trim(expected_pftnames(i))
+          call endrun(msg='pftconrd: bad name for pft on paramfile dataset'//errMsg(sourcefile, __LINE__))
        end if
 
        if ( trim(pftname(i)) == 'not_vegetated'                       ) noveg                = i
@@ -1105,61 +1103,59 @@ contains
        this%fcur(:) = this%fcurdv(:)
     end if
     !
-    ! Do some error checking, but not if fates is on.
+    ! Do some error checking.
     !
     ! FIX(SPM,032414) double check if some of these should be on...
 
-    if( .not. use_fates ) then
-       if ( npcropmax /= mxpft )then
-          call endrun(msg=' ERROR: npcropmax is NOT the last value'//errMsg(sourcefile, __LINE__))
-       end if
-       do i = 0, mxpft
-          if ( this%irrigated(i) == 1.0_r8 .and.                              &
-               (i == nc3irrig               .or.                              &
-                i == nirrig_tmp_corn        .or.                              &
-                i == nirrig_swheat          .or. i == nirrig_wwheat      .or. &
-                i == nirrig_tmp_soybean     .or.                              &
-                i == nirrig_barley          .or. i == nirrig_wbarley     .or. &
-                i == nirrig_rye             .or. i == nirrig_wrye        .or. &
-                i == nirrig_cassava         .or.                              &
-                i == nirrig_citrus          .or.                              &
-                i == nirrig_cocoa           .or. i == nirrig_coffee      .or. &
-                i == nirrig_cotton          .or.                              &
-                i == nirrig_datepalm        .or.                              &
-                i == nirrig_foddergrass     .or.                              &
-                i == nirrig_grapes          .or. i == nirrig_groundnuts  .or. &
-                i == nirrig_millet          .or.                              &
-                i == nirrig_oilpalm         .or.                              &
-                i == nirrig_potatoes        .or. i == nirrig_pulses      .or. &
-                i == nirrig_rapeseed        .or. i == nirrig_rice        .or. &
-                i == nirrig_sorghum         .or.                              &
-                i == nirrig_sugarbeet       .or. i == nirrig_sugarcane   .or. &
-                i == nirrig_sunflower       .or.                              &
-                i == nirrig_miscanthus      .or. i == nirrig_switchgrass .or. &
-                i == nirrig_trp_corn        .or.                              &
-                i == nirrig_trp_soybean) )then
+    if ( npcropmax /= mxpft )then
+       call endrun(msg=' ERROR: npcropmax is NOT the last value'//errMsg(sourcefile, __LINE__))
+    end if
+    do i = 0, mxpft
+       if ( this%irrigated(i) == 1.0_r8 .and.                              &
+            (i == nc3irrig               .or.                              &
+             i == nirrig_tmp_corn        .or.                              &
+             i == nirrig_swheat          .or. i == nirrig_wwheat      .or. &
+             i == nirrig_tmp_soybean     .or.                              &
+             i == nirrig_barley          .or. i == nirrig_wbarley     .or. &
+             i == nirrig_rye             .or. i == nirrig_wrye        .or. &
+             i == nirrig_cassava         .or.                              &
+             i == nirrig_citrus          .or.                              &
+             i == nirrig_cocoa           .or. i == nirrig_coffee      .or. &
+             i == nirrig_cotton          .or.                              &
+             i == nirrig_datepalm        .or.                              &
+             i == nirrig_foddergrass     .or.                              &
+             i == nirrig_grapes          .or. i == nirrig_groundnuts  .or. &
+             i == nirrig_millet          .or.                              &
+             i == nirrig_oilpalm         .or.                              &
+             i == nirrig_potatoes        .or. i == nirrig_pulses      .or. &
+             i == nirrig_rapeseed        .or. i == nirrig_rice        .or. &
+             i == nirrig_sorghum         .or.                              &
+             i == nirrig_sugarbeet       .or. i == nirrig_sugarcane   .or. &
+             i == nirrig_sunflower       .or.                              &
+             i == nirrig_miscanthus      .or. i == nirrig_switchgrass .or. &
+             i == nirrig_trp_corn        .or.                              &
+             i == nirrig_trp_soybean) )then
              ! correct
           else if ( this%irrigated(i) == 0.0_r8 )then
              ! correct
           else
-             call endrun(msg=' ERROR: irrigated has wrong values'//errMsg(sourcefile, __LINE__))
-          end if
-          if (      this%crop(i) == 1.0_r8 .and. (i >= nc3crop .and. i <= npcropmax) )then
-             ! correct
-          else if ( this%crop(i) == 0.0_r8 )then
-             ! correct
-          else
-             call endrun(msg=' ERROR: crop has wrong values'//errMsg(sourcefile, __LINE__))
-          end if
-          if ( (i /= noveg) .and. (i < npcropmin) .and. &
-               abs(this%pconv(i) + this%pprod10(i) + this%pprod100(i) - 1.0_r8) > 1.e-7_r8 )then
-             call endrun(msg=' ERROR: pconv+pprod10+pprod100 do NOT sum to one.'//errMsg(sourcefile, __LINE__))
-          end if
-          if ( this%pprodharv10(i) > 1.0_r8 .or. this%pprodharv10(i) < 0.0_r8 )then
-             call endrun(msg=' ERROR: pprodharv10 outside of range.'//errMsg(sourcefile, __LINE__))
-          end if
-       end do
-    end if
+          call endrun(msg=' ERROR: irrigated has wrong values'//errMsg(sourcefile, __LINE__))
+       end if
+       if (      this%crop(i) == 1.0_r8 .and. (i >= nc3crop .and. i <= npcropmax) )then
+          ! correct
+       else if ( this%crop(i) == 0.0_r8 )then
+          ! correct
+       else
+          call endrun(msg=' ERROR: crop has wrong values'//errMsg(sourcefile, __LINE__))
+       end if
+       if ( (i /= noveg) .and. (i < npcropmin) .and. &
+            abs(this%pconv(i) + this%pprod10(i) + this%pprod100(i) - 1.0_r8) > 1.e-7_r8 )then
+          call endrun(msg=' ERROR: pconv+pprod10+pprod100 do NOT sum to one.'//errMsg(sourcefile, __LINE__))
+       end if
+       if ( this%pprodharv10(i) > 1.0_r8 .or. this%pprodharv10(i) < 0.0_r8 )then
+          call endrun(msg=' ERROR: pprodharv10 outside of range.'//errMsg(sourcefile, __LINE__))
+       end if
+    end do
 
     if (masterproc) then
        write(iulog,*) 'Successfully read PFT physiological data'
