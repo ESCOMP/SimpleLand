@@ -20,7 +20,7 @@ module decompInitMod
   use glcBehaviorMod  , only : glc_behavior_type
   use decompMod
   use mct_mod         , only : mct_gsMap_init, mct_gsMap_ngseg, mct_gsMap_nlseg, mct_gsmap_gsize
-  use FatesInterfaceMod, only : fates_maxElementsPerSite
+  !use FatesInterfaceMod, only : fates_maxElementsPerSite
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -728,18 +728,18 @@ contains
     ! FATES gsmap for the cohort/element vector
     
     if ( use_fates ) then
-       allocate(gindex(begCohort:endCohort))
-       ioff(:) = 0
-       gi = begg
-       do coi = begCohort,endCohort
-          gindex(coi) = coStart(gi) + ioff(gi)
-          ioff(gi) = ioff(gi) + 1
-          if ( mod(coi, fates_maxElementsPerSite ) == 0 ) gi = gi + 1
-       enddo
-       locsize = endCohort-begCohort+1
-       globsize = numCohort
-       call mct_gsMap_init(gsMap_cohort_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
-       deallocate(gindex)
+       !allocate(gindex(begCohort:endCohort))
+       !ioff(:) = 0
+       !gi = begg
+       !do coi = begCohort,endCohort
+          !gindex(coi) = coStart(gi) + ioff(gi)
+          !ioff(gi) = ioff(gi) + 1
+          !if ( mod(coi, fates_maxElementsPerSite ) == 0 ) gi = gi + 1
+       !enddo
+       !locsize = endCohort-begCohort+1
+       !globsize = numCohort
+       !call mct_gsMap_init(gsMap_cohort_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
+       !deallocate(gindex)
     endif
 
     ! Deallocate start/count arrays
