@@ -23,7 +23,7 @@ module clm_initializeMod
   use PatchType       , only : patch         ! instance            
   use reweightMod     , only : reweight_wrapup
   use filterMod       , only : allocFilters, filter
-  use FatesInterfaceMod, only : set_fates_global_elements
+  !use FatesInterfaceMod, only : set_fates_global_elements
 
   use clm_instMod       
   ! 
@@ -185,7 +185,7 @@ contains
     ! to allocate space)
     ! ------------------------------------------------------------------------
     
-    call set_fates_global_elements(use_fates)
+    !call set_fates_global_elements(use_fates)
 
     ! ------------------------------------------------------------------------
     ! Determine decomposition of subgrid scale landunits, columns, patches
