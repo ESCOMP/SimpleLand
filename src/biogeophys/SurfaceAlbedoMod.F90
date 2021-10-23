@@ -177,7 +177,6 @@ contains
         num_urbanc   , filter_urbanc,  &
         num_urbanp   , filter_urbanp,  &
         nextsw_cday  , declinp1,       &
-        clm_fates,                     &
         aerosol_inst, canopystate_inst, waterstate_inst, &
         lakestate_inst, temperature_inst, surfalb_inst)
     !
@@ -206,7 +205,6 @@ contains
     use clm_time_manager   , only : get_nstep
     use abortutils         , only : endrun
     use clm_varctl         , only : subgridflag, use_snicar_frc
-    use CLMFatesInterfaceMod, only : hlm_fates_interface_type
 
     ! !ARGUMENTS:
     type(bounds_type)      , intent(in)            :: bounds             ! bounds
@@ -221,7 +219,6 @@ contains
     integer                , intent(in)            :: filter_urbanp(:)   ! patch filter for rban points
     real(r8)               , intent(in)            :: nextsw_cday        ! calendar day at Greenwich (1.00, ..., days/year)
     real(r8)               , intent(in)            :: declinp1           ! declination angle (radians) for next time step
-    type(hlm_fates_interface_type), intent(inout)  :: clm_fates
     type(aerosol_type)     , intent(in)            :: aerosol_inst
     type(canopystate_type) , intent(in)            :: canopystate_inst
     type(waterstate_type)  , intent(in)            :: waterstate_inst

@@ -130,7 +130,7 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine CanopyFluxes(bounds,  num_exposedvegp, filter_exposedvegp,                  &
-       clm_fates, nc, atm2lnd_inst, canopystate_inst,                                    &
+       nc, atm2lnd_inst, canopystate_inst,                                               &
        energyflux_inst, frictionvel_inst, soilstate_inst, solarabs_inst, surfalb_inst,   &
        temperature_inst, waterflux_inst, waterstate_inst, ch4_inst, ozone_inst, photosyns_inst, &
        humanindex_inst, soil_water_retention_curve, &
@@ -171,7 +171,6 @@ contains
     use clm_varcon         , only : c14ratio
     use perf_mod           , only : t_startf, t_stopf
     use QSatMod            , only : QSat
-    use CLMFatesInterfaceMod, only : hlm_fates_interface_type
     use FrictionVelocityMod, only : FrictionVelocity, MoninObukIni, frictionvel_parms_inst
     use HumanIndexMod      , only : calc_human_stress_indices, Wet_Bulb, Wet_BulbS, HeatIndex, AppTemp, &
                                     swbgt, hmdex, dis_coi, dis_coiS, THIndex, &
@@ -182,7 +181,6 @@ contains
     type(bounds_type)                      , intent(in)            :: bounds 
     integer                                , intent(in)            :: num_exposedvegp        ! number of points in filter_exposedvegp
     integer                                , intent(in)            :: filter_exposedvegp(:)  ! patch filter for non-snow-covered veg
-    type(hlm_fates_interface_type)         , intent(inout)         :: clm_fates
     integer                                , intent(in)            :: nc ! clump index
     type(atm2lnd_type)                     , intent(in)            :: atm2lnd_inst
     type(canopystate_type)                 , intent(inout)         :: canopystate_inst

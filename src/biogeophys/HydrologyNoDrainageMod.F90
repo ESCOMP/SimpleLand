@@ -9,7 +9,6 @@ Module HydrologyNoDrainageMod
   use decompMod         , only : bounds_type
   use clm_varctl        , only : iulog, use_vichydro
   use clm_varcon        , only : e_ice, denh2o, denice, rpi, spval
-  use CLMFatesInterfaceMod, only : hlm_fates_interface_type
   use atm2lndType       , only : atm2lnd_type
   use AerosolMod        , only : aerosol_type
   use EnergyFluxType    , only : energyflux_type
@@ -40,7 +39,6 @@ contains
        num_urbanc, filter_urbanc, &
        num_snowc, filter_snowc, &
        num_nosnowc, filter_nosnowc, &
-       clm_fates, &
        atm2lnd_inst, soilstate_inst, energyflux_inst, temperature_inst, &
        waterflux_inst, waterstate_inst, &
        soilhydrology_inst, aerosol_inst, &
@@ -90,7 +88,6 @@ contains
     integer                  , intent(inout) :: filter_snowc(:)      ! column filter for snow points
     integer                  , intent(inout) :: num_nosnowc          ! number of column non-snow points
     integer                  , intent(inout) :: filter_nosnowc(:)    ! column filter for non-snow points
-    type(hlm_fates_interface_type), intent(inout) :: clm_fates
     type(atm2lnd_type)       , intent(in)    :: atm2lnd_inst
     type(soilstate_type)     , intent(inout) :: soilstate_inst
     type(energyflux_type)    , intent(in)    :: energyflux_inst
