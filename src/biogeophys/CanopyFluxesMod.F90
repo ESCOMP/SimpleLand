@@ -20,8 +20,6 @@ module CanopyFluxesMod
   use pftconMod             , only : pftcon
   use decompMod             , only : bounds_type
   use PhotosynthesisMod     , only : Photosynthesis, PhotoSynthesisHydraulicStress, PhotosynthesisTotal, Fractionation
-  use EDAccumulateFluxesMod , only : AccumulateFluxes_ED
-  use EDBtranMod            , only : btran_ed
   use SoilMoistStressMod    , only : calc_effective_soilporosity, calc_volumetric_h2oliq
   use SoilMoistStressMod    , only : calc_root_moist_stress, set_perchroot_opt
   use SimpleMathMod         , only : array_div_vector
@@ -44,7 +42,6 @@ module CanopyFluxesMod
   use GridcellType          , only : grc                
   use ColumnType            , only : col                
   use PatchType             , only : patch                
-  use EDTypesMod            , only : ed_site_type
   use SoilWaterRetentionCurveMod, only : soil_water_retention_curve_type
   use LunaMod               , only : Update_Photosynthesis_Capacity, Acc24_Climate_LUNA,Acc240_Climate_LUNA,Clear24_Climate_LUNA
   !
