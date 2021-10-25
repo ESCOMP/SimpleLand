@@ -255,7 +255,7 @@ contains
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 
     use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart
     use CIsoAtmTimeseriesMod  , only : C14_init_BombSpike, use_c14_bombspike, C13_init_TimeSeries, use_c13_timeseries
-    use DaylengthMod          , only : InitDaylength, daylength
+    !use DaylengthMod          , only : InitDaylength, daylength
 !    use dynSubgridDriverMod   , only : dynSubgrid_init
     use fileutils             , only : getfil
     use initInterpMod         , only : initInterp
@@ -354,7 +354,7 @@ contains
 
     call t_stopf('init_orbd')
     
-    call InitDaylength(bounds_proc, declin=declin, declinm1=declinm1)
+    !call InitDaylength(bounds_proc, declin=declin, declinm1=declinm1)
              
     ! Initialize maximum daylength, based on latitude and maximum declination
     ! given by the obliquity use negative value for S. Hem
@@ -362,19 +362,19 @@ contains
     do g = bounds_proc%begg,bounds_proc%endg
        max_decl = obliqr
        if (grc%lat(g) < 0._r8) max_decl = -max_decl
-       grc%max_dayl(g) = daylength(grc%lat(g), max_decl)
+       !grc%max_dayl(g) = daylength(grc%lat(g), max_decl)
     end do
 
     ! History file variables
 
     if (use_cn) then
-       call hist_addfld1d (fname='DAYL',  units='s', &
-            avgflag='A', long_name='daylength', &
-            ptr_gcell=grc%dayl, default='inactive')
+       !call hist_addfld1d (fname='DAYL',  units='s', &
+            !avgflag='A', long_name='daylength', &
+            !ptr_gcell=grc%dayl, default='inactive')
 
-       call hist_addfld1d (fname='PREV_DAYL', units='s', &
-            avgflag='A', long_name='daylength from previous timestep', &
-            ptr_gcell=grc%prev_dayl, default='inactive')
+       !call hist_addfld1d (fname='PREV_DAYL', units='s', &
+            !avgflag='A', long_name='daylength from previous timestep', &
+            !ptr_gcell=grc%prev_dayl, default='inactive')
     end if
 
     ! ------------------------------------------------------------------------
