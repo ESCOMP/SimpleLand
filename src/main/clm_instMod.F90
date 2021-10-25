@@ -139,7 +139,7 @@ module clm_instMod
   type(ch4_type)                          :: ch4_inst
   type(crop_type)                         :: crop_inst
   type(dust_type)                         :: dust_inst
-  type(vocemis_type)                      :: vocemis_inst
+  !type(vocemis_type)                      :: vocemis_inst
   type(fireemis_type)                     :: fireemis_inst
   type(drydepvel_type)                    :: drydepvel_inst
 
@@ -288,7 +288,7 @@ contains
     call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc), &
          IsSimpleBuildTemp(), IsProgBuildTemp() )
 
-    call aerosol_inst%Init(bounds, NLFilename)
+    !call aerosol_inst%Init(bounds, NLFilename)
 
     call frictionvel_inst%Init(bounds)
 
@@ -325,7 +325,7 @@ contains
     ! Note - always initialize the memory for ch4_inst
     call ch4_inst%Init(bounds, soilstate_inst%cellorg_col(begc:endc, 1:), fsurdat, nlfilename)
 
-    call vocemis_inst%Init(bounds)
+    !call vocemis_inst%Init(bounds)
 
     call fireemis_inst%Init(bounds)
 
@@ -485,9 +485,9 @@ contains
 
     call irrigation_inst%restart (bounds, ncid, flag=flag)
 
-    call aerosol_inst%restart (bounds, ncid,  flag=flag, &
-         h2osoi_ice_col=waterstate_inst%h2osoi_ice_col(bounds%begc:bounds%endc,:), &
-         h2osoi_liq_col=waterstate_inst%h2osoi_liq_col(bounds%begc:bounds%endc,:))
+    !call aerosol_inst%restart (bounds, ncid,  flag=flag, &
+         !h2osoi_ice_col=waterstate_inst%h2osoi_ice_col(bounds%begc:bounds%endc,:), &
+         !h2osoi_liq_col=waterstate_inst%h2osoi_liq_col(bounds%begc:bounds%endc,:))
 
     call surfalb_inst%restart (bounds, ncid, flag=flag, &
          tlai_patch=canopystate_inst%tlai_patch(bounds%begp:bounds%endp), &

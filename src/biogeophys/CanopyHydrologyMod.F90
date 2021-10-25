@@ -647,8 +647,8 @@ contains
              frac_iceold(c,0) = 1._r8
 
              ! intitialize SNICAR variables for fresh snow:
-             call aerosol_inst%Reset(column=c)
-             call waterstate_inst%Reset(column=c)
+             !call aerosol_inst%Reset(column=c)
+             !call waterstate_inst%Reset(column=c)
           end if
 
           ! The change of ice partial density of surface node due to precipitation.

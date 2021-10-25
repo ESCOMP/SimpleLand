@@ -281,22 +281,22 @@ contains
 
     ! voc emission flux
     if (shr_megan_mechcomps_n>0) then
-       call p2g(bounds, shr_megan_mechcomps_n, &
-            vocemis_inst%vocflx_patch(bounds%begp:bounds%endp,:), &
-            lnd2atm_inst%flxvoc_grc  (bounds%begg:bounds%endg,:), &
-            p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+       !call p2g(bounds, shr_megan_mechcomps_n, &
+            !vocemis_inst%vocflx_patch(bounds%begp:bounds%endp,:), &
+            !lnd2atm_inst%flxvoc_grc  (bounds%begg:bounds%endg,:), &
+            !p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
     end if
 
     ! fire emissions fluxes
      if (shr_fire_emis_mechcomps_n>0) then
-        call p2g(bounds, shr_fire_emis_mechcomps_n, &
-            -fireemis_inst%fireflx_patch(bounds%begp:bounds%endp,:), &
-             lnd2atm_inst%fireflx_grc   (bounds%begg:bounds%endg,:), &
-             p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
-        call p2g(bounds, &
-             fireemis_inst%ztop_patch (bounds%begp:bounds%endp), &
-             lnd2atm_inst%fireztop_grc(bounds%begg:bounds%endg), &
-             p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+        !call p2g(bounds, shr_fire_emis_mechcomps_n, &
+            !-fireemis_inst%fireflx_patch(bounds%begp:bounds%endp,:), &
+             !lnd2atm_inst%fireflx_grc   (bounds%begg:bounds%endg,:), &
+             !p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+        !call p2g(bounds, &
+             !fireemis_inst%ztop_patch (bounds%begp:bounds%endp), &
+             !lnd2atm_inst%fireztop_grc(bounds%begg:bounds%endg), &
+             !p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
      endif
 
     ! dust emission flux

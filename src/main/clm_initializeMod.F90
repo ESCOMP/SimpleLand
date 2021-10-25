@@ -264,7 +264,7 @@ contains
     use histFileMod           , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     use restFileMod           , only : restFile_getfile, restFile_open, restFile_close
     use restFileMod           , only : restFile_read, restFile_write 
-    use ndepStreamMod         , only : ndep_init, ndep_interp
+    !use ndepStreamMod         , only : ndep_init, ndep_interp
     use LakeCon               , only : LakeConInit 
     use SatellitePhenologyMod , only : SatellitePhenologyInit, readAnnualVegetation, interpMonthlyVeg
     use SnowSnicarMod         , only : SnowAge_init, SnowOptics_init
@@ -546,14 +546,14 @@ contains
     ! Initialize nitrogen deposition
     ! ------------------------------------------------------------------------
 
-    if (use_cn) then
-       call t_startf('init_ndep')
-       if (.not. ndep_from_cpl) then
-          call ndep_init(bounds_proc, NLFilename)
-          call ndep_interp(bounds_proc, atm2lnd_inst)
-       end if
-       call t_stopf('init_ndep')
-    end if
+    !if (use_cn) then
+       !call t_startf('init_ndep')
+       !!if (.not. ndep_from_cpl) then
+          !call ndep_init(bounds_proc, NLFilename)
+          !call ndep_interp(bounds_proc, atm2lnd_inst)
+       !end if
+       !call t_stopf('init_ndep')
+    !end if
 
     ! ------------------------------------------------------------------------
     ! Initialize active history fields. 

@@ -8,14 +8,11 @@ module ndepStreamMod
   !
   ! !USES
   use shr_kind_mod, only: r8 => shr_kind_r8, CL => shr_kind_cl 
-  use shr_strdata_mod, only: shr_strdata_type, shr_strdata_create
-  use shr_strdata_mod, only: shr_strdata_print, shr_strdata_advance
   use mct_mod     , only: mct_ggrid
-  use spmdMod     , only: mpicom, masterproc, comp_id, iam
+  use spmdMod     , only: mpicom, iam
   use clm_varctl  , only: iulog
   use abortutils  , only: endrun
-  use fileutils   , only: getavu, relavu
-  use decompMod   , only: bounds_type, ldecomp, gsmap_lnd_gdc2glo 
+  use decompMod   , only: bounds_type, gsmap_lnd_gdc2glo 
   use domainMod   , only: ldomain
 
   ! !PUBLIC TYPES:
@@ -23,239 +20,15 @@ module ndepStreamMod
   private
   save
 
-  ! !PUBLIC MEMBER FUNCTIONS:
-  public :: ndep_init      ! position datasets for dynamic ndep
-  public :: ndep_interp    ! interpolates between two years of ndep file data
   public :: clm_domain_mct ! Sets up MCT domain for this resolution
 
-  ! !PRIVATE MEMBER FUNCTIONS:
-  private :: check_units   ! Check the units and make sure they can be used
   ! ! PRIVATE TYPES
-  type(shr_strdata_type)  :: sdat           ! input data stream
-  integer :: stream_year_first_ndep         ! first year in stream to use
-  integer :: stream_year_last_ndep          ! last year in stream to use
-  integer :: model_year_align_ndep          ! align stream_year_firstndep with 
-  logical :: divide_by_secs_per_yr = .true. ! divide by the number of seconds per year
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
   !==============================================================================
 
 contains
-
-  !==============================================================================
-
-  subroutine ndep_init(bounds, NLFilename)
-   !    
-   ! Initialize data stream information.  
-   !
-   ! Uses:
-   use shr_kind_mod     , only : CS => shr_kind_cs
-   use clm_varctl       , only : inst_name
-   use clm_time_manager , only : get_calendar
-   use ncdio_pio        , only : pio_subsystem
-   use shr_pio_mod      , only : shr_pio_getiotype
-   use shr_nl_mod       , only : shr_nl_find_group_name
-   use shr_log_mod      , only : errMsg => shr_log_errMsg
-   use shr_mpi_mod      , only : shr_mpi_bcast
-   !
-   ! arguments
-   implicit none
-   type(bounds_type), intent(in) :: bounds  
-   character(len=*),  intent(in) :: NLFilename   ! Namelist filename
-   !
-   ! local variables
-   integer            :: nu_nml    ! unit for namelist file
-   integer            :: nml_error ! namelist i/o error flag
-   type(mct_ggrid)    :: dom_clm   ! domain information 
-   character(len=CL)  :: stream_fldFileName_ndep
-   character(len=CL)  :: ndepmapalgo = 'bilinear'
-   character(len=CS)  :: ndep_taxmode = 'extend'
-   character(len=CL)  :: ndep_varlist = 'NDEP_year'
-   character(*), parameter :: shr_strdata_unset = 'NOT_SET'
-   character(*), parameter :: subName = "('ndepdyn_init')"
-   character(*), parameter :: F00 = "('(ndepdyn_init) ',4a)"
-   !-----------------------------------------------------------------------
-
-   namelist /ndepdyn_nml/          &
-        stream_year_first_ndep,    &
-	stream_year_last_ndep,     &
-        model_year_align_ndep,     &
-        ndepmapalgo, ndep_taxmode, &
-        ndep_varlist,              &
-        stream_fldFileName_ndep
-
-   ! Default values for namelist
-    stream_year_first_ndep  = 1                ! first year in stream to use
-    stream_year_last_ndep   = 1                ! last  year in stream to use
-    model_year_align_ndep   = 1                ! align stream_year_first_ndep with this model year
-    stream_fldFileName_ndep = ' '
-
-   ! Read ndepdyn_nml namelist
-   if (masterproc) then
-      nu_nml = getavu()
-      open( nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
-      call shr_nl_find_group_name(nu_nml, 'ndepdyn_nml', status=nml_error)
-      if (nml_error == 0) then
-         read(nu_nml, nml=ndepdyn_nml,iostat=nml_error)
-         if (nml_error /= 0) then
-            call endrun(msg=' ERROR reading ndepdyn_nml namelist'//errMsg(sourcefile, __LINE__))
-         end if
-      else
-         call endrun(msg=' ERROR finding ndepdyn_nml namelist'//errMsg(sourcefile, __LINE__))
-      end if
-      close(nu_nml)
-      call relavu( nu_nml )
-   endif
-
-   call shr_mpi_bcast(stream_year_first_ndep , mpicom)
-   call shr_mpi_bcast(stream_year_last_ndep  , mpicom)
-   call shr_mpi_bcast(model_year_align_ndep  , mpicom)
-   call shr_mpi_bcast(stream_fldFileName_ndep, mpicom)
-   call shr_mpi_bcast(ndep_varlist           , mpicom)
-   call shr_mpi_bcast(ndep_taxmode           , mpicom)
-
-   if (masterproc) then
-      write(iulog,*) ' '
-      write(iulog,*) 'ndepdyn stream settings:'
-      write(iulog,*) '  stream_year_first_ndep  = ',stream_year_first_ndep  
-      write(iulog,*) '  stream_year_last_ndep   = ',stream_year_last_ndep   
-      write(iulog,*) '  model_year_align_ndep   = ',model_year_align_ndep   
-      write(iulog,*) '  stream_fldFileName_ndep = ',stream_fldFileName_ndep
-      write(iulog,*) '  ndep_varList            = ',ndep_varList
-      write(iulog,*) '  ndep_taxmode            = ',ndep_taxmode
-      write(iulog,*) ' '
-   endif
-   ! Read in units
-   call check_units( stream_fldFileName_ndep, ndep_varList )
-
-   ! Set domain and create streams
-   call clm_domain_mct (bounds, dom_clm)
-
-   call shr_strdata_create(sdat,name="clmndep",    &
-        pio_subsystem=pio_subsystem,               & 
-        pio_iotype=shr_pio_getiotype(inst_name),   &
-        mpicom=mpicom, compid=comp_id,             &
-        gsmap=gsmap_lnd_gdc2glo, ggrid=dom_clm,    &
-        nxg=ldomain%ni, nyg=ldomain%nj,            &
-        yearFirst=stream_year_first_ndep,          &
-        yearLast=stream_year_last_ndep,            &
-        yearAlign=model_year_align_ndep,           &
-        offset=0,                                  &
-        domFilePath='',                            &
-        domFileName=trim(stream_fldFileName_ndep), &
-        domTvarName='time',                        &
-        domXvarName='lon' ,                        &
-        domYvarName='lat' ,                        &  
-        domAreaName='area',                        &
-        domMaskName='mask',                        &
-        filePath='',                               &
-        filename=(/trim(stream_fldFileName_ndep)/),&
-        fldListFile=ndep_varlist,                  &
-        fldListModel=ndep_varlist,                 &
-        fillalgo='none',                           &
-        mapalgo=ndepmapalgo,                       &
-        calendar=get_calendar(),                   &
-	taxmode=ndep_taxmode                       )
-
-
-   if (masterproc) then
-      call shr_strdata_print(sdat,'CLMNDEP data')
-   endif
-
- end subroutine ndep_init
- !================================================================
-  
- subroutine check_units( stream_fldFileName_ndep, ndep_varList )
-   !-------------------------------------------------------------------
-   ! Check that units are correct on the file and if need any conversion
-   use ncdio_pio     , only : ncd_pio_openfile, ncd_inqvid, ncd_getatt, ncd_pio_closefile, ncd_nowrite
-   use ncdio_pio     , only : file_desc_t, var_desc_t
-   use shr_kind_mod  , only : CS => shr_kind_cs
-   use shr_log_mod   , only : errMsg => shr_log_errMsg
-   use shr_string_mod, only : shr_string_listGetName
-   implicit none
-
-   !-----------------------------------------------------------------------
-   !
-   ! Arguments
-   character(len=*), intent(IN)  :: stream_fldFileName_ndep  ! ndep filename
-   character(len=*), intent(IN)  :: ndep_varList             ! ndep variable list to examine
-   !
-   ! Local variables
-   type(file_desc_t) :: ncid     ! NetCDF filehandle for ndep file
-   type(var_desc_t)  :: vardesc  ! variable descriptor
-   integer           :: varid    ! variable index
-   logical           :: readvar  ! If variable was read
-   character(len=CS) :: ndepunits! ndep units
-   character(len=CS) :: fname    ! ndep field name
-   !-----------------------------------------------------------------------
-   call ncd_pio_openfile( ncid, trim(stream_fldFileName_ndep), ncd_nowrite )
-   call shr_string_listGetName( ndep_varList, 1, fname )
-   call ncd_inqvid(       ncid, fname, varid, vardesc, readvar=readvar )
-   if ( readvar ) then
-      call ncd_getatt(    ncid, varid, "units", ndepunits )
-   else
-      call endrun(msg=' ERROR finding variable: '//trim(fname)//" in file: "// &
-                      trim(stream_fldFileName_ndep)//errMsg(sourcefile, __LINE__))
-   end if
-   call ncd_pio_closefile( ncid )
-
-   ! Now check to make sure they are correct
-   if (      trim(ndepunits) == "g(N)/m2/s"  )then
-      divide_by_secs_per_yr = .false.
-   else if ( trim(ndepunits) == "g(N)/m2/yr" )then
-      divide_by_secs_per_yr = .true.
-   else
-      call endrun(msg=' ERROR in units for nitrogen deposition equal to: '//trim(ndepunits)//" not units expected"// &
-                      errMsg(sourcefile, __LINE__))
-   end if
-
- end subroutine check_units
-
- !================================================================
- subroutine ndep_interp(bounds, atm2lnd_inst)
-
-   !-----------------------------------------------------------------------
-   use clm_time_manager, only : get_curr_date, get_days_per_year
-   use clm_varcon      , only : secspday
-   use atm2lndType     , only : atm2lnd_type
-   !
-   ! Arguments
-   type(bounds_type) , intent(in)    :: bounds  
-   type(atm2lnd_type), intent(inout) :: atm2lnd_inst
-   !
-   ! Local variables
-   integer :: g, ig 
-   integer :: year    ! year (0, ...) for nstep+1
-   integer :: mon     ! month (1, ..., 12) for nstep+1
-   integer :: day     ! day of month (1, ..., 31) for nstep+1
-   integer :: sec     ! seconds into current date for nstep+1
-   integer :: mcdate  ! Current model date (yyyymmdd)
-   integer :: dayspyr ! days per year
-   !-----------------------------------------------------------------------
-
-   call get_curr_date(year, mon, day, sec)
-   mcdate = year*10000 + mon*100 + day
-
-   call shr_strdata_advance(sdat, mcdate, sec, mpicom, 'ndepdyn')
-
-   if ( divide_by_secs_per_yr )then
-      ig = 0
-      dayspyr = get_days_per_year( )
-      do g = bounds%begg,bounds%endg
-         ig = ig+1
-         atm2lnd_inst%forc_ndep_grc(g) = sdat%avs(1)%rAttr(1,ig) / (secspday * dayspyr)
-      end do
-   else
-      ig = 0
-      do g = bounds%begg,bounds%endg
-         ig = ig+1
-         atm2lnd_inst%forc_ndep_grc(g) = sdat%avs(1)%rAttr(1,ig)
-      end do
-   end if
-   
- end subroutine ndep_interp
 
  !==============================================================================
   subroutine clm_domain_mct(bounds, dom_clm)

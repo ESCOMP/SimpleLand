@@ -247,7 +247,7 @@ contains
     !
     ! !USES:
     use clm_varcon        , only : denh2o, denice, wimp, ssi
-    use AerosolMod        , only : AerosolFluxes
+    !use AerosolMod        , only : AerosolFluxes
     !
     ! !ARGUMENTS:
     type(bounds_type)     , intent(in)    :: bounds
@@ -523,8 +523,8 @@ contains
 
     ! Compute aerosol fluxes through snowpack and aerosol deposition fluxes into top layere
 
-    call AerosolFluxes(bounds, num_snowc, filter_snowc, &
-         atm2lnd_inst, aerosol_inst)
+    !call AerosolFluxes(bounds, num_snowc, filter_snowc, &
+         !atm2lnd_inst, aerosol_inst)
 
     ! Adjust layer thickness for any water+ice content changes in excess of previous
     ! layer thickness. Strictly speaking, only necessary for top snow layer, but doing
