@@ -23,7 +23,7 @@ module clm_instMod
   use UrbanParamsType                    , only : IsSimpleBuildTemp, IsProgBuildTemp
   use UrbanTimeVarType                   , only : urbantv_type
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
-  use CNDVType                           , only : dgv_ecophyscon     ! Constants 
+  !use CNDVType                           , only : dgv_ecophyscon     ! Constants 
 
   !-----------------------------------------
   ! Definition of component types 
@@ -323,13 +323,13 @@ contains
     call topo_inst%Init(bounds)
 
     ! Note - always initialize the memory for ch4_inst
-    call ch4_inst%Init(bounds, soilstate_inst%cellorg_col(begc:endc, 1:), fsurdat, nlfilename)
+    !call ch4_inst%Init(bounds, soilstate_inst%cellorg_col(begc:endc, 1:), fsurdat, nlfilename)
 
     !call vocemis_inst%Init(bounds)
 
-    call fireemis_inst%Init(bounds)
+    !call fireemis_inst%Init(bounds)
 
-    call drydepvel_inst%Init(bounds)
+    !call drydepvel_inst%Init(bounds)
 
     if (use_cn ) then
 
@@ -495,9 +495,9 @@ contains
 
     call topo_inst%restart (bounds, ncid, flag=flag)
 
-    if (use_lch4) then
-       call ch4_inst%restart(bounds, ncid, flag=flag)
-    end if
+    !if (use_lch4) then
+       !call ch4_inst%restart(bounds, ncid, flag=flag)
+    !end if
 
     if ( use_cn ) then
        ! Need to do vegetation restart before soil bgc restart to get totvegc_col for purpose

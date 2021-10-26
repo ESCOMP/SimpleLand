@@ -39,7 +39,7 @@ contains
     use SoilBiogeochemDecompMod           , only : readSoilBiogeochemDecompParams         => readParams
     use SoilBiogeochemDecompCascadeBGCMod , only : readSoilBiogeochemDecompBgcParams      => readParams
     use SoilBiogeochemDecompCascadeCNMod  , only : readSoilBiogeochemDecompCnParams       => readParams
-    use ch4Mod                            , only : readCH4Params                          => readParams
+    !use ch4Mod                            , only : readCH4Params                          => readParams
     use NutrientCompetitionMethodMod      , only : nutrient_competition_method_type
     use clm_varctl,                         only : NLFilename_in
     use PhotosynthesisMod                 , only : photosyns_type
@@ -90,7 +90,7 @@ contains
        call readSoilBiogeochemPotentialParams(ncid)
        call CNParamsReadShared(ncid, NLFilename_in)  ! this is called CN params but really is for the soil biogeochem parameters
 
-       call readCH4Params (ncid)
+       !call readCH4Params (ncid)
     end if
 
     !

@@ -862,6 +862,7 @@ contains
      character(len=*), parameter :: subname = 'dyn_cnbal_col'
      !-----------------------------------------------------------------------
 
+     call endrun( "Should not be here" )
      call soilbiogeochem_carbonstate_inst%DynamicColumnAdjustments(bounds, clump_index, &
           column_state_updater)
      if (use_c13) then
@@ -876,9 +877,9 @@ contains
      call soilbiogeochem_nitrogenstate_inst%DynamicColumnAdjustments(bounds, clump_index, &
           column_state_updater)
 
-     if (use_lch4) then
-        call ch4_inst%DynamicColumnAdjustments(bounds, clump_index, column_state_updater)
-     end if
+     !if (use_lch4) then
+        !call ch4_inst%DynamicColumnAdjustments(bounds, clump_index, column_state_updater)
+     !end if
 
    end subroutine dyn_cnbal_col
 
