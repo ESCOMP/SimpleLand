@@ -76,7 +76,7 @@
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
     <options>
-      <option name="wallclock">01:00:00</option>
+      <option name="wallclock">01:40:00</option>
       <option name="comment">Longer smoke test with DOCN for realistic 2000</option>
     </options>
   </test>
