@@ -12,7 +12,7 @@ module clm_initializeMod
   use clm_varctl      , only : nsrest, nsrStartup, nsrContinue, nsrBranch
   use clm_varctl      , only : is_cold_start, is_interpolated_start
   use clm_varctl      , only : iulog
-  use clm_varctl      , only : use_lch4, use_cn, use_cndv, use_c13, use_c14
+  use clm_varctl      , only : use_cn, use_cndv
   use clm_instur      , only : wt_lunit, urban_valid, wt_nat_patch, wt_cft, fert_cft, wt_glc_mec, topo_glc_mec
   use perf_mod        , only : t_startf, t_stopf
   use readParamsMod   , only : readParameters
@@ -211,18 +211,6 @@ contains
     end do
     !$OMP END PARALLEL DO
 
-    ! ------------------------------------------------------------------------
-    ! Remainder of initialization1
-    ! ------------------------------------------------------------------------
-
-    ! Set CH4 Model Parameters from namelist.
-    ! Need to do before initTimeConst so that it knows whether to 
-    ! look for several optional parameters on surfdata file.
-
-    if (use_lch4) then
-       call ch4conrd()
-    end if
-
     ! Deallocate surface grid dynamic memory for variables that aren't needed elsewhere.
     ! Some things are kept until the end of initialize2; urban_valid is kept through the
     ! end of the run for error checking.
@@ -249,12 +237,10 @@ contains
     use clm_varcon            , only : spval
     use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat, mml_surdat
     use clm_varctl            , only : use_century_decomp, single_column, scmlat, scmlon, use_cn
-    use clm_varctl            , only : use_crop, ndep_from_cpl
     use clm_varorb            , only : eccen, mvelpp, lambm0, obliqr
     use clm_time_manager      , only : get_step_size, get_curr_calday
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 
     use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart
-    use CIsoAtmTimeseriesMod  , only : C14_init_BombSpike, use_c14_bombspike, C13_init_TimeSeries, use_c13_timeseries
     !use DaylengthMod          , only : InitDaylength, daylength
 !    use dynSubgridDriverMod   , only : dynSubgrid_init
     use fileutils             , only : getfil
@@ -449,13 +435,6 @@ contains
           call SatellitePhenologyInit(bounds_proc)
        end if
 
-       if ( use_c14 .and. use_c14_bombspike ) then
-          call C14_init_BombSpike()
-       end if
-
-       if ( use_c13 .and. use_c13_timeseries ) then
-          call C13_init_TimeSeries()
-       end if
     else
        call SatellitePhenologyInit(bounds_proc)
     end if
@@ -543,19 +522,6 @@ contains
     end if
 
     ! ------------------------------------------------------------------------
-    ! Initialize nitrogen deposition
-    ! ------------------------------------------------------------------------
-
-    !if (use_cn) then
-       !call t_startf('init_ndep')
-       !!if (.not. ndep_from_cpl) then
-          !call ndep_init(bounds_proc, NLFilename)
-          !call ndep_interp(bounds_proc, atm2lnd_inst)
-       !end if
-       !call t_stopf('init_ndep')
-    !end if
-
-    ! ------------------------------------------------------------------------
     ! Initialize active history fields. 
     ! ------------------------------------------------------------------------
 
@@ -582,10 +548,6 @@ contains
     call canopystate_inst%initAccVars(bounds_proc)
 
     call bgc_vegetation_inst%initAccVars(bounds_proc)
-
-    if (use_crop) then
-       call crop_inst%initAccVars(bounds_proc)
-    end if
 
     !------------------------------------------------------------       
     ! Read monthly vegetation
