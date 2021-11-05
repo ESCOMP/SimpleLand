@@ -83,13 +83,13 @@
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_D_Lm3.f19_g17.IHistClm45BgcQianGs.hobart_intel.clm-realistic_fromCLM5_1850">
+  <test name="ERS_D_Lm3.f19_g17.IHistClm45BgcQianGs.izumi_intel.clm-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_D_Lm3.f19_g17.IHistClm45BgcQianGs.hobart_gnu.clm-realistic_fromCLM5_1850">
+  <test name="ERS_D_Lm3.f19_g17.IHistClm45BgcQianGs.izumi_gnu.clm-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
@@ -101,7 +101,7 @@
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERP_Ld60_D.f19_g17.I2000SlimRsGs.hobart_intel.clm-2000_CMIP6_AMIP_1deg_ensemble">
+  <test name="ERP_Ld60_D.f19_g17.I2000SlimRsGs.izumi_intel.clm-2000_CMIP6_AMIP_1deg_ensemble">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
@@ -113,19 +113,19 @@
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERP_D_Ld60.f19_g17.I1850Clm45BgcGs.hobart_intel.clm-realistic_fromCLM5_1850">
+  <test name="ERP_D_Ld60.f19_g17.I1850Clm45BgcGs.izumi_intel.clm-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="SMS_D.f19_g17.IHistClm45BgcQianGs.hobart_nag.clm-realistic_fromCLM5_1850">
+  <test name="SMS_D.f19_g17.IHistClm45BgcQianGs.izumi_nag.clm-realistic_fromCLM5_1850">
     <phase name="BUILD">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#12</issue>
     </phase>
   </test>
-  <test name="SMS_D.f19_g17.IHistClm45BgcQianGs.hobart_pgi.clm-realistic_fromCLM5_1850">
+  <test name="SMS_D.f19_g17.IHistClm45BgcQianGs.izumi_pgi.clm-realistic_fromCLM5_1850">
     <phase name="BUILD">
       <status>FAIL</status>
       <issue>marysa/SimpleLand#13</issue>
