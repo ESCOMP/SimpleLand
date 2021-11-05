@@ -1,1 +1,1 @@
-mml_surdat = '/gpfs/u/home/mlague/cesmruns/simple_land/inputs/realistic/slim_realistic_fromCLM5_alb1850_hc1850_rs1850_f19_20190110.nc'
+mml_surdat = '$DIN_LOC_ROOT/lnd/slim/surdat/slim_realistic_fromCLM5_alb1850_hc1850_rs1850_f19_20190110.nc'
