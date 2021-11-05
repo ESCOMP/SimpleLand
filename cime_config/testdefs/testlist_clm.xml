@@ -152,6 +152,15 @@
       <option name="comment">Change PE count test for standalone SLIM</option>
     </options>
   </test>
+  <test name="SMS_Lm1" grid="f19_g17" compset="IHistClm45BgcQianGs" testmods="clm/realistic_fromCLM5_1850">
+    <machines>
+      <machine name="izumi"    compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Longer smoke test for historical case for SLIM on izumi</option>
+    </options>
+  </test>
   <test name="SMS" grid="f19_g17" compset="I1850Clm45BgcGs" testmods="clm/realistic_fromCLM5_1850">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
@@ -160,6 +169,15 @@
     <options>
       <option name="wallclock">00:20:00</option>
       <option name="comment">Smoke 1850 compset test for standalone SLIM</option>
+    </options>
+  </test>
+  <test name="SMS_Lm1" grid="f19_g17" compset="I1850Clm45BgcGs" testmods="clm/realistic_fromCLM5_1850">
+    <machines>
+      <machine name="izumi"    compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Longer smoke 1850 compset test for standalone SLIM</option>
     </options>
   </test>
   <test name="ERP_D_Ld60" grid="f19_g17" compset="I1850Clm45BgcGs" testmods="clm/realistic_fromCLM5_1850">
@@ -180,6 +198,15 @@
     <options>
       <option name="wallclock">00:20:00</option>
       <option name="comment">Smoke 2000 compset test for standalone SLIM with realistic conditions</option>
+    </options>
+  </test>
+  <test name="SMS_Lm1" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensemble">
+    <machines>
+      <machine name="izumi"    compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Longer smoke 2000 compset test for standalone SLIM with realistic conditions</option>
     </options>
   </test>
   <test name="ERP_Ld60_D" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensemble">
