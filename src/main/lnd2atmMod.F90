@@ -133,7 +133,6 @@ contains
     ! Compute lnd2atm_inst component of gridcell derived type
     !
     ! !USES:
-    use ch4varcon  , only : ch4offline
     !
     ! !ARGUMENTS:
     type(bounds_type)           , intent(in)    :: bounds  
@@ -255,16 +254,6 @@ contains
        lnd2atm_inst%net_carbon_exchange_grc(g) = &
             net_carbon_exchange_grc(g)
     end do
-    if (use_lch4) then
-       if (.not. ch4offline) then
-          ! Adjust flux of CO2 by the net conversion of mineralizing C to CH4
-          do g = bounds%begg,bounds%endg
-             ! nem is in g C/m2/sec
-             lnd2atm_inst%net_carbon_exchange_grc(g) = &
-                  lnd2atm_inst%net_carbon_exchange_grc(g) + lnd2atm_inst%nem_grc(g)
-          end do
-       end if
-    end if
     ! Convert from gC/m2/s to kgCO2/m2/s
     do g = bounds%begg,bounds%endg
        lnd2atm_inst%net_carbon_exchange_grc(g) = &

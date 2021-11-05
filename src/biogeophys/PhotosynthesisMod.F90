@@ -14,14 +14,13 @@ module  PhotosynthesisMod
   use shr_log_mod         , only : errMsg => shr_log_errMsg
   use shr_infnan_mod      , only : nan => shr_infnan_nan, assignment(=)
   use abortutils          , only : endrun
-  use clm_varctl          , only : use_c13, use_c14, use_cn, use_cndv, use_fates, use_luna, use_hydrstress
+  use clm_varctl          , only : use_cn, use_cndv, use_fates, use_luna, use_hydrstress
   use clm_varctl          , only : iulog
   use clm_varpar          , only : nlevcan, nvegwcs, mxpft
-  use clm_varcon          , only : namep, c14ratio, spval
+  use clm_varcon          , only : namep, spval
   use decompMod           , only : bounds_type
   use QuadraticMod        , only : quadratic
   use pftconMod           , only : pftcon
-  use CIsoAtmTimeseriesMod, only : C14BombSpike, use_c14_bombspike, C13TimeSeries, use_c13_timeseries, nsectors_c14
   use atm2lndType         , only : atm2lnd_type
   use CanopyStateType     , only : canopystate_type
   use WaterStateType      , only : waterstate_type
@@ -130,16 +129,8 @@ module  PhotosynthesisMod
      real(r8), pointer, private :: alphapsnsun_patch (:)   ! patch sunlit 13c fractionation ([])
      real(r8), pointer, private :: alphapsnsha_patch (:)   ! patch shaded 13c fractionation ([])
 
-     real(r8), pointer, public  :: rc13_canair_patch (:)   ! patch C13O2/C12O2 in canopy air
-     real(r8), pointer, public  :: rc13_psnsun_patch (:)   ! patch C13O2/C12O2 in sunlit canopy psn flux
-     real(r8), pointer, public  :: rc13_psnsha_patch (:)   ! patch C13O2/C12O2 in shaded canopy psn flux
-
      real(r8), pointer, public  :: psnsun_patch      (:)   ! patch sunlit leaf photosynthesis     (umol CO2/m**2/s)
      real(r8), pointer, public  :: psnsha_patch      (:)   ! patch shaded leaf photosynthesis     (umol CO2/m**2/s)
-     real(r8), pointer, public  :: c13_psnsun_patch  (:)   ! patch c13 sunlit leaf photosynthesis (umol 13CO2/m**2/s)
-     real(r8), pointer, public  :: c13_psnsha_patch  (:)   ! patch c13 shaded leaf photosynthesis (umol 13CO2/m**2/s)
-     real(r8), pointer, public  :: c14_psnsun_patch  (:)   ! patch c14 sunlit leaf photosynthesis (umol 14CO2/m**2/s)
-     real(r8), pointer, public  :: c14_psnsha_patch  (:)   ! patch c14 shaded leaf photosynthesis (umol 14CO2/m**2/s)
 
      real(r8), pointer, private :: psnsun_z_patch    (:,:) ! patch canopy layer: sunlit leaf photosynthesis   (umol CO2/m**2/s)
      real(r8), pointer, private :: psnsha_z_patch    (:,:) ! patch canopy layer: shaded leaf photosynthesis   (umol CO2/m**2/s)
@@ -271,10 +262,6 @@ contains
 
     allocate(this%psnsun_patch      (begp:endp))           ; this%psnsun_patch      (:)   = nan
     allocate(this%psnsha_patch      (begp:endp))           ; this%psnsha_patch      (:)   = nan
-    allocate(this%c13_psnsun_patch  (begp:endp))           ; this%c13_psnsun_patch  (:)   = nan
-    allocate(this%c13_psnsha_patch  (begp:endp))           ; this%c13_psnsha_patch  (:)   = nan
-    allocate(this%c14_psnsun_patch  (begp:endp))           ; this%c14_psnsun_patch  (:)   = nan
-    allocate(this%c14_psnsha_patch  (begp:endp))           ; this%c14_psnsha_patch  (:)   = nan
 
     allocate(this%psnsun_z_patch    (begp:endp,1:nlevcan)) ; this%psnsun_z_patch    (:,:) = nan
     allocate(this%psnsha_z_patch    (begp:endp,1:nlevcan)) ; this%psnsha_z_patch    (:,:) = nan
@@ -298,9 +285,6 @@ contains
 
     allocate(this%alphapsnsun_patch (begp:endp))           ; this%alphapsnsun_patch (:)   = nan
     allocate(this%alphapsnsha_patch (begp:endp))           ; this%alphapsnsha_patch (:)   = nan
-    allocate(this%rc13_canair_patch (begp:endp))           ; this%rc13_canair_patch (:)   = nan
-    allocate(this%rc13_psnsun_patch (begp:endp))           ; this%rc13_psnsun_patch (:)   = nan
-    allocate(this%rc13_psnsha_patch (begp:endp))           ; this%rc13_psnsha_patch (:)   = nan
 
     allocate(this%cisun_z_patch     (begp:endp,1:nlevcan)) ; this%cisun_z_patch     (:,:) = nan
     allocate(this%cisha_z_patch     (begp:endp,1:nlevcan)) ; this%cisha_z_patch     (:,:) = nan
@@ -397,61 +381,6 @@ contains
             avgflag='A', long_name='shaded leaf photosynthesis', &
             ptr_patch=this%psnsha_patch)
     end if
-
-    if ( use_c13 ) then
-       this%c13_psnsun_patch(begp:endp) = spval
-       call hist_addfld1d (fname='C13_PSNSUN', units='umolCO2/m^2/s', &
-            avgflag='A', long_name='C13 sunlit leaf photosynthesis', &
-            ptr_patch=this%c13_psnsun_patch)
-
-       this%c13_psnsha_patch(begp:endp) = spval
-       call hist_addfld1d (fname='C13_PSNSHA', units='umolCO2/m^2/s', &
-            avgflag='A', long_name='C13 shaded leaf photosynthesis', &
-            ptr_patch=this%c13_psnsha_patch)
-    end if
-
-    if ( use_c14 ) then
-       this%c14_psnsun_patch(begp:endp) = spval
-       call hist_addfld1d (fname='C14_PSNSUN', units='umolCO2/m^2/s', &
-            avgflag='A', long_name='C14 sunlit leaf photosynthesis', &
-            ptr_patch=this%c14_psnsun_patch)
-
-       this%c14_psnsha_patch(begp:endp) = spval
-       call hist_addfld1d (fname='C14_PSNSHA', units='umolCO2/m^2/s', &
-            avgflag='A', long_name='C14 shaded leaf photosynthesis', &
-            ptr_patch=this%c14_psnsha_patch)
-    end if
-
-    if ( use_c13 ) then
-       this%rc13_canair_patch(begp:endp) = spval
-       call hist_addfld1d (fname='RC13_CANAIR', units='proportion', &
-            avgflag='A', long_name='C13/C(12+13) for canopy air', &
-            ptr_patch=this%rc13_canair_patch)
-
-       this%rc13_psnsun_patch(begp:endp) = spval
-       call hist_addfld1d (fname='RC13_PSNSUN', units='proportion', &
-            avgflag='A', long_name='C13/C(12+13) for sunlit photosynthesis', &
-            ptr_patch=this%rc13_psnsun_patch)
-
-       this%rc13_psnsha_patch(begp:endp) = spval
-       call hist_addfld1d (fname='RC13_PSNSHA', units='proportion', &
-            avgflag='A', long_name='C13/C(12+13) for shaded photosynthesis', &
-            ptr_patch=this%rc13_psnsha_patch)
-    endif
-
-    ! Canopy physiology
-
-    if ( use_c13 ) then
-       this%alphapsnsun_patch(begp:endp) = spval
-       call hist_addfld1d (fname='ALPHAPSNSUN', units='proportion', &
-            avgflag='A', long_name='sunlit c13 fractionation', &
-            ptr_patch=this%alphapsnsun_patch, default='inactive')
-
-       this%alphapsnsha_patch(begp:endp) = spval
-       call hist_addfld1d (fname='ALPHAPSNSHA', units='proportion', &
-            avgflag='A', long_name='shaded c13 fractionation', &
-            ptr_patch=this%alphapsnsha_patch, default='inactive')
-    endif
 
     this%rssun_patch(begp:endp) = spval
     call hist_addfld1d (fname='RSSUN', units='s/m',  &
@@ -558,14 +487,6 @@ contains
        if (lun%ifspecial(l)) then
           this%psnsun_patch(p) = 0._r8
           this%psnsha_patch(p) = 0._r8
-          if ( use_c13 ) then
-             this%c13_psnsun_patch(p) = 0._r8
-             this%c13_psnsha_patch(p) = 0._r8
-          endif
-          if ( use_c14 ) then
-             this%c14_psnsun_patch(p) = 0._r8
-             this%c14_psnsha_patch(p) = 0._r8
-          endif
        end if
     end do
 
@@ -747,20 +668,6 @@ contains
     logical :: readvar      ! determine if variable is on initial file
     !-----------------------------------------------------------------------
 
-    if ( use_c13 ) then
-       call restartvar(ncid=ncid, flag=flag, varname='rc13_canair', xtype=ncd_double,  &
-            dim1name='pft', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%rc13_canair_patch)
-
-       call restartvar(ncid=ncid, flag=flag, varname='rc13_psnsun', xtype=ncd_double,  &
-            dim1name='pft', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%rc13_psnsun_patch)
-
-       call restartvar(ncid=ncid, flag=flag, varname='rc13_psnsha', xtype=ncd_double,  &
-            dim1name='pft', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%rc13_psnsha_patch)
-    endif
-
     call restartvar(ncid=ncid, flag=flag, varname='GSSUN', xtype=ncd_double,  &
          dim1name='pft', dim2name='levcan', switchdim=.true., &
          long_name='sunlit leaf stomatal conductance', units='umol H20/m2/s', &
@@ -847,25 +754,10 @@ contains
           this%fpsn_wj_patch(p)   = 0._r8
           this%fpsn_wp_patch(p)   = 0._r8
 
-          if ( use_c13 ) then
-             this%alphapsnsun_patch(p) = 0._r8
-             this%alphapsnsha_patch(p) = 0._r8
-             this%c13_psnsun_patch(p)  = 0._r8
-             this%c13_psnsha_patch(p)  = 0._r8
-          endif
-          if ( use_c14 ) then
-             this%c14_psnsun_patch(p) = 0._r8
-             this%c14_psnsha_patch(p) = 0._r8
-          endif
        end if
        if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop &
             .or. lun%itype(l) == istice_mec &
             .or. lun%itype(l) == istwet) then
-          if (use_c13) then
-             this%rc13_canair_patch(p) = 0._r8
-             this%rc13_psnsun_patch(p) = 0._r8
-             this%rc13_psnsha_patch(p) = 0._r8
-          end if
        end if
     end do
 
@@ -883,25 +775,8 @@ contains
     integer, intent(in) :: p
     !-----------------------------------------------------------------------
 
-    if ( use_c13 ) then
-       this%alphapsnsun_patch(p) = 0._r8
-       this%alphapsnsha_patch(p) = 0._r8
-       this%rc13_canair_patch(p) = 0._r8
-       this%rc13_psnsun_patch(p) = 0._r8
-       this%rc13_psnsha_patch(p) = 0._r8
-    endif
-
     this%psnsun_patch(p) = 0._r8
     this%psnsha_patch(p) = 0._r8
-
-    if (use_c13) then
-       this%c13_psnsun_patch(p) = 0._r8
-       this%c13_psnsha_patch(p) = 0._r8
-    end if
-    if ( use_c14 ) then
-       this%c14_psnsun_patch(p) = 0._r8
-       this%c14_psnsha_patch(p) = 0._r8
-    end if
 
   end subroutine NewPatchInit
 
@@ -1458,10 +1333,6 @@ contains
                tpu_z(p,iv) = 0._r8
                kp_z(p,iv) = 0._r8
 
-               if ( use_c13 ) then
-                  alphapsn(p) = 1._r8
-               end if
-
             else                                     ! day time
 
                if(use_luna.and.c3flag(p).and.crop(patch%itype(p))== 0)then
@@ -1722,13 +1593,10 @@ contains
     ! !LOCAL VARIABLES:
     integer :: f,fp,p,l,g               ! indices
 
-    real(r8) :: rc14_atm(nsectors_c14), rc13_atm
-    integer :: sector_c14
     !-----------------------------------------------------------------------
 
     associate(                                             &
          forc_pco2   => atm2lnd_inst%forc_pco2_grc       , & ! Input:  [real(r8) (:) ]  partial pressure co2 (Pa)
-         forc_pc13o2 => atm2lnd_inst%forc_pc13o2_grc     , & ! Input:  [real(r8) (:) ]  partial pressure c13o2 (Pa)
          forc_po2    => atm2lnd_inst%forc_po2_grc        , & ! Input:  [real(r8) (:) ]  partial pressure o2 (Pa)
 
          laisun      => canopystate_inst%laisun_patch    , & ! Input:  [real(r8) (:) ]  sunlit leaf area
@@ -1736,9 +1604,6 @@ contains
 
          psnsun      => photosyns_inst%psnsun_patch      , & ! Input:  [real(r8) (:) ]  sunlit leaf photosynthesis (umol CO2 /m**2/ s)
          psnsha      => photosyns_inst%psnsha_patch      , & ! Input:  [real(r8) (:) ]  shaded leaf photosynthesis (umol CO2 /m**2/ s)
-         rc13_canair => photosyns_inst%rc13_canair_patch , & ! Output: [real(r8) (:) ]  C13O2/C12O2 in canopy air
-         rc13_psnsun => photosyns_inst%rc13_psnsun_patch , & ! Output: [real(r8) (:) ]  C13O2/C12O2 in sunlit canopy psn flux
-         rc13_psnsha => photosyns_inst%rc13_psnsha_patch , & ! Output: [real(r8) (:) ]  C13O2/C12O2 in shaded canopy psn flux
          alphapsnsun => photosyns_inst%alphapsnsun_patch , & ! Output: [real(r8) (:) ]  fractionation factor in sunlit canopy psn flux
          alphapsnsha => photosyns_inst%alphapsnsha_patch , & ! Output: [real(r8) (:) ]  fractionation factor in shaded canopy psn flux
          psnsun_wc   => photosyns_inst%psnsun_wc_patch   , & ! Output: [real(r8) (:) ]  Rubsico-limited sunlit leaf photosynthesis (umol CO2 /m**2/ s)
@@ -1747,29 +1612,11 @@ contains
          psnsha_wc   => photosyns_inst%psnsha_wc_patch   , & ! Output: [real(r8) (:) ]  Rubsico-limited shaded leaf photosynthesis (umol CO2 /m**2/ s)
          psnsha_wj   => photosyns_inst%psnsha_wj_patch   , & ! Output: [real(r8) (:) ]  RuBP-limited shaded leaf photosynthesis (umol CO2 /m**2/ s)
          psnsha_wp   => photosyns_inst%psnsha_wp_patch   , & ! Output: [real(r8) (:) ]  product-limited shaded leaf photosynthesis (umol CO2 /m**2/ s)
-         c13_psnsun  => photosyns_inst%c13_psnsun_patch  , & ! Output: [real(r8) (:) ]  sunlit leaf photosynthesis (umol 13CO2 /m**2/ s)
-         c13_psnsha  => photosyns_inst%c13_psnsha_patch  , & ! Output: [real(r8) (:) ]  shaded leaf photosynthesis (umol 13CO2 /m**2/ s)
-         c14_psnsun  => photosyns_inst%c14_psnsun_patch  , & ! Output: [real(r8) (:) ]  sunlit leaf photosynthesis (umol 14CO2 /m**2/ s)
-         c14_psnsha  => photosyns_inst%c14_psnsha_patch  , & ! Output: [real(r8) (:) ]  shaded leaf photosynthesis (umol 14CO2 /m**2/ s)
          fpsn        => photosyns_inst%fpsn_patch        , & ! Output: [real(r8) (:) ]  photosynthesis (umol CO2 /m**2 /s)
          fpsn_wc     => photosyns_inst%fpsn_wc_patch     , & ! Output: [real(r8) (:) ]  Rubisco-limited photosynthesis (umol CO2 /m**2 /s)
          fpsn_wj     => photosyns_inst%fpsn_wj_patch     , & ! Output: [real(r8) (:) ]  RuBP-limited photosynthesis (umol CO2 /m**2 /s)
          fpsn_wp     => photosyns_inst%fpsn_wp_patch       & ! Output: [real(r8) (:) ]  product-limited photosynthesis (umol CO2 /m**2 /s)
          )
-
-      if ( use_c14 ) then
-         if (use_c14_bombspike) then
-            call C14BombSpike(rc14_atm)
-         else
-            rc14_atm(:) = c14ratio
-         end if
-      end if
-
-      if ( use_c13 ) then
-         if (use_c13_timeseries) then
-            call C13TimeSeries(rc13_atm)
-         end if
-      end if
 
       do f = 1, fn
          p = filterp(f)
@@ -1780,38 +1627,6 @@ contains
             fpsn_wc(p) = psnsun_wc(p)*laisun(p) + psnsha_wc(p)*laisha(p)
             fpsn_wj(p) = psnsun_wj(p)*laisun(p) + psnsha_wj(p)*laisha(p)
             fpsn_wp(p) = psnsun_wp(p)*laisun(p) + psnsha_wp(p)*laisha(p)
-         end if
-
-         if (use_cn) then
-            if ( use_c13 ) then
-               if (use_c13_timeseries) then
-                  rc13_canair(p) = rc13_atm
-               else
-                  rc13_canair(p) = forc_pc13o2(g)/(forc_pco2(g) - forc_pc13o2(g))
-               endif
-               rc13_psnsun(p) = rc13_canair(p)/alphapsnsun(p)
-               rc13_psnsha(p) = rc13_canair(p)/alphapsnsha(p)
-               c13_psnsun(p)  = psnsun(p) * (rc13_psnsun(p)/(1._r8+rc13_psnsun(p)))
-               c13_psnsha(p)  = psnsha(p) * (rc13_psnsha(p)/(1._r8+rc13_psnsha(p)))
-
-               ! use fixed c13 ratio with del13C of -25 to test the overall c13 structure
-               ! c13_psnsun(p) = 0.01095627 * psnsun(p)
-               ! c13_psnsha(p) = 0.01095627 * psnsha(p)
-            endif
-            if ( use_c14 ) then
-
-               ! determine latitute sector for radiocarbon bomb spike inputs
-               if ( grc%latdeg(g) .ge. 30._r8 ) then
-                  sector_c14 = 1
-               else if ( grc%latdeg(g) .ge. -30._r8 ) then            
-                  sector_c14 = 2
-               else
-                  sector_c14 = 3
-               endif
-
-               c14_psnsun(p) = rc14_atm(sector_c14) * psnsun(p)
-               c14_psnsha(p) = rc14_atm(sector_c14) * psnsha(p)
-            endif
          end if
 
       end do
@@ -3064,11 +2879,6 @@ contains
                jmax_z(p,sha,iv) = 0._r8
                tpu_z(p,sha,iv) = 0._r8
                kp_z(p,sha,iv) = 0._r8
-
-               if ( use_c13 ) then
-                  alphapsn_sun(p) = 1._r8
-                  alphapsn_sha(p) = 1._r8
-               end if
 
             else                                     ! day time
 

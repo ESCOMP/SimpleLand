@@ -7,7 +7,6 @@ module SoilBiogeochemCarbonFluxType
   use clm_varpar                         , only : nlevdecomp_full, nlevgrnd, nlevdecomp, nlevsoi
   use clm_varcon                         , only : spval, ispval, dzsoi_decomp
   use landunit_varcon                    , only : istsoil, istcrop, istdlak 
-  use ch4varcon                          , only : allowlakeprod
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   use ColumnType                         , only : col                
   use LandunitType                       , only : lun
@@ -521,8 +520,6 @@ contains
        this%fphr_col(c,nlevdecomp+1:nlevgrnd) = 0._r8 !used to be in ch4Mod
        if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
           this%fphr_col(c,nlevdecomp+1:nlevgrnd) = 0._r8 
-       else if (lun%itype(l) == istdlak .and. allowlakeprod) then
-          this%fphr_col(c,:) = spval
        else  ! Inactive CH4 columns
           this%fphr_col(c,:) = spval
        end if

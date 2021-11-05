@@ -21,59 +21,6 @@ module ch4Mod
   real(r8) :: rgasm  ! J/mol.K; rgas / 1000; will be set below
   real(r8), parameter :: rgasLatm = 0.0821_r8 ! L.atm/mol.K
 
-  ! !PUBLIC MEMBER FUNCTIONS:
-
-  type, private :: params_type
-     ! ch4 production constants
-     real(r8) :: q10ch4               ! additional Q10 for methane production ABOVE the soil decomposition temperature relationship
-     real(r8) :: q10ch4base           ! temperature at which the effective f_ch4 actually equals the constant f_ch4
-     real(r8) :: f_ch4                ! ratio of CH4 production to total C mineralization
-     real(r8) :: rootlitfrac          ! Fraction of soil organic matter associated with roots
-     real(r8) :: cnscalefactor        ! scale factor on CN decomposition for assigning methane flux
-     real(r8) :: redoxlag             ! Number of days to lag in the calculation of finundated_lag
-     real(r8) :: lake_decomp_fact     ! Base decomposition rate (1/s) at 25C
-     real(r8) :: redoxlag_vertical    ! time lag (days) to inhibit production for newly unsaturated layers
-     real(r8) :: pHmax                ! maximum pH for methane production(= 9._r8)
-     real(r8) :: pHmin                ! minimum pH for methane production(= 2.2_r8)
-     real(r8) :: oxinhib              ! inhibition of methane production by oxygen (m^3/mol)
-
-     ! ch4 oxidation constants
-     real(r8) :: vmax_ch4_oxid        ! oxidation rate constant (= 45.e-6_r8 * 1000._r8 / 3600._r8) [mol/m3-w/s];
-     real(r8) :: k_m                  ! Michaelis-Menten oxidation rate constant for CH4 concentration 
-     real(r8) :: q10_ch4oxid          ! Q10 oxidation constant
-     real(r8) :: smp_crit             ! Critical soil moisture potential
-     real(r8) :: k_m_o2               ! Michaelis-Menten oxidation rate constant for O2 concentration
-     real(r8) :: k_m_unsat            ! Michaelis-Menten oxidation rate constant for CH4 concentration
-     real(r8) :: vmax_oxid_unsat      ! (= 45.e-6_r8 * 1000._r8 / 3600._r8 / 10._r8) [mol/m3-w/s]
-
-     ! ch4 aerenchyma constants
-     real(r8) :: aereoxid             ! fraction of methane flux entering aerenchyma rhizosphere that will be
-
-     ! oxidized rather than emitted
-     real(r8) :: scale_factor_aere    ! scale factor on the aerenchyma area for sensitivity tests
-     real(r8) :: nongrassporosratio   ! Ratio of root porosity in non-grass to grass, used for aerenchyma transport
-     real(r8) :: unsat_aere_ratio     ! Ratio to multiply upland vegetation aerenchyma porosity by compared to inundated systems (= 0.05_r8 / 0.3_r8)
-     real(r8) :: porosmin             ! minimum aerenchyma porosity (unitless)(= 0.05_r8) 
-
-     ! ch4 ebbulition constants
-     real(r8) :: vgc_max              ! ratio of saturation pressure triggering ebullition
-
-     ! ch4 transport constants
-     real(r8) :: satpow               ! exponent on watsat for saturated soil solute diffusion
-     real(r8) :: scale_factor_gasdiff ! For sensitivity tests; convection would allow this to be > 1
-     real(r8) :: scale_factor_liqdiff ! For sensitivity tests; convection would allow this to be > 1
-     real(r8) :: capthick             ! min thickness before assuming h2osfc is impermeable (mm) (= 100._r8)
-
-     ! additional constants
-     real(r8) :: f_sat                ! volumetric soil water defining top of water table or where production is allowed (=0.95)
-     real(r8) :: qflxlagd             ! days to lag qflx_surf_lag in the tropics (days) ( = 30._r8)
-     real(r8) :: highlatfact          ! multiple of qflxlagd for high latitudes	(= 2._r8)	
-     real(r8) :: q10lakebase          ! (K) base temperature for lake CH4 production (= 298._r8)
-     real(r8) :: atmch4               ! Atmospheric CH4 mixing ratio to prescribe if not provided by the atmospheric model (= 1.7e-6_r8) (mol/mol)
-     real(r8) :: rob                  ! ratio of root length to vertical depth ("root obliquity") (= 3._r8)
-  end type params_type
-  type(params_type), private ::  params_inst
-
   type, public :: ch4_type
      real(r8), pointer, private :: ch4_prod_depth_sat_col     (:,:) ! col CH4 production rate from methanotrophs (mol/m3/s) (nlevsoi)
      real(r8), pointer, private :: ch4_prod_depth_unsat_col   (:,:) ! col CH4 production rate from methanotrophs (mol/m3/s) (nlevsoi)
