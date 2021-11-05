@@ -34,6 +34,7 @@ module mml_mainMod
   use abortutils      , only : endrun
   use clm_varctl      , only : single_column, iulog
   use shr_kind_mod    , only : r8 => shr_kind_r8
+  use shr_infnan_mod  , only : isnan => shr_infnan_isnan
   
   use QSatMod		  , only : QSat
   use perf_mod			! for t_startf and t_stopf
