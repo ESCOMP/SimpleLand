@@ -124,6 +124,7 @@
   <test name="SMS_Ld400" grid="f19_g17" compset="IHistClm45BgcQianGs" testmods="clm/realistic_fromCLM5_1850">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+      <machine name="izumi"    compiler="intel" category="aux_slim"/>
     </machines>
     <options>
       <option name="wallclock">01:40:00</option>
@@ -222,6 +223,7 @@
   <test name="SMS" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/global_uniform">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+      <machine name="izumi"    compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="nag"   category="aux_slim"/>
     </machines>
     <options>
