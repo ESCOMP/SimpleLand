@@ -148,7 +148,7 @@
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
     </machines>
     <options>
-      <option name="wallclock">00:20:00</option>
+      <option name="wallclock">00:40:00</option>
       <option name="comment">Change PE count test for standalone SLIM</option>
     </options>
   </test>
