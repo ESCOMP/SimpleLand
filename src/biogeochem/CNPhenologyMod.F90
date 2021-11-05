@@ -1435,7 +1435,6 @@ contains
     use pftconMod        , only : nirrig_cotton, nirrig_rice
     use clm_varcon       , only : spval, secspday
     use clm_varctl       , only : use_fertilizer 
-    use clm_varctl       , only : use_c13, use_c14
     use clm_varcon       , only : c13ratio, c14ratio
     !
     ! !ARGUMENTS:
@@ -1639,25 +1638,6 @@ contains
                   crop_seedc_to_leaf(p) = leafc_xfer(p)/dt
                   crop_seedn_to_leaf(p) = leafn_xfer(p)/dt
 
-                  ! because leafc_xfer is set above rather than incremneted through the normal process, must also set its isotope
-                  ! pools here.  use totvegc_patch as the closest analogue if nonzero, and use initial value otherwise
-                  if (use_c13) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c13_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c13ratio
-                     endif
-                  endif
-                  if (use_c14) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c14_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c14ratio
-                     endif
-                  endif
-
                   ! latest possible date to plant winter cereal and after all other 
                   ! crops were harvested for that year
 
@@ -1678,24 +1658,6 @@ contains
                   crop_seedc_to_leaf(p) = leafc_xfer(p)/dt
                   crop_seedn_to_leaf(p) = leafn_xfer(p)/dt
 
-                  ! because leafc_xfer is set above rather than incremneted through the normal process, must also set its isotope
-                  ! pools here.  use totvegc_patch as the closest analogue if nonzero, and use initial value otherwise
-                  if (use_c13) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c13_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c13ratio
-                     endif
-                  endif
-                  if (use_c14) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c14_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c14ratio
-                     endif
-                  endif
                else
                   gddmaturity(p) = 0._r8
                end if
@@ -1742,26 +1704,6 @@ contains
                   crop_seedc_to_leaf(p) = leafc_xfer(p)/dt
                   crop_seedn_to_leaf(p) = leafn_xfer(p)/dt
 
-                  ! because leafc_xfer is set above rather than incremneted through the normal process, must also set its isotope
-                  ! pools here.  use totvegc_patch as the closest analogue if nonzero, and use initial value otherwise
-                  if (use_c13) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c13_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c13ratio
-                     endif
-                  endif
-                  if (use_c14) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c14_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c14ratio
-                     endif
-                  endif
-
-
                   ! If hit the max planting julian day -- go ahead and plant
                else if (jday == maxplantjday(ivt(p),h) .and. gdd820(p) > 0._r8 .and. &
                     gdd820(p) /= spval ) then
@@ -1789,25 +1731,6 @@ contains
                   leafn_xfer(p) = leafc_xfer(p) / leafcn(ivt(p)) ! with onset
                   crop_seedc_to_leaf(p) = leafc_xfer(p)/dt
                   crop_seedn_to_leaf(p) = leafn_xfer(p)/dt
-
-                  ! because leafc_xfer is set above rather than incremneted through the normal process, must also set its isotope
-                  ! pools here.  use totvegc_patch as the closest analogue if nonzero, and use initial value otherwise
-                  if (use_c13) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c13_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c13ratio
-                     endif
-                  endif
-                  if (use_c14) then
-                     if ( cnveg_carbonstate_inst%totvegc_patch(p) .gt. 0._r8) then
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * &
-                             c14_cnveg_carbonstate_inst%totvegc_patch(p) / cnveg_carbonstate_inst%totvegc_patch(p)
-                     else
-                        c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = leafc_xfer(p) * c14ratio
-                     endif
-                  endif
 
                else
                   gddmaturity(p) = 0._r8
@@ -1976,12 +1899,6 @@ contains
                   crop_seedn_to_leaf(p) = crop_seedn_to_leaf(p) - leafn_xfer(p)/dt
                   leafc_xfer(p) = 0._r8
                   leafn_xfer(p) = leafc_xfer(p) / leafcn(ivt(p))
-                  if (use_c13) then
-                     c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = 0._r8
-                  endif
-                  if (use_c14) then
-                     c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = 0._r8
-                  endif
 
                end if
 
@@ -2016,12 +1933,6 @@ contains
             onset_counter(p) = 0._r8
             leafc_xfer(p) = 0._r8
             leafn_xfer(p) = leafc_xfer(p) / leafcn(ivt(p))
-            if (use_c13) then
-               c13_cnveg_carbonstate_inst%leafc_xfer_patch(p) = 0._r8
-            endif
-            if (use_c14) then
-               c14_cnveg_carbonstate_inst%leafc_xfer_patch(p) = 0._r8
-            endif
          end if ! croplive
 
       end do ! prognostic crops loop

@@ -13,7 +13,7 @@ module CNVegCarbonFluxType
   use clm_varpar                         , only : ndecomp_cascade_transitions, ndecomp_pools
   use clm_varpar                         , only : nlevdecomp_full, nlevgrnd, nlevdecomp
   use clm_varcon                         , only : spval, dzsoi_decomp
-  use clm_varctl                         , only : use_cndv, use_c13, use_nitrif_denitrif, use_crop
+  use clm_varctl                         , only : use_cndv, use_nitrif_denitrif, use_crop
   use clm_varctl                         , only : use_grainproduct
   use clm_varctl                         , only : iulog
   use landunit_varcon                    , only : istsoil, istcrop, istdlak 
@@ -3331,9 +3331,6 @@ contains
           this%prev_leafc_to_litter_patch(p)  = spval
           this%prev_frootc_to_litter_patch(p) = spval
           this%leafc_to_litter_fun_patch(p)   = spval
-          if ( use_c13 ) then
-             this%xsmrpool_c13ratio_patch(p)  = spval
-          endif
        end if
        if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
           this%availc_patch(p)                = 0._r8
@@ -3439,7 +3436,6 @@ contains
     use shr_infnan_mod   , only : isnan => shr_infnan_isnan, nan => shr_infnan_nan, assignment(=)
     use clm_time_manager , only : is_restart
     use clm_varcon       , only : c13ratio, c14ratio
-    use clm_varctl       , only : use_lch4
     use CNSharedParamsMod, only : use_fun
     use restUtilMod
     use ncdio_pio

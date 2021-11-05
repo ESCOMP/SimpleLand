@@ -248,7 +248,7 @@ contains
     !
     ! !USES:
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-    use clm_varctl     , only : use_cn, use_lch4
+    use clm_varctl     , only : use_cn
     use clm_varctl     , only : hist_wrtch4diag
     use clm_varpar     , only : nlevsno, nlevsoi
     use histFileMod    , only : hist_addfld1d, hist_addfld2d, no_snow_normal, no_snow_zero

@@ -13,7 +13,7 @@ module CanopyFluxesMod
   use shr_kind_mod          , only : r8 => shr_kind_r8
   use shr_log_mod           , only : errMsg => shr_log_errMsg
   use abortutils            , only : endrun
-  use clm_varctl            , only : iulog, use_cn, use_lch4, use_c13, use_c14, use_cndv, &
+  use clm_varctl            , only : iulog, use_cn, use_cndv, &
                                      use_luna, use_hydrstress
   use clm_varpar            , only : nlevgrnd, nlevsno
   use clm_varcon            , only : namep 
@@ -660,10 +660,6 @@ contains
          co2(p) = forc_pco2(g)
          o2(p)  = forc_po2(g)
 
-         if ( use_c13 ) then
-            c13o2(p) = forc_pc13o2(g)
-         end if
-
          ! Initialize flux profile
 
          nmozsgn(p) = 0
@@ -769,9 +765,6 @@ contains
 
             rah(p,2) = 1._r8/(csoilcn*uaf(p))
             raw(p,2) = rah(p,2)
-            if (use_lch4) then
-               grnd_ch4_cond(p) = 1._r8/(raw(p,1)+raw(p,2))
-            end if
 
             ! Stomatal resistances for sunlit and shaded fractions of canopy.
             ! Done each iteration to account for differences in eah, tv.
@@ -796,24 +789,12 @@ contains
                  canopystate_inst, ozone_inst, photosyns_inst, phase='sun')
          endif
 
-         if ( use_cn .and. use_c13 ) then
-            call Fractionation (bounds, fn, filterp, downreg_patch(begp:endp), &
-                 atm2lnd_inst, canopystate_inst, solarabs_inst, surfalb_inst, photosyns_inst, &
-                 phase='sun')
-         endif
-
          if ( .not.(use_hydrstress) ) then
             call Photosynthesis (bounds, fn, filterp, &
                  svpts(begp:endp), eah(begp:endp), o2(begp:endp), co2(begp:endp), rb(begp:endp), btran(begp:endp), &
                  dayl_factor(begp:endp), leafn_patch(begp:endp), &
                  atm2lnd_inst, temperature_inst, surfalb_inst, solarabs_inst, &
                  canopystate_inst, ozone_inst, photosyns_inst, phase='sha')
-         end if
-
-         if ( use_cn .and. use_c13 ) then
-            call Fractionation (bounds, fn, filterp, downreg_patch(begp:endp), &
-                 atm2lnd_inst, canopystate_inst, solarabs_inst, surfalb_inst, photosyns_inst, &
-                 phase='sha')
          end if
 
          do f = 1, fn
@@ -845,9 +826,6 @@ contains
             end if
             
             ! Calculate canopy conductance for methane / oxygen (e.g. stomatal conductance & leaf bdy cond)
-            if (use_lch4) then
-               canopy_cond(p) = (laisun(p)/(rb(p)+rssun(p)) + laisha(p)/(rb(p)+rssha(p)))/max(elai(p), 0.01_r8)
-            end if
 
             efpot = forc_rho(c)*wtl*(qsatl(p)-qaf(p))
 

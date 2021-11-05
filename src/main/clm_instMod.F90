@@ -8,7 +8,7 @@ module clm_instMod
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use decompMod       , only : bounds_type
   use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
-  use clm_varctl      , only : use_cn, use_c13, use_c14, use_lch4, use_cndv
+  use clm_varctl      , only : use_cn, use_cndv
   use clm_varctl      , only : use_century_decomp, use_crop
   use clm_varcon      , only : bdsno, c13ratio, c14ratio
   use landunit_varcon , only : istice_mec, istsoil
@@ -352,22 +352,6 @@ contains
        ! Initalize soilbiogeochem carbon types
 
        call soilbiogeochem_carbonstate_inst%Init(bounds, carbon_type='c12', ratio=1._r8)
-       if (use_c13) then
-          call c13_soilbiogeochem_carbonstate_inst%Init(bounds, carbon_type='c13', ratio=c13ratio, &
-               c12_soilbiogeochem_carbonstate_inst=soilbiogeochem_carbonstate_inst)
-       end if
-       if (use_c14) then
-          call c14_soilbiogeochem_carbonstate_inst%Init(bounds, carbon_type='c14', ratio=c14ratio, &
-               c12_soilbiogeochem_carbonstate_inst=soilbiogeochem_carbonstate_inst)
-       end if
-
-       call soilbiogeochem_carbonflux_inst%Init(bounds, carbon_type='c12') 
-       if (use_c13) then
-          call c13_soilbiogeochem_carbonflux_inst%Init(bounds, carbon_type='c13')
-       end if
-       if (use_c14) then
-          call c14_soilbiogeochem_carbonflux_inst%Init(bounds, carbon_type='c14')
-       end if
 
     end if
 
@@ -495,10 +479,6 @@ contains
 
     call topo_inst%restart (bounds, ncid, flag=flag)
 
-    !if (use_lch4) then
-       !call ch4_inst%restart(bounds, ncid, flag=flag)
-    !end if
-
     if ( use_cn ) then
        ! Need to do vegetation restart before soil bgc restart to get totvegc_col for purpose
        ! of resetting soil carbon at exit spinup when no vegetation is growing.
@@ -517,16 +497,6 @@ contains
        call soilbiogeochem_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c12', &
             totvegc_col=bgc_vegetation_inst%get_totvegc_col(bounds))
 
-       if (use_c13) then
-          call c13_soilbiogeochem_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c13', &
-               totvegc_col=bgc_vegetation_inst%get_totvegc_col(bounds), &
-               c12_soilbiogeochem_carbonstate_inst=soilbiogeochem_carbonstate_inst)
-       end if
-       if (use_c14) then
-          call c14_soilbiogeochem_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c14', &
-               totvegc_col=bgc_vegetation_inst%get_totvegc_col(bounds), &
-               c12_soilbiogeochem_carbonstate_inst=soilbiogeochem_carbonstate_inst)
-       end if
        call soilbiogeochem_carbonflux_inst%restart(bounds, ncid, flag=flag)
     endif
 

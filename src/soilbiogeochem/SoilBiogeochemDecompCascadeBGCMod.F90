@@ -11,7 +11,7 @@ module SoilBiogeochemDecompCascadeBGCMod
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
   use clm_varpar                         , only : nlevsoi, nlevgrnd, nlevdecomp, ndecomp_cascade_transitions, ndecomp_pools
   use clm_varpar                         , only : i_met_lit, i_cel_lit, i_lig_lit, i_cwd
-  use clm_varctl                         , only : iulog, spinup_state, anoxia, use_lch4, use_vertsoilc, use_fates
+  use clm_varctl                         , only : iulog, spinup_state, anoxia, use_vertsoilc, use_fates
   use clm_varcon                         , only : zsoi
   use decompMod                          , only : bounds_type
   use spmdMod                            , only : masterproc
@@ -916,43 +916,7 @@ contains
             end do
          end do
 
-         if (use_lch4) then
-            if (anoxia_wtsat) then ! Adjust for saturated fraction if unfrozen
-               do fc = 1,num_soilc
-                  c = filter_soilc(fc)
-                  if (alt_indx(c) >= nlev_soildecomp_standard .and. t_soisno(c,1) > SHR_CONST_TKFRZ) then
-                     w_scalar(c,1) = w_scalar(c,1)*(1._r8 - finundated(c)) + finundated(c)
-                  end if
-               end do
-            end if
-         end if
-
-         if (use_lch4) then
-            ! Calculate ANOXIA
-            if (anoxia) then
-               ! Check for anoxia w/o LCH4 now done in controlMod.
-
-               do j = 1,nlev_soildecomp_standard
-                  do fc = 1,num_soilc
-                     c = filter_soilc(fc)
-
-                     if (j==1) o_scalar(c,:) = 0._r8
-
-                     if (.not. anoxia_wtsat) then
-                        o_scalar(c,1) = o_scalar(c,1) + fr(c,j) * max(o2stress_unsat(c,j), mino2lim)
-                     else
-                        o_scalar(c,1) = o_scalar(c,1) + fr(c,j) * &
-                             (max(o2stress_unsat(c,j), mino2lim)*(1._r8 - finundated(c)) + &
-                             max(o2stress_sat(c,j), mino2lim)*finundated(c) )
-                     end if
-                  end do
-               end do
-            else
-               o_scalar(bounds%begc:bounds%endc,1:nlevdecomp) = 1._r8
-            end if
-         else
-            o_scalar(bounds%begc:bounds%endc,1:nlevdecomp) = 1._r8
-         end if
+         o_scalar(bounds%begc:bounds%endc,1:nlevdecomp) = 1._r8
 
          deallocate(fr)
 
@@ -1008,37 +972,10 @@ contains
                else
                   w_scalar(c,j) = 0._r8
                end if
-               if (use_lch4) then
-                  if (anoxia_wtsat .and. t_soisno(c,j) > SHR_CONST_TKFRZ) then ! wet area will have w_scalar of 1 if unfrozen
-                     w_scalar(c,j) = w_scalar(c,j)*(1._r8 - finundated(c)) + finundated(c)
-                  end if
-               end if
             end do
          end do
 
-         if (use_lch4) then
-            ! Calculate ANOXIA
-            ! Check for anoxia w/o LCH4 now done in controlMod.
-
-            if (anoxia) then
-               do j = 1,nlevdecomp
-                  do fc = 1,num_soilc
-                     c = filter_soilc(fc)
-
-                     if (.not. anoxia_wtsat) then
-                        o_scalar(c,j) = max(o2stress_unsat(c,j), mino2lim)
-                     else
-                        o_scalar(c,j) = max(o2stress_unsat(c,j), mino2lim) * (1._r8 - finundated(c)) + &
-                             max(o2stress_sat(c,j), mino2lim) * finundated(c)
-                     end if
-                  end do
-               end do
-            else
-               o_scalar(bounds%begc:bounds%endc,1:nlevdecomp) = 1._r8
-            end if
-         else
-            o_scalar(bounds%begc:bounds%endc,1:nlevdecomp) = 1._r8
-         end if
+         o_scalar(bounds%begc:bounds%endc,1:nlevdecomp) = 1._r8
 
       end if
 

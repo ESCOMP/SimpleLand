@@ -10,7 +10,7 @@ module atm2lndType
   use shr_log_mod   , only : errMsg => shr_log_errMsg
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.  ! MML: numrad = 2, 1=vis, 2=nir
   use clm_varcon    , only : rair, grav, cpair, hfus, tfrz, spval
-  use clm_varctl    , only : iulog, use_c13, use_cn, use_lch4, use_cndv, use_fates, use_luna
+  use clm_varctl    , only : iulog, use_cn, use_cndv, use_fates, use_luna
   use decompMod     , only : bounds_type
   use abortutils    , only : endrun
   use PatchType     , only : patch
@@ -973,13 +973,6 @@ contains
     call hist_addfld1d (fname='RH', units='%',  &
          avgflag='A', long_name='atmospheric relative humidity', &
          ptr_gcell=this%forc_rh_grc, default='inactive')
-
-    if (use_lch4) then
-       this%forc_pch4_grc(begg:endg) = spval
-       call hist_addfld1d (fname='PCH4', units='Pa',  &
-            avgflag='A', long_name='atmospheric partial pressure of CH4', &
-            ptr_lnd=this%forc_pch4_grc)
-    end if
 
     this%forc_t_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='Tair_from_atm', units='K',  &

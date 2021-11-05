@@ -12,7 +12,7 @@ module lnd2atmType
   use decompMod     , only : bounds_type
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins. 	! MML: ndst = 4 from clm varpar
   use clm_varcon    , only : spval
-  use clm_varctl    , only : iulog, use_lch4
+  use clm_varctl    , only : iulog
   use shr_megan_mod , only : shr_megan_mechcomps_n
   use shr_fire_emis_mod,only : shr_fire_emis_mechcomps_n
   use seq_drydep_mod, only : n_drydep, drydep_method, DD_XLND
@@ -315,18 +315,6 @@ contains
          long_name='CO2 flux to atmosphere (+ to atm)', &
          ptr_lnd=this%net_carbon_exchange_grc, &
          default='inactive')
-
-    if (use_lch4) then
-       this%flux_ch4_grc(begg:endg) = 0._r8
-       call hist_addfld1d (fname='FCH4', units='kgC/m2/s', &
-            avgflag='A', long_name='Gridcell surface CH4 flux to atmosphere (+ to atm)', &
-            ptr_lnd=this%flux_ch4_grc)
-
-       this%nem_grc(begg:endg) = spval
-       call hist_addfld1d (fname='NEM', units='gC/m2/s', &
-            avgflag='A', long_name='Gridcell net adjustment to net carbon exchange passed to atm. for methane production', &
-            ptr_lnd=this%nem_grc)
-    end if
 
   end subroutine InitHistory
 

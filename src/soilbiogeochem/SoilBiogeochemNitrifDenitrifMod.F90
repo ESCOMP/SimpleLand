@@ -12,7 +12,6 @@ module SoilBiogeochemNitrifDenitrifMod
   use clm_varpar                      , only : nlevdecomp
   use clm_varcon                      , only : rpi, grav
   use clm_varcon                      , only : d_con_g, d_con_w, secspday
-  use clm_varctl                      , only : use_lch4
   use abortutils                      , only : endrun
   use decompMod                       , only : bounds_type
   use SoilStatetype                   , only : soilstate_type
@@ -318,58 +317,11 @@ contains
             f_a = 1._r8 - watfc(c,j) / watsat(c,j)
             eps =  watsat(c,j)-watfc(c,j) ! Air-filled fraction of total soil volume
 
-            ! use diffusivity calculation including peat
-            if (use_lch4) then
-
-               if (organic_max > 0._r8) then
-                  om_frac = min(cellorg(c,j)/organic_max, 1._r8)
-                  ! Use first power, not square as in iniTimeConst
-               else
-                  om_frac = 1._r8
-               end if
-               diffus (c,j) = (d_con_g(2,1) + d_con_g(2,2)*t_soisno(c,j)) * 1.e-4_r8 * &
-                    (om_frac * f_a**(10._r8/3._r8) / watsat(c,j)**2 + &
-                    (1._r8-om_frac) * eps**2 * f_a**(3._r8 / bsw(c,j)) ) 
-
-               ! calculate anoxic fraction of soils
-               ! use rijtema and kroess model after Riley et al., 2000
-               ! caclulated r_psi as a function of psi
-               r_min(c,j) = 2 * surface_tension_water / (rho_w * grav * abs(soilpsi(c,j)))
-               r_max = 2 * surface_tension_water / (rho_w * grav * 0.1_r8)
-               r_psi(c,j) = sqrt(r_min(c,j) * r_max)
-               ratio_diffusivity_water_gas(c,j) = (d_con_g(2,1) + d_con_g(2,2)*t_soisno(c,j) ) * 1.e-4_r8 / &
-                    ((d_con_w(2,1) + d_con_w(2,2)*t_soisno(c,j) + d_con_w(2,3)*t_soisno(c,j)**2) * 1.e-9_r8)
-
-               if (o2_decomp_depth_unsat(c,j) > 0._r8) then
-                  anaerobic_frac(c,j) = exp(-rij_kro_a * r_psi(c,j)**(-rij_kro_alpha) * &
-                       o2_decomp_depth_unsat(c,j)**(-rij_kro_beta) * &
-                       conc_o2_unsat(c,j)**rij_kro_gamma * (h2osoi_vol(c,j) + ratio_diffusivity_water_gas(c,j) * &
-                       watsat(c,j))**rij_kro_delta)
-               else
-                  anaerobic_frac(c,j) = 0._r8
-               endif
-
-               if (anoxia_wtsat) then ! Average saturated fraction values into anaerobic_frac(c,j).
-                  r_min_sat = 2._r8 * surface_tension_water / (rho_w * grav * abs(grav * 1.e-6_r8 * sucsat(c,j)))
-                  r_psi_sat = sqrt(r_min_sat * r_max)
-                  if (o2_decomp_depth_sat(c,j) > 0._r8) then
-                     anaerobic_frac_sat = exp(-rij_kro_a * r_psi_sat**(-rij_kro_alpha) * &
-                          o2_decomp_depth_sat(c,j)**(-rij_kro_beta) * &
-                          conc_o2_sat(c,j)**rij_kro_gamma * (watsat(c,j) + ratio_diffusivity_water_gas(c,j) * &
-                          watsat(c,j))**rij_kro_delta)
-                  else
-                     anaerobic_frac_sat = 0._r8
-                  endif
-                  anaerobic_frac(c,j) = (1._r8 - finundated(c))*anaerobic_frac(c,j) + finundated(c)*anaerobic_frac_sat
-               end if
-
-            else
-               ! NITRIF_DENITRIF requires Methane model to be active, 
-               ! otherwise diffusivity will be zeroed out here. EBK CDK 10/18/2011
-               anaerobic_frac(c,j) = 0._r8
-               diffus (c,j) = 0._r8
-               !call endrun(msg=' ERROR: NITRIF_DENITRIF requires Methane model to be active'//errMsg(sourcefile, __LINE__) )
-            end if
+            ! NITRIF_DENITRIF requires Methane model to be active, 
+            ! otherwise diffusivity will be zeroed out here. EBK CDK 10/18/2011
+            anaerobic_frac(c,j) = 0._r8
+            diffus (c,j) = 0._r8
+            !call endrun(msg=' ERROR: NITRIF_DENITRIF requires Methane model to be active'//errMsg(sourcefile, __LINE__) )
 
 
             !---------------- nitrification
@@ -449,11 +401,6 @@ contains
             ! total water limitation function (Del Grosso et al., 2000, figure 7a)
             wfps_vr(c,j) = max(min(h2osoi_vol(c,j)/watsat(c, j), 1._r8), 0._r8) * 100._r8
             fr_WFPS(c,j) = max(0.1_r8, 0.015_r8 * wfps_vr(c,j) - 0.32_r8)
-            if (use_lch4) then
-               if (anoxia_wtsat) then
-                  fr_WFPS(c,j) = fr_WFPS(c,j)*(1._r8 - finundated(c)) + finundated(c)*1.18_r8
-               end if
-            end if
 
             ! final ratio expression 
             n2_n2o_ratio_denit_vr(c,j) = max(0.16*ratio_k1(c,j), ratio_k1(c,j)*exp(-0.8 * ratio_no3_co2(c,j))) * fr_WFPS(c,j)

@@ -9,7 +9,7 @@ module SoilStateType
   use abortutils      , only : endrun
   use clm_varpar      , only : nlevsoi, nlevgrnd, nlevlak, nlayer, nlevsno
   use clm_varcon      , only : spval
-  use clm_varctl      , only : use_hydrstress, use_cn, use_lch4, use_dynroot
+  use clm_varctl      , only : use_hydrstress, use_cn, use_dynroot
   use clm_varctl      , only : iulog, hist_wrtch4diag
   use LandunitType    , only : lun                
   use ColumnType      , only : col                
@@ -200,15 +200,7 @@ contains
     begc = bounds%begc; endc= bounds%endc
 
 
-    if (use_lch4) then
-       if (hist_wrtch4diag) then
-          active = "active"
-       else
-          active = "inactive"
-       end if
-    else
-       active = "inactive"
-    end if
+    active = "inactive"
 
     call hist_addfld2d (fname='SMP',  units='mm', type2d='levgrnd',  &
          avgflag='A', long_name='soil matric potential (vegetated landunits only)', &

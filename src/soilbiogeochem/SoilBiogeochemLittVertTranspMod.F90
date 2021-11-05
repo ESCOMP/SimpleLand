@@ -5,7 +5,7 @@ module SoilBiogeochemLittVertTranspMod
   !
   use shr_kind_mod                       , only : r8 => shr_kind_r8
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
-  use clm_varctl                         , only : iulog, use_c13, use_c14, spinup_state, use_vertsoilc, use_fates, use_cn
+  use clm_varctl                         , only : iulog, spinup_state, use_vertsoilc, use_fates, use_cn
   use clm_varcon                         , only : secspday
   use decompMod                          , only : bounds_type
   use abortutils                         , only : endrun
@@ -180,12 +180,6 @@ contains
       dtime = get_step_size()
 
       ntype = 2
-      if ( use_c13 ) then
-         ntype = ntype+1
-      endif
-      if ( use_c14 ) then
-         ntype = ntype+1
-      endif
       if ( use_fates ) then
          ntype = 1
       endif
@@ -259,27 +253,11 @@ contains
                trcr_tendency_ptr => soilbiogeochem_nitrogenflux_inst%decomp_npools_transport_tendency_col
             endif
          case (3)
-            if ( use_c13 ) then
-               ! C13
-               conc_ptr          => c13_soilbiogeochem_carbonstate_inst%decomp_cpools_vr_col
-               source            => c13_soilbiogeochem_carbonflux_inst%decomp_cpools_sourcesink_col
-               trcr_tendency_ptr => c13_soilbiogeochem_carbonflux_inst%decomp_cpools_transport_tendency_col
-            else
-               ! C14
-               conc_ptr          => c14_soilbiogeochem_carbonstate_inst%decomp_cpools_vr_col
-               source            => c14_soilbiogeochem_carbonflux_inst%decomp_cpools_sourcesink_col
-               trcr_tendency_ptr => c14_soilbiogeochem_carbonflux_inst%decomp_cpools_transport_tendency_col
-            endif
+            write(iulog,*) 'error.  ncase = 4, but c13 and c14 not both enabled.'
+            call endrun(msg=errMsg(sourcefile, __LINE__))
          case (4)
-            if ( use_c14 .and. use_c13 ) then
-               ! C14
-               conc_ptr          => c14_soilbiogeochem_carbonstate_inst%decomp_cpools_vr_col
-               source            => c14_soilbiogeochem_carbonflux_inst%decomp_cpools_sourcesink_col
-               trcr_tendency_ptr => c14_soilbiogeochem_carbonflux_inst%decomp_cpools_transport_tendency_col
-            else
-               write(iulog,*) 'error.  ncase = 4, but c13 and c14 not both enabled.'
-               call endrun(msg=errMsg(sourcefile, __LINE__))
-            endif
+            write(iulog,*) 'error.  ncase = 4, but c13 and c14 not both enabled.'
+            call endrun(msg=errMsg(sourcefile, __LINE__))
          end select
 
          if (use_vertsoilc) then

@@ -192,7 +192,7 @@ contains
     !
     ! !USES:
     use pftconMod             , only : pftcon, npcropmin
-    use clm_varctl            , only : use_c13, use_c14, carbon_resp_opt
+    use clm_varctl            , only : carbon_resp_opt
     use clm_varctl            , only : downreg_opt
     use clm_varctl            , only : CN_residual_opt
     use clm_varctl            , only : CN_partition_opt
@@ -484,18 +484,6 @@ contains
 	               psnsun_to_cpool(p)   = psnsun_to_cpool(p)  *(1._r8 - downreg(p))
 	               psnshade_to_cpool(p) = psnshade_to_cpool(p)*(1._r8 - downreg(p))
 
-	               if ( use_c13 ) then
-	                  c13_cnveg_carbonflux_inst%psnsun_to_cpool_patch(p)   = &
-	                       c13_cnveg_carbonflux_inst%psnsun_to_cpool_patch(p)  *(1._r8 - downreg(p))
-	                  c13_cnveg_carbonflux_inst%psnshade_to_cpool_patch(p) = &
-	                       c13_cnveg_carbonflux_inst%psnshade_to_cpool_patch(p)*(1._r8 - downreg(p))
-	               endif
-	               if ( use_c14 ) then
-	                  c14_cnveg_carbonflux_inst%psnsun_to_cpool_patch(p)   = &
-	                       c14_cnveg_carbonflux_inst%psnsun_to_cpool_patch(p)  *(1._r8 - downreg(p))
-	                  c14_cnveg_carbonflux_inst%psnshade_to_cpool_patch(p) = &
-	                       c14_cnveg_carbonflux_inst%psnshade_to_cpool_patch(p)*(1._r8 - downreg(p))
-	               endif
 	            end if
 	         end if
          end if
@@ -1190,7 +1178,6 @@ contains
     use pftconMod              , only : ntmp_soybean, nirrig_tmp_soybean
     use pftconMod              , only : ntrp_soybean, nirrig_trp_soybean
     use clm_varcon             , only : secspday, dzsoi_decomp
-    use clm_varctl             , only : use_c13, use_c14
     use clm_varctl             , only : nscalar_opt, plant_ndemand_opt, substrate_term_opt, temp_scalar_opt
     use clm_varpar             , only : nlevdecomp
     use clm_time_manager       , only : get_step_size

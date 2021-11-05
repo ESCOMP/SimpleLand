@@ -44,7 +44,7 @@ module CNVegetationFacade
   use shr_log_mod                     , only : errMsg => shr_log_errMsg
   use perf_mod                        , only : t_startf, t_stopf
   use decompMod                       , only : bounds_type
-  use clm_varctl                      , only : iulog, use_cn, use_c13, use_c14
+  use clm_varctl                      , only : iulog, use_cn
   use abortutils                      , only : endrun
   use spmdMod                         , only : masterproc
   use CNBalanceCheckMod               , only : cn_balance_type
@@ -166,21 +166,7 @@ contains
        call this%CNReadNML( NLFilename )    ! MUST be called first as passes down control information to others
 
        call this%cnveg_carbonstate_inst%Init(bounds, carbon_type='c12', ratio=1._r8, NLFilename=NLFilename)
-       if (use_c13) then
-          call this%c13_cnveg_carbonstate_inst%Init(bounds, carbon_type='c13', ratio=c13ratio, &
-               NLFilename=NLFilename, c12_cnveg_carbonstate_inst=this%cnveg_carbonstate_inst)
-       end if
-       if (use_c14) then
-          call this%c14_cnveg_carbonstate_inst%Init(bounds, carbon_type='c14', ratio=c14ratio, &
-               NLFilename=NLFilename, c12_cnveg_carbonstate_inst=this%cnveg_carbonstate_inst)
-       end if
        call this%cnveg_carbonflux_inst%Init(bounds, carbon_type='c12')
-       if (use_c13) then
-          call this%c13_cnveg_carbonflux_inst%Init(bounds, carbon_type='c13')
-       end if
-       if (use_c14) then
-          call this%c14_cnveg_carbonflux_inst%Init(bounds, carbon_type='c14')
-       end if
        call this%cnveg_nitrogenstate_inst%Init(bounds,                   &
             this%cnveg_carbonstate_inst%leafc_patch(begp:endp),          &
             this%cnveg_carbonstate_inst%leafc_storage_patch(begp:endp),  &
@@ -190,12 +176,6 @@ contains
        call this%cnveg_nitrogenflux_inst%Init(bounds) 
 
        call this%c_products_inst%Init(bounds, species_non_isotope_type('C'))
-       if (use_c13) then
-          call this%c13_products_inst%Init(bounds, species_isotope_type('C', '13'))
-       end if
-       if (use_c14) then
-          call this%c14_products_inst%Init(bounds, species_isotope_type('C', '14'))
-       end if
        call this%n_products_inst%Init(bounds, species_non_isotope_type('N'))
 
        call this%cn_balance_inst%Init(bounds)
@@ -342,22 +322,7 @@ contains
        if ( flag /= 'read' .and. num_reseed_patch /= 0 )then
           call endrun(msg="ERROR num_reseed should be zero and is not"//errmsg(sourcefile, __LINE__))
        end if
-       if (use_c13) then
-          call this%c13_cnveg_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c13', &
-               reseed_dead_plants=this%reseed_dead_plants, c12_cnveg_carbonstate_inst=this%cnveg_carbonstate_inst)
-       end if
-       if (use_c14) then
-          call this%c14_cnveg_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c14', &
-               reseed_dead_plants=this%reseed_dead_plants, c12_cnveg_carbonstate_inst=this%cnveg_carbonstate_inst)
-       end if
-
        call this%cnveg_carbonflux_inst%restart(bounds, ncid, flag=flag, carbon_type='c12')
-       if (use_c13) then
-          call this%c13_cnveg_carbonflux_inst%restart(bounds, ncid, flag=flag, carbon_type='c13')
-       end if
-       if (use_c14) then
-          call this%c14_cnveg_carbonflux_inst%restart(bounds, ncid, flag=flag, carbon_type='c14')
-       end if
 
        call this%cnveg_nitrogenstate_inst%restart(bounds, ncid, flag=flag,  &
             leafc_patch=this%cnveg_carbonstate_inst%leafc_patch(begp:endp),         &
@@ -373,16 +338,6 @@ contains
             filter_reseed_patch=reseed_patch, num_reseed_patch=num_reseed_patch)
 
        call this%c_products_inst%restart(bounds, ncid, flag)
-       if (use_c13) then
-          call this%c13_products_inst%restart(bounds, ncid, flag, &
-               template_for_missing_fields = this%c_products_inst, &
-               template_multiplier = c3_r2)
-       end if
-       if (use_c14) then
-          call this%c14_products_inst%restart(bounds, ncid, flag, &
-               template_for_missing_fields = this%c_products_inst, &
-               template_multiplier = c14ratio)
-       end if
        call this%n_products_inst%restart(bounds, ncid, flag)
 
     end if

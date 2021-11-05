@@ -23,7 +23,7 @@ contains
     !
     ! !USES:
     use seq_flds_mod    , only: seq_flds_x2l_fields
-    use clm_varctl      , only: co2_type, co2_ppmv, iulog, use_c13
+    use clm_varctl      , only: co2_type, co2_ppmv, iulog
     use clm_varctl      , only: ndep_from_cpl 
     use clm_varcon      , only: rair, o2_molar_const, c13ratio
     use shr_const_mod   , only: SHR_CONST_TKFRZ
@@ -248,9 +248,6 @@ contains
           co2_ppmv_val = co2_ppmv
        end if
        atm2lnd_inst%forc_pco2_grc(g)   = co2_ppmv_val * 1.e-6_r8 * forc_pbot 
-       if (use_c13) then
-          atm2lnd_inst%forc_pc13o2_grc(g) = co2_ppmv_val * c13ratio * 1.e-6_r8 * forc_pbot
-       end if
 
        if (ndep_from_cpl) then
           ! The coupler is sending ndep in units if kgN/m2/s - and clm uses units of gN/m2/sec - so the

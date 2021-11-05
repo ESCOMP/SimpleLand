@@ -34,7 +34,6 @@ contains
     ! Initialization of soil biogeochemistry precision control
     !
     ! !USES:
-    use clm_varctl , only : use_c13, use_c14
     !
     ! !ARGUMENTS:
     type(soilbiogeochem_carbonstate_type)   , intent(inout) :: soilbiogeochem_carbonstate_inst
@@ -49,12 +48,6 @@ contains
     ncrit    =  1.e-8_r8              ! critical nitrogen state value for truncation (gN/m2)
 
     call soilbiogeochem_carbonstate_inst%setTotVgCThresh( totvegcthresh )
-    if ( use_c13 )then
-        call c13_soilbiogeochem_carbonstate_inst%setTotVgCThresh( totvegcthresh )
-    end if
-    if ( use_c14 )then
-        call c14_soilbiogeochem_carbonstate_inst%setTotVgCThresh( totvegcthresh )
-    end if
     call soilbiogeochem_nitrogenstate_inst%setTotVgCThresh( totvegcthresh )
 
   end subroutine SoilBiogeochemPrecisionControlInit
@@ -70,7 +63,7 @@ contains
     ! they get too small.
     !
     ! !USES:
-    use clm_varctl , only : iulog, use_c13, use_c14, use_nitrif_denitrif, use_cn
+    use clm_varctl , only : iulog, use_nitrif_denitrif, use_cn
     use clm_varpar , only : nlevdecomp
     use CNSharedParamsMod, only: use_fun
     !
@@ -112,8 +105,6 @@ contains
          do j = 1,nlevdecomp
             ! initialize the column-level C and N truncation terms
             cc = 0._r8
-            if ( use_c13 ) cc13 = 0._r8
-            if ( use_c14 ) cc14 = 0._r8
             cn = 0._r8
 
             ! do tests on state variables for precision control
@@ -133,14 +124,6 @@ contains
                      ns%decomp_npools_vr_col(c,j,k) = 0._r8
                   endif
 
-                  if ( use_c13 ) then
-                     cc13 = cc13 + c13cs%decomp_cpools_vr_col(c,j,k)
-                     c13cs%decomp_cpools_vr_col(c,j,k) = 0._r8
-                  endif
-                  if ( use_c14 ) then
-                     cc14 = cc14 + c14cs%decomp_cpools_vr_col(c,j,k)
-                     c14cs%decomp_cpools_vr_col(c,j,k) = 0._r8
-                  endif
                end if
 
             end do
@@ -152,12 +135,6 @@ contains
 
             if (use_cn) then
                ns%ntrunc_vr_col(c,j) = ns%ntrunc_vr_col(c,j) + cn
-            endif
-            if ( use_c13 ) then
-               c13cs%ctrunc_vr_col(c,j) = c13cs%ctrunc_vr_col(c,j) + cc13
-            endif
-            if ( use_c14 ) then
-               c14cs%ctrunc_vr_col(c,j) = c14cs%ctrunc_vr_col(c,j) + cc14
             endif
          end do
 

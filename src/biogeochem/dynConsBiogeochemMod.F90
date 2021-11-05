@@ -10,7 +10,7 @@ module dynConsBiogeochemMod
   use shr_log_mod                  , only : errMsg => shr_log_errMsg
   use decompMod                    , only : bounds_type
   use abortutils                   , only : endrun
-  use clm_varctl                   , only : iulog, use_c13, use_c14, use_lch4
+  use clm_varctl                   , only : iulog
   use pftconMod                    , only : pftcon
   use CanopyStateType              , only : canopystate_type
   use PhotosynthesisMod            , only : photosyns_type
@@ -224,91 +224,6 @@ contains
           call endrun(msg=errMsg(sourcefile, __LINE__))
     end if
 
-    if ( use_c13 ) then
-       allocate(dwt_leafc13_seed(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_leafc13_seed'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_deadstemc13_seed(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_deadstemc13_seed'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_frootc13_to_litter(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_frootc13_to_litter'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_livecrootc13_to_litter(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_livecrootc13_to_litter'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_deadcrootc13_to_litter(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_deadcrootc13_to_litter'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(conv_c13flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for conv_c13flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(wood_product_c13flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for wood_product_c13flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(crop_product_c13flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for crop_product_c13flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-    endif
-    if ( use_c14 ) then
-       allocate(dwt_leafc14_seed(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_leafc14_seed'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_deadstemc14_seed(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_deadstemc14_seed'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_frootc14_to_litter(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_frootc14_to_litter'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_livecrootc14_to_litter(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_livecrootc14_to_litter'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(dwt_deadcrootc14_to_litter(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for dwt_deadcrootc14_to_litter'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(conv_c14flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for conv_c14flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(wood_product_c14flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for wood_product_c14flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-       allocate(crop_product_c14flux(begp:endp), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*)subname,' allocation error for crop_product_c14flux'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-    endif
-    
     ! Get time step
     dt = real( get_step_size(), r8 )
 
@@ -334,28 +249,6 @@ contains
        conv_nflux(p) = 0._r8
        wood_product_nflux(p) = 0._r8
        crop_product_nflux(p) = 0._r8
-       
-       if ( use_c13 ) then
-          dwt_leafc13_seed(p) = 0._r8
-          dwt_deadstemc13_seed(p) = 0._r8
-          dwt_frootc13_to_litter(p) = 0._r8
-          dwt_livecrootc13_to_litter(p) = 0._r8
-          dwt_deadcrootc13_to_litter(p) = 0._r8
-          conv_c13flux(p) = 0._r8
-          wood_product_c13flux(p) = 0._r8
-          crop_product_c13flux(p) = 0._r8
-       endif
-       
-       if ( use_c14 ) then
-          dwt_leafc14_seed(p) = 0._r8
-          dwt_deadstemc14_seed(p) = 0._r8
-          dwt_frootc14_to_litter(p) = 0._r8
-          dwt_livecrootc14_to_litter(p) = 0._r8
-          dwt_deadcrootc14_to_litter(p) = 0._r8
-          conv_c14flux(p) = 0._r8
-          wood_product_c14flux(p) = 0._r8
-          crop_product_c14flux(p) = 0._r8
-       endif
        
        l = patch%landunit(p)
        if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
@@ -422,10 +315,6 @@ contains
              cnveg_nitrogenflux_inst%avail_retransn_patch(p)      = 0._r8
              cnveg_nitrogenflux_inst%plant_nalloc_patch(p)        = 0._r8
 
-             if ( use_c13 ) then
-                c13_cnveg_carbonflux_inst%xsmrpool_c13ratio_patch(p) = c13ratio
-             end if
-
              call photosyns_inst%NewPatchinit(p)
 
           end if  ! end initialization of new patch
@@ -461,56 +350,6 @@ contains
        dwt_livecrootc_to_litter(p) = -1._r8 * dwt_livecrootc_to_litter(p)
        dwt_deadcrootc_to_litter(p) = -1._r8 * dwt_deadcrootc_to_litter(p)
     end do
-
-    if (use_c13) then
-       call c13_cnveg_carbonstate_inst%DynamicPatchAdjustments(bounds, &
-            num_soilp_with_inactive, filter_soilp_with_inactive, &
-            patch_state_updater, &
-            leafc_seed = leafc_seed, &
-            deadstemc_seed = deadstemc_seed, &
-            conv_cflux = conv_c13flux(begp:endp), &
-            wood_product_cflux = wood_product_c13flux(begp:endp), &
-            crop_product_cflux = crop_product_c13flux(begp:endp), &
-            dwt_frootc_to_litter = dwt_frootc13_to_litter(begp:endp), &
-            dwt_livecrootc_to_litter = dwt_livecrootc13_to_litter(begp:endp), &
-            dwt_deadcrootc_to_litter = dwt_deadcrootc13_to_litter(begp:endp), &
-            dwt_leafc_seed = dwt_leafc13_seed(begp:endp), &
-            dwt_deadstemc_seed = dwt_deadstemc13_seed(begp:endp))
-
-       ! These fluxes are computed as negative quantities, but are expected to be positive,
-       ! so flip the signs
-       do p = begp,endp
-          dwt_frootc13_to_litter(p) = -1._r8 * dwt_frootc13_to_litter(p)
-          dwt_livecrootc13_to_litter(p) = -1._r8 * dwt_livecrootc13_to_litter(p)
-          dwt_deadcrootc13_to_litter(p) = -1._r8 * dwt_deadcrootc13_to_litter(p)
-       end do
-
-    end if
-
-    if (use_c14) then
-       call c14_cnveg_carbonstate_inst%DynamicPatchAdjustments(bounds, &
-            num_soilp_with_inactive, filter_soilp_with_inactive, &
-            patch_state_updater, &
-            leafc_seed = leafc_seed, &
-            deadstemc_seed = deadstemc_seed, &
-            conv_cflux = conv_c14flux(begp:endp), &
-            wood_product_cflux = wood_product_c14flux(begp:endp), &
-            crop_product_cflux = crop_product_c14flux(begp:endp), &
-            dwt_frootc_to_litter = dwt_frootc14_to_litter(begp:endp), &
-            dwt_livecrootc_to_litter = dwt_livecrootc14_to_litter(begp:endp), &
-            dwt_deadcrootc_to_litter = dwt_deadcrootc14_to_litter(begp:endp), &
-            dwt_leafc_seed = dwt_leafc14_seed(begp:endp), &
-            dwt_deadstemc_seed = dwt_deadstemc14_seed(begp:endp))
-
-       ! These fluxes are computed as negative quantities, but are expected to be positive,
-       ! so flip the signs
-       do p = begp,endp
-          dwt_frootc14_to_litter(p) = -1._r8 * dwt_frootc14_to_litter(p)
-          dwt_livecrootc14_to_litter(p) = -1._r8 * dwt_livecrootc14_to_litter(p)
-          dwt_deadcrootc14_to_litter(p) = -1._r8 * dwt_deadcrootc14_to_litter(p)
-       end do
-
-    end if
 
     call cnveg_nitrogenstate_inst%DynamicPatchAdjustments(bounds, &
          num_soilp_with_inactive, filter_soilp_with_inactive, &
@@ -549,30 +388,6 @@ contains
             cnveg_carbonflux_inst%dwt_seedc_to_deadstem_grc(g) + &
             cnveg_carbonflux_inst%dwt_seedc_to_deadstem_patch(p)
 
-       if ( use_c13 ) then
-          c13_cnveg_carbonflux_inst%dwt_seedc_to_leaf_patch(p) = dwt_leafc13_seed(p)/dt
-          c13_cnveg_carbonflux_inst%dwt_seedc_to_leaf_grc(g) = &
-               c13_cnveg_carbonflux_inst%dwt_seedc_to_leaf_grc(g) + &
-               c13_cnveg_carbonflux_inst%dwt_seedc_to_leaf_patch(p)
-
-          c13_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_patch(p) = dwt_deadstemc13_seed(p)/dt
-          c13_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_grc(g) = &
-               c13_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_grc(g) + &
-               c13_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_patch(p)
-       endif
-
-       if ( use_c14 ) then	
-          c14_cnveg_carbonflux_inst%dwt_seedc_to_leaf_patch(p) = dwt_leafc14_seed(p)/dt
-          c14_cnveg_carbonflux_inst%dwt_seedc_to_leaf_grc(g) = &
-               c14_cnveg_carbonflux_inst%dwt_seedc_to_leaf_grc(g) + &
-               c14_cnveg_carbonflux_inst%dwt_seedc_to_leaf_patch(p)
-
-          c14_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_patch(p) = dwt_deadstemc14_seed(p)/dt
-          c14_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_grc(g) = &
-               c14_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_grc(g) + &
-               c14_cnveg_carbonflux_inst%dwt_seedc_to_deadstem_patch(p)
-       endif
-
        ! N fluxes
        cnveg_nitrogenflux_inst%dwt_seedn_to_leaf_patch(p) = dwt_leafn_seed(p)/dt
        cnveg_nitrogenflux_inst%dwt_seedn_to_leaf_grc(g) = &
@@ -597,22 +412,6 @@ contains
                dwt_frootc_to_litter(p)/dt + &
                dwt_livecrootc_to_litter(p)/dt + &
                dwt_deadcrootc_to_litter(p)/dt
-
-       if ( use_c13 ) then
-          c13_cnveg_carbonflux_inst%dwt_slash_cflux_col(c) = &
-                  c13_cnveg_carbonflux_inst%dwt_slash_cflux_col(c) + &
-                  dwt_frootc13_to_litter(p)/dt + &
-                  dwt_livecrootc13_to_litter(p)/dt + &
-                  dwt_deadcrootc13_to_litter(p)/dt
-       endif
-
-       if ( use_c14 ) then
-          c14_cnveg_carbonflux_inst%dwt_slash_cflux_col(c) = &
-                  c14_cnveg_carbonflux_inst%dwt_slash_cflux_col(c) + &
-                  dwt_frootc14_to_litter(p)/dt + &
-                  dwt_livecrootc14_to_litter(p)/dt + &
-                  dwt_deadcrootc14_to_litter(p)/dt
-       endif
 
     end do
 
@@ -672,63 +471,6 @@ contains
                cnveg_nitrogenflux_inst%dwt_deadcrootn_to_cwdn_col(c,j) + &
                (dwt_deadcrootn_to_litter(p))/dt * soilbiogeochem_state_inst%croot_prof_patch(p,j)
 
-          if ( use_c13 ) then
-             ! C13 fine root litter fluxes
-             c13_cnveg_carbonflux_inst%dwt_frootc_to_litr_met_c_col(c,j) = &
-                  c13_cnveg_carbonflux_inst%dwt_frootc_to_litr_met_c_col(c,j) + &
-                  (dwt_frootc13_to_litter(p)*pftcon%fr_flab(patch%itype(p)))/dt &
-                  * soilbiogeochem_state_inst%froot_prof_patch(p,j)
-
-             c13_cnveg_carbonflux_inst%dwt_frootc_to_litr_cel_c_col(c,j) = &
-                  c13_cnveg_carbonflux_inst%dwt_frootc_to_litr_cel_c_col(c,j) + &
-                  (dwt_frootc13_to_litter(p)*pftcon%fr_fcel(patch%itype(p)))/dt &
-                  * soilbiogeochem_state_inst%froot_prof_patch(p,j)
-
-             c13_cnveg_carbonflux_inst%dwt_frootc_to_litr_lig_c_col(c,j) = &
-                  c13_cnveg_carbonflux_inst%dwt_frootc_to_litr_lig_c_col(c,j) + &
-                  (dwt_frootc13_to_litter(p)*pftcon%fr_flig(patch%itype(p)))/dt &
-                  * soilbiogeochem_state_inst%froot_prof_patch(p,j)
-
-             ! livecroot fluxes to cwd
-             c13_cnveg_carbonflux_inst%dwt_livecrootc_to_cwdc_col(c,j) = &
-                  c13_cnveg_carbonflux_inst%dwt_livecrootc_to_cwdc_col(c,j) + &
-                  (dwt_livecrootc13_to_litter(p))/dt * soilbiogeochem_state_inst%croot_prof_patch(p,j)
-
-             ! deadcroot fluxes to cwd
-             c13_cnveg_carbonflux_inst%dwt_deadcrootc_to_cwdc_col(c,j) = &
-                  c13_cnveg_carbonflux_inst%dwt_deadcrootc_to_cwdc_col(c,j) + &
-                  (dwt_deadcrootc13_to_litter(p))/dt * soilbiogeochem_state_inst%croot_prof_patch(p,j)
-
-          endif
-
-          if ( use_c14 ) then                   
-             ! C14 fine root litter fluxes
-             c14_cnveg_carbonflux_inst%dwt_frootc_to_litr_met_c_col(c,j) = &
-                  c14_cnveg_carbonflux_inst%dwt_frootc_to_litr_met_c_col(c,j) + &
-                  (dwt_frootc14_to_litter(p)*pftcon%fr_flab(patch%itype(p)))/dt &
-                  * soilbiogeochem_state_inst%froot_prof_patch(p,j)
-
-             c14_cnveg_carbonflux_inst%dwt_frootc_to_litr_cel_c_col(c,j) = &
-                  c14_cnveg_carbonflux_inst%dwt_frootc_to_litr_cel_c_col(c,j) + &
-                  (dwt_frootc14_to_litter(p)*pftcon%fr_fcel(patch%itype(p)))/dt &
-                  * soilbiogeochem_state_inst%froot_prof_patch(p,j)
-
-             c14_cnveg_carbonflux_inst%dwt_frootc_to_litr_lig_c_col(c,j) = &
-                  c14_cnveg_carbonflux_inst%dwt_frootc_to_litr_lig_c_col(c,j) + &
-                  (dwt_frootc14_to_litter(p)*pftcon%fr_flig(patch%itype(p)))/dt &
-                  * soilbiogeochem_state_inst%froot_prof_patch(p,j)
-
-             ! livecroot fluxes to cwd
-             c14_cnveg_carbonflux_inst%dwt_livecrootc_to_cwdc_col(c,j) = &
-                  c14_cnveg_carbonflux_inst%dwt_livecrootc_to_cwdc_col(c,j) + &
-                  (dwt_livecrootc14_to_litter(p))/dt * soilbiogeochem_state_inst%croot_prof_patch(p,j)
-
-             ! deadcroot fluxes to cwd
-             c14_cnveg_carbonflux_inst%dwt_deadcrootc_to_cwdc_col(c,j) = &
-                  c14_cnveg_carbonflux_inst%dwt_deadcrootc_to_cwdc_col(c,j) + &
-                  (dwt_deadcrootc14_to_litter(p))/dt * soilbiogeochem_state_inst%croot_prof_patch(p,j)
-          endif
-
        end do
     end do
 
@@ -738,14 +480,6 @@ contains
     do p = begp, endp
        cnveg_carbonflux_inst%dwt_wood_productc_gain_patch(p) = -wood_product_cflux(p)/dt
        cnveg_carbonflux_inst%dwt_crop_productc_gain_patch(p) = -crop_product_cflux(p)/dt
-       if (use_c13) then
-          c13_cnveg_carbonflux_inst%dwt_wood_productc_gain_patch(p) = -wood_product_c13flux(p)/dt
-          c13_cnveg_carbonflux_inst%dwt_crop_productc_gain_patch(p) = -crop_product_c13flux(p)/dt
-       end if
-       if (use_c14) then
-          c14_cnveg_carbonflux_inst%dwt_wood_productc_gain_patch(p) = -wood_product_c14flux(p)/dt
-          c14_cnveg_carbonflux_inst%dwt_crop_productc_gain_patch(p) = -crop_product_c14flux(p)/dt
-       end if
        cnveg_nitrogenflux_inst%dwt_wood_productn_gain_patch(p) = -wood_product_nflux(p)/dt
        cnveg_nitrogenflux_inst%dwt_crop_productn_gain_patch(p) = -crop_product_nflux(p)/dt
     end do
@@ -763,22 +497,6 @@ contains
        cnveg_carbonflux_inst%dwt_conv_cflux_grc(g) = &
             cnveg_carbonflux_inst%dwt_conv_cflux_grc(g) + &
             cnveg_carbonflux_inst%dwt_conv_cflux_patch(p)
-
-       if ( use_c13 ) then
-          ! C13 column-level flux updates
-          c13_cnveg_carbonflux_inst%dwt_conv_cflux_patch(p) = -conv_c13flux(p)/dt
-          c13_cnveg_carbonflux_inst%dwt_conv_cflux_grc(g) = &
-               c13_cnveg_carbonflux_inst%dwt_conv_cflux_grc(g) + &
-               c13_cnveg_carbonflux_inst%dwt_conv_cflux_patch(p)
-       endif
-
-       if ( use_c14 ) then
-          ! C14 column-level flux updates
-          c14_cnveg_carbonflux_inst%dwt_conv_cflux_patch(p) = -conv_c14flux(p)/dt
-          c14_cnveg_carbonflux_inst%dwt_conv_cflux_grc(g) = &
-               c14_cnveg_carbonflux_inst%dwt_conv_cflux_grc(g) + &
-               c14_cnveg_carbonflux_inst%dwt_conv_cflux_patch(p)
-       endif
 
        cnveg_nitrogenflux_inst%dwt_conv_nflux_patch(p) = -conv_nflux(p)/dt
        cnveg_nitrogenflux_inst%dwt_conv_nflux_grc(g) = &
@@ -806,28 +524,6 @@ contains
     deallocate(wood_product_nflux)
     deallocate(crop_product_nflux)
              
-    if ( use_c13 ) then
-       deallocate(dwt_leafc13_seed)
-       deallocate(dwt_deadstemc13_seed)
-       deallocate(dwt_frootc13_to_litter)
-       deallocate(dwt_livecrootc13_to_litter)
-       deallocate(dwt_deadcrootc13_to_litter)
-       deallocate(conv_c13flux)
-       deallocate(wood_product_c13flux)
-       deallocate(crop_product_c13flux)
-    endif
-             
-    if ( use_c14 ) then
-       deallocate(dwt_leafc14_seed)
-       deallocate(dwt_deadstemc14_seed)
-       deallocate(dwt_frootc14_to_litter)
-       deallocate(dwt_livecrootc14_to_litter)
-       deallocate(dwt_deadcrootc14_to_litter)
-       deallocate(conv_c14flux)
-       deallocate(wood_product_c14flux)
-       deallocate(crop_product_c14flux)
-    endif
-    
    end subroutine dyn_cnbal_patch
 
    !-----------------------------------------------------------------------
@@ -865,21 +561,9 @@ contains
      call endrun( "Should not be here" )
      call soilbiogeochem_carbonstate_inst%DynamicColumnAdjustments(bounds, clump_index, &
           column_state_updater)
-     if (use_c13) then
-        call c13_soilbiogeochem_carbonstate_inst%DynamicColumnAdjustments(bounds, clump_index, &
-             column_state_updater)
-     end if
-     if (use_c14) then
-        call c14_soilbiogeochem_carbonstate_inst%DynamicColumnAdjustments(bounds, clump_index, &
-             column_state_updater)
-     end if
      
      call soilbiogeochem_nitrogenstate_inst%DynamicColumnAdjustments(bounds, clump_index, &
           column_state_updater)
-
-     !if (use_lch4) then
-        !call ch4_inst%DynamicColumnAdjustments(bounds, clump_index, column_state_updater)
-     !end if
 
    end subroutine dyn_cnbal_col
 

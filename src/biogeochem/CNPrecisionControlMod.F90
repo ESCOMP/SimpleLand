@@ -103,7 +103,7 @@ contains
     ! Force leaf and deadstem c and n to 0 if they get too small.
     !
     ! !USES:
-    use clm_varctl , only : iulog, use_c13, use_c14
+    use clm_varctl , only : iulog
     use clm_varpar , only : use_crop
     use pftconMod  , only : nc3crop
     use decompMod  , only : bounds_type
@@ -193,8 +193,6 @@ contains
          ! initialize the patch-level C and N truncation terms
          pc(p) = 0._r8
          pn(p) = 0._r8
-         if ( use_c13 ) pc13(p) = 0._r8
-         if ( use_c14 ) pc14(p) = 0._r8
       end do
 
       ! do tests on state variables for precision control
@@ -385,12 +383,6 @@ contains
 
          ns%ntrunc_patch(p) = ns%ntrunc_patch(p) + pn(p)
 
-         if ( use_c13 ) then
-            c13cs%ctrunc_patch(p) = c13cs%ctrunc_patch(p) + pc13(p)
-         endif
-         if ( use_c14 ) then
-            c14cs%ctrunc_patch(p) = c14cs%ctrunc_patch(p) + pc14(p)
-         endif
        end do
 
     end associate
@@ -406,7 +398,7 @@ contains
     !
     ! !USES:
     use shr_log_mod, only : errMsg => shr_log_errMsg
-    use clm_varctl , only : use_c13, use_c14, use_nguardrail
+    use clm_varctl , only : use_nguardrail
     use clm_varctl , only : iulog
     use pftconMod  , only : nc3crop
     use decompMod  , only : bounds_type
@@ -435,22 +427,6 @@ contains
     SHR_ASSERT_ALL((ubound(nitrogen_patch) == (/bounds%endp/)), 'ubnd(nitro)'//errMsg(sourcefile, lineno))
     SHR_ASSERT_ALL((ubound(pc)             == (/bounds%endp/)), 'ubnd(pc)'//errMsg(sourcefile, lineno))
     SHR_ASSERT_ALL((ubound(pn)             == (/bounds%endp/)), 'ubnd(pn)'//errMsg(sourcefile, lineno))
-#ifndef _OPENMP
-    if ( present(c13) .and. use_c13 )then
-       SHR_ASSERT_ALL((lbound(c13)         == (/bounds%begp/)), 'lbnd(c13)'//errMsg(sourcefile, lineno))
-       SHR_ASSERT_ALL((ubound(c13)         == (/bounds%endp/)), 'ubnd(c13)'//errMsg(sourcefile, lineno))
-    end if
-    if ( present(c14) .and. use_c14 )then
-       SHR_ASSERT_ALL((lbound(c14)         == (/bounds%begp/)), 'lbnd(c14)'//errMsg(sourcefile, lineno))
-       SHR_ASSERT_ALL((ubound(c14)         == (/bounds%endp/)), 'ubnd(c14)'//errMsg(sourcefile, lineno))
-    end if
-#endif
-    if ( present(pc13) )then
-       SHR_ASSERT_ALL((ubound(pc13)        == (/bounds%endp/)), 'ubnd(pc13)'//errMsg(sourcefile, lineno))
-    end if
-    if ( present(pc14) )then
-       SHR_ASSERT_ALL((ubound(pc14)        == (/bounds%endp/)), 'ubnd(pc14)'//errMsg(sourcefile, lineno))
-    end if
     ! patch loop
     lcroponly = .false.
     if ( present(croponly) )then
@@ -475,14 +451,6 @@ contains
              pn(p) = pn(p) + nitrogen_patch(p)
              nitrogen_patch(p) = 0._r8
    
-             if ( use_c13 .and. present(c13) .and. present(pc13) ) then
-                pc13(p) = pc13(p) + c13(p)
-                c13(p) = 0._r8
-             endif
-             if ( use_c14 .and. present(c14) .and. present(pc14)) then
-                pc14(p) = pc14(p) + c14(p)
-                c14(p) = 0._r8
-             endif
           end if
        end if
     end do
@@ -498,7 +466,6 @@ contains
     use abortutils , only : endrun
     use clm_varctl , only : iulog
     use shr_log_mod, only : errMsg => shr_log_errMsg
-    use clm_varctl , only : use_c13, use_c14
     use pftconMod  , only : nc3crop
     use decompMod  , only : bounds_type
     !
@@ -522,22 +489,6 @@ contains
 
     SHR_ASSERT_ALL((ubound(carbon_patch)   == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
     SHR_ASSERT_ALL((ubound(pc)             == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
-#ifndef _OPENMP
-    if ( present(c13) .and. use_c13 )then
-       SHR_ASSERT_ALL((lbound(c13)         == (/bounds%begp/)), errMsg(sourcefile, __LINE__))
-       SHR_ASSERT_ALL((ubound(c13)         == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
-    end if
-    if ( present(c14) .and. use_c14 )then
-       SHR_ASSERT_ALL((lbound(c14)         == (/bounds%begp/)), errMsg(sourcefile, __LINE__))
-       SHR_ASSERT_ALL((ubound(c14)         == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
-    end if
-#endif
-    if ( present(pc13) )then
-       SHR_ASSERT_ALL((ubound(pc13)        == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
-    end if
-    if ( present(pc14) )then
-       SHR_ASSERT_ALL((ubound(pc14)        == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
-    end if
     if ( -ccrit < cnegcrit )then
         call endrun(msg='ERROR: cnegcrit should be less than -ccrit: '//errMsg(sourcefile, lineno))
     end if
@@ -561,14 +512,6 @@ contains
              pc(p) = pc(p) + carbon_patch(p)
              carbon_patch(p) = 0._r8
    
-             if ( use_c13 .and. present(c13) .and. present(pc13) ) then
-                pc13(p) = pc13(p) + c13(p)
-                c13(p) = 0._r8
-             endif
-             if ( use_c14 .and. present(c14)  .and. present(pc14)) then
-                pc14(p) = pc14(p) + c14(p)
-                c14(p) = 0._r8
-             endif
           end if
        end if
     end do

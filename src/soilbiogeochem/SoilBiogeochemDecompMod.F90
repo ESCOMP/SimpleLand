@@ -11,7 +11,7 @@ module SoilBiogeochemDecompMod
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
   use decompMod                          , only : bounds_type
   use clm_varpar                         , only : nlevdecomp, ndecomp_cascade_transitions, ndecomp_pools
-  use clm_varctl                         , only : use_nitrif_denitrif, use_lch4, use_fates
+  use clm_varctl                         , only : use_nitrif_denitrif, use_fates
   use clm_varcon                         , only : dzsoi_decomp
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   use SoilBiogeochemStateType            , only : soilbiogeochem_state_type
@@ -221,38 +221,6 @@ contains
          end do
       end do
    end if
-
-      if (use_lch4) then
-         ! Calculate total fraction of potential HR, for methane code
-         do j = 1,nlevdecomp
-            do fc = 1,num_soilc
-               c = filter_soilc(fc)
-               hrsum(c,j) = 0._r8
-            end do
-         end do
-         do k = 1, ndecomp_cascade_transitions
-            do j = 1,nlevdecomp
-               do fc = 1,num_soilc
-                  c = filter_soilc(fc)
-                  hrsum(c,j) = hrsum(c,j) + rf_decomp_cascade(c,j,k) * p_decomp_cpool_loss(c,j,k)
-               end do
-            end do
-         end do
-
-
-        ! Nitrogen limitation / (low)-moisture limitation                                                                    
-         do j = 1,nlevdecomp
-            do fc = 1,num_soilc
-               c = filter_soilc(fc)
-               if (phr_vr(c,j) > 0._r8) then
-                  fphr(c,j) = hrsum(c,j) / phr_vr(c,j) * w_scalar(c,j)
-                  fphr(c,j) = max(fphr(c,j), 0.01_r8) ! Prevent overflow errors for 0 respiration                          
-               else
-                  fphr(c,j) = 1._r8
-               end if
-            end do
-         end do
-      end if
 
       
       ! vertically integrate net and gross mineralization fluxes for diagnostic output                                     
