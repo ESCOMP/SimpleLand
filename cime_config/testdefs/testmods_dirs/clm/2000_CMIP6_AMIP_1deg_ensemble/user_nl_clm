@@ -1,1 +1,1 @@
-mml_surdat='/glade/work/kwenwen/SLIM/data_for_inputs/slim_ctrl/slim2deg_fromCMIP6-AMIP-1deg_ensemble001-010_1991to2010clim_max-ctrl-bucket_rs150.nc'
+mml_surdat='$DIN_LOC_ROOT/lnd/slim/surdat/slim2deg_fromCMIP6-AMIP-1deg_ensemble001-010_1991to2010clim_max-ctrl-bucket_rs150_c20210401.nc'

@@ -506,7 +506,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 
 <!-- MML data sets; currently only 2 degree, should add 1degree --> 
 <!-- for any year (2000 or 1850) -->
-<mml_surdat>/glade/work/mlague/simple_land/inputs/mml_1.9x2.5_default.nc</mml_surdat> 
+<mml_surdat>lnd/slim/surdat/mml_1.9x2.5_default_c20210828.nc</mml_surdat>
 
 
 <!--
