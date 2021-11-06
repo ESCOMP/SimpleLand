@@ -1,3 +1,8 @@
+# README.testing
+#
+# The test list "aux_slim" is run as a test suite with the "create_test" script under cime/scripts
+# as follows.
+#
 # Tests on cheyenne
 
 
@@ -10,3 +15,15 @@ qcmd -l walltime=08:00:00 -q premium -- ./create_test --compare <baseline_compar
 --queue premium --machine cheyenne -r cases --baseline-root /glade/p/cgd/tss/ctsm_baselines \
 --generate <baseline_generate> --xml-category aux_slim --xml-machine cheyenne \
 --xml-compiler gnu --compiler gnu
+
+# Tests on izumi
+#
+cd cime/scripts
+nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
+--xml-category aux_slim --xml-machine izumi --xml-compiler nag &
+nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
+--xml-category aux_slim --xml-machine izumi --xml-compiler gnu &
+nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
+--xml-category aux_slim --xml-machine izumi --xml-compiler pgi &
+nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
+--xml-category aux_slim --xml-machine izumi --xml-compiler intel &
