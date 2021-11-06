@@ -629,12 +629,16 @@ contains
                snowmask(g) = 100.0_r8
           end if
  
-  	  if ( snow(g) < 0.0_r8 ) then
+  	  if ( snow(g) <= 0.0_r8 ) then
   	       temp(g) = 0.0_r8
   	       write(iulog,*)'warning: snow<0, setting snowmasking factor to zero. (snow(g) = ',snow(g),', overwriting so snow(g)=0.0)'
                snow(g) = 0.0_r8
   	  else
-  	       temp(g) = snow(g) / ( snow(g) + snowmask(g) )
+               if ( snow(g) + snowmask(g) == 0.0_r8 ) then
+  	          temp(g) = 0.0_r8
+               else
+  	          temp(g) = snow(g) / ( snow(g) + snowmask(g) )
+               end if
   	  end if
   	 
   	  diag3_1d(g) = temp(g)
