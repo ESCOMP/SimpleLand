@@ -1,0 +1,12 @@
+# Tests on cheyenne
+
+
+cd cime/scripts
+qcmd -l walltime=08:00:00 -q premium -- ./create_test --compare <baseline_compare> \
+--queue premium --machine cheyenne -r cases --baseline-root /glade/p/cgd/tss/ctsm_baselines \
+--generate <baseline_generate> --xml-category aux_slim --xml-machine cheyenne \
+--xml-compiler intel --compiler intel
+qcmd -l walltime=08:00:00 -q premium -- ./create_test --compare <baseline_compare> \
+--queue premium --machine cheyenne -r cases --baseline-root /glade/p/cgd/tss/ctsm_baselines \
+--generate <baseline_generate> --xml-category aux_slim --xml-machine cheyenne \
+--xml-compiler gnu --compiler gnu
