@@ -3030,7 +3030,7 @@ end do
   	
   	!-----------------------------
   	! Calculate obukhov length [m] 
-  	obu_new = ustar**2 * thv / ( vkc * grav * tvstar )
+  	obu_new = max( 0.1_r8, ustar**2 * thv / ( vkc * grav * tvstar ) )
   	
   	
   	! -------------------------------------------------------------
