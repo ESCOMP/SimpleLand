@@ -146,7 +146,6 @@
   <test name="PEM" grid="f19_g17" compset="IHistClm45BgcQianGs" testmods="clm/realistic_fromCLM5_1850">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
-      <machine name="izumi"    compiler="intel" category="aux_slim"/>
     </machines>
     <options>
       <option name="wallclock">02:40:00</option>
