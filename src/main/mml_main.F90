@@ -2950,6 +2950,7 @@ end do
   	! ----- Local Variables --------
 	integer	:: i, g	! indexing variable
 	real(r8)	ival
+	real(r8), parameter :: obu_min = 0.1_r8
 	
 	!real(r8), allocatable, dimension(:) 	::	psi_m_zref, psi_m_z0m, psi_h_zref, psi_h_z0h, &
 	!										z_minus_d, zlog_psim, zlog_psih, obu_temp
@@ -2979,8 +2980,12 @@ end do
   	
   	!-----------------------------
   	! Prevent near-zero values of obukhov length by imposing a minimum of 0.1 m
-  	if ( abs(obu_temp) <= 0.1_r8) then
-  		obu_temp = 0.1_r8
+  	if ( abs(obu_temp) < obu_min) then
+           if ( obu_temp < 0.0_r8 )then
+              obu_temp = -obu_min
+           else
+              obu_temp = obu_min
+           end if
   	end if
   	
   	! check if zref < disp
@@ -3030,7 +3035,14 @@ end do
   	
   	!-----------------------------
   	! Calculate obukhov length [m] 
-  	obu_new = max( 0.1_r8, ustar**2 * thv / ( vkc * grav * tvstar ) )
+  	obu_new = ustar**2 * thv / ( vkc * grav * tvstar )
+        if ( abs(obu_new) < obu_min )then
+           if ( obu_new < 0.0_r8 )then
+              obu_new = -obu_min
+           else
+              obu_new = obu_min
+           end if
+        end if
   	
   	
   	! -------------------------------------------------------------
