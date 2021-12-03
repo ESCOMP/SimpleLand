@@ -43,7 +43,6 @@ module CanopyFluxesMod
   use ColumnType            , only : col                
   use PatchType             , only : patch                
   use SoilWaterRetentionCurveMod, only : soil_water_retention_curve_type
-  use LunaMod               , only : Update_Photosynthesis_Capacity, Acc24_Climate_LUNA,Acc240_Climate_LUNA,Clear24_Climate_LUNA
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -347,7 +346,6 @@ contains
     real(r8) :: temprootr                 
     real(r8) :: dt_veg_temp(bounds%begp:bounds%endp)
     integer  :: iv
-    logical  :: is_end_day                               ! is end of current day
 
     integer :: dummy_to_make_pgi_happy
     !------------------------------------------------------------------------------
@@ -513,7 +511,6 @@ contains
       ! Determine step size
 
       dtime = get_step_size()
-      is_end_day = is_end_curr_day()
 
       ! Make a local copy of the exposedvegp filter. With the current implementation,
       ! this is needed because the filter is modified in the iteration loop.
@@ -1198,47 +1195,6 @@ contains
               ram       = frictionvel_inst%ram1_patch(bounds%begp:bounds%endp), &
               tlai      = canopystate_inst%tlai_patch(bounds%begp:bounds%endp))
          
-      !---------------------------------------------------------
-      !update Vc,max and Jmax by LUNA model
-      if(use_luna)then
-         call Acc24_Climate_LUNA(bounds, fn, filterp, &
-              canopystate_inst, photosyns_inst, &
-              surfalb_inst, solarabs_inst, &
-              temperature_inst)
-            
-         if(is_end_day)then
-               
-            call Acc240_Climate_LUNA(bounds, fn, filterp, &
-                 o2(begp:endp), &
-                 co2(begp:endp), &
-                 rb(begp:endp), &
-                 rhaf(begp:endp),&
-                 temperature_inst, & 
-                 photosyns_inst, &
-                 surfalb_inst, &
-                 solarabs_inst, &
-                 waterstate_inst,&
-                 frictionvel_inst) 
-               
-            call Update_Photosynthesis_Capacity(bounds, fn, filterp, &
-                 dayl_factor(begp:endp), &
-                 atm2lnd_inst, &
-                 temperature_inst, & 
-                 canopystate_inst, &
-                 photosyns_inst, &
-                 surfalb_inst, &
-                 solarabs_inst, &
-                 waterstate_inst,&
-                 frictionvel_inst)        
-            
-            call Clear24_Climate_LUNA(bounds, fn, filterp, &
-                 canopystate_inst, photosyns_inst, &
-                 surfalb_inst, solarabs_inst, &
-                 temperature_inst)
-         
-         endif
-      end if
-
       ! Filter out patches which have small energy balance errors; report others
 
       fnold = fn
