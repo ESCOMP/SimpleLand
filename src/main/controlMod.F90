@@ -27,7 +27,6 @@ module controlMod
   use initInterpMod                    , only: initInterp_readnl
   use LakeCon                          , only: deepmixing_depthcrit, deepmixing_mixfact
   use CanopyfluxesMod                  , only: perchroot, perchroot_alt
-  use CanopyHydrologyMod               , only: CanopyHydrology_readnl
   use SurfaceResistanceMod             , only: soil_resistance_readNL
   use SurfaceAlbedoMod                 , only: albice, lake_melt_icealb
   use UrbanParamsType                  , only: UrbanReadNML
@@ -449,7 +448,6 @@ contains
 
     call soil_resistance_readnl ( NLFilename )
     call CanopyFluxesReadNML    ( NLFilename )
-    call CanopyHydrology_readnl ( NLFilename )
     call UrbanReadNML           ( NLFilename )
     call LunaReadNML            ( NLFilename )
     call FrictionVelReadNML     ( NLFilename )
