@@ -32,7 +32,6 @@ module controlMod
   use SnowHydrologyMod                 , only: SnowHydrology_readnl
   use SurfaceAlbedoMod                 , only: albice, lake_melt_icealb
   use UrbanParamsType                  , only: UrbanReadNML
-  use HumanIndexMod                    , only: HumanIndexReadNML
   use CNPrecisionControlMod            , only: CNPrecisionControlReadNML
   use CNSharedParamsMod                , only: anoxia_wtsat, use_fun
   use SoilBiogeochemCompetitionMod     , only: suplnitro, suplnNon
@@ -454,7 +453,6 @@ contains
     call CanopyHydrology_readnl ( NLFilename )
     call SnowHydrology_readnl   ( NLFilename )
     call UrbanReadNML           ( NLFilename )
-    call HumanIndexReadNML      ( NLFilename )
     call LunaReadNML            ( NLFilename )
     call FrictionVelReadNML     ( NLFilename )
 
