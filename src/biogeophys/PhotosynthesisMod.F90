@@ -158,8 +158,6 @@ module  PhotosynthesisMod
      procedure, public  :: Restart
      procedure, public  :: ReadNML
      procedure, public  :: ReadParams
-     procedure, public  :: TimeStepInit
-     procedure, public  :: NewPatchInit
 
      ! Private procedures
      procedure, private :: InitAllocate

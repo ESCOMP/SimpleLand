@@ -255,7 +255,7 @@ contains
         use PatchType        , only : patch
         use ColumnType       , only : col
         use clm_varctl       , only : iulog
-        use PhotosynthesisMod, only : plc, params_inst
+        use PhotosynthesisMod, only : params_inst
         use column_varcon    , only : icol_road_perv
         use shr_infnan_mod   , only : isnan => shr_infnan_isnan
         use EnergyFluxType   , only : energyflux_type

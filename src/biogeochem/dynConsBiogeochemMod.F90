@@ -315,7 +315,8 @@ contains
              cnveg_nitrogenflux_inst%avail_retransn_patch(p)      = 0._r8
              cnveg_nitrogenflux_inst%plant_nalloc_patch(p)        = 0._r8
 
-             call photosyns_inst%NewPatchinit(p)
+             !call photosyns_inst%NewPatchinit(p)
+             call endrun( "Should not be here as NewPatchInit was removed from photosynthesis" )
 
           end if  ! end initialization of new patch
        end if     ! is soil
