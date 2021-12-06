@@ -15,19 +15,7 @@ module SurfaceAlbedoMod
   use clm_varpar        , only : numrad, nlevcan, nlevsno, nlevcan
   use clm_varctl        , only : fsurdat, iulog, use_snicar_frc
   use pftconMod         , only : pftcon
-  use SnowSnicarMod     , only : sno_nbr_aer, SNICAR_RT, DO_SNO_AER, DO_SNO_OC
-  use AerosolMod        , only : aerosol_type
-  use CanopyStateType   , only : canopystate_type
-  use LakeStateType     , only : lakestate_type
-  use SurfaceAlbedoType , only : surfalb_type
-  use TemperatureType   , only : temperature_type
-  use WaterstateType    , only : waterstate_type
-  use GridcellType      , only : grc                
-  use LandunitType      , only : lun                
   use ColumnType        , only : col                
-  use PatchType         , only : patch                
-  
-  use CanopyHydrologyMod, only : IsSnowvegFlagOn, IsSnowvegFlagOnRad
   !
   implicit none
   !
