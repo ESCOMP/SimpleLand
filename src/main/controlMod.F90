@@ -29,7 +29,6 @@ module controlMod
   use CanopyfluxesMod                  , only: perchroot, perchroot_alt
   use CanopyHydrologyMod               , only: CanopyHydrology_readnl
   use SurfaceResistanceMod             , only: soil_resistance_readNL
-  use SnowHydrologyMod                 , only: SnowHydrology_readnl
   use SurfaceAlbedoMod                 , only: albice, lake_melt_icealb
   use UrbanParamsType                  , only: UrbanReadNML
   use CNPrecisionControlMod            , only: CNPrecisionControlReadNML
@@ -451,7 +450,6 @@ contains
     call soil_resistance_readnl ( NLFilename )
     call CanopyFluxesReadNML    ( NLFilename )
     call CanopyHydrology_readnl ( NLFilename )
-    call SnowHydrology_readnl   ( NLFilename )
     call UrbanReadNML           ( NLFilename )
     call LunaReadNML            ( NLFilename )
     call FrictionVelReadNML     ( NLFilename )

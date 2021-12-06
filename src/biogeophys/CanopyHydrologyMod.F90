@@ -162,7 +162,6 @@ contains
      use clm_varpar         , only : nlevsoi,nlevsno
      use clm_time_manager   , only : get_step_size
      use subgridAveMod      , only : p2c
-     use SnowHydrologyMod   , only : NewSnowBulkDensity
      !
      ! !ARGUMENTS:
      type(bounds_type)      , intent(in)    :: bounds     
@@ -484,8 +483,7 @@ contains
 
        ! Determine snow height and snow water
 
-       call NewSnowBulkDensity(bounds, num_nolakec, filter_nolakec, &
-            atm2lnd_inst, bifall(bounds%begc:bounds%endc))
+       call endrun( "ERROR: this should not be run" )
 
        do f = 1, num_nolakec
           c = filter_nolakec(f)

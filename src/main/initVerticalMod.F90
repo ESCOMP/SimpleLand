@@ -27,7 +27,6 @@ module initVerticalMod
   use GridcellType      , only : grc                
   use ColumnType        , only : col                
   use glcBehaviorMod    , only : glc_behavior_type
-  use SnowHydrologyMod  , only : InitSnowLayers             
   use abortUtils        , only : endrun    
   use ncdio_pio
   !
@@ -671,7 +670,7 @@ contains
     ! Set cold-start values for snow levels, snow layers and snow interfaces 
     !-----------------------------------------------
 
-    call InitSnowLayers(bounds, snow_depth(bounds%begc:bounds%endc))
+    !call InitSnowLayers(bounds, snow_depth(bounds%begc:bounds%endc))
 
     !-----------------------------------------------
     ! Read in topographic index and slope
