@@ -22,6 +22,7 @@ module mml_mainMod
   ! !USES:
   ! MML: bounds & data type
   use decompMod , 	only : bounds_type
+  use spmdMod   ,       only : masterproc
   use atm2lndType,	only : atm2lnd_type
   use lnd2atmType, 	only : lnd2atm_type  ! MML: probably going to need a lnd2atm type
   ! to hand to the coupler as data coming from the land going to the atmosphere (l2x) 
@@ -557,7 +558,7 @@ contains
   			!
   			! Added the nc vars to the restart file, so maybe now I can revert to just saying if sec = 0? 
   			! (sec <1800) -> as long as that instance HAPPENS that would work... I think...
-  			write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
+  			if ( masterproc ) write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
   			
   			call nc_import(begg, endg, mml_nsoi, lfsurdat, mon, &
  					albedo_gvd(begg:endg), albedo_svd(begg:endg), &
@@ -571,7 +572,7 @@ contains
  					soil_tk_1d(begg:endg), soil_cv_1d(begg:endg), &
  					glc_tk_1d(begg:endg), glc_cv_1d(begg:endg)   ) !, &
 
-                       write(iulog,*)'read netcdf'
+                       !write(iulog,*)'read netcdf'
  					
 		end if
 	call t_stopf('mml_nc_import')
@@ -2035,7 +2036,7 @@ end do
     ! first dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst1', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-1, failed ', readvar
     else
 	dust(begg:endg,1) = nc_dust
@@ -2045,7 +2046,7 @@ end do
 	! second dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst2', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-2, failed ', readvar
     else
 	dust(begg:endg,2) = nc_dust
@@ -2055,7 +2056,7 @@ end do
 	! third dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst3', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-3, failed ', readvar
     else
 	dust(begg:endg,3) = nc_dust
@@ -2065,7 +2066,7 @@ end do
 	! fourth dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst4', flag='read', data=nc_dust, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-4, failed ', readvar
     else
 	dust(begg:endg,4) = nc_dust
@@ -2076,50 +2077,50 @@ end do
     ! Albedo Direct
     call ncd_io(ncid=ncid, varname='alb_gvd', flag='read', data=nc_alb_gvd, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_gvd, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='alb_svd', flag='read', data=nc_alb_svd, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_svd, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='alb_gnd', flag='read', data=nc_alb_gnd, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_gnd, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='alb_snd', flag='read', data=nc_alb_snd, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_snd, failed ', readvar
 	end if 
 	
 	! Albedo Diffuse
 	call ncd_io(ncid=ncid, varname='alb_gvf', flag='read', data=nc_alb_gvf, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_gvf, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='alb_svf', flag='read', data=nc_alb_svf, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_svf, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='alb_gnf', flag='read', data=nc_alb_gnf, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_gnf, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='alb_snf', flag='read', data=nc_alb_snf, &
               dim1name=grlnd, nt=k, readvar=readvar)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read alb_snf, failed ', readvar
 	end if 
 	
@@ -2127,13 +2128,13 @@ end do
 	
     call ncd_io(ncid=ncid, varname='snowmask', flag='read', data=nc_snowmask, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read snowmask, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='bucketdepth', flag='read', data=nc_bucket, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read bucketdepth, failed ', readvar
 	end if 
 	
@@ -2152,55 +2153,55 @@ end do
 
     call ncd_io(ncid=ncid, varname='roughness', flag='read', data=nc_rough, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read roughness, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='evap_res', flag='read', data=nc_evaprs, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read evap_res, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='soil_type', flag='read', data=nc_type, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read soil_type, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='glc_mask', flag='read', data=nc_glc_mask, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read glc_mask, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='emissivity', flag='read', data=nc_emiss, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read emissivity, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='soil_tk_1d', flag='read', data=nc_soil_tk, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read soil_tk_1d, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='soil_cv_1d', flag='read', data=nc_soil_cv, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read soil_cv_1d, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='glc_tk_1d', flag='read', data=nc_glc_tk, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read glc_tk_1d, failed ', readvar
 	end if 
 	
 	call ncd_io(ncid=ncid, varname='glc_cv_1d', flag='read', data=nc_glc_cv, &
              dim1name=grlnd, nt=k)
-    if ( .NOT. readvar) then
+    if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read glc_cv_1d, failed ', readvar
 	end if 
 	
