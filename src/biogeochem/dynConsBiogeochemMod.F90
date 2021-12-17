@@ -331,19 +331,6 @@ contains
     ! Adjust patch variables and compute associated fluxes for changing patch areas
 
     call endrun( "Should not be here" )
-    !call cnveg_carbonstate_inst%DynamicPatchAdjustments(bounds, &
-         !num_soilp_with_inactive, filter_soilp_with_inactive, &
-         !patch_state_updater, &
-         !leafc_seed = leafc_seed, &
-         !deadstemc_seed = deadstemc_seed, &
-         !conv_cflux = conv_cflux(begp:endp), &
-         !wood_product_cflux = wood_product_cflux(begp:endp), &
-         !crop_product_cflux = crop_product_cflux(begp:endp), &
-         !dwt_frootc_to_litter = dwt_frootc_to_litter(begp:endp), &
-         !dwt_livecrootc_to_litter = dwt_livecrootc_to_litter(begp:endp), &
-         !dwt_deadcrootc_to_litter = dwt_deadcrootc_to_litter(begp:endp), &
-         !dwt_leafc_seed = dwt_leafc_seed(begp:endp), &
-         !dwt_deadstemc_seed = dwt_deadstemc_seed(begp:endp))
 
     ! These fluxes are computed as negative quantities, but are expected to be positive,
     ! so flip the signs
@@ -352,20 +339,6 @@ contains
        dwt_livecrootc_to_litter(p) = -1._r8 * dwt_livecrootc_to_litter(p)
        dwt_deadcrootc_to_litter(p) = -1._r8 * dwt_deadcrootc_to_litter(p)
     end do
-
-    call cnveg_nitrogenstate_inst%DynamicPatchAdjustments(bounds, &
-         num_soilp_with_inactive, filter_soilp_with_inactive, &
-         patch_state_updater, &
-         leafc_seed = leafc_seed, &
-         deadstemc_seed = deadstemc_seed, &
-         conv_nflux = conv_nflux(begp:endp), &
-         wood_product_nflux = wood_product_nflux(begp:endp), &
-         crop_product_nflux = crop_product_nflux(begp:endp), &
-         dwt_frootn_to_litter = dwt_frootn_to_litter(begp:endp), &
-         dwt_livecrootn_to_litter = dwt_livecrootn_to_litter(begp:endp), &
-         dwt_deadcrootn_to_litter = dwt_deadcrootn_to_litter(begp:endp), &
-         dwt_leafn_seed = dwt_leafn_seed(begp:endp), &
-         dwt_deadstemn_seed = dwt_deadstemn_seed(begp:endp))
 
     ! These fluxes are computed as negative quantities, but are expected to be positive,
     ! so flip the signs
