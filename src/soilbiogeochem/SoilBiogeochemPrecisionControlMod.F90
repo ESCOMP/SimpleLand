@@ -47,8 +47,8 @@ contains
     ccrit    =  1.e-8_r8              ! critical carbon state value for truncation (gC/m2)
     ncrit    =  1.e-8_r8              ! critical nitrogen state value for truncation (gN/m2)
 
-    call soilbiogeochem_carbonstate_inst%setTotVgCThresh( totvegcthresh )
-    call soilbiogeochem_nitrogenstate_inst%setTotVgCThresh( totvegcthresh )
+    !call soilbiogeochem_carbonstate_inst%setTotVgCThresh( totvegcthresh )
+    !call soilbiogeochem_nitrogenstate_inst%setTotVgCThresh( totvegcthresh )
 
   end subroutine SoilBiogeochemPrecisionControlInit
 
