@@ -37,7 +37,6 @@ module controlMod
   use SoilBiogeochemVerticalProfileMod , only: surfprof_exp 
   use SoilBiogeochemNitrifDenitrifMod  , only: no_frozen_nitrif_denitrif, nitrifReadNML
   use SoilHydrologyMod                 , only: soilHydReadNML
-  use CNFireFactoryMod                 , only: CNFireReadNML
   use CanopyFluxesMod                  , only: CanopyFluxesReadNML
   use seq_drydep_mod                   , only: drydep_method, DD_XLND, n_drydep
   use clm_varctl                       
@@ -469,7 +468,6 @@ contains
     call soilHydReadNML(   NLFilename )
     if ( use_cn ) then
        call nitrifReadNML(             NLFilename )
-       call CNFireReadNML(             NLFilename )
        call CNPrecisionControlReadNML( NLFilename )
        call CNNDynamicsReadNML       ( NLFilename )
        call CNPhenologyReadNML       ( NLFilename )

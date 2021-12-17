@@ -53,7 +53,6 @@ module CNVegetationFacade
   use CNVegCarbonStateType            , only : cnveg_carbonstate_type
   use CNVegNitrogenFluxType           , only : cnveg_nitrogenflux_type
   use CNVegNitrogenStateType          , only : cnveg_nitrogenstate_type
-  use CNFireMethodMod                 , only : cnfire_method_type
   use CNProductsMod                   , only : cn_products_type
   use SpeciesIsotopeType              , only : species_isotope_type
   use SpeciesNonIsotopeType           , only : species_non_isotope_type
@@ -87,7 +86,6 @@ module CNVegetationFacade
      type(cn_products_type)         :: n_products_inst
 
      type(cn_balance_type)          :: cn_balance_inst
-     class(cnfire_method_type), allocatable :: cnfire_method
 
      ! Control variables
      logical, private :: reseed_dead_plants    ! Flag to indicate if should reseed dead plants when starting up the model
@@ -140,7 +138,6 @@ contains
     ! Should be called regardless of whether use_cn is true
     !
     ! !USES:
-    use CNFireFactoryMod , only : create_cnfire_method
     use clm_varcon       , only : c13ratio, c14ratio
     !
     ! !ARGUMENTS:
@@ -181,9 +178,6 @@ contains
        call this%cn_balance_inst%Init(bounds)
 
     end if
-
-    allocate(this%cnfire_method, &
-         source=create_cnfire_method(NLFilename))
 
   end subroutine Init
 
@@ -365,7 +359,7 @@ contains
     character(len=*), parameter :: subname = 'Init2'
     !-----------------------------------------------------------------------
 
-    call CNDriverInit(bounds, NLFilename, this%cnfire_method)
+    call CNDriverInit(bounds, NLFilename )
 
   end subroutine Init2
 

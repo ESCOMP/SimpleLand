@@ -10,7 +10,6 @@ module lnd2atmMod
   use shr_infnan_mod       , only : nan => shr_infnan_nan, assignment(=)
   use shr_log_mod          , only : errMsg => shr_log_errMsg
   use shr_megan_mod        , only : shr_megan_mechcomps_n
-  use shr_fire_emis_mod    , only : shr_fire_emis_mechcomps_n
   use clm_varpar           , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.
   use clm_varcon           , only : rair, grav, cpair, hfus, tfrz, spval
   use clm_varctl           , only : iulog
@@ -23,7 +22,6 @@ module lnd2atmMod
   use DUSTMod              , only : dust_type
   use DryDepVelocity       , only : drydepvel_type
   use VocEmissionMod       , only : vocemis_type
-  use CNFireEmissionsMod   , only : fireemis_type
   use EnergyFluxType       , only : energyflux_type
   use FrictionVelocityMod  , only : frictionvel_type
   use SolarAbsorbedType    , only : solarabs_type
@@ -125,7 +123,7 @@ contains
        atm2lnd_inst, surfalb_inst, temperature_inst, frictionvel_inst, &
        waterstate_inst, waterflux_inst, irrigation_inst, energyflux_inst, &
        solarabs_inst, drydepvel_inst,  &
-       vocemis_inst, fireemis_inst, dust_inst, ch4_inst, glc_behavior, &
+       vocemis_inst, dust_inst, ch4_inst, glc_behavior, &
        lnd2atm_inst, &
        net_carbon_exchange_grc) 
     !
@@ -147,7 +145,6 @@ contains
     type(solarabs_type)         , intent(in)    :: solarabs_inst
     type(drydepvel_type)        , intent(in)    :: drydepvel_inst
     type(vocemis_type)          , intent(in)    :: vocemis_inst
-    type(fireemis_type)         , intent(in)    :: fireemis_inst
     type(dust_type)             , intent(in)    :: dust_inst
     type(ch4_type)              , intent(in)    :: ch4_inst
     type(glc_behavior_type)     , intent(in)    :: glc_behavior
@@ -275,18 +272,6 @@ contains
             !lnd2atm_inst%flxvoc_grc  (bounds%begg:bounds%endg,:), &
             !p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
     end if
-
-    ! fire emissions fluxes
-     if (shr_fire_emis_mechcomps_n>0) then
-        !call p2g(bounds, shr_fire_emis_mechcomps_n, &
-            !-fireemis_inst%fireflx_patch(bounds%begp:bounds%endp,:), &
-             !lnd2atm_inst%fireflx_grc   (bounds%begg:bounds%endg,:), &
-             !p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
-        !call p2g(bounds, &
-             !fireemis_inst%ztop_patch (bounds%begp:bounds%endp), &
-             !lnd2atm_inst%fireztop_grc(bounds%begg:bounds%endg), &
-             !p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
-     endif
 
     ! dust emission flux
     call p2g(bounds, ndst, &

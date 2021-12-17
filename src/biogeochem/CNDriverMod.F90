@@ -20,24 +20,21 @@ module CNDriverMod
 contains
 
   !-----------------------------------------------------------------------
-  subroutine CNDriverInit(bounds, NLFilename, cnfire_method)
+  subroutine CNDriverInit(bounds, NLFilename)
     !
     ! !DESCRIPTION:
     ! Initialzation of the CN Ecosystem dynamics.
     !
     ! !USES:
     use CNPhenologyMod              , only : CNPhenologyInit
-    use CNFireMethodMod             , only : cnfire_method_type
     use SoilBiogeochemCompetitionMod, only : SoilBiogeochemCompetitionInit
     !
     ! !ARGUMENTS:
     type(bounds_type)                      , intent(in)    :: bounds      
     character(len=*)                       , intent(in)    :: NLFilename     ! Namelist filename
-    class(cnfire_method_type)              , intent(inout) :: cnfire_method 
     !-----------------------------------------------------------------------
     call SoilBiogeochemCompetitionInit(bounds)
     call CNPhenologyInit(bounds)
-    call cnfire_method%CNFireInit(bounds, NLFilename)
     
   end subroutine CNDriverInit
 

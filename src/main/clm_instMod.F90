@@ -60,7 +60,6 @@ module clm_instMod
   use UrbanParamsType                 , only : urbanparams_type
   use UrbanTimeVarType                , only : urbantv_type
   use VOCEmissionMod                  , only : vocemis_type
-  use CNFireEmissionsMod              , only : fireemis_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
   use lnd2glcMod                      , only : lnd2glc_type 
@@ -135,7 +134,6 @@ module clm_instMod
   type(crop_type)                         :: crop_inst
   type(dust_type)                         :: dust_inst
   !type(vocemis_type)                      :: vocemis_inst
-  type(fireemis_type)                     :: fireemis_inst
   type(drydepvel_type)                    :: drydepvel_inst
 
   ! FATES
@@ -320,8 +318,6 @@ contains
     !call ch4_inst%Init(bounds, soilstate_inst%cellorg_col(begc:endc, 1:), fsurdat, nlfilename)
 
     !call vocemis_inst%Init(bounds)
-
-    !call fireemis_inst%Init(bounds)
 
     !call drydepvel_inst%Init(bounds)
 
