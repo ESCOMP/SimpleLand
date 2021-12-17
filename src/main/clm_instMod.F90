@@ -72,7 +72,6 @@ module clm_instMod
   use ColumnType                      , only : col                
   use PatchType                       , only : patch                
   use SoilWaterRetentionCurveMod      , only : soil_water_retention_curve_type
-  use NutrientCompetitionMethodMod    , only : nutrient_competition_method_type
   !
   use SoilStateInitTimeConstMod       , only : SoilStateInitTimeConst
   use SoilHydrologyInitTimeConstMod   , only : SoilHydrologyInitTimeConst
@@ -119,8 +118,6 @@ module clm_instMod
   ! Eventually bgc_vegetation_inst will be an allocatable instance of an abstract
   ! interface
   type(cn_vegetation_type)                :: bgc_vegetation_inst
-
-  class(nutrient_competition_method_type), allocatable :: nutrient_competition_method
 
   ! Soil biogeochem types 
   type(soilbiogeochem_state_type)         :: soilbiogeochem_state_inst

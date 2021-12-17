@@ -23,13 +23,12 @@ module readParamsMod
 contains
 
   !-----------------------------------------------------------------------
-  subroutine readParameters (nutrient_competition_method, photosyns_inst)
+  subroutine readParameters (photosyns_inst)
     !
     ! ! USES:
     use CNSharedParamsMod                 , only : CNParamsReadShared
     use CNGapMortalityMod                 , only : readCNGapMortParams                    => readParams
     use CNMRespMod                        , only : readCNMRespParams                      => readParams
-    use CNFUNMod                          , only : readCNFUNParams                        => readParams
     use CNPhenologyMod                    , only : readCNPhenolParams                     => readParams
     use SoilBiogeochemCompetitionMod      , only : readSoilBiogeochemCompetitionParams    => readParams
     use SoilBiogeochemNLeachingMod        , only : readSoilBiogeochemNLeachingParams      => readParams
@@ -40,13 +39,11 @@ contains
     use SoilBiogeochemDecompCascadeBGCMod , only : readSoilBiogeochemDecompBgcParams      => readParams
     use SoilBiogeochemDecompCascadeCNMod  , only : readSoilBiogeochemDecompCnParams       => readParams
     !use ch4Mod                            , only : readCH4Params                          => readParams
-    use NutrientCompetitionMethodMod      , only : nutrient_competition_method_type
     use clm_varctl,                         only : NLFilename_in
     use PhotosynthesisMod                 , only : photosyns_type
     !
     ! !ARGUMENTS:
     type(photosyns_type)                   , intent(in) :: photosyns_inst
-    class(nutrient_competition_method_type), intent(in) :: nutrient_competition_method
     !
     ! !LOCAL VARIABLES:
     character(len=256) :: locfn ! local file name
@@ -69,10 +66,8 @@ contains
     ! Above ground biogeochemistry...
     !
     if (use_cn) then
-       call nutrient_competition_method%readParams(ncid)
        call readCNGapMortParams(ncid)
        call readCNMRespParams(ncid)
-       call readCNFUNParams(ncid)
        call readCNPhenolParams(ncid)
     end if
 

@@ -254,7 +254,6 @@ contains
     use SatellitePhenologyMod , only : SatellitePhenologyInit, readAnnualVegetation, interpMonthlyVeg
     use SnowSnicarMod         , only : SnowAge_init, SnowOptics_init
     use lnd2atmMod            , only : lnd2atm_minimal
-    use NutrientCompetitionFactoryMod, only : create_nutrient_competition_method
     use controlMod            , only : NLFilename
     !
     ! !ARGUMENTS    
@@ -305,10 +304,7 @@ contains
     ! ------------------------------------------------------------------------
 
     call clm_instReadNML( NLFilename )
-    allocate(nutrient_competition_method, &
-         source=create_nutrient_competition_method(bounds_proc))
-
-    call readParameters(nutrient_competition_method, photosyns_inst)
+    call readParameters(photosyns_inst)
 
     ! ------------------------------------------------------------------------
     ! Initialize time manager

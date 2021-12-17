@@ -178,7 +178,6 @@ contains
     use clm_varpar       , only: nlevdecomp, ndecomp_cascade_transitions
     use clm_varcon       , only: nitrif_n2o_loss_frac
     use CNSharedParamsMod, only: use_fun
-    use CNFUNMod         , only: CNFUN
     use subgridAveMod    , only: p2c_2d
     use perf_mod         , only : t_startf, t_stopf
     !
@@ -363,20 +362,6 @@ contains
                end if
             end do
          end do
-
-         if ( local_use_fun ) then
-            call t_startf( 'CNFUN' )
-            call CNFUN(bounds,num_soilc,filter_soilc,num_soilp,filter_soilp,waterstate_inst                 ,&
-                      waterflux_inst,temperature_inst,soilstate_inst,cnveg_state_inst,cnveg_carbonstate_inst,&
-                      cnveg_carbonflux_inst,cnveg_nitrogenstate_inst,cnveg_nitrogenflux_inst                ,&
-                      soilbiogeochem_nitrogenflux_inst,soilbiogeochem_carbonflux_inst,canopystate_inst,      &
-                      soilbiogeochem_nitrogenstate_inst)
-            call p2c_2d(bounds, nlevdecomp, &
-                      cnveg_nitrogenflux_inst%sminn_to_plant_fun_vr_patch(bounds%begp:bounds%endp,1:nlevdecomp),&
-                      soilbiogeochem_nitrogenflux_inst%sminn_to_plant_fun_vr_col(bounds%begc:bounds%endc,1:nlevdecomp), &
-                      'unity')
-            call t_stopf( 'CNFUN' )
-         end if
 
          ! sum up N fluxes to plant
          do j = 1, nlevdecomp
@@ -728,29 +713,6 @@ contains
                actual_immob_vr(c,j) = actual_immob_no3_vr(c,j) + actual_immob_nh4_vr(c,j)
             end do
          end do
-
-         if ( local_use_fun ) then
-            call t_startf( 'CNFUN' )
-            call CNFUN(bounds,num_soilc,filter_soilc,num_soilp,filter_soilp,waterstate_inst                 ,&
-                      waterflux_inst,temperature_inst,soilstate_inst,cnveg_state_inst,cnveg_carbonstate_inst,&
-                      cnveg_carbonflux_inst,cnveg_nitrogenstate_inst,cnveg_nitrogenflux_inst                ,&
-                      soilbiogeochem_nitrogenflux_inst,soilbiogeochem_carbonflux_inst,canopystate_inst,      &
-                      soilbiogeochem_nitrogenstate_inst)
-                      
-            ! sminn_to_plant_fun is output of actual N uptake from FUN
-            call p2c_2d(bounds,nlevdecomp, &
-                       cnveg_nitrogenflux_inst%sminn_to_plant_fun_no3_vr_patch(bounds%begp:bounds%endp,1:nlevdecomp),&
-                       soilbiogeochem_nitrogenflux_inst%sminn_to_plant_fun_no3_vr_col(bounds%begc:bounds%endc,1:nlevdecomp),&
-                       'unity')
-
-            call p2c_2d(bounds,nlevdecomp, &
-                       cnveg_nitrogenflux_inst%sminn_to_plant_fun_nh4_vr_patch(bounds%begp:bounds%endp,1:nlevdecomp),&
-                       soilbiogeochem_nitrogenflux_inst%sminn_to_plant_fun_nh4_vr_col(bounds%begc:bounds%endc,1:nlevdecomp),&
-                       'unity')
-            call t_stopf( 'CNFUN' )
-         end if
-
-
 
          if(.not.local_use_fun)then
             do fc=1,num_soilc
