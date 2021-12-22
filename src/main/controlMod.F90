@@ -264,7 +264,6 @@ contains
 
 #if (defined _OPENMP)
     clump_pproc = omp_get_max_threads()
-    call endrun(msg=' error: OpenMP is turned on and should NOT be (see issue #14)'//errMsg(sourcefile, __LINE__))
 #else
     clump_pproc = 1
 #endif
