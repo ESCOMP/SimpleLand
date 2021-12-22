@@ -171,8 +171,6 @@ contains
     use SoilBiogeochemDecompCascadeBGCMod  , only : init_decompcascade_bgc
     use SoilBiogeochemDecompCascadeCNMod   , only : init_decompcascade_cn
     use SoilBiogeochemDecompCascadeContype , only : init_decomp_cascade_constants
-    use SoilBiogeochemCompetitionMod       , only : SoilBiogeochemCompetitionInit
-    
     use initVerticalMod                    , only : initVertical
     use accumulMod                         , only : print_accum_fields 
     use SoilWaterRetentionCurveFactoryMod  , only : create_soil_water_retention_curve

@@ -32,7 +32,6 @@ module controlMod
   use UrbanParamsType                  , only: UrbanReadNML
   use CNPrecisionControlMod            , only: CNPrecisionControlReadNML
   use CNSharedParamsMod                , only: anoxia_wtsat, use_fun
-  use SoilBiogeochemCompetitionMod     , only: suplnitro, suplnNon
   use SoilBiogeochemLittVertTranspMod  , only: som_adv_flux, max_depth_cryoturb
   use SoilBiogeochemVerticalProfileMod , only: surfprof_exp 
   use SoilBiogeochemNitrifDenitrifMod  , only: no_frozen_nitrif_denitrif, nitrifReadNML
@@ -166,8 +165,6 @@ contains
 
     ! BGC info
 
-    namelist /clm_inparm/  &
-         suplnitro
     namelist /clm_inparm/ &
          nfix_timeconst
     namelist /clm_inparm/ &
@@ -608,7 +605,6 @@ contains
     ! BGC
     call mpi_bcast (co2_type, len(co2_type), MPI_CHARACTER, 0, mpicom, ier)
     if (use_cn) then
-       call mpi_bcast (suplnitro, len(suplnitro), MPI_CHARACTER, 0, mpicom, ier)
        call mpi_bcast (nfix_timeconst, 1, MPI_REAL8, 0, mpicom, ier)
        call mpi_bcast (spinup_state, 1, MPI_INTEGER, 0, mpicom, ier)
        call mpi_bcast (override_bgc_restart_mismatch_dump, 1, MPI_LOGICAL, 0, mpicom, ier)
@@ -799,11 +795,6 @@ contains
        write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
     end if
     if (use_cn) then
-       if (suplnitro /= suplnNon)then
-          write(iulog,*) '   Supplemental Nitrogen mode is set to run over Patches: ', &
-               trim(suplnitro)
-       end if
-       
        if (nfix_timeconst /= 0._r8) then
           write(iulog,*) '   nfix_timeconst, timescale for smoothing npp in N fixation term: ', nfix_timeconst
        else

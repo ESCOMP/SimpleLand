@@ -26,15 +26,11 @@ contains
     ! Initialzation of the CN Ecosystem dynamics.
     !
     ! !USES:
-    use CNPhenologyMod              , only : CNPhenologyInit
-    use SoilBiogeochemCompetitionMod, only : SoilBiogeochemCompetitionInit
     !
     ! !ARGUMENTS:
     type(bounds_type)                      , intent(in)    :: bounds      
     character(len=*)                       , intent(in)    :: NLFilename     ! Namelist filename
     !-----------------------------------------------------------------------
-    call SoilBiogeochemCompetitionInit(bounds)
-    call CNPhenologyInit(bounds)
     
   end subroutine CNDriverInit
 

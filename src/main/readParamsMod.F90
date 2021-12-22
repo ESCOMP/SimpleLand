@@ -30,7 +30,6 @@ contains
     use CNGapMortalityMod                 , only : readCNGapMortParams                    => readParams
     use CNMRespMod                        , only : readCNMRespParams                      => readParams
     use CNPhenologyMod                    , only : readCNPhenolParams                     => readParams
-    use SoilBiogeochemCompetitionMod      , only : readSoilBiogeochemCompetitionParams    => readParams
     use SoilBiogeochemNLeachingMod        , only : readSoilBiogeochemNLeachingParams      => readParams
     use SoilBiogeochemNitrifDenitrifMod   , only : readSoilBiogeochemNitrifDenitrifParams => readParams
     use SoilBiogeochemLittVertTranspMod   , only : readSoilBiogeochemLittVertTranspParams => readParams
@@ -75,7 +74,6 @@ contains
     ! Soil biogeochemistry...
     !
     if (use_cn .or. use_fates) then
-       call readSoilBiogeochemCompetitionParams(ncid)
        call readSoilBiogeochemDecompBgcParams(ncid)
        call readSoilBiogeochemDecompCnParams(ncid)
        call readSoilBiogeochemDecompParams(ncid)
