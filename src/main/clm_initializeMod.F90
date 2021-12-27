@@ -406,10 +406,9 @@ contains
     ! restart run
     ! ------------------------------------------------------------------------
 
-    call t_startf('init_dyn_subgrid')
+    call t_startf('init_subgrid_weights')
     call init_subgrid_weights_mod(bounds_proc)
-    !call dynSubgrid_init(bounds_proc, glc_behavior, crop_inst)
-    call t_stopf('init_dyn_subgrid')
+    call t_stopf('init_subgrid_weights')
 
     ! ------------------------------------------------------------------------
     ! Initialize modules (after time-manager initialization in most cases)

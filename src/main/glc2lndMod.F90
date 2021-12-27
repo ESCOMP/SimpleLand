@@ -76,10 +76,8 @@ module glc2lndMod
      ! In each timestep, these routines should be called in order (though they don't need
      ! to be called all at once):
      ! - set_glc2lnd_fields
-     ! - update_glc2lnd_fracs
      ! - update_glc2lnd_topo
      procedure, public  :: set_glc2lnd_fields       ! set coupling fields sent from glc to lnd
-     procedure, public  :: update_glc2lnd_fracs     ! update subgrid fractions based on input from GLC
      procedure, public  :: update_glc2lnd_topo      ! update topographic heights
 
      ! For unit testing only:
@@ -273,24 +271,11 @@ contains
     SHR_ASSERT_ALL((ubound(index_x2l_Flgg_hflx) == (/maxpatch_glcmec/)), errMsg(sourcefile, __LINE__))
 
     if (glc_present) then
-       do g = bounds%begg, bounds%endg
-          do icemec_class = 0, maxpatch_glcmec
-             this%frac_grc(g,icemec_class)  = x2l(index_x2l_Sg_ice_covered(icemec_class),g)
-             this%topo_grc(g,icemec_class)  = x2l(index_x2l_Sg_topo(icemec_class),g)
-             this%hflx_grc(g,icemec_class)  = x2l(index_x2l_Flgg_hflx(icemec_class),g)
-          end do
-          this%icemask_grc(g)  = x2l(index_x2l_Sg_icemask,g)
-          this%icemask_coupled_fluxes_grc(g)  = x2l(index_x2l_Sg_icemask_coupled_fluxes,g)
-       end do
-
-       call this%check_glc2lnd_icemask(bounds)
-       call this%check_glc2lnd_icemask_coupled_fluxes(bounds)
-       call this%update_glc2lnd_dyn_runoff_routing(bounds)
-    else
-       if (glc_do_dynglacier) then
-          call endrun(' ERROR: With glc_present false (e.g., a stub glc model), glc_do_dynglacier must be false '// &
-               errMsg(sourcefile, __LINE__))
-       end if
+       call endrun(' ERROR: SLIM can NOT run with an active ice sheet model' )
+    end if
+    if (glc_do_dynglacier) then
+       call endrun(' ERROR: With glc_present false (e.g., a stub glc model), glc_do_dynglacier must be false '// &
+            errMsg(sourcefile, __LINE__))
     end if
 
   end subroutine set_glc2lnd_fields
@@ -525,86 +510,6 @@ contains
   end subroutine update_glc2lnd_dyn_runoff_routing
 
 
-
-  !-----------------------------------------------------------------------
-  subroutine update_glc2lnd_fracs(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Update subgrid fractions based on input from GLC (via the coupler)
-    !
-    ! The weights updated here are some col%wtlunit and lun%wtgcell values
-    !
-    ! If glc_do_dynglacier is false, nothing is changed
-    !
-    ! !USES:
-    use column_varcon     , only : col_itype_to_icemec_class
-    use subgridWeightsMod , only : set_landunit_weight
-    !
-    ! !ARGUMENTS:
-    class(glc2lnd_type), intent(in) :: this
-    type(bounds_type)  , intent(in) :: bounds  ! bounds
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g,c                              ! indices
-    real(r8):: area_ice_mec                     ! area of the ice_mec landunit
-    integer :: l_ice_mec                        ! index of the ice_mec landunit
-    integer :: icemec_class                     ! current icemec class (1..maxpatch_glcmec)
-    logical :: frac_assigned(1:maxpatch_glcmec) ! whether this%frac has been assigned for each elevation class
-    logical :: error                            ! if an error was found
-    
-    character(len=*), parameter :: subname = 'update_glc2lnd_fracs'
-    !-----------------------------------------------------------------------
-
-    if (glc_do_dynglacier) then
-       do g = bounds%begg, bounds%endg
-          ! Values from GLC are only valid within the icemask, so we only update CLM's areas there
-          if (this%icemask_grc(g) > 0._r8) then
-
-             ! Set total icemec landunit area
-             area_ice_mec = sum(this%frac_grc(g, 1:maxpatch_glcmec))
-             call set_landunit_weight(g, istice_mec, area_ice_mec)
-
-             ! If new landunit area is greater than 0, then update column areas
-             ! (If new landunit area is 0, col%wtlunit is arbitrary, so we might as well keep the existing values)
-             if (area_ice_mec > 0) then
-                ! Determine index of the glc_mec landunit
-                l_ice_mec = grc%landunit_indices(istice_mec, g)
-                if (l_ice_mec == ispval) then
-                   write(iulog,*) subname//' ERROR: no ice_mec landunit found within the icemask, for g = ', g
-                   call endrun()
-                end if
-
-                frac_assigned(1:maxpatch_glcmec) = .false.
-                do c = lun%coli(l_ice_mec), lun%colf(l_ice_mec)
-                   icemec_class = col_itype_to_icemec_class(col%itype(c))
-                   col%wtlunit(c) = this%frac_grc(g, icemec_class) / lun%wtgcell(l_ice_mec)
-                   frac_assigned(icemec_class) = .true.
-                end do
-
-                ! Confirm that all elevation classes that have non-zero area according to
-                ! this%frac have been assigned to a column in CLM's data structures
-                error = .false.
-                do icemec_class = 1, maxpatch_glcmec
-                   if (this%frac_grc(g, icemec_class) > 0._r8 .and. &
-                        .not. frac_assigned(icemec_class)) then
-                      error = .true.
-                   end if
-                end do
-                if (error) then
-                   write(iulog,*) subname//' ERROR: at least one glc_mec column has non-zero area from the coupler,'
-                   write(iulog,*) 'but there was no slot in memory for this column; g = ', g
-                   write(iulog,*) 'this%frac_grc(g, 1:maxpatch_glcmec) = ', &
-                        this%frac_grc(g, 1:maxpatch_glcmec)
-                   write(iulog,*) 'frac_assigned(1:maxpatch_glcmec) = ', &
-                        frac_assigned(1:maxpatch_glcmec)
-                   call endrun()
-                end if  ! error
-             end if  ! area_ice_mec > 0
-          end if  ! this%icemask_grc(g) > 0
-       end do  ! g
-    end if  ! glc_do_dynglacier
-
-  end subroutine update_glc2lnd_fracs
 
   !-----------------------------------------------------------------------
   subroutine update_glc2lnd_topo(this, bounds, topo_col, needs_downscaling_col)

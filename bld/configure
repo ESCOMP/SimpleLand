@@ -663,7 +663,6 @@ sub write_filepath_cesmbld
 		     "biogeophys", 
 		     "biogeochem", 
 		     "soilbiogeochem", 
-		     "dyn_subgrid",
 		     "init_interp",
 		     "utils", 
 		     "cpl" );
