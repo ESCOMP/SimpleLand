@@ -483,7 +483,6 @@ contains
     use clm_time_manager     , only : get_nstep
     use clm_varctl           , only : caseid, ctitle, version, username, hostname, fsurdat
     use clm_varctl           , only : conventions, source
-    use dynSubgridControlMod , only : get_flanduse_timeseries
     use clm_varpar           , only : numrad, nlevlak, nlevsno, nlevgrnd, nlevurb, nlevcan
     use clm_varpar           , only : maxpatch_glcmec, nvegwcs
     use decompMod            , only : get_proc_global
@@ -550,7 +549,6 @@ contains
     call ncd_putatt(ncid, NCD_GLOBAL, 'case_title'     , trim(ctitle))
     call ncd_putatt(ncid, NCD_GLOBAL, 'case_id'        , trim(caseid))
     call ncd_putatt(ncid, NCD_GLOBAL, 'surface_dataset', trim(fsurdat))
-    call ncd_putatt(ncid, NCD_GLOBAL, 'flanduse_timeseries', trim(get_flanduse_timeseries()))
     call ncd_putatt(ncid, NCD_GLOBAL, 'title', 'CLM Restart information')
 
     call restFile_add_flag_metadata(ncid, create_crop_landunit, 'create_crop_landunit')
@@ -867,7 +865,6 @@ contains
     ! !USES:
     use clm_time_manager     , only : get_curr_date, get_rest_date
     use clm_varctl           , only : fname_len
-    use dynSubgridControlMod , only : get_flanduse_timeseries
     !
     ! !ARGUMENTS:
     type(file_desc_t), intent(inout) :: ncid    ! netcdf id
@@ -884,55 +881,6 @@ contains
     character(len=*), parameter :: subname = 'restFile_check_year'
     !-----------------------------------------------------------------------
     
-    ! Only do this check for a transient run
-    if (get_flanduse_timeseries() /= ' ') then
-       ! Determine if the restart file was generated from a transient run; if so, we will
-       ! do this consistency check. For backwards compatibility, we allow for the
-       ! possibility that the flanduse_timeseries attribute was not on the restart file;
-       ! in that case, we act as if the restart file was generated from a non-transient
-       ! run, thus skipping this check.
-       call check_att(ncid, NCD_GLOBAL, 'flanduse_timeseries', att_found)
-       if (att_found) then
-          call ncd_getatt(ncid, NCD_GLOBAL, 'flanduse_timeseries', flanduse_timeseries_rest)
-       else
-          write(iulog,*) ' '
-          write(iulog,*) subname//' WARNING: flanduse_timeseries attribute not found on restart file'
-          write(iulog,*) 'Assuming that the restart file was generated from a non-transient run,'
-          write(iulog,*) 'and thus skipping the year check'
-          write(iulog,*) ' '
-
-          flanduse_timeseries_rest = ' '
-       end if
-       
-       ! If the restart file was generated from a transient run, then confirm that the
-       ! year of the restart file matches the current model year.
-       if (flanduse_timeseries_rest /= ' ') then
-          call get_curr_date(year, mon, day, tod)
-          call get_rest_date(ncid, rest_year)
-          if (year /= rest_year) then
-             if (masterproc) then
-                write(iulog,*) 'ERROR: Current model year does not match year on initial conditions file (finidat)'
-                write(iulog,*) 'Current year: ', year
-                write(iulog,*) 'Year on initial conditions file: ', rest_year
-                write(iulog,*) ' '
-                write(iulog,*) 'This match is a requirement when both:'
-                write(iulog,*) '(a) The current run is a transient run, and'
-                write(iulog,*) '(b) The initial conditions file was generated from a transient run'
-                write(iulog,*) ' '
-                write(iulog,*) 'Possible solutions to this problem:'
-                write(iulog,*) '(1) Make sure RUN_STARTDATE is set correctly'
-                write(iulog,*) '(2) Make sure you are using the correct initial conditions file (finidat)'
-                write(iulog,*) '(3) If you are confident that you are using the correct start date and initial conditions file,'
-                write(iulog,*) '    yet are still experiencing this error, then you can bypass this check by setting:'
-                write(iulog,*) '      check_finidat_year_consistency = .false.'
-                write(iulog,*) '    in user_nl_clm'
-                write(iulog,*) ' '
-             end if
-             call endrun(msg=errMsg(sourcefile, __LINE__))
-          end if  ! year /= rest_year
-       end if  ! flanduse_timeseries_rest /= ' '
-    end if  ! fpftdyn /= ' '
-
   end subroutine restFile_check_year
 
 end module restFileMod

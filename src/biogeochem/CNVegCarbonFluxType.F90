@@ -22,7 +22,6 @@ module CNVegCarbonFluxType
   use ColumnType                         , only : col                
   use PatchType                          , only : patch                
   use AnnualFluxDribbler                 , only : annual_flux_dribbler_type, annual_flux_dribbler_gridcell
-  use dynSubgridControlMod               , only : get_for_testing_allow_non_annual_changes
   use abortutils                         , only : endrun
   ! 
   ! !PUBLIC TYPES:
@@ -749,13 +748,7 @@ contains
     ! However, we do keep allows_non_annual_delta = .true. for the dwt_conv_cflux_dribbler if
     ! running with CNDV, because (in contrast with other land cover change) CNDV currently
     ! still interpolates land cover change throughout the year.
-    if (get_for_testing_allow_non_annual_changes()) then
-       allows_non_annual_delta = .true.
-    else if (use_cndv) then
-       allows_non_annual_delta = .true.
-    else
-       allows_non_annual_delta = .false.
-    end if
+    allows_non_annual_delta = .false.
     this%dwt_conv_cflux_dribbler = annual_flux_dribbler_gridcell( &
          bounds = bounds, &
          name = 'dwt_conv_flux_' // carbon_type_suffix, &

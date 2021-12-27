@@ -21,7 +21,6 @@ module CNVegNitrogenStateType
   use LandunitType                       , only : lun                
   use ColumnType                         , only : col                
   use PatchType                          , only : patch                
-  use dynPatchStateUpdaterMod, only : patch_state_updater_type
   use CNSpeciesMod   , only : CN_SPECIES_N
   use CNVegComputeSeedMod, only : ComputeSeedAmounts
   !

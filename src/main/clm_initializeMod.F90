@@ -54,7 +54,6 @@ contains
     use ncdio_pio        , only: ncd_pio_init
     use initGridCellsMod , only: initGridCells
     use UrbanParamsType  , only: UrbanInput, IsSimpleBuildTemp
-    use dynSubgridControlMod, only: dynSubgridControl_init
     !
     ! !LOCAL VARIABLES:
     integer           :: ier                     ! error status
@@ -91,8 +90,6 @@ contains
     call ncd_pio_init()
 
     if (masterproc) call control_print()
-
-    call dynSubgridControl_init(NLFilename)
 
     ! ------------------------------------------------------------------------
     ! Read in global land grid and land mask (amask)- needed to set decomposition

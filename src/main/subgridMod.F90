@@ -436,7 +436,6 @@ contains
     use clm_varctl           , only : create_crop_landunit
     use pftconmod            , only : pftcon
     use landunit_varcon      , only : istcrop
-    use dynSubgridControlMod , only : get_do_transient_crops
     !
     ! !ARGUMENTS:
     logical :: exists  ! function result
@@ -452,25 +451,13 @@ contains
        SHR_ASSERT(cft >= cft_lb, errMsg(sourcefile, __LINE__))
        SHR_ASSERT(cft <= cft_ub, errMsg(sourcefile, __LINE__))
 
-       if (get_do_transient_crops()) then
-          ! To support dynamic landunits, we have all possible crop columns in every grid
-          ! cell, because they might need to come into existence even if their weight is 0 at
-          ! the start of the run.
-          if (pftcon%is_pft_known_to_model(cft)) then
-             exists = .true.
-          else
-             exists = .false.
-          end if
-
+       ! For a run without transient crops, only allocate memory for crops that are
+       ! actually present in this run. (This will require running init_interp when
+       ! changing between a transient crop run and a non-transient run.)
+       if (wt_lunit(gi, istcrop) > 0.0_r8 .and. wt_cft(gi, cft) > 0.0_r8) then
+          exists = .true.
        else
-          ! For a run without transient crops, only allocate memory for crops that are
-          ! actually present in this run. (This will require running init_interp when
-          ! changing between a transient crop run and a non-transient run.)
-          if (wt_lunit(gi, istcrop) > 0.0_r8 .and. wt_cft(gi, cft) > 0.0_r8) then
-             exists = .true.
-          else
-             exists = .false.
-          end if
+          exists = .false.
        end if
 
     else  ! create_crop_landunit false

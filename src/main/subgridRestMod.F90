@@ -596,7 +596,6 @@ contains
       !
       ! !USES:
       use clm_varctl, only : nsrest, nsrContinue, use_cndv, use_fates
-      use dynSubgridControlMod, only : get_do_transient_pfts
       !
       ! !ARGUMENTS:
       !
@@ -605,11 +604,7 @@ contains
       character(len=*), parameter :: subname = 'do_check_weights'
       !-----------------------------------------------------------------------
       
-      if (get_do_transient_pfts()) then
-         ! Don't check weights for a transient PATCH case, because it's harder to come up with the
-         ! correct weights to check against
-         do_check_weights = .false.
-      else if (nsrest == nsrContinue) then
+      if (nsrest == nsrContinue) then
          ! Don't check weights for a restart run
          !
          ! WJS (3-25-14): I'm not sure why we don't do the check in this case, but I'm

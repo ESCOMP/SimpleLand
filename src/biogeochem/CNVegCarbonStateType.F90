@@ -19,7 +19,6 @@ module CNVegCarbonStateType
   use ColumnType     , only : col                
   use PatchType      , only : patch
   use CNSpeciesMod   , only : species_from_string, CN_SPECIES_C12
-  use dynPatchStateUpdaterMod, only : patch_state_updater_type
   use CNVegComputeSeedMod, only : ComputeSeedAmounts
   ! 
   ! !PUBLIC TYPES:

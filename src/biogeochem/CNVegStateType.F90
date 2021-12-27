@@ -14,7 +14,6 @@ module CNVegStateType
   use ColumnType     , only : col                
   use PatchType      , only : patch                
   use AnnualFluxDribbler, only : annual_flux_dribbler_type, annual_flux_dribbler_patch
-  use dynSubgridControlMod, only : get_for_testing_allow_non_annual_changes
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -180,13 +179,7 @@ contains
     ! CNDV at all (because land cover change is assumed to be associated with
     ! deforestation, not natural changes in areas), so maybe this inconsistency is the
     ! least of the problem: see bug 2392.
-    if (get_for_testing_allow_non_annual_changes()) then
-       allows_non_annual_delta = .true.
-    else if (use_cndv) then
-       allows_non_annual_delta = .true.
-    else
-       allows_non_annual_delta = .false.
-    end if
+    allows_non_annual_delta = .false.
     this%dwt_dribbler_patch = annual_flux_dribbler_patch( &
          bounds = bounds, &
          name = 'dwt', &
