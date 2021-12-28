@@ -12,7 +12,6 @@ module EnergyFluxType
   use LandunitType   , only : lun                
   use ColumnType     , only : col                
   use PatchType      , only : patch                
-  use AnnualFluxDribbler, only : annual_flux_dribbler_type, annual_flux_dribbler_gridcell
   !
   implicit none
   save
@@ -109,10 +108,6 @@ module EnergyFluxType
      real(r8), pointer :: errsol_col              (:)   ! solar radiation conservation error    (W/m**2)
      real(r8), pointer :: errlon_patch            (:)   ! longwave radiation conservation error (W/m**2)
      real(r8), pointer :: errlon_col              (:)   ! longwave radiation conservation error (W/m**2)
-
-     ! Objects that help convert once-per-year dynamic land cover changes into fluxes
-     ! that are dribbled throughout the year
-     type(annual_flux_dribbler_type) :: eflx_dynbal_dribbler
 
    contains
 
@@ -259,11 +254,6 @@ contains
     allocate( this%errsol_col              (begc:endc))             ; this%errsol_col              (:)   = nan
     allocate( this%errlon_patch            (begp:endp))             ; this%errlon_patch            (:)   = nan
     allocate( this%errlon_col              (begc:endc))             ; this%errlon_col              (:)   = nan
-
-    this%eflx_dynbal_dribbler = annual_flux_dribbler_gridcell( &
-         bounds = bounds, &
-         name = 'eflx_dynbal', &
-         units = 'J/m**2')
 
   end subroutine InitAllocate
     
@@ -878,8 +868,6 @@ contains
          dim1name='pft', &
          long_name='net heat flux into lake/snow surface, excluding light transmission', units='W/m^2', &
          interpinic_flag='interp', readvar=readvar, data=this%eflx_grnd_lake_patch)
-
-    call this%eflx_dynbal_dribbler%Restart(bounds, ncid, flag)
 
   end subroutine Restart
   !-----------------------------------------------------------------------

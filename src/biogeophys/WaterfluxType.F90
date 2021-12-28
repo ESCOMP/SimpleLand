@@ -13,7 +13,6 @@ module WaterfluxType
   use ColumnType     , only : col                
   use PatchType      , only : patch   
   use CNSharedParamsMod           , only : use_fun             
-  use AnnualFluxDribbler, only : annual_flux_dribbler_type, annual_flux_dribbler_gridcell
   !
   implicit none
   private
@@ -102,11 +101,6 @@ module WaterfluxType
      ! Dynamic land cover change
      real(r8), pointer :: qflx_liq_dynbal_grc      (:)   ! grc liq dynamic land cover change conversion runoff flux
      real(r8), pointer :: qflx_ice_dynbal_grc      (:)   ! grc ice dynamic land cover change conversion runoff flux
-
-     ! Objects that help convert once-per-year dynamic land cover changes into fluxes
-     ! that are dribbled throughout the year
-     type(annual_flux_dribbler_type) :: qflx_liq_dynbal_dribbler
-     type(annual_flux_dribbler_type) :: qflx_ice_dynbal_dribbler
 
      ! ET accumulation
      real(r8), pointer :: AnnEt                    (:)   ! Annual average ET flux mmH20/s
@@ -242,16 +236,6 @@ contains
     allocate(this%qflx_liq_dynbal_grc      (begg:endg))              ; this%qflx_liq_dynbal_grc      (:)   = nan
     allocate(this%qflx_ice_dynbal_grc      (begg:endg))              ; this%qflx_ice_dynbal_grc      (:)   = nan
     allocate(this%AnnET                    (begc:endc))              ; this%AnnET                    (:)   = nan
-
-    this%qflx_liq_dynbal_dribbler = annual_flux_dribbler_gridcell( &
-         bounds = bounds, &
-         name = 'qflx_liq_dynbal', &
-         units = 'mm H2O')
-
-    this%qflx_ice_dynbal_dribbler = annual_flux_dribbler_gridcell( &
-         bounds = bounds, &
-         name = 'qflx_ice_dynbal', &
-         units = 'mm H2O')
 
   end subroutine InitAllocate
 
@@ -732,9 +716,6 @@ contains
        this%AnnET(bounds%begc:bounds%endc) = 0._r8
     endif
    
-    call this%qflx_liq_dynbal_dribbler%Restart(bounds, ncid, flag)
-    call this%qflx_ice_dynbal_dribbler%Restart(bounds, ncid, flag)
-
   end subroutine Restart
 
 end module WaterfluxType

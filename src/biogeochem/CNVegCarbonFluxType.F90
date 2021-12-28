@@ -21,7 +21,6 @@ module CNVegCarbonFluxType
   use LandunitType                       , only : lun                
   use ColumnType                         , only : col                
   use PatchType                          , only : patch                
-  use AnnualFluxDribbler                 , only : annual_flux_dribbler_type, annual_flux_dribbler_gridcell
   use abortutils                         , only : endrun
   ! 
   ! !PUBLIC TYPES:
@@ -360,12 +359,6 @@ module CNVegCarbonFluxType
      real(r8), pointer :: leafc_change_patch                        (:)     ! Total used C from leaves        (gC/m2/s)
      real(r8), pointer :: soilc_change_patch                        (:)     ! Total used C from soil          (gC/m2/s)
  
-!     real(r8), pointer :: soilc_change_col                          (:)     ! Total used C from soil          (gC/m2/s)
-
-     ! Objects that help convert once-per-year dynamic land cover changes into fluxes
-     ! that are dribbled throughout the year
-     type(annual_flux_dribbler_type) :: dwt_conv_cflux_dribbler
-     type(annual_flux_dribbler_type) :: hrv_xsmrpool_to_atm_dribbler
    contains
 
      procedure , public  :: Init   
@@ -410,7 +403,6 @@ contains
     integer           :: begp,endp
     integer           :: begc,endc
     integer           :: begg,endg
-    logical           :: allows_non_annual_delta
     character(len=:), allocatable :: carbon_type_suffix
     !------------------------------------------------------------------------
 
@@ -738,27 +730,6 @@ contains
        call endrun(msg='CNVegCarbonFluxType InitAllocate: Unknown carbon_type: ' // &
             errMsg(sourcefile, __LINE__))
     end if
-
-    ! Note that, for both of these dribblers, we set allows_non_annual_delta to false
-    ! because we expect both land cover change and harvest to be applied entirely at the
-    ! start of the year, and want to be notified if this changes. If this behavior is
-    ! changed intentionally, then this setting of allows_non_annual_delta to .false. can
-    ! safely be removed.
-    !
-    ! However, we do keep allows_non_annual_delta = .true. for the dwt_conv_cflux_dribbler if
-    ! running with CNDV, because (in contrast with other land cover change) CNDV currently
-    ! still interpolates land cover change throughout the year.
-    allows_non_annual_delta = .false.
-    this%dwt_conv_cflux_dribbler = annual_flux_dribbler_gridcell( &
-         bounds = bounds, &
-         name = 'dwt_conv_flux_' // carbon_type_suffix, &
-         units = 'gC/m^2', &
-         allows_non_annual_delta = allows_non_annual_delta)
-    this%hrv_xsmrpool_to_atm_dribbler = annual_flux_dribbler_gridcell( &
-         bounds = bounds, &
-         name = 'hrv_xsmrpool_to_atm_' // carbon_type_suffix, &
-         units = 'gC/m^2', &
-         allows_non_annual_delta = .false.)
 
   end subroutine InitAllocate
 
@@ -3581,9 +3552,6 @@ contains
     type(file_desc_t) , intent(inout) :: ncid   ! netcdf id
     character(len=*)  , intent(in)    :: flag   !'read' or 'write'
     !-----------------------------------------------------------------------
-
-    call this%dwt_conv_cflux_dribbler%Restart(bounds, ncid, flag)
-    call this%hrv_xsmrpool_to_atm_dribbler%Restart(bounds, ncid, flag)
 
   end subroutine RestartAllIsotopes
 
