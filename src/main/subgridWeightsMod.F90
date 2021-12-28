@@ -99,7 +99,6 @@ module subgridWeightsMod
   use LandunitType , only : lun                
   use ColumnType   , only : col                
   use PatchType    , only : patch                
-  use glcBehaviorMod , only : glc_behavior_type
   !
   ! PUBLIC TYPES:
   implicit none
@@ -243,7 +242,7 @@ contains
   end subroutine compute_higher_order_weights
 
   !-----------------------------------------------------------------------
-  subroutine set_active(bounds, glc_behavior)
+  subroutine set_active(bounds)
     !
     ! !DESCRIPTION:
     ! Set 'active' flags at the pft, column and landunit level
@@ -260,7 +259,6 @@ contains
     ! !ARGUMENTS:
     implicit none
     type(bounds_type), intent(in) :: bounds  ! bounds
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: l,c,p       ! loop counters
@@ -269,12 +267,12 @@ contains
     !------------------------------------------------------------------------
 
     do l = bounds%begl,bounds%endl
-       lun%active(l) = is_active_l(l, glc_behavior)
+       lun%active(l) = is_active_l(l)
     end do
 
     do c = bounds%begc,bounds%endc
        l = col%landunit(c)
-       col%active(c) = is_active_c(c, glc_behavior)
+       col%active(c) = is_active_c(c)
        if (col%active(c) .and. .not. lun%active(l)) then
           write(iulog,*) trim(subname),' ERROR: active column found on inactive landunit', &
                          'at c = ', c, ', l = ', l
@@ -295,7 +293,7 @@ contains
   end subroutine set_active
 
   !-----------------------------------------------------------------------
-  logical function is_active_l(l, glc_behavior)
+  logical function is_active_l(l)
     !
     ! !DESCRIPTION:
     ! Determine whether the given landunit is active
@@ -306,7 +304,6 @@ contains
     ! !ARGUMENTS:
     implicit none
     integer, intent(in) :: l   ! landunit index
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: g  ! grid cell index
@@ -330,8 +327,7 @@ contains
        ! Conditions under which is_active_p is set to true because we want extra virtual landunits:
        ! ------------------------------------------------------------------------
 
-       if (lun%itype(l) == istice_mec .and. &
-            glc_behavior%has_virtual_columns_grc(g)) then
+       if (lun%itype(l) == istice_mec .and. .false. )then
           is_active_l = .true.
        end if
 
@@ -362,7 +358,7 @@ contains
   end function is_active_l
 
   !-----------------------------------------------------------------------
-  logical function is_active_c(c, glc_behavior)
+  logical function is_active_c(c)
     !
     ! !DESCRIPTION:
     ! Determine whether the given column is active
@@ -373,7 +369,6 @@ contains
     ! !ARGUMENTS:
     implicit none
     integer, intent(in) :: c   ! column index
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: l  ! landunit index
@@ -399,8 +394,7 @@ contains
        ! Conditions under which is_active_c is set to true because we want extra virtual columns:
        ! ------------------------------------------------------------------------
 
-       if (lun%itype(l) == istice_mec .and. &
-            glc_behavior%has_virtual_columns_grc(g)) then
+       if (lun%itype(l) == istice_mec .and. .false. )then
           is_active_c = .true.
        end if
 

@@ -64,7 +64,6 @@ module clm_instMod
   use lnd2atmType                     , only : lnd2atm_type
   use lnd2glcMod                      , only : lnd2glc_type 
   use glc2lndMod                      , only : glc2lnd_type
-  use glcBehaviorMod                  , only : glc_behavior_type
   use TopoMod                         , only : topo_type
   use GridcellType                    , only : grc
   use LandunitType                    , only : lun                
@@ -109,7 +108,6 @@ module clm_instMod
   type(glc2lnd_type)                      :: glc2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
   type(lnd2glc_type)                      :: lnd2glc_inst
-  type(glc_behavior_type), target         :: glc_behavior
   type(topo_type)                         :: topo_inst
   class(soil_water_retention_curve_type) , allocatable :: soil_water_retention_curve
 
@@ -234,7 +232,6 @@ contains
     ! Initialize vertical data components 
 
     call initVertical(bounds,               &
-         glc_behavior, &
          snow_depth_col(begc:endc),              &
          urbanparams_inst%thick_wall(begl:endl), &
          urbanparams_inst%thick_roof(begl:endl))
@@ -244,7 +241,7 @@ contains
     call atm2lnd_inst%Init( bounds, NLFilename )
     call lnd2atm_inst%Init( bounds, NLFilename )
 
-    call glc2lnd_inst%Init( bounds, glc_behavior )
+    call glc2lnd_inst%Init( bounds )
     call lnd2glc_inst%Init( bounds )
 
     ! Initialization of public data types

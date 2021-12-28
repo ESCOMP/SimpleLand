@@ -18,7 +18,6 @@ module glc2lndMod
   use LandunitType   , only : lun
   use ColumnType     , only : col
   use landunit_varcon, only : istice_mec
-  use glcBehaviorMod , only : glc_behavior_type
   !
   ! !REVISION HISTORY:
   ! Created by William Lipscomb, Dec. 2007, based on clm_atmlnd.F90.
@@ -41,8 +40,6 @@ module glc2lndMod
      ! ------------------------------------------------------------------------
      ! Private data
      ! ------------------------------------------------------------------------
-
-     type(glc_behavior_type), pointer, private :: glc_behavior  ! reference to the glc_behavior instance
 
      real(r8), pointer, private :: frac_grc    (:,:) => null()
      real(r8), pointer, private :: topo_grc    (:,:) => null()
@@ -110,15 +107,14 @@ module glc2lndMod
 contains
 
   !------------------------------------------------------------------------
-  subroutine Init(this, bounds, glc_behavior)
+  subroutine Init(this, bounds)
 
     class(glc2lnd_type) :: this
     type(bounds_type), intent(in) :: bounds  
-    type(glc_behavior_type), intent(in), target :: glc_behavior
 
     call this%InitAllocate(bounds)
     call this%InitHistory(bounds)
-    call this%InitCold(bounds, glc_behavior)
+    call this%InitCold(bounds)
     
   end subroutine Init
 
@@ -174,7 +170,7 @@ contains
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------
-  subroutine InitCold(this, bounds, glc_behavior)
+  subroutine InitCold(this, bounds )
     !
     ! !USES:
     use domainMod      , only : ldomain
@@ -182,7 +178,6 @@ contains
     ! !ARGUMENTS:
     class(glc2lnd_type) :: this
     type(bounds_type), intent(in) :: bounds
-    type(glc_behavior_type), intent(in), target :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: begg, endg
@@ -192,8 +187,6 @@ contains
 
     begg = bounds%begg
     endg = bounds%endg
-
-    this%glc_behavior => glc_behavior
 
     this%frac_grc(begg:endg, :) = 0.0_r8
     this%topo_grc(begg:endg, :) = 0.0_r8
@@ -347,34 +340,7 @@ contains
 
        if (this%icemask_grc(g) > 0._r8) then
 
-          ! Ensure that icemask is a subset of has_virtual_columns. This is needed because
-          ! we allocated memory based on has_virtual_columns, so it is a problem if the
-          ! ice sheet tries to expand beyond the area defined by has_virtual_columns.
-          if (.not. this%glc_behavior%has_virtual_columns_grc(g)) then
-             write(iulog,'(a)') subname//' ERROR: icemask must be a subset of has_virtual_columns.'
-             write(iulog,'(a)') 'Ensure that the glacier_region_behavior namelist item is set correctly.'
-             write(iulog,'(a)') '(It should specify "virtual" for the region corresponding to the GLC domain.)'
-             write(iulog,'(a)') 'If glacier_region_behavior is set correctly, then you can fix this problem'
-             write(iulog,'(a)') 'by modifying GLACIER_REGION on the surface dataset.'
-             write(iulog,'(a)') '(Expand the region that corresponds to the GLC domain'
-             write(iulog,'(a)') '- i.e., the region specified as "virtual" in glacier_region_behavior.)'
-             call endrun(decomp_index=g, clmlevel=nameg, msg=errMsg(sourcefile, __LINE__))
-          end if
-
-          ! Ensure that icemask is a subset of melt_replaced_by_ice. This is needed
-          ! because we only compute SMB in the region given by melt_replaced_by_ice
-          ! (according to the logic for building the do_smb filter), and we need SMB
-          ! everywhere inside the icemask.
-          if (.not. this%glc_behavior%melt_replaced_by_ice_grc(g)) then
-             write(iulog,'(a)') subname//' ERROR: icemask must be a subset of melt_replaced_by_ice.'
-             write(iulog,'(a)') 'Ensure that the glacier_region_melt_behavior namelist item is set correctly.'
-             write(iulog,'(a)') '(It should specify "replaced_by_ice" for the region corresponding to the GLC domain.)'
-             write(iulog,'(a)') 'If glacier_region_behavior is set correctly, then you can fix this problem'
-             write(iulog,'(a)') 'by modifying GLACIER_REGION on the surface dataset.'
-             write(iulog,'(a)') '(Expand the region that corresponds to the GLC domain'
-             write(iulog,'(a)') '- i.e., the region specified as "replaced_by_ice" in glacier_region_melt_behavior.)'
-             call endrun(decomp_index=g, clmlevel=nameg, msg=errMsg(sourcefile, __LINE__))
-          end if
+          call endrun(decomp_index=g, clmlevel=nameg, msg=errMsg(sourcefile, __LINE__))
 
        end if
     end do
@@ -490,20 +456,7 @@ contains
 
        if (this%glc_dyn_runoff_routing_grc(g) > 0.0_r8) then
 
-          ! Ensure that glc_dyn_runoff_routing is a subset of melt_replaced_by_ice. This
-          ! is needed because glacial melt is only sent to the runoff stream in the region
-          ! given by melt_replaced_by_ice (because the latter is used to create the do_smb
-          ! filter, and the do_smb filter controls where glacial melt is computed).
-          if (.not. this%glc_behavior%melt_replaced_by_ice_grc(g)) then
-             write(iulog,'(a)') subname//' ERROR: icemask_coupled_fluxes must be a subset of melt_replaced_by_ice.'
-             write(iulog,'(a)') 'Ensure that the glacier_region_melt_behavior namelist item is set correctly.'
-             write(iulog,'(a)') '(It should specify "replaced_by_ice" for the region corresponding to the GLC domain.)'
-             write(iulog,'(a)') 'If glacier_region_behavior is set correctly, then you can fix this problem'
-             write(iulog,'(a)') 'by modifying GLACIER_REGION on the surface dataset.'
-             write(iulog,'(a)') '(Expand the region that corresponds to the GLC domain'
-             write(iulog,'(a)') '- i.e., the region specified as "replaced_by_ice" in glacier_region_melt_behavior.)'
-             call endrun(decomp_index=g, clmlevel=nameg, msg=errMsg(sourcefile, __LINE__))
-          end if
+          call endrun(decomp_index=g, clmlevel=nameg, msg=errMsg(sourcefile, __LINE__))
        end if
     end do
 
