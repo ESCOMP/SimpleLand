@@ -18,6 +18,7 @@ module filterMod
   use LandunitType   , only : lun                
   use ColumnType     , only : col                
   use PatchType      , only : patch
+  use glcBehaviorMod , only : glc_behavior_type
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -235,7 +236,7 @@ contains
   end subroutine allocFiltersOneGroup
 
   !------------------------------------------------------------------------
-  subroutine setFilters(bounds)
+  subroutine setFilters(bounds, glc_behavior)
     !
     ! !DESCRIPTION:
     ! Set CLM filters.
@@ -243,12 +244,14 @@ contains
     !
     ! !ARGUMENTS:
     type(bounds_type)       , intent(in) :: bounds
+    type(glc_behavior_type) , intent(in) :: glc_behavior
     !------------------------------------------------------------------------
 
     SHR_ASSERT(bounds%level == BOUNDS_LEVEL_CLUMP, errMsg(sourcefile, __LINE__))
 
     call setFiltersOneGroup(bounds, &
-         filter, include_inactive = .false. )
+         filter, include_inactive = .false., &
+         glc_behavior = glc_behavior)
 
     ! At least as of June, 2013, the 'inactive_and_active' version of the filters is
     ! static in time. Thus, we could have some logic saying whether we're in
@@ -262,13 +265,14 @@ contains
     ! call.
     
     call setFiltersOneGroup(bounds, &
-         filter_inactive_and_active, include_inactive = .true. )
+         filter_inactive_and_active, include_inactive = .true., &
+         glc_behavior = glc_behavior)
     
   end subroutine setFilters
 
 
   !------------------------------------------------------------------------
-  subroutine setFiltersOneGroup(bounds, this_filter, include_inactive )
+  subroutine setFiltersOneGroup(bounds, this_filter, include_inactive, glc_behavior)
     !
     ! !DESCRIPTION:
     ! Set CLM filters for one group of filters.
@@ -291,6 +295,7 @@ contains
     type(bounds_type)       , intent(in)    :: bounds  
     type(clumpfilter)       , intent(inout) :: this_filter(:)   ! the group of filters to set
     logical                 , intent(in)    :: include_inactive ! whether inactive points should be included in the filters
+    type(glc_behavior_type) , intent(in)    :: glc_behavior
     !
     ! LOCAL VARAIBLES:
     integer :: nc          ! clump index
@@ -491,8 +496,27 @@ contains
     end do
     this_filter(nc)%num_icemecc = f
 
-    ! do SMB filter is always off
-    this_filter(nc)%num_do_smb_c = 0
+    f = 0
+    do c = bounds%begc,bounds%endc
+       if (col%active(c) .or. include_inactive) then
+          l = col%landunit(c)
+          g = col%gridcell(c)
+
+          ! Only compute SMB in regions where we replace ice melt with new ice:
+          ! Elsewhere (where ice melt remains in place), we cannot compute a sensible
+          ! negative SMB.
+          !
+          ! In addition to istice_mec columns, we also compute SMB for any soil column in
+          ! this region, in order to provide SMB forcing for the bare ground elevation
+          ! class (elevation class 0).
+          if ( glc_behavior%melt_replaced_by_ice_grc(g) .and. &
+               (lun%itype(l) == istice_mec .or. lun%itype(l) == istsoil)) then
+             f = f + 1
+             this_filter(nc)%do_smb_c(f) = c
+          end if
+       end if
+    end do
+    this_filter(nc)%num_do_smb_c = f    
 
     ! Note: snow filters are reconstructed each time step in
     ! LakeHydrology and SnowHydrology

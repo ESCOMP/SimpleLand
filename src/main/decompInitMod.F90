@@ -17,6 +17,7 @@ module decompInitMod
   use LandunitType    , only : lun                
   use ColumnType      , only : col                
   use PatchType       , only : patch
+  use glcBehaviorMod  , only : glc_behavior_type
   use decompMod
   use mct_mod         , only : mct_gsMap_init, mct_gsMap_ngseg, mct_gsMap_nlseg, mct_gsmap_gsize
   !
@@ -311,7 +312,7 @@ contains
   end subroutine decompInit_lnd
 
   !------------------------------------------------------------------------------
-  subroutine decompInit_clumps(lns,lni,lnj)
+  subroutine decompInit_clumps(lns,lni,lnj,glc_behavior)
     !
     ! !DESCRIPTION:
     ! This subroutine initializes the land surface decomposition into a clump
@@ -325,6 +326,7 @@ contains
     ! !ARGUMENTS:
     implicit none
     integer , intent(in) :: lns,lni,lnj ! land domain global size
+    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: ln,an              ! indices
@@ -368,7 +370,7 @@ contains
        cid = lcid(an)
        ln  = anumg
        call subgrid_get_gcellinfo (ln, nlunits=ilunits, ncols=icols, npatches=ipatches, &
-            ncohorts=icohorts )
+            ncohorts=icohorts, glc_behavior=glc_behavior)
        allvecl(cid,1) = allvecl(cid,1) + 1
        allvecl(cid,2) = allvecl(cid,2) + ilunits  ! number of landunits for local clump cid
        allvecl(cid,3) = allvecl(cid,3) + icols    ! number of columns for local clump cid
@@ -472,7 +474,7 @@ contains
   end subroutine decompInit_clumps
 
   !------------------------------------------------------------------------------
-  subroutine decompInit_glcp(lns,lni,lnj)
+  subroutine decompInit_glcp(lns,lni,lnj,glc_behavior)
     !
     ! !DESCRIPTION:
     ! Determine gsMaps for landunits, columns, patches and cohorts
@@ -485,6 +487,7 @@ contains
     ! !ARGUMENTS:
     implicit none
     integer , intent(in) :: lns,lni,lnj ! land domain global size
+    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: gi,li,ci,pi,coi    ! indices
@@ -553,7 +556,7 @@ contains
 
     do gi = begg,endg
        call subgrid_get_gcellinfo (gi, nlunits=ilunits, ncols=icols, npatches=ipatches, &
-            ncohorts=icohorts )
+            ncohorts=icohorts, glc_behavior=glc_behavior)
        gcount(gi)  = 1         ! number of gridcells for local gridcell index gi
        lcount(gi)  = ilunits   ! number of landunits for local gridcell index gi
        ccount(gi)  = icols     ! number of columns for local gridcell index gi

@@ -6,13 +6,13 @@ module TopoMod
   !
   ! !USES:
   use shr_kind_mod   , only : r8 => shr_kind_r8
-  use abortutils     , only : endrun
   use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
   use decompMod      , only : bounds_type
   use PatchType      , only : patch
   use ColumnType     , only : col
   use LandunitType   , only : lun
   use glc2lndMod     , only : glc2lnd_type
+  use glcBehaviorMod , only : glc_behavior_type
   use landunit_varcon, only : istice_mec
   use filterColMod   , only : filter_col_type, col_filter_from_logical_array_active_only
   !
@@ -190,7 +190,7 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine UpdateTopo(this, bounds, num_icemecc, filter_icemecc, &
-       glc2lnd_inst, atm_topo)
+       glc2lnd_inst, glc_behavior, atm_topo)
     !
     ! !DESCRIPTION:
     ! Update topographic heights
@@ -206,6 +206,7 @@ contains
     integer                 , intent(in)    :: num_icemecc       ! number of points in filter_icemecc
     integer                 , intent(in)    :: filter_icemecc(:) ! col filter for ice_mec
     type(glc2lnd_type)      , intent(in)    :: glc2lnd_inst
+    type(glc_behavior_type) , intent(in)    :: glc_behavior
     real(r8)                , intent(in)    :: atm_topo( bounds%begg: ) ! atmosphere topographic height [m]
     !
     ! !LOCAL VARIABLES:
@@ -215,7 +216,38 @@ contains
     character(len=*), parameter :: subname = 'UpdateTopo'
     !-----------------------------------------------------------------------
 
-    call endrun( "should not be here" )
+    begc = bounds%begc
+    endc = bounds%endc
+
+    ! Reset needs_downscaling_col each time step, because this is potentially
+    ! time-varying for some columns. It's simplest just to reset it everywhere, rather
+    ! than trying to figure out where it does and does not need to be reset.
+    this%needs_downscaling_col(begc:endc) = .false.
+
+    call glc_behavior%icemec_cols_need_downscaling(bounds, num_icemecc, filter_icemecc, &
+         this%needs_downscaling_col(begc:endc))
+
+    ! In addition to updating topo_col, this also sets some additional elements of
+    ! needs_downscaling_col to .true. (but leaves the already-.true. values as is.)
+    call glc2lnd_inst%update_glc2lnd_topo(bounds, &
+         this%topo_col(begc:endc), &
+         this%needs_downscaling_col(begc:endc))
+
+    ! For any point that isn't downscaled, set its topo value to the atmosphere's
+    ! topographic height. This shouldn't matter, but is useful if topo_col is written to
+    ! the history file.
+    !
+    ! This could operate over a filter like 'allc' in order to just operate over active
+    ! points, but I'm not sure that would speed things up much, and would require passing
+    ! in this additional filter.
+    do c = bounds%begc, bounds%endc
+       if (.not. this%needs_downscaling_col(c)) then
+          g = col%gridcell(c)
+          this%topo_col(c) = atm_topo(g)
+       end if
+    end do
+
+    call glc_behavior%update_glc_classes(bounds, this%topo_col(begc:endc))
 
   end subroutine UpdateTopo
 

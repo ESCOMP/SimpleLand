@@ -30,6 +30,7 @@ module lnd2atmMod
   use WaterFluxType        , only : waterflux_type
   use WaterstateType       , only : waterstate_type
   use IrrigationMod        , only : irrigation_type 
+  use glcBehaviorMod       , only : glc_behavior_type
   use glc2lndMod           , only : glc2lnd_type
   use ColumnType           , only : col
   use LandunitType         , only : lun
@@ -122,7 +123,7 @@ contains
        atm2lnd_inst, surfalb_inst, temperature_inst, frictionvel_inst, &
        waterstate_inst, waterflux_inst, irrigation_inst, energyflux_inst, &
        solarabs_inst, drydepvel_inst,  &
-       vocemis_inst, dust_inst, ch4_inst, &
+       vocemis_inst, dust_inst, ch4_inst, glc_behavior, &
        lnd2atm_inst, &
        net_carbon_exchange_grc) 
     !
@@ -146,6 +147,7 @@ contains
     type(vocemis_type)          , intent(in)    :: vocemis_inst
     type(dust_type)             , intent(in)    :: dust_inst
     type(ch4_type)              , intent(in)    :: ch4_inst
+    type(glc_behavior_type)     , intent(in)    :: glc_behavior
     type(lnd2atm_type)          , intent(inout) :: lnd2atm_inst 
     real(r8)                    , intent(in)    :: net_carbon_exchange_grc( bounds%begg: )  ! net carbon exchange between land and atmosphere, positive for source (gC/m2/s)
     !
@@ -162,7 +164,7 @@ contains
 
     SHR_ASSERT_ALL((ubound(net_carbon_exchange_grc) == (/bounds%endg/)), errMsg(sourcefile, __LINE__))
 
-    call handle_ice_runoff(bounds, waterflux_inst, &
+    call handle_ice_runoff(bounds, waterflux_inst, glc_behavior, &
          melt_non_icesheet_ice_runoff = lnd2atm_inst%params%melt_non_icesheet_ice_runoff, &
          qflx_ice_runoff_col = qflx_ice_runoff_col(bounds%begc:bounds%endc), &
          qflx_liq_from_ice_col = lnd2atm_inst%qflx_liq_from_ice_col(bounds%begc:bounds%endc), &
@@ -363,7 +365,7 @@ contains
   end subroutine lnd2atm
 
   !-----------------------------------------------------------------------
-  subroutine handle_ice_runoff(bounds, waterflux_inst, &
+  subroutine handle_ice_runoff(bounds, waterflux_inst, glc_behavior, &
        melt_non_icesheet_ice_runoff, &
        qflx_ice_runoff_col, qflx_liq_from_ice_col, eflx_sh_ice_to_liq_col)
     !
@@ -395,6 +397,7 @@ contains
     ! !ARGUMENTS:
     type(bounds_type), intent(in) :: bounds
     type(waterflux_type), intent(in) :: waterflux_inst
+    type(glc_behavior_type), intent(in) :: glc_behavior
     logical, intent(in) :: melt_non_icesheet_ice_runoff
     real(r8), intent(out) :: qflx_ice_runoff_col( bounds%begc: ) ! total column-level ice runoff (mm H2O /s)
     real(r8), intent(out) :: qflx_liq_from_ice_col( bounds%begc: ) ! liquid runoff from converted ice runoff (mm H2O /s)
@@ -430,7 +433,7 @@ contains
              if (lun%itype(l) /= istice_mec) then
                 do_conversion = .true.
              else  ! istice_mec
-                if (.false.) then
+                if (glc_behavior%ice_runoff_melted_grc(g)) then
                    do_conversion = .true.
                 else
                    do_conversion = .false.

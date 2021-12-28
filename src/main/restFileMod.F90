@@ -23,6 +23,7 @@ module restFileMod
   use ncdio_pio        , only : file_desc_t, ncd_pio_createfile, ncd_pio_openfile, ncd_global
   use ncdio_pio        , only : ncd_pio_closefile, ncd_defdim, ncd_putatt, ncd_enddef, check_dim
   use ncdio_pio        , only : check_att, ncd_getatt
+  use glcBehaviorMod   , only : glc_behavior_type
   use reweightMod      , only : reweight_wrapup
   !
   ! !PUBLIC TYPES:
@@ -138,7 +139,7 @@ contains
   end subroutine restFile_write
 
   !-----------------------------------------------------------------------
-  subroutine restFile_read( bounds_proc, file )
+  subroutine restFile_read( bounds_proc, file, glc_behavior )
     !
     ! !DESCRIPTION:
     ! Read a CLM restart file.
@@ -146,6 +147,7 @@ contains
     ! !ARGUMENTS:
     type(bounds_type) , intent(in) :: bounds_proc      ! processor-level bounds
     character(len=*)  , intent(in) :: file             ! output netcdf restart file
+    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     type(file_desc_t) :: ncid    ! netcdf id
@@ -183,7 +185,7 @@ contains
     !$OMP PARALLEL DO PRIVATE (nc, bounds_clump)
     do nc = 1, nclumps
        call get_clump_bounds(nc, bounds_clump)
-       call reweight_wrapup(bounds_clump )
+       call reweight_wrapup(bounds_clump, glc_behavior)
     end do
     !$OMP END PARALLEL DO
 
@@ -191,7 +193,7 @@ contains
 
     call clm_instRest( bounds_proc, ncid, flag='read' )
 
-    call restFile_set_derived(bounds_proc)
+    call restFile_set_derived(bounds_proc, glc_behavior)
 
     call hist_restart_ncd (bounds_proc, ncid, flag='read' )
 
@@ -277,7 +279,7 @@ contains
   end subroutine restFile_getfile
 
   !-----------------------------------------------------------------------
-  subroutine restFile_set_derived(bounds)
+  subroutine restFile_set_derived(bounds, glc_behavior)
     !
     ! !DESCRIPTION:
     ! Upon a restart read, set variables that are not on the restart file, but can be
@@ -293,11 +295,14 @@ contains
     !
     ! !ARGUMENTS:
     type(bounds_type), intent(in) :: bounds
+    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
 
     character(len=*), parameter :: subname = 'restFile_set_derived'
     !-----------------------------------------------------------------------
+
+    call glc_behavior%update_glc_classes(bounds, topo_inst%topo_col(bounds%begc:bounds%endc))
 
   end subroutine restFile_set_derived
 

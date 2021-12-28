@@ -27,6 +27,7 @@ module initGridCellsMod
   use PatchType      , only : patch                
   use initSubgridMod , only : clm_ptrs_compdown, clm_ptrs_check
   use initSubgridMod , only : add_landunit, add_column, add_patch
+  use glcBehaviorMod , only : glc_behavior_type
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -49,7 +50,7 @@ module initGridCellsMod
 contains
 
   !------------------------------------------------------------------------
-  subroutine initGridcells()
+  subroutine initGridcells(glc_behavior)
     !
     ! !DESCRIPTION: 
     ! Initialize sub-grid mapping and allocates space for derived type hierarchy.
@@ -65,6 +66,7 @@ contains
     use shr_const_mod     , only : SHR_CONST_PI
     !
     ! !ARGUMENTS:
+    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: nc,li,ci,pi,gdc      ! indices
@@ -175,6 +177,7 @@ contains
 
        do gdc = bounds_clump%begg,bounds_clump%endg
           call set_landunit_ice_mec( &
+               glc_behavior = glc_behavior, &
                ltype=istice_mec, gi=gdc, li=li, ci=ci, pi=pi)
        end do
 
@@ -321,7 +324,7 @@ contains
   end subroutine set_landunit_wet_lake
 
   !-----------------------------------------------------------------------
-  subroutine set_landunit_ice_mec(ltype, gi, li, ci, pi)
+  subroutine set_landunit_ice_mec(glc_behavior, ltype, gi, li, ci, pi)
     !
     ! !DESCRIPTION:
     ! Initialize glacier_mec landunits
@@ -335,6 +338,7 @@ contains
     use pftconMod       , only : noveg
     !
     ! !ARGUMENTS:
+    type(glc_behavior_type), intent(in) :: glc_behavior
     integer , intent(in)    :: ltype             ! landunit type
     integer , intent(in)    :: gi                ! gridcell index
     integer , intent(inout) :: li                ! landunit index
@@ -362,7 +366,7 @@ contains
 
     SHR_ASSERT(ltype == istice_mec, errMsg(sourcefile, __LINE__))
 
-    call subgrid_get_info_glacier_mec(gi, atm_topo, &
+    call subgrid_get_info_glacier_mec(gi, atm_topo, glc_behavior, &
          npatches=npatches, ncols=ncols, nlunits=nlunits)
 
     if (nlunits == 1) then
@@ -378,11 +382,14 @@ contains
        ! This ensures that the ice sheet component, glc, will receive a surface mass
        ! balance in each elevation class wherever the SMB is needed.
        
-       col_exists = .false.
-       type_is_dynamic = col_exists
+       type_is_dynamic = glc_behavior%cols_have_dynamic_type(gi)
        do m = 1, maxpatch_glcmec
+          call glc_behavior%glc_mec_col_exists(gi = gi, elev_class = m, atm_topo = atm_topo, &
+               exists = col_exists, col_wt_lunit = wtcol2lunit)
           if (col_exists) then
-             call endrun(msg=subname//' ERROR: this should be false' )
+             call add_column(ci=ci, li=li, ctype=icemec_class_to_col_itype(m), &
+                  wtlunit=wtcol2lunit, type_is_dynamic=type_is_dynamic)
+             call add_patch(pi=pi, ci=ci, ptype=noveg, wtcol=1.0_r8)
           endif
        enddo
 

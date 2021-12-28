@@ -26,6 +26,7 @@ module initVerticalMod
   use LandunitType      , only : lun                
   use GridcellType      , only : grc                
   use ColumnType        , only : col                
+  use glcBehaviorMod    , only : glc_behavior_type
   use abortUtils        , only : endrun    
   use ncdio_pio
   !
@@ -104,11 +105,12 @@ contains
   end subroutine ReadNL
 
   !------------------------------------------------------------------------
-  subroutine initVertical(bounds, snow_depth, thick_wall, thick_roof)
+  subroutine initVertical(bounds, glc_behavior, snow_depth, thick_wall, thick_roof)
     use clm_varcon, only : zmin_bedrock, n_melt_glcmec
     !
     ! !ARGUMENTS:
     type(bounds_type)   , intent(in)    :: bounds
+    type(glc_behavior_type), intent(in) :: glc_behavior
     real(r8)            , intent(in)    :: snow_depth(bounds%begc:)
     real(r8)            , intent(in)    :: thick_wall(bounds%begl:)
     real(r8)            , intent(in)    :: thick_roof(bounds%begl:)
@@ -708,12 +710,12 @@ contains
        l = col%landunit(c)
        g = col%gridcell(c)
 
-       if (lun%itype(l)==istice_mec ) then
+       if (lun%itype(l)==istice_mec .and. glc_behavior%allow_multiple_columns_grc(g)) then
           ! ice_mec columns already account for subgrid topographic variability through
           ! their use of multiple elevation classes; thus, to avoid double-accounting for
           ! topographic variability in these columns, we ignore topo_std and use a fixed
           ! value of n_melt.
-          call endrun('ERROR: should not be here' )
+          col%n_melt(c) = n_melt_glcmec
        else
           col%n_melt(c) = 200.0/max(10.0_r8, col%topo_std(c))
        end if

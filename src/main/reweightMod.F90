@@ -29,7 +29,7 @@ module reweightMod
 contains
 
   !-----------------------------------------------------------------------
-  subroutine reweight_wrapup(bounds)
+  subroutine reweight_wrapup(bounds, glc_behavior)
     !
     ! !DESCRIPTION:
     ! Do additional modifications and error-checks that should be done after modifying subgrid
@@ -42,17 +42,19 @@ contains
     use filterMod         , only : setFilters
     use subgridWeightsMod , only : set_active, check_weights
     use decompMod         , only : bounds_type, BOUNDS_LEVEL_CLUMP
+    use glcBehaviorMod    , only : glc_behavior_type
     !
     ! !ARGUMENTS:
     type(bounds_type) , intent(in) :: bounds                      ! clump bounds
+    type(glc_behavior_type), intent(in) :: glc_behavior
     !------------------------------------------------------------------------
 
     SHR_ASSERT(bounds%level == BOUNDS_LEVEL_CLUMP, errMsg(sourcefile, __LINE__))
 
-    call set_active(bounds)
+    call set_active(bounds, glc_behavior)
     call check_weights(bounds, active_only=.false.)
     call check_weights(bounds, active_only=.true.)
-    call setFilters(bounds)
+    call setFilters(bounds, glc_behavior)
 
   end subroutine reweight_wrapup
 

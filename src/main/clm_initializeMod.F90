@@ -138,6 +138,9 @@ contains
     endif
     ldomain%mask = 1  !!! TODO - is this needed?
 
+    ! Initialize glc behavior
+    call glc_behavior%Init(begg, endg, NLFilename)
+
     ! Initialize urban model input (initialize urbinp data structure)
     ! This needs to be called BEFORE the call to surfrd_get_data since
     ! that will call surfrd_get_special which in turn calls check_urban
@@ -167,7 +170,7 @@ contains
     ! Determine decomposition of subgrid scale landunits, columns, patches
     ! ------------------------------------------------------------------------
 
-    call decompInit_clumps(ns, ni, nj)
+    call decompInit_clumps(ns, ni, nj, glc_behavior)
 
     ! *** Get ALL processor bounds - for gridcells, landunit, columns and patches ***
 
@@ -186,11 +189,11 @@ contains
     ! Build hierarchy and topological info for derived types
     ! This is needed here for the following call to decompInit_glcp
 
-    call initGridCells()
+    call initGridCells(glc_behavior)
 
     ! Set global seg maps for gridcells, landlunits, columns and patches
 
-    call decompInit_glcp(ns, ni, nj )
+    call decompInit_glcp(ns, ni, nj, glc_behavior)
 
     ! Set filters
 
@@ -200,7 +203,7 @@ contains
     !$OMP PARALLEL DO PRIVATE (nc, bounds_clump)
     do nc = 1, nclumps
        call get_clump_bounds(nc, bounds_clump)
-       call reweight_wrapup(bounds_clump )
+       call reweight_wrapup(bounds_clump, glc_behavior)
     end do
     !$OMP END PARALLEL DO
 
@@ -467,7 +470,7 @@ contains
              write(iulog,*)'Reading initial conditions from ',trim(finidat)
           end if
           call getfil( finidat, fnamer, 0 )
-          call restFile_read(bounds_proc, fnamer)
+          call restFile_read(bounds_proc, fnamer, glc_behavior)
        end if
 
     else if ((nsrest == nsrContinue) .or. (nsrest == nsrBranch)) then
@@ -475,7 +478,7 @@ contains
        if (masterproc) then
           write(iulog,*)'Reading restart file ',trim(fnamer)
        end if
-       call restFile_read(bounds_proc, fnamer)
+       call restFile_read(bounds_proc, fnamer, glc_behavior)
 
     end if
 
@@ -501,7 +504,7 @@ contains
        call initInterp(filei=fnamer, fileo=finidat_interp_dest, bounds=bounds_proc)
 
        ! Read new interpolated conditions file back in
-       call restFile_read(bounds_proc, finidat_interp_dest)
+       call restFile_read(bounds_proc, finidat_interp_dest, glc_behavior)
 
        ! Reset finidat to now be finidat_interp_dest 
        ! (to be compatible with routines still using finidat)

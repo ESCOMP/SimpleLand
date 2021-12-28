@@ -16,6 +16,7 @@ module subgridMod
   use abortutils     , only : endrun
   use clm_varctl     , only : iulog
   use clm_instur     , only : wt_lunit, urban_valid, wt_cft
+  use glcBehaviorMod , only : glc_behavior_type
 
   implicit none
   private   
@@ -46,7 +47,7 @@ module subgridMod
 contains
 
   !------------------------------------------------------------------------------
-  subroutine subgrid_get_gcellinfo (gi, &
+  subroutine subgrid_get_gcellinfo (gi, glc_behavior, &
        nlunits, ncols, npatches, ncohorts)
     !
     ! !DESCRIPTION:
@@ -54,6 +55,7 @@ contains
     !
     ! !ARGUMENTS
     integer , intent(in)  :: gi       ! grid cell index
+    type(glc_behavior_type), intent(in) :: glc_behavior
     integer , intent(out) :: nlunits  ! number of landunits
     integer , intent(out) :: ncols    ! number of columns 
     integer , intent(out) :: npatches ! number of patchs 
@@ -94,7 +96,7 @@ contains
     call subgrid_get_info_wetland(gi, npatches_temp, ncols_temp, nlunits_temp)
     call accumulate_counters()
 
-    call subgrid_get_info_glacier_mec(gi, atm_topo, &
+    call subgrid_get_info_glacier_mec(gi, atm_topo, glc_behavior, &
          npatches_temp, ncols_temp, nlunits_temp)
     call accumulate_counters()
 
@@ -358,7 +360,7 @@ contains
   end subroutine subgrid_get_info_wetland
   
   !-----------------------------------------------------------------------
-  subroutine subgrid_get_info_glacier_mec(gi, atm_topo, npatches, ncols, nlunits)
+  subroutine subgrid_get_info_glacier_mec(gi, atm_topo, glc_behavior, npatches, ncols, nlunits)
     !
     ! !DESCRIPTION:
     ! Obtain properties for glacier_mec landunit in this grid cell
@@ -366,6 +368,7 @@ contains
     ! !ARGUMENTS:
     integer, intent(in)  :: gi        ! grid cell index
     real(r8), intent(in) :: atm_topo  ! atmosphere's topographic height for this grid cell (m)
+    type(glc_behavior_type), intent(in) :: glc_behavior
     integer, intent(out) :: npatches  ! number of glacier_mec patches in this grid cell
     integer, intent(out) :: ncols     ! number of glacier_mec columns in this grid cell
     integer, intent(out) :: nlunits   ! number of glacier_mec landunits in this grid cell
@@ -374,6 +377,8 @@ contains
 
     character(len=*), parameter :: subname = 'subgrid_get_info_glacier_mec'
     !-----------------------------------------------------------------------
+
+    call glc_behavior%get_num_glc_mec_subgrid(gi, atm_topo, npatches, ncols, nlunits)
 
   end subroutine subgrid_get_info_glacier_mec
 
