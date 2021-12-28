@@ -19,7 +19,6 @@ module  PhotosynthesisMod
   use clm_varpar          , only : nlevcan, nvegwcs, mxpft
   use clm_varcon          , only : namep, spval
   use decompMod           , only : bounds_type
-  use QuadraticMod        , only : quadratic
   use pftconMod           , only : pftcon
   use atm2lndType         , only : atm2lnd_type
   use CanopyStateType     , only : canopystate_type
