@@ -156,6 +156,7 @@ contains
      character(len= 32) :: subname = 'SnowOptics_init' ! subroutine name
      integer            :: ier                         ! error status
 
+     return    ! return early
      !
      ! Open optics file:
      if(masterproc) write(iulog,*) 'Attempting to read snow optical properties .....'
@@ -271,6 +272,7 @@ contains
      allocate(snowage_kappa(idx_rhos_max,idx_Tgrd_max,idx_T_max))
      allocate(snowage_drdt0(idx_rhos_max,idx_Tgrd_max,idx_T_max))
 
+     return    ! return early
      if(masterproc)  write(iulog,*) 'Attempting to read snow aging parameters .....'
      call getfil (fsnowaging, locfn, 0)
      call ncd_pio_openfile(ncid, locfn, 0)
