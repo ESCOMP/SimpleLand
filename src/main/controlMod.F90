@@ -215,8 +215,9 @@ contains
 
     logical :: use_fertilizer
     logical :: use_grainproduct
+    logical :: use_lai_streams
     character(len=256) :: fsnowaging, fsnowoptics
-    namelist /clm_inparm/ use_fertilizer, use_grainproduct, &
+    namelist /clm_inparm/ use_fertilizer, use_grainproduct, use_lai_streams, &
             fsnowaging, fsnowoptics
 
 
