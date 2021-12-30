@@ -104,9 +104,6 @@ OPTIONS
                               (startup=ensure that initial conditions are being used)
      -co2_type "value"        Set CO2 the type of CO2 variation to use.
      -co2_ppmv "value"        Set CO2 concentration to use when co2_type is constant (ppmv).
-     -crop                    Toggle for prognostic crop model. (default is off)
-                              (can ONLY be turned on when BGC type is CN or BGC)
-                              This turns on the namelist variable: use_crop
      -csmdata "dir"           Root directory of CESM input data.
                               Can also be set by using the CSMDATA environment variable.
      -glc_nec <name>          Glacier number of elevation classes [0 | 3 | 5 | 10 | 36]
@@ -132,9 +129,6 @@ OPTIONS
                                form \$CASEDIR/user_nl_clm/user_nl_clm_????)
      -inputdata "filepath"    Writes out a list containing pathnames for required input datasets in
                               file specified.
-     -irrig "value"           If .true. week surface datasets with irrigation turned on.  (only allowed for CLM4.0 physics)
-                              Default: .false.
-                              (for CLM4.5/CLM5.0 physics set the namelist flag irrigate=.true.)
      -l_ncpl "LND_NCPL"       Number of CLM coupling time-steps in a day.
      -mask "landmask"         Type of land-mask (default, navy, gx3v5, gx1v5 etc.)
                               "-mask list" to list valid land masks.
@@ -196,14 +190,12 @@ sub process_commandline {
                chk_res               => undef,
                note                  => undef,
                output_reals_filename => undef,
-               irrig                 => "default",
                res                   => "default",
                silent                => 0,
                ignore_warnings       => 0,
                mask                  => "default",
                test                  => 0,
                bgc                   => "default",
-               crop                  => 0,
                envxml_dir            => ".",
                maxpft                => "default",
              );
@@ -220,7 +212,6 @@ sub process_commandline {
              "chk_res!"                  => \$opts{'chk_res'},
              "note!"                     => \$opts{'note'},
              "glc_nec=i"                 => \$opts{'glc_nec'},
-             "irrig=s"                   => \$opts{'irrig'},
              "d:s"                       => \$opts{'dir'},
              "h|help"                    => \$opts{'help'},
              "ignore_ic_date"            => \$opts{'ignore_ic_date'},
@@ -240,7 +231,6 @@ sub process_commandline {
              "test"                      => \$opts{'test'},
              "use_case=s"                => \$opts{'use_case'},
              "bgc=s"                     => \$opts{'bgc'},
-             "crop!"                     => \$opts{'crop'},
              "maxpft=i"                  => \$opts{'maxpft'},
              "v|verbose"                 => \$opts{'verbose'},
              "version"                   => \$opts{'version'},
@@ -546,10 +536,8 @@ sub process_namelist_commandline_options {
   setup_cmdl_resolution($opts, $nl_flags, $definition, $defaults);
   setup_cmdl_mask($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_bgc($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
-  setup_cmdl_crop($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
   setup_cmdl_maxpft($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
   setup_cmdl_glc_nec($opts, $nl_flags, $definition, $defaults, $nl);
-  setup_cmdl_irrigation($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_cmdl_rcp($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_simulation_year($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_run_type($opts, $nl_flags, $definition, $defaults, $nl);
@@ -716,88 +704,40 @@ sub setup_cmdl_bgc {
 
 #-------------------------------------------------------------------------------
 
-sub setup_cmdl_crop {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv) = @_;
-
-  $nl_flags->{'use_crop'} = ".false.";
-  my $val;
-  my $var = "crop";
-  if ( $physv->as_long() == $physv->as_long("clm4_0") ) {
-    $nl_flags->{'crop'} = $cfg->get($var);
-    if ( $nl_flags->{'crop'} eq "on" ) {
-      $nl_flags->{'use_crop'} = ".true.";
-    }
-  } else {
-    $val = $opts->{$var};
-    $nl_flags->{'crop'} = $val;
-    if ( $nl_flags->{'crop'} eq 1 ) {
-      $nl_flags->{'use_crop'} = ".true.";
-    }
-    if ( defined($nl->get_value("use_crop")) && ($nl_flags->{'use_crop'} ne $nl->get_value("use_crop")) ) {
-      $log->fatal_error("Namelist item use_crop contradicts the command-line option -crop, use the command line option");
-    }
-    if ( ($nl_flags->{'crop'} eq 1 ) && ($nl_flags->{'bgc_mode'} eq "sp") ) {
-      $log->fatal_error("** Cannot turn crop mode on mode bgc=sp\n" .
-                  "**\n" .
-                  "** Set the bgc mode to 'cn' or 'bgc' by the following means from highest to lowest precedence:\n" .
-                  "** * by the command-line options -bgc cn\n" .
-                  "** * by a default configuration file, specified by -defaults");
-    }
-
-    $var = "use_crop";
-    $val = ".false.";
-    if ($nl_flags->{'crop'} eq 1) {
-      $val = ".true.";
-    }
-    my $group = $definition->get_group_name($var);
-    $nl->set_variable_value($group, $var, $val);
-    if (  ! $definition->is_valid_value( $var, $val ) ) {
-      my @valid_values   = $definition->get_valid_values( $var );
-      $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
 sub setup_cmdl_maxpft {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv) = @_;
 
   my $val;
   my $var = "maxpft";
+  my $maxpatchpft = 17;
   if ( $physv->as_long() == $physv->as_long("clm4_0") ) {
     $nl_flags->{'maxpft'} = $cfg->get($var);
-    # NOTE: maxpatchpft sizes already checked for clm4_0 by configure.
   } else {
-    my %maxpatchpft;
-    $maxpatchpft{'.true.'}   = 79;
-    $maxpatchpft{'.false.'} = 17;
     if ( $opts->{$var} ne "default") {
       $val = $opts->{$var};
     } else {
-      $val = $maxpatchpft{$nl_flags->{'use_crop'}};
+      $val = $maxpatchpft;
     }
     $nl_flags->{'maxpft'} = $val;
 
-    if ( ($nl_flags->{'bgc_mode'} ne "sp") && ($nl_flags->{'maxpft'} != $maxpatchpft{$nl_flags->{'use_crop'}}) ) {
-      $log->fatal_error("** For CN or BGC mode you MUST set max patch PFT's to $maxpatchpft{$nl_flags->{'use_crop'}}\n" .
+    if ( ($nl_flags->{'bgc_mode'} ne "sp") && ($nl_flags->{'maxpft'} != $maxpatchpft) ) {
+      $log->fatal_error("** For CN or BGC mode you MUST set max patch PFT's to $maxpatchpft\n" .
                   "**\n" .
-                  "** When the crop model is on then it must be set to $maxpatchpft{'crop'} otherwise to $maxpatchpft{'nocrop'}\n" .
                   "** Set the bgc mode, crop and maxpft by the following means from highest to lowest precedence:\n" .
-                  "** * by the command-line options -bgc, -crop and -maxpft\n" .
+                  "** * by the command-line options -bgc and -maxpft\n" .
                   "** * by a default configuration file, specified by -defaults\n" .
                   "**");
     }
-    if ( $nl_flags->{'maxpft'} > $maxpatchpft{$nl_flags->{'use_crop'}} ) {
-      $log->fatal_error("** Max patch PFT's can NOT exceed $maxpatchpft{$nl_flags->{'use_crop'}}\n" .
+    if ( $nl_flags->{'maxpft'} > $maxpatchpft ) {
+      $log->fatal_error("** Max patch PFT's can NOT exceed $maxpatchpft\n" .
                   "**\n" .
                   "** Set maxpft by the following means from highest to lowest precedence:\n" .
                   "** * by the command-line options -maxpft\n" .
                   "** * by a default configuration file, specified by -defaults\n" .
                   "**");
     }
-    if ( $nl_flags->{'maxpft'} != $maxpatchpft{$nl_flags->{'use_crop'}} ) {
-      $log->warning("running with maxpft NOT equal to $maxpatchpft{$nl_flags->{'use_crop'}} is " .
+    if ( $nl_flags->{'maxpft'} != $maxpatchpft ) {
+      $log->warning("running with maxpft NOT equal to $maxpatchpft is " .
               "NOT validated / scientifically supported." );
     }
     $log->verbose_message("Using $nl_flags->{'maxpft'} for maxpft.");
@@ -836,43 +776,6 @@ sub setup_cmdl_glc_nec {
     $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
   }
   $log->verbose_message("Glacier number of elevation classes is $val");
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_cmdl_irrigation {
-  # Must be after setup_cmdl_crop
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  my $var   = "irrig";
-
-  if ( $opts->{$var} eq "default" ) {
-    my %settings;
-    $settings{'use_crop'} = $nl_flags->{'use_crop'};
-    $nl_flags->{$var} = $defaults->get_value($var, \%settings);
-  } else {
-    $nl_flags->{$var} = $opts->{$var};
-  }
-  my $val   = $nl_flags->{$var};
-  if ( $physv->as_long() == $physv->as_long("clm4_0") ) {
-    my $group = $definition->get_group_name($var);
-    $nl->set_variable_value($group, $var, $val);
-    if (  ! $definition->is_valid_value( $var, $val ) ) {
-      my @valid_values   = $definition->get_valid_values( $var );
-      $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
-    }
-    $log->verbose_message("Irrigation $val");
-    if ( &value_is_true($nl_flags->{'irrig'}) && &value_is_true($nl_flags->{'use_crop'}) ) {
-      $log->fatal_error("You've turned on both irrigation and crop.\n" .
-                  "Irrigation is only applied to generic crop currently,\n" .
-                  "which negates it's practical usage.\n." .
-                  "We also have a known problem when both are on " .
-                  "(see bug 1326 in the components/clm/doc/KnownBugs file)\n" .
-                  "both irrigation and crop can NOT be on.");
-    }
-  } elsif ( $opts->{$var} ne "default" ) {
-    $log->fatal_error("The -irrig option can ONLY be used with clm4_0 physics");
-  }
 }
 
 #-------------------------------------------------------------------------------
@@ -1061,7 +964,6 @@ sub process_namelist_commandline_use_case {
     if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
       $settings{'use_cn'}      = $nl_flags->{'use_cn'};
       $settings{'use_cndv'}    = $nl_flags->{'use_cndv'};
-      $settings{'use_crop'}    = $nl_flags->{'use_crop'};
       $settings{'cnfireson'}   = $nl_flags->{'cnfireson'};
     } else {
       $settings{'bgc'}         = $nl_flags->{'bgc_mode'};
@@ -1117,10 +1019,8 @@ sub process_namelist_inline_logic {
   ##############################
   # namelist group: clm_inparm #
   ##############################
-  setup_logic_site_specific($nl_flags, $definition, $nl, $physv);
   setup_logic_lnd_frac($opts, $nl_flags, $definition, $defaults, $nl, $envxml_ref);
   setup_logic_co2_type($opts, $nl_flags, $definition, $defaults, $nl);
-  setup_logic_irrigate($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_start_type($opts, $nl_flags, $nl);
   setup_logic_delta_time($opts, $nl_flags, $definition, $defaults, $nl);
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
@@ -1134,7 +1034,6 @@ sub process_namelist_inline_logic {
   setup_logic_demand($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_surface_dataset($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_initial_conditions($opts, $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_supplemental_nitrogen($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_snowpack($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
   #########################################
@@ -1192,35 +1091,11 @@ sub process_namelist_inline_logic {
   #####################################
   setup_logic_canopy($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
-  #####################################
-  # namelist group: irrigation_inparm #
-  #####################################
-  setup_logic_irrigation_parameters($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
   #######################################################################
   # namelist groups: clm_hydrology1_inparm and clm_soilhydrology_inparm #
   #######################################################################
   setup_logic_hydrology_switches($nl, $physv);
 
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_site_specific {
-  # site specific requirements
-  my ($nl_flags, $definition, $nl, $physv) = @_;
-
-  if ( $physv->as_long() >= $physv->as_long("clm4_5") && $nl_flags->{'res'} eq "1x1_smallvilleIA") {
-    if (! &value_is_true($nl_flags->{'use_cn'}) || ! &value_is_true($nl_flags->{'use_crop'})) {
-      $log->fatal_error("1x1_smallvilleIA grids must use a compset with CN and CROP turned on.");
-    }
-  }
-
-  if ( $physv->as_long() >= $physv->as_long("clm4_5") && $nl_flags->{'res'} eq "1x1_numaIA") {
-    if (! &value_is_true($nl_flags->{'use_cn'}) || ! &value_is_true($nl_flags->{'use_crop'})) {
-      $log->fatal_error("1x1_numaIA grids must use a compset with CN and CROP turned on.");
-    }
-  }
 }
 
 #-------------------------------------------------------------------------------
@@ -1272,18 +1147,6 @@ sub setup_logic_co2_type {
     } else {
       add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var, 'sim_year'=>$nl_flags->{'sim_year'} );
     }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_irrigate {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'irrigate',
-                'use_crop'=>$nl_flags->{'use_crop'}, 'use_cndv'=>$nl_flags->{'use_cndv'} );
-    $nl_flags->{'irrigate'} = lc($nl->get_value('irrigate'));
   }
 }
 
@@ -1449,15 +1312,7 @@ sub setup_logic_create_crop_landunit {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
   my $var = 'create_crop_landunit';
-  if ( $physv->as_long() == $physv->as_long("clm4_0") ) {
-    if ( $nl_flags->{'crop'} eq "on" ) {
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var );
-    }
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var, 'irrig'=>$nl_flags->{'irrig'} );
-  } else {
-
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var );
-  }
+  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var );
 }
 #-------------------------------------------------------------------------------
 
@@ -1509,22 +1364,16 @@ sub setup_logic_demand {
   $settings{'sim_year'}       = $nl_flags->{'sim_year'};
   $settings{'sim_year_range'} = $nl_flags->{'sim_year_range'};
   $settings{'mask'}           = $nl_flags->{'mask'};
-  $settings{'crop'}           = $nl_flags->{'crop'};
   $settings{'rcp'}            = $nl_flags->{'rcp'};
   $settings{'glc_nec'}        = $nl_flags->{'glc_nec'};
   if ( $physv->as_long() >= $physv->as_long("clm4_5")) {
-    # necessary for demand to be set correctly (flanduse_timeseries requires
-    # use_crop, maybe other options require other flags?)!
-    $settings{'irrigate'}            = $nl_flags->{'irrigate'};
+    # necessary for demand to be set correctly
     $settings{'use_cn'}              = $nl_flags->{'use_cn'};
     $settings{'use_cndv'}            = $nl_flags->{'use_cndv'};
     $settings{'use_lch4'}            = $nl_flags->{'use_lch4'};
     $settings{'use_nitrif_denitrif'} = $nl_flags->{'use_nitrif_denitrif'};
     $settings{'use_vertsoilc'}       = $nl_flags->{'use_vertsoilc'};
     $settings{'use_century_decomp'}  = $nl_flags->{'use_century_decomp'};
-    $settings{'use_crop'}            = $nl_flags->{'use_crop'};
-  } elsif ( $physv->as_long() == $physv->as_long("clm4_0")) {
-    $settings{'irrig'}          = $nl_flags->{'irrig'};
   }
 
   my $demand = $nl->get_value('clm_demand');
@@ -1584,16 +1433,16 @@ sub setup_logic_surface_dataset {
 
     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fsurdat',
                 'hgrid'=>$nl_flags->{'res'},
-                'sim_year'=>$nl_flags->{'sim_year'}, 'irrig'=>$nl_flags->{'irrig'},
-                'crop'=>$nl_flags->{'crop'}, 'glc_nec'=>$nl_flags->{'glc_nec'});
+                'sim_year'=>$nl_flags->{'sim_year'}, 
+                'glc_nec'=>$nl_flags->{'glc_nec'});
   } else{
     if ($flanduse_timeseries ne "null" && &value_is_true($nl_flags->{'use_cndv'}) ) {
         $log->fatal_error( "dynamic PFT's (setting flanduse_timeseries) are incompatible with dynamic vegetation (use_cndv=.true)." );
     }
     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fsurdat',
                 'hgrid'=>$nl_flags->{'res'},
-                'sim_year'=>$nl_flags->{'sim_year'}, 'irrigate'=>$nl_flags->{'irrigate'},
-                'use_crop'=>$nl_flags->{'use_crop'}, 'glc_nec'=>$nl_flags->{'glc_nec'});
+                'sim_year'=>$nl_flags->{'sim_year'},
+                'glc_nec'=>$nl_flags->{'glc_nec'});
   }
   
   # MML: try and add my own namelist variable for mml_surdat forcing file
@@ -1611,7 +1460,6 @@ sub setup_logic_initial_conditions {
   # or just ignore the year of the initial date via the -ignore_ic_year option.
   #
   # MUST BE AFTER: setup_logic_demand   which is where flanduse_timeseries is set
-  #         AFTER: setup_logic_irrigate which is where irrig (or irrigate) is set
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
   my $var = "finidat";
@@ -1658,21 +1506,17 @@ sub setup_logic_initial_conditions {
     }
     if ( $physv->as_long() == $physv->as_long("clm4_0") ) {
        $settings{'bgc'}    = $nl_flags->{'bgc_mode'};
-       foreach my $item ( "mask", "maxpft", "irrig", "glc_nec", "crop" ) {
+       foreach my $item ( "mask", "maxpft", "glc_nec" ) {
           $settings{$item}    = $nl_flags->{$item};
        }
     } else {
-       foreach my $item ( "mask", "maxpft", "irrigate", "glc_nec", "use_crop", "use_cn", "use_cndv", 
+       foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn", "use_cndv", 
                           "use_nitrif_denitrif", "use_vertsoilc", "use_century_decomp", 
                         ) {
           $settings{$item}    = $nl_flags->{$item};
        }
     }
-    if ($opts->{'ignore_ic_date'}) {
-      if ( &value_is_true($nl_flags->{'use_crop'}) ) {
-        $log->fatal_error("using ignore_ic_date is incompatable with crop!");
-      }
-    } elsif ($opts->{'ignore_ic_year'}) {
+    if ($opts->{'ignore_ic_year'}) {
        $settings{'ic_md'} = $ic_date;
     } else {
        $settings{'ic_ymd'} = $ic_date;
@@ -1690,12 +1534,9 @@ sub setup_logic_initial_conditions {
        # If couldn't find a matching finidat file, check if can turn on interpolation and try to find one again
        $finidat = $nl->get_value($var);
        if ( (not defined $finidat ) && ($physv->as_long() >= $physv->as_long("clm4_5")) ) {
-          # Delete any date settings, except for crop
+          # Delete any date settings
           delete( $settings{'ic_ymd'} );
           delete( $settings{'ic_md'}  );
-          if ( &value_is_true($nl_flags->{'use_crop'}) ) {
-             $settings{'ic_md'} = $ic_date;
-          }
           add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, "init_interp_sim_years" );
           add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, "init_interp_how_close" );
           foreach my $sim_yr ( split( /,/, $nl->get_value("init_interp_sim_years") )) {
@@ -1756,67 +1597,6 @@ sub setup_logic_bgc_shared {
       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'constrain_stress_deciduous_onset', 'phys'=>$physv->as_string() );
     }
 
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_supplemental_nitrogen {
-  #
-  # Supplemental Nitrogen for prognostic crop cases
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ( $nl_flags->{'bgc_mode'} ne "sp" && &value_is_true($nl_flags->{'use_crop'}) ) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl,
-                'suplnitro', 'use_cn'=>$nl_flags->{'use_cn'}, 'use_crop'=>$nl_flags->{'use_crop'});
-  }
-
-  #
-  # Error checking for suplnitro
-  #
-  my $suplnitro = $nl->get_value('suplnitro');
-  if ( defined($suplnitro) ) {
-    if ( $nl_flags->{'bgc_mode'} eq "sp" ) {
-      $log->fatal_error("supplemental Nitrogen (suplnitro) is set, but neither CN nor CNDV is active!");
-    }
-    if ( ! &value_is_true($nl_flags->{'use_crop'}) && $suplnitro =~ /PROG_CROP_ONLY/i ) {
-      $log->fatal_error("supplemental Nitrogen is set to run over prognostic crops, but prognostic crop is NOT active!");
-    }
-
-    if ( $suplnitro =~ /ALL/i ) {
-      if ( $physv->as_long() == $physv->as_long("clm4_0") && $nl_flags->{'spinup'} ne "normal" ) {
-        $log->fatal_error("There is no need to use a spinup mode when supplemental Nitrogen is on for all PFT's, as these modes spinup Nitrogen\n" .
-                    "when spinup != normal you can NOT set supplemental Nitrogen (suplnitro) to ALL");
-      }
-      if ( $physv->as_long() >= $physv->as_long("clm4_5") && $nl_flags->{'bgc_spinup'} ne "off" ) {
-        $log->warning("There is no need to use a bgc_spinup mode when supplemental Nitrogen is on for all PFT's, as these modes spinup Nitrogen" );
-      }
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_irrigation_parameters {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ( $physv->as_long() >= $physv->as_long("clm4_5")) {
-     my $var;
-     foreach $var ("irrig_min_lai", "irrig_start_time", "irrig_length",
-                   "irrig_target_smp", "irrig_depth", "irrig_threshold_fraction",
-                   "limit_irrigation_if_rof_enabled") {
-        add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var);
-     }
-
-     $var = "irrig_river_volume_threshold";
-     if ( &value_is_true($nl->get_value("limit_irrigation_if_rof_enabled")) ) {
-        add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var);
-     } else {
-        if (defined($nl->get_value($var))) {
-           $log->fatal_error("$var can only be set if limit_irrigation_if_rof_enabled is true");
-        }
-     }
   }
 }
 
@@ -1975,9 +1755,6 @@ sub setup_logic_lai_streams {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
   if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
-    if ( &value_is_true($nl_flags->{'use_crop'}) && &value_is_true($nl_flags->{'use_lai_streams'}) ) {
-      $log->fatal_error("turning use_lai_streams on is incompatable with use_crop set to true.");
-    }
     if ( $nl_flags->{'bgc_mode'} eq "sp" ) {
 
       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_lai_streams');
@@ -2208,7 +1985,7 @@ sub write_output_files {
                  soil_resis_inparm bgc_shared 
                  clmu_inparm clm_soilstate_inparm 
                  clm_soilhydrology_inparm
-                 clm_glacier_behavior irrigation_inparm);
+                 clm_glacier_behavior);
 
     if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
       push @groups, "cn_general";
