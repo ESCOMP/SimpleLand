@@ -154,10 +154,10 @@ contains
     character(len=*), intent(IN) :: NLFilename ! Namelist filename
     ! Read in any namelists that must be read for any clm object instances that need it
     call canopystate_inst%ReadNML( NLFilename )
-    call photosyns_inst%ReadNML(   NLFilename )
-    if (use_cn) then
-       call crop_inst%ReadNML(     NLFilename )
-    end if
+    !call photosyns_inst%ReadNML(   NLFilename )
+    !if (use_cn) then
+       !call crop_inst%ReadNML(     NLFilename )
+    !end if
 
   end subroutine clm_instReadNML
 
@@ -229,7 +229,7 @@ contains
     call urbanparams_inst%Init(bounds)
 
     ! Initialize urban time varying data
-    call urbantv_inst%Init(bounds, NLFilename)
+    !call urbantv_inst%Init(bounds, NLFilename)
 
     ! Initialize vertical data components 
 
