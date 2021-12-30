@@ -2830,6 +2830,7 @@ sub write_output_files {
                  soilwater_movement_inparm rooting_profile_inparm
                  soil_resis_inparm bgc_shared 
                  clmu_inparm clm_soilstate_inparm 
+                 clm_soilhydrology_inparm
                  clm_glacier_behavior irrigation_inparm);
 
     if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
