@@ -136,7 +136,6 @@ OPTIONS
                               Default: .false.
                               (for CLM4.5/CLM5.0 physics set the namelist flag irrigate=.true.)
      -l_ncpl "LND_NCPL"       Number of CLM coupling time-steps in a day.
-     -lnd_tuning_mode "value" Use the parameters tuned for the given configuration (CLM version and atmospheric forcing)
      -mask "landmask"         Type of land-mask (default, navy, gx3v5, gx1v5 etc.)
                               "-mask list" to list valid land masks.
      -namelist "namelist"     Specify namelist settings directly on the commandline by supplying
@@ -190,7 +189,6 @@ sub process_commandline {
                help                  => 0,
                glc_nec               => "default",
                l_ncpl                => undef,
-               lnd_tuning_mode       => "default",
                lnd_frac              => undef,
                dir                   => "$cwd",
                rcp                   => "default",
@@ -229,7 +227,6 @@ sub process_commandline {
              "ignore_ic_year"            => \$opts{'ignore_ic_year'},
              "infile=s"                  => \$opts{'infile'},
              "lnd_frac=s"                => \$opts{'lnd_frac'},
-             "lnd_tuning_mode=s"         => \$opts{'lnd_tuning_mode'},
              "l_ncpl=i"                  => \$opts{'l_ncpl'},
              "inputdata=s"               => \$opts{'inputdata'},
              "mask=s"                    => \$opts{'mask'},
@@ -557,7 +554,6 @@ sub process_namelist_commandline_options {
   setup_cmdl_simulation_year($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_run_type($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_output_reals($opts, $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_lnd_tuning($opts, $nl_flags, $definition, $defaults, $nl, $physv);
 }
 
 #-------------------------------------------------------------------------------
@@ -1062,7 +1058,6 @@ sub process_namelist_commandline_use_case {
     $settings{'sim_year'}       = $nl_flags->{'sim_year'};
     $settings{'sim_year_range'} = $nl_flags->{'sim_year_range'};
     $settings{'phys'}           = $nl_flags->{'phys'};
-    $settings{'lnd_tuning_mode'}= $nl_flags->{'lnd_tuning_mode'};
     if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
       $settings{'use_cn'}      = $nl_flags->{'use_cn'};
       $settings{'use_cndv'}    = $nl_flags->{'use_cndv'};
@@ -1227,34 +1222,6 @@ sub setup_logic_site_specific {
     }
   }
 }
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_lnd_tuning {
-
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  my $var    = "lnd_tuning_mode";
-  if ( $opts->{$var} eq "default" ) {
-     my %settings;
-     $settings{'phys'} = $nl_flags->{'phys'};
-     $nl_flags->{$var} = $defaults->get_value($var, \%settings );
-  } else {
-     $nl_flags->{$var} = $opts->{$var};
-  }
-  my $group = $definition->get_group_name($var);
-  $nl->set_variable_value($group, $var, quote_string( $nl_flags->{$var} ) );
-  if (  ! $definition->is_valid_value( $var, quote_string( $nl_flags->{$var}) ) ) {
-    my @valid_values   = $definition->get_valid_values( $var );
-    $log->fatal_error("$var has a value (".$nl_flags->{$var}.") that is NOT valid. Valid values are: @valid_values");
-  }
-  $log->verbose_message("Using $nl_flags->{$var} for lnd_tuning_mode");
-  my $phys = $physv->as_string();
-  if ( $nl_flags->{$var} !~ /^${phys}_/ ) {
-     $log->fatal_error("First part of lnd_tuning_mode MUST match the CLM version you are using.");
-  }
-}
-
 
 #-------------------------------------------------------------------------------
 
@@ -1691,13 +1658,12 @@ sub setup_logic_initial_conditions {
     }
     if ( $physv->as_long() == $physv->as_long("clm4_0") ) {
        $settings{'bgc'}    = $nl_flags->{'bgc_mode'};
-       foreach my $item ( "mask", "maxpft", "irrig", "glc_nec", "crop", "lnd_tuning_mode" ) {
+       foreach my $item ( "mask", "maxpft", "irrig", "glc_nec", "crop" ) {
           $settings{$item}    = $nl_flags->{$item};
        }
     } else {
        foreach my $item ( "mask", "maxpft", "irrigate", "glc_nec", "use_crop", "use_cn", "use_cndv", 
                           "use_nitrif_denitrif", "use_vertsoilc", "use_century_decomp", 
-                          "lnd_tuning_mode"
                         ) {
           $settings{$item}    = $nl_flags->{$item};
        }
@@ -1739,7 +1705,7 @@ sub setup_logic_initial_conditions {
           } 
           add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $useinitvar,
                      'use_cndv'=>$nl_flags->{'use_cndv'}, 'phys'=>$physv->as_string(),
-                     'sim_year'=>$settings{'sim_year'}, 'nofail'=>1, 'lnd_tuning_mode'=>$nl_flags->{'lnd_tuning_mode'} );
+                     'sim_year'=>$settings{'sim_year'}, 'nofail'=>1 );
           $settings{$useinitvar} = $nl->get_value($useinitvar);
           if ( $try > 1 ) {
              my $group = $definition->get_group_name($useinitvar);
@@ -1750,7 +1716,7 @@ sub setup_logic_initial_conditions {
              add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, "init_interp_attributes",
                         'sim_year'=>$settings{'sim_year'}, 'use_cndv'=>$nl_flags->{'use_cndv'}, 
                         'glc_nec'=>$nl_flags->{'glc_nec'},
-                        'use_cn'=>$nl_flags->{'use_cn'}, 'lnd_tuning_mode'=>$nl_flags->{'lnd_tuning_mode'},'nofail'=>1 );
+                        'use_cn'=>$nl_flags->{'use_cn'}, 'nofail'=>1 );
              my $attributes_string = remove_leading_and_trailing_quotes($nl->get_value("init_interp_attributes"));
              foreach my $pair ( split( /\s/, $attributes_string) ) {
                 if ( $pair =~ /^([a-z_]+)=([a-z._0-9]+)$/ ) {
