@@ -375,11 +375,11 @@ contains
     call init_hydrology( NLFilename )
 
     call soil_resistance_readnl ( NLFilename )
-    call CanopyFluxesReadNML    ( NLFilename )
+    !call CanopyFluxesReadNML    ( NLFilename )
 
     call UrbanReadNML           ( NLFilename )
-    call LunaReadNML            ( NLFilename )
-    call FrictionVelReadNML     ( NLFilename )
+    !call LunaReadNML            ( NLFilename )
+    !call FrictionVelReadNML     ( NLFilename )
 
     ! ----------------------------------------------------------------------
     ! Broadcast all control information if appropriate
@@ -391,16 +391,16 @@ contains
     ! Read in other namelists that are dependent on other namelist setttings
     ! ----------------------------------------------------------------------
 
-    if ( use_fun ) then
-       call CNMRespReadNML( NLFilename )
-    end if
+    !if ( use_fun ) then
+    !   call CNMRespReadNML( NLFilename )
+    !end if
 
     call soilHydReadNML(   NLFilename )
     if ( use_cn ) then
-       call nitrifReadNML(             NLFilename )
-       call CNPrecisionControlReadNML( NLFilename )
-       call CNNDynamicsReadNML       ( NLFilename )
-       call CNPhenologyReadNML       ( NLFilename )
+       !call nitrifReadNML(             NLFilename )
+       !call CNPrecisionControlReadNML( NLFilename )
+       !call CNNDynamicsReadNML       ( NLFilename )
+       !call CNPhenologyReadNML       ( NLFilename )
     end if
     if ( use_century_decomp ) then
        call DecompCascadeBGCreadNML( NLFilename )
