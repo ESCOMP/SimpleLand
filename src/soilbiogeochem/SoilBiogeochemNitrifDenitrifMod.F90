@@ -27,7 +27,6 @@ module SoilBiogeochemNitrifDenitrifMod
   private
   !
   public :: readParams                      ! Read in parameters from params file
-  public :: nitrifReadNML                   ! Read in namelist
   public :: SoilBiogeochemNitrifDenitrif    ! Calculate nitrification and 
   !
   type, private :: params_type
@@ -104,84 +103,6 @@ contains
     params_inst%rij_kro_delta=tempr
 
   end subroutine readParams
-
-  !-----------------------------------------------------------------------
-  subroutine nitrifReadNML( NLFilename )
-    !
-    ! !DESCRIPTION:
-    ! Read the namelist for nitrification/denitrification
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    use clm_varctl     , only : iulog
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-
-    character(len=*), parameter :: subname = 'ReadNML'
-    character(len=*), parameter :: nmlname = 'nitrif_inparm'
-    !-----------------------------------------------------------------------
-    real(r8) :: k_nitr_max_perday, denitrif_respiration_coefficient, &
-             denitrif_respiration_exponent, denitrif_nitrateconc_coefficient, &
-             denitrif_nitrateconc_exponent
-
-    namelist /nitrif_inparm/ k_nitr_max_perday, denitrif_respiration_coefficient, &
-             denitrif_respiration_exponent, denitrif_nitrateconc_coefficient, &
-             denitrif_nitrateconc_exponent
-
-    ! Initialize options to default values, in case they are not specified in
-    ! the namelist
-
-
-    denitrif_respiration_coefficient = 0.1_r8
-    denitrif_respiration_exponent    = 1.3_r8
-    denitrif_nitrateconc_coefficient = 1.15_r8
-    denitrif_nitrateconc_exponent    = 0.57_r8
-
-    k_nitr_max_perday =  0.1_r8
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=nitrif_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast (k_nitr_max_perday                      , mpicom)
-    call shr_mpi_bcast (denitrif_respiration_coefficient       , mpicom)
-    call shr_mpi_bcast (denitrif_respiration_exponent          , mpicom)
-    call shr_mpi_bcast (denitrif_nitrateconc_coefficient       , mpicom)
-    call shr_mpi_bcast (denitrif_nitrateconc_exponent          , mpicom)
-
-    params_inst%k_nitr_max =  k_nitr_max_perday / secspday   ! Change units to per second
-    params_inst%denitrif_respiration_coefficient = denitrif_respiration_coefficient
-    params_inst%denitrif_respiration_exponent    = denitrif_respiration_exponent
-    params_inst%denitrif_nitrateconc_coefficient = denitrif_nitrateconc_coefficient
-    params_inst%denitrif_nitrateconc_exponent    = denitrif_nitrateconc_exponent
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) nmlname//' settings:'
-       write(iulog,nml=nitrif_inparm)
-       write(iulog,*) ' '
-    end if
-
-  end subroutine nitrifReadNML
 
   !-----------------------------------------------------------------------
   subroutine SoilBiogeochemNitrifDenitrif(bounds, num_soilc, filter_soilc, &

@@ -33,7 +33,6 @@ module SoilBiogeochemDecompCascadeBGCMod
   private
   !
   ! !PUBLIC MEMBER FUNCTIONS:
-  public :: DecompCascadeBGCreadNML         ! Read in namelist
   public :: readParams                      ! Read in parameters from params file
   public :: init_decompcascade_bgc          ! Initialization
   !
@@ -95,71 +94,6 @@ module SoilBiogeochemDecompCascadeBGCMod
   !-----------------------------------------------------------------------
 
 contains
-
-  !-----------------------------------------------------------------------
-  subroutine DecompCascadeBGCreadNML( NLFilename )
-    !
-    ! !DESCRIPTION:
-    ! Read the namelist for soil BGC Decomposition Cascade
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    use clm_varctl     , only : iulog
-    use shr_log_mod    , only : errMsg => shr_log_errMsg
-    use abortutils     , only : endrun
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-
-    character(len=*), parameter :: subname = 'DecompCascadeBGCreadNML'
-    character(len=*), parameter :: nmlname = 'CENTURY_soilBGCDecompCascade'
-    !-----------------------------------------------------------------------
-    real(r8) :: initial_Cstocks(nsompools), initial_Cstocks_depth
-    namelist /CENTURY_soilBGCDecompCascade/ initial_Cstocks, initial_Cstocks_depth
-
-    ! Initialize options to default values, in case they are not specified in
-    ! the namelist
-
-    initial_Cstocks(:)    = 200._r8
-    initial_Cstocks_depth = 0.3
-
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=CENTURY_soilBGCDecompCascade, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(__FILE__, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(__FILE__, __LINE__))
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast (initial_Cstocks      , mpicom)
-    call shr_mpi_bcast (initial_Cstocks_depth, mpicom)
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) nmlname//' settings:'
-       write(iulog,nml=CENTURY_soilBGCDecompCascade)
-       write(iulog,*) ' '
-    end if
-
-    params_inst%initial_Cstocks(:)    = initial_Cstocks(:)
-    params_inst%initial_Cstocks_depth = initial_Cstocks_depth
-
-  end subroutine DecompCascadeBGCreadNML
 
   !-----------------------------------------------------------------------
   subroutine readParams ( ncid )
