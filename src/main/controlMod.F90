@@ -44,6 +44,7 @@ module controlMod
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: use_lch4, irrigate, create_crop_landunit, use_crop, use_dynroot
   use clm_varctl                       , only: use_fates, use_flexiblecn, use_hydrstress, use_luna, spinup_state
+  use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -211,7 +212,8 @@ contains
                use_flexiblecn,   &
                use_hydrstress,   &
                use_luna,   &
-               spinup_state
+               spinup_state, &
+               single_column
 
     logical :: use_fertilizer = .false.
     logical :: use_grainproduct = .false.
@@ -288,6 +290,9 @@ contains
        end if
        if ( use_dynroot )then
           call endrun(msg='ERROR SLIM can NOT run with use_dynroot on'//errMsg(sourcefile, __LINE__))
+       end if
+       if ( single_column )then
+          call endrun(msg='ERROR SLIM can NOT run with single_column on'//errMsg(sourcefile, __LINE__))
        end if
 
        if (use_init_interp) then
@@ -531,6 +536,7 @@ contains
     call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (subgridflag , 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
+    call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (co2_ppmv, 1, MPI_REAL8,0, mpicom, ier)
     call mpi_bcast (albice, 2, MPI_REAL8,0, mpicom, ier)
     call mpi_bcast (soil_layerstruct,len(soil_layerstruct), MPI_CHARACTER, 0, mpicom, ier)
