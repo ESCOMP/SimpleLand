@@ -116,10 +116,6 @@ OPTIONS
                               This turns on the namelist variable: use_crop
      -csmdata "dir"           Root directory of CESM input data.
                               Can also be set by using the CSMDATA environment variable.
-     -drydep                  Produce a drydep_inparm namelist that will go into the
-                              "drv_flds_in" file for the driver to pass dry-deposition to the atm.
-                              Default: -no-drydep
-                              (Note: buildnml copies the file for use by the driver)
      -fire_emis               Produce a fire_emis_nl namelist that will go into the
                               "drv_flds_in" file for the driver to pass fire emissions to the atm.
                               (Note: buildnml copies the file for use by the driver)
@@ -211,7 +207,6 @@ sub process_commandline {
                sim_year              => "default",
                chk_res               => undef,
                note                  => undef,
-               drydep                => 0,
                output_reals_filename => undef,
                fire_emis             => 0,
                irrig                 => "default",
@@ -234,7 +229,6 @@ sub process_commandline {
              "config=s"                  => \$opts{'config'},
              "csmdata=s"                 => \$opts{'csmdata'},
              "envxml_dir=s"              => \$opts{'envxml_dir'},
-             "drydep!"                   => \$opts{'drydep'},
              "fire_emis!"                => \$opts{'fire_emis'},
              "ignore_warnings!"          => \$opts{'ignore_warnings'},
              "chk_res!"                  => \$opts{'chk_res'},
@@ -1253,11 +1247,6 @@ sub process_namelist_inline_logic {
   setup_logic_urban($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
   #################################
-  # namelist group: drydep_inparm #
-  #################################
-  setup_logic_dry_deposition($opts, $nl_flags, $definition, $defaults, $nl);
-
-  #################################
   # namelist group: fire_emis_nl  #
   #################################
   setup_logic_fire_emis($opts, $nl_flags, $definition, $defaults, $nl, $physv);
@@ -2128,22 +2117,6 @@ sub setup_logic_canopy {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_dry_deposition {
-  my ($opts, $nl_flags, $definition, $defaults, $nl) = @_;
-
-  if ($opts->{'drydep'} ) {
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'drydep_list');
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'drydep_method');
-  } else {
-    if ( defined($nl->get_value('drydep_list')) ||
-         defined($nl->get_value('drydep_method')) ) {
-      $log->fatal_error("drydep_list or drydep_method defined, but drydep option NOT set");
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
 sub setup_logic_fire_emis {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
@@ -2416,7 +2389,7 @@ sub write_output_files {
   $log->verbose_message("Writing clm namelist to $outfile");
 
   # Drydep, fire-emission or MEGAN namelist for driver
-  @groups = qw(drydep_inparm carma_inparm);
+  @groups = qw(carma_inparm);
   $outfile = "$opts->{'dir'}/drv_flds_in";
   $nl->write($outfile, 'groups'=>\@groups, 'note'=>"$note" );
   $log->verbose_message("Writing @groups namelists to $outfile");
