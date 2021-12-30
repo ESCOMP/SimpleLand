@@ -21,7 +21,6 @@ module clm_instMod
 
   use UrbanParamsType                    , only : urbanparams_type   ! Constants 
   use UrbanParamsType                    , only : IsSimpleBuildTemp, IsProgBuildTemp
-  use UrbanTimeVarType                   , only : urbantv_type
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   !use CNDVType                           , only : dgv_ecophyscon     ! Constants 
 
@@ -58,7 +57,6 @@ module clm_instMod
   use WaterFluxType                   , only : waterflux_type
   use WaterStateType                  , only : waterstate_type
   use UrbanParamsType                 , only : urbanparams_type
-  use UrbanTimeVarType                , only : urbantv_type
   use VOCEmissionMod                  , only : vocemis_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
@@ -102,7 +100,6 @@ module clm_instMod
   type(surfrad_type)                      :: surfrad_inst
   type(temperature_type)                  :: temperature_inst
   type(urbanparams_type)                  :: urbanparams_inst
-  type(urbantv_type)                      :: urbantv_inst
   type(waterflux_type)                    :: waterflux_inst
   type(waterstate_type)                   :: waterstate_inst
   type(atm2lnd_type)                      :: atm2lnd_inst
@@ -227,9 +224,6 @@ contains
     ! Initialize urban constants
 
     call urbanparams_inst%Init(bounds)
-
-    ! Initialize urban time varying data
-    !call urbantv_inst%Init(bounds, NLFilename)
 
     ! Initialize vertical data components 
 

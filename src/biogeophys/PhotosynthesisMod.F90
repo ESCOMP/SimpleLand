@@ -155,7 +155,6 @@ module  PhotosynthesisMod
      ! Public procedures
      procedure, public  :: Init
      procedure, public  :: Restart
-     procedure, public  :: ReadNML
      procedure, public  :: ReadParams
 
      ! Private procedures
@@ -539,85 +538,6 @@ contains
     params_inst%ck=temp2d
 
   end subroutine readParams
-
-
-  !------------------------------------------------------------------------
-  subroutine ReadNML(this, NLFilename)
-    !
-    ! !DESCRIPTION:
-    ! Read the namelist for Photosynthesis
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    use clm_varctl     , only : iulog
-    !
-    ! !ARGUMENTS:
-    class(photosyns_type) :: this
-    character(len=*), intent(IN) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-
-    character(len=*), parameter :: subname = 'Photosyn::ReadNML'
-    character(len=*), parameter :: nmlname = 'photosyns_inparm'
-    logical :: rootstem_acc    = .false.                     ! Respiratory acclimation for roots and stems
-    logical :: light_inhibit   = .false.                     ! If light should inhibit respiration
-    integer :: leafresp_method = leafresp_mtd_ryan1991       ! leaf maintencence respiration at 25C for canopy top method to use
-    logical :: modifyphoto_and_lmr_forcrop = .false.            ! Modify photosynthesis and LMR for crop
-    character(len=50) :: stomatalcond_method = 'Ball-Berry1987' ! Photosynthesis method string
-    !-----------------------------------------------------------------------
-
-    namelist /photosyns_inparm/ leafresp_method, light_inhibit, &
-              rootstem_acc, stomatalcond_method, modifyphoto_and_lmr_forcrop
-
-    ! Initialize options to default values, in case they are not specified in
-    ! the namelist
-
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=photosyns_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-       this%rootstem_acc    = rootstem_acc
-       this%leafresp_method = leafresp_method
-       this%light_inhibit   = light_inhibit
-       this%modifyphoto_and_lmr_forcrop = modifyphoto_and_lmr_forcrop
-       if (      trim(stomatalcond_method) == 'Ball-Berry1987' ) then
-          this%stomatalcond_mtd = stomatalcond_mtd_bb1987
-       else if ( trim(stomatalcond_method) == 'Medlyn2011'     ) then
-          this%stomatalcond_mtd = stomatalcond_mtd_medlyn2011
-       else
-          call endrun(msg="ERROR bad value for stomtalcond_method in "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-       end if
-    end if
-
-    call shr_mpi_bcast (this%rootstem_acc   , mpicom)
-    call shr_mpi_bcast (this%leafresp_method, mpicom)
-    call shr_mpi_bcast (this%light_inhibit  , mpicom)
-    call shr_mpi_bcast (this%stomatalcond_mtd, mpicom)
-    call shr_mpi_bcast (this%modifyphoto_and_lmr_forcrop, mpicom)
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) nmlname//' settings:'
-       write(iulog,nml=photosyns_inparm)
-       write(iulog,*) ' '
-    end if
-
-  end subroutine ReadNML
 
   !------------------------------------------------------------------------
   subroutine Restart(this, bounds, ncid, flag)

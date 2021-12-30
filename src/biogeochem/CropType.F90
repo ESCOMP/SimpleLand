@@ -48,8 +48,6 @@ module CropType
      procedure, public  :: InitAccBuffer
      procedure, public  :: InitAccVars
      procedure, public  :: Restart
-     procedure, public  :: ReadNML            ! Read in the crop namelist
-
      ! NOTE(wjs, 2014-09-29) need to rename this from UpdateAccVars to CropUpdateAccVars
      ! to prevent cryptic error messages with pgi (v. 13.9 on yellowstone)
      ! This is probably related to this bug
@@ -95,83 +93,6 @@ contains
     end if
 
   end subroutine Init
-
-  !-----------------------------------------------------------------------
-  subroutine ReadNML(this, NLFilename )
-    !
-    ! !DESCRIPTION:
-    ! Read the namelist for CropType
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    use clm_varctl     , only : iulog
-    !
-    ! !ARGUMENTS:
-    class(crop_type) , intent(inout) :: this
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-
-    character(len=*), parameter :: subname = 'Crop::ReadNML'
-    character(len=*), parameter :: nmlname = 'crop'
-    !-----------------------------------------------------------------------
-    character(len=20) :: baset_mapping
-    real(r8) :: baset_latvary_intercept
-    real(r8) :: baset_latvary_slope
-    namelist /crop/ baset_mapping, baset_latvary_intercept, baset_latvary_slope
-
-    ! Initialize options to default values, in case they are not specified in
-    ! the namelist
-
-    baset_mapping           = 'constant'
-    baset_latvary_intercept = 12._r8
-    baset_latvary_slope     = 0.4_r8
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=crop, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast (baset_mapping           , mpicom)
-    call shr_mpi_bcast (baset_latvary_intercept , mpicom)
-    call shr_mpi_bcast (baset_latvary_slope     , mpicom)
-
-    this%baset_mapping           = baset_mapping
-    this%baset_latvary_intercept = baset_latvary_intercept
-    this%baset_latvary_slope     = baset_latvary_slope
-    if (      trim(this%baset_mapping) == baset_map_constant ) then
-       if ( masterproc ) write(iulog,*) 'baset mapping for ALL crops are constant'
-    else if ( trim(this%baset_mapping) == baset_map_latvary ) then
-       if ( masterproc ) write(iulog,*) 'baset mapping for crops vary with latitude'
-    else
-       call endrun(msg="Bad value for baset_mapping in "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-    end if
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) nmlname//' settings:'
-       write(iulog,nml=crop)
-       write(iulog,*) ' '
-    end if
-
-    !-----------------------------------------------------------------------
-    
-  end subroutine ReadNML
 
   !-----------------------------------------------------------------------
   subroutine InitAllocate(this, bounds)
