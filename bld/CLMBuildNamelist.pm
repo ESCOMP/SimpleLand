@@ -2357,12 +2357,6 @@ sub write_output_files {
   $outfile = "$opts->{'dir'}/lnd_in";
   $nl->write($outfile, 'groups'=>\@groups, 'note'=>"$note" );
   $log->verbose_message("Writing clm namelist to $outfile");
-
-  # Drydep, fire-emission or MEGAN namelist for driver
-  @groups = qw(carma_inparm);
-  $outfile = "$opts->{'dir'}/drv_flds_in";
-  $nl->write($outfile, 'groups'=>\@groups, 'note'=>"$note" );
-  $log->verbose_message("Writing @groups namelists to $outfile");
 }
 
 sub write_output_real_parameter_file {
