@@ -17,7 +17,6 @@ module CNPrecisionControlMod
   private
   !
   ! !PUBLIC MEMBER FUNCTIONS:
-  public:: CNPrecisionControlReadNML
   public:: CNPrecisionControl
 
   ! !PUBLIC DATA:
@@ -34,65 +33,6 @@ module CNPrecisionControlMod
   !----------------------------------------------------------------------- 
 
 contains
-
-  !-----------------------------------------------------------------------
-  subroutine CNPrecisionControlReadNML( NLFilename )
-    !
-    ! !DESCRIPTION:
-    ! Read the namelist for CN Precision control
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    use clm_varctl     , only : iulog, use_nguardrail
-    use shr_log_mod    , only : errMsg => shr_log_errMsg
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-
-    character(len=*), parameter :: subname = 'CNPrecisionControlReadNML'
-    character(len=*), parameter :: nmlname = 'cnprecision_inparm'
-    !-----------------------------------------------------------------------
-    namelist /cnprecision_inparm/ ncrit, ccrit, cnegcrit, nnegcrit
-
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=cnprecision_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast (ncrit   , mpicom)
-    call shr_mpi_bcast (ccrit   , mpicom)
-    call shr_mpi_bcast (nnegcrit, mpicom)
-    call shr_mpi_bcast (cnegcrit, mpicom)
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) nmlname//' settings:'
-       write(iulog,nml=cnprecision_inparm)
-       write(iulog,*) ' '
-    end if
-
-    ! Have precision control for froot be determined by use_nguardrail setting
-    prec_control_for_froot = .not. use_nguardrail
-
-  end subroutine CNPrecisionControlReadNML
 
   !-----------------------------------------------------------------------
   subroutine CNPrecisionControl(bounds, num_soilp, filter_soilp, &
