@@ -357,14 +357,6 @@ contains
     ! ----------------------------------------------------------------------
 
     call initInterp_readnl( NLFilename )
-
-    !I call init_hydrology to set up default hydrology sub-module methods.
-    !For future version, I suggest to  put the following two calls inside their
-    !own modules, which are called from their own initializing methods
-    !call init_hydrology( NLFilename )
-
-    !call soil_resistance_readnl ( NLFilename )
-
     call UrbanReadNML           ( NLFilename )
 
     ! ----------------------------------------------------------------------
