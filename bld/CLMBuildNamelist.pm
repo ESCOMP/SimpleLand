@@ -1567,6 +1567,11 @@ sub process_namelist_inline_logic {
   setup_logic_cnvegcarbonstate($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
   #############################################
+  # namelist group: soil_resis_inparm #
+  #############################################
+  setup_logic_soil_resis($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
+
+  #############################################
   # namelist group: canopyhydrology_inparm #
   #############################################
   setup_logic_canopyhydrology($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
@@ -2654,6 +2659,17 @@ sub setup_logic_rooting_profile {
 
 #-------------------------------------------------------------------------------
 
+sub setup_logic_soil_resis {
+  #
+  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
+
+  if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
+    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'soil_resis_method' );
+  }
+}
+
+#-------------------------------------------------------------------------------
+
 sub setup_logic_canopyhydrology {
   #
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
@@ -2812,7 +2828,7 @@ sub write_output_files {
                  finidat_consistency_checks 
                  clm_initinterp_inparm 
                  soilwater_movement_inparm rooting_profile_inparm
-                 bgc_shared 
+                 soil_resis_inparm bgc_shared 
                  clmu_inparm clm_soilstate_inparm 
                  clm_glacier_behavior irrigation_inparm);
 
