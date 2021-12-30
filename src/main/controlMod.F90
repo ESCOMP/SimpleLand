@@ -213,9 +213,9 @@ contains
                use_luna,   &
                spinup_state
 
-    logical :: use_fertilizer
-    logical :: use_grainproduct
-    logical :: use_lai_streams
+    logical :: use_fertilizer = .false.
+    logical :: use_grainproduct = .false.
+    logical :: use_lai_streams = .false.
     character(len=256) :: fsnowaging, fsnowoptics
     namelist /clm_inparm/ use_fertilizer, use_grainproduct, use_lai_streams, &
             fsnowaging, fsnowoptics
@@ -278,6 +278,17 @@ contains
        ! ----------------------------------------------------------------------
 
        call set_timemgr_init( dtime_in=dtime )
+
+       ! Check for namelist variables that SLIM can NOT use
+       if ( use_fates )then
+          call endrun(msg='ERROR SLIM can NOT run with use_fates on'//errMsg(sourcefile, __LINE__))
+       end if
+       if ( use_lai_streams )then
+          call endrun(msg='ERROR SLIM can NOT run with use_lai_streams on'//errMsg(sourcefile, __LINE__))
+       end if
+       if ( use_dynroot )then
+          call endrun(msg='ERROR SLIM can NOT run with use_dynroot on'//errMsg(sourcefile, __LINE__))
+       end if
 
        if (use_init_interp) then
           call apply_use_init_interp(finidat, finidat_interp_source)
