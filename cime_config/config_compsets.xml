@@ -96,23 +96,6 @@
     <lname>HIST_DATM%QIA_CLM50%BGC_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>  
   
-  <!-- I single point forcing -->
-
-  <compset>
-    <alias>I1PtClm50SpGs</alias>
-    <lname>2000_DATM%1PT_CLM50%SP_SICE_SOCN_MOSART_SGLC_SWAV</lname>
-  </compset>
-
-  <compset>
-    <alias>I1PtClm45SpGs</alias>
-    <lname>2000_DATM%1PT_CLM45%SP_SICE_SOCN_RTM_SGLC_SWAV</lname>
-  </compset>
-
-  <compset>
-    <alias>I1850Clm45BgcCruGs</alias>
-    <lname>1850_DATM%CRUv7_CLM45%BGC_SICE_SOCN_RTM_SGLC_SWAV</lname>
-  </compset>
-
   <!-- Primarily for testing; uses Qian atmospheric forcing simply to give
        faster datm throughput, which is particularly relevant for single-point
        cases (where datm dominates the runtime) -->
