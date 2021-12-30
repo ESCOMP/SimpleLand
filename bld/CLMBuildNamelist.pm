@@ -156,10 +156,6 @@ OPTIONS
      -namelist "namelist"     Specify namelist settings directly on the commandline by supplying
                               a string containing FORTRAN namelist syntax, e.g.,
                                  -namelist "&clm_inparm dt=1800 /"
-     -no-megan                DO NOT PRODUCE a megan_emis_nl namelist that will go into the
-                              "drv_flds_in" file for the driver to pass VOCs to the atm.
-                              MEGAN (Model of Emissions of Gases and Aerosols from Nature)
-                              (Note: buildnml copies the file for use by the driver)
      -[no-]note               Add note to output namelist  [do NOT add note] about the
                               arguments to build-namelist.
      -output_reals <file>     Output real parameters to the given output file.
@@ -218,7 +214,6 @@ sub process_commandline {
                drydep                => 0,
                output_reals_filename => undef,
                fire_emis             => 0,
-               megan                 => 0,
                irrig                 => "default",
                res                   => "default",
                silent                => 0,
@@ -244,7 +239,6 @@ sub process_commandline {
              "ignore_warnings!"          => \$opts{'ignore_warnings'},
              "chk_res!"                  => \$opts{'chk_res'},
              "note!"                     => \$opts{'note'},
-             "megan!"                    => \$opts{'megan'},
              "glc_nec=i"                 => \$opts{'glc_nec'},
              "irrig=s"                   => \$opts{'irrig'},
              "d:s"                       => \$opts{'dir'},
@@ -1268,11 +1262,6 @@ sub process_namelist_inline_logic {
   #################################
   setup_logic_fire_emis($opts, $nl_flags, $definition, $defaults, $nl, $physv);
 
-  #################################
-  # namelist group: megan_emis_nl #
-  #################################
-  setup_logic_megan($opts, $nl_flags, $definition, $defaults, $nl);
-
   ##################################
   # namelist group: lai_streams  #
   ##################################
@@ -2175,37 +2164,6 @@ sub setup_logic_fire_emis {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_megan {
-  my ($opts, $nl_flags, $definition, $defaults, $nl) = @_;
-
-  my $var   = "megan";
-
-  if ( $opts->{$var} eq "default" ) {
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl,
-'megan' );
-    $nl_flags->{$var} = $nl->get_value($var);
-  } else {
-    $nl_flags->{$var} = $opts->{$var};
-  }
-
-  if ($nl_flags->{'megan'} ) {
-    if ( &value_is_true( $nl_flags->{'use_fates'} ) ) {
-       $log->fatal_error("MEGAN can NOT be on when ED is also on.\n" .
-                   "   Use the '-no-megan' option when '-bgc fates' is activated");
-    }
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'megan_specifier');
-    check_megan_spec( $opts, $nl, $definition );
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'megan_factors_file');
-  } else {
-    if ( defined($nl->get_value('megan_specifier')) ||
-         defined($nl->get_value('megan_factors_file')) ) {
-      $log->fatal_error("megan_specifier or megan_factors_file defined, but megan option NOT set");
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
 sub setup_logic_lai_streams {
   # lai streams require clm4_5/clm5_0
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
@@ -2458,7 +2416,7 @@ sub write_output_files {
   $log->verbose_message("Writing clm namelist to $outfile");
 
   # Drydep, fire-emission or MEGAN namelist for driver
-  @groups = qw(drydep_inparm megan_emis_nl fire_emis_nl carma_inparm);
+  @groups = qw(drydep_inparm carma_inparm);
   $outfile = "$opts->{'dir'}/drv_flds_in";
   $nl->write($outfile, 'groups'=>\@groups, 'note'=>"$note" );
   $log->verbose_message("Writing @groups namelists to $outfile");
@@ -2912,41 +2870,6 @@ sub list_options {
                         "resolution and landmask, as well as other settings. Hence, the list above\n" .
                         "will vary depending on what you set for resolution and landmask.");
         }
-    }
-}
-
-#-------------------------------------------------------------------------------
-
-sub check_megan_spec {
-#
-# Check the megan specifier setting
-#
-    my ($opts, $nl, $definition) = @_;
-
-    my $megan_spec      = $nl->get_value('megan_specifier');
-    my @megan_spec_list = split( /\s*,\s*/, $megan_spec );
-    foreach $megan_spec ( @megan_spec_list ) {
-       if ( $megan_spec =~ /^['"]+[A-Za-z0-9]+\s*\=\s*([\sA-Za-z0-9+_-]+)["']+$/ ) {
-          my $megan_list = $1;
-          my @megan_cmpds = split( /\s*\+\s*/, $megan_list );
-          my $var = "megan_cmpds";
-          my $warn = 0;
-          foreach my $megan_cmpd ( @megan_cmpds ) {
-             if (  ! $definition->is_valid_value( $var, $megan_cmpd, 'noquotes'=>1 ) ) {
-                $log->warning("megan_compound $megan_cmpd NOT found in list" );
-                $warn++;
-             }
-          }
-          if ( $warn > 0 ) {
-             my @valid_values   = $definition->get_valid_values( $var, 'noquotes'=>1 );
-             $log->warning("list of megan compounds includes:\n" .
-                     "@valid_values\n" .
-                     "Does your megan_factors_file include more compounds?\n" .
-                     "If NOT your simulation will fail." );
-          }
-       } else {
-          $log->fatal_error("Bad format for megan_specifier = $megan_spec");
-       }
     }
 }
 
