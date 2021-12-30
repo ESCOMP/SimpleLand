@@ -116,9 +116,6 @@ OPTIONS
                               This turns on the namelist variable: use_crop
      -csmdata "dir"           Root directory of CESM input data.
                               Can also be set by using the CSMDATA environment variable.
-     -fire_emis               Produce a fire_emis_nl namelist that will go into the
-                              "drv_flds_in" file for the driver to pass fire emissions to the atm.
-                              (Note: buildnml copies the file for use by the driver)
      -glc_nec <name>          Glacier number of elevation classes [0 | 3 | 5 | 10 | 36]
                               (default is 0) (standard option with land-ice model is 10)
      -help [or -h]            Print usage to STDOUT.
@@ -208,7 +205,6 @@ sub process_commandline {
                chk_res               => undef,
                note                  => undef,
                output_reals_filename => undef,
-               fire_emis             => 0,
                irrig                 => "default",
                res                   => "default",
                silent                => 0,
@@ -229,7 +225,6 @@ sub process_commandline {
              "config=s"                  => \$opts{'config'},
              "csmdata=s"                 => \$opts{'csmdata'},
              "envxml_dir=s"              => \$opts{'envxml_dir'},
-             "fire_emis!"                => \$opts{'fire_emis'},
              "ignore_warnings!"          => \$opts{'ignore_warnings'},
              "chk_res!"                  => \$opts{'chk_res'},
              "note!"                     => \$opts{'note'},
@@ -1246,11 +1241,6 @@ sub process_namelist_inline_logic {
   ###############################
   setup_logic_urban($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
-  #################################
-  # namelist group: fire_emis_nl  #
-  #################################
-  setup_logic_fire_emis($opts, $nl_flags, $definition, $defaults, $nl, $physv);
-
   ##################################
   # namelist group: lai_streams  #
   ##################################
@@ -2112,26 +2102,6 @@ sub setup_logic_canopy {
   if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults,
                  $nl, 'leaf_mr_vcm', 'phys'=>$nl_flags->{'phys'} )
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_fire_emis {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ($opts->{'fire_emis'} ) {
-    if ( $physv->as_long() < $physv->as_long("clm4_5") ) {
-      $log->fatal_error("fire_emis option can NOT be set for CLM versions before clm4_5");
-    }
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fire_emis_factors_file');
-    add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fire_emis_specifier');
-  } else {
-    if ( defined($nl->get_value('fire_emis_elevated'))     ||
-         defined($nl->get_value('fire_emis_factors_file')) ||
-         defined($nl->get_value('fire_emis_specifier')) ) {
-      $log->fatal_error("fire_emission setting defined: fire_emis_elevated, fire_emis_factors_file, or fire_emis_specifier, but fire_emis option NOT set");
-    }
   }
 }
 
