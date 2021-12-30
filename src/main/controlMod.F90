@@ -372,9 +372,9 @@ contains
     !I call init_hydrology to set up default hydrology sub-module methods.
     !For future version, I suggest to  put the following two calls inside their
     !own modules, which are called from their own initializing methods
-    call init_hydrology( NLFilename )
+    !call init_hydrology( NLFilename )
 
-    call soil_resistance_readnl ( NLFilename )
+    !call soil_resistance_readnl ( NLFilename )
     !call CanopyFluxesReadNML    ( NLFilename )
 
     call UrbanReadNML           ( NLFilename )
@@ -395,7 +395,7 @@ contains
     !   call CNMRespReadNML( NLFilename )
     !end if
 
-    call soilHydReadNML(   NLFilename )
+    !call soilHydReadNML(   NLFilename )
     if ( use_cn ) then
        !call nitrifReadNML(             NLFilename )
        !call CNPrecisionControlReadNML( NLFilename )
@@ -403,7 +403,7 @@ contains
        !call CNPhenologyReadNML       ( NLFilename )
     end if
     if ( use_century_decomp ) then
-       call DecompCascadeBGCreadNML( NLFilename )
+       !call DecompCascadeBGCreadNML( NLFilename )
     end if
 
     ! ----------------------------------------------------------------------
