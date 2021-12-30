@@ -378,10 +378,11 @@ sub print_categories {
       print( "These tests failed\n" );
       print( "================================================================================\n" );
       foreach my $key ( @fails ) {
+         my $fails = $csstatus{$key}{'FAIL'};
          my $expect = ""; 
          `grep $key $expectedfailfile > /dev/null`;
          if ( $? == 0 ) { $expect = "EXPECTED"; }
-         print( "$key\t\t$expect\n" );
+         print( "$key\t$fails\t$expect\n" );
       }
    }
 }
