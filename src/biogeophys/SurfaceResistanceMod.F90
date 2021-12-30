@@ -26,8 +26,6 @@ module SurfaceResistanceMod
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: calc_soilevap_resis
   public :: do_soilevap_beta, do_soil_resistance_sl14
-!  public :: init_soil_resistance
-  public :: soil_resistance_readNL
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -38,126 +36,6 @@ module SurfaceResistanceMod
   
 contains
 
-  !-----------------------------------------------------------------------
-!!$  subroutine init_soil_resistance()
-!!$   !
-!!$   !DESCRIPTIONS
-!!$   ! initialize method for soil resis calculation
-!!$    !
-!!$    ! !USES:
-!!$    use abortutils      , only : endrun   
-!!$    use fileutils       , only : getavu, relavu
-!!$    use spmdMod         , only : mpicom, masterproc
-!!$    use shr_mpi_mod     , only : shr_mpi_bcast
-!!$    use clm_varctl      , only : iulog, use_bedrock
-!!$    use controlMod      , only : NLFilename
-!!$    use clm_nlUtilsMod  , only : find_nlgroup_name
-!!$
-!!$    ! !ARGUMENTS:
-!!$    !------------------------------------------------------------------------------
-!!$    implicit none
-!!$    integer            :: nu_nml                     ! unit for namelist file
-!!$    integer            :: nml_error                  ! namelist i/o error flag
-!!$    character(*), parameter    :: subName = "('init_soil_resistance')"
-!!$
-!!$    !-----------------------------------------------------------------------
-!!$
-!!$! MUST agree with name in namelist and read statement
-!!$    namelist /soil_resis_inparm/ soil_resis_method
-!!$
-!!$    ! Default values for namelist
-!!$
-!!$   soil_resis_method = sl_14
-!!$
-!!$    ! Read soil_resis namelist
-!!$    if (masterproc) then
-!!$       nu_nml = getavu()
-!!$       open( nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
-!!$       call find_nlgroup_name(nu_nml, 'soil_resis_inparm', status=nml_error)
-!!$       if (nml_error == 0) then
-!!$          read(nu_nml, nml=soil_resis_inparm,iostat=nml_error)
-!!$          if (nml_error /= 0) then
-!!$             call endrun(subname // ':: ERROR reading soil_resis namelist')
-!!$          end if
-!!$       end if
-!!$       close(nu_nml)
-!!$       call relavu( nu_nml )
-!!$
-!!$    endif
-!!$
-!!$    call shr_mpi_bcast(soil_resis_method, mpicom)
-!!$
-!!$    if (masterproc) then
-!!$       write(iulog,*) ' '
-!!$       write(iulog,*) 'soil_resis settings:'
-!!$       write(iulog,*) '  soil_resis_method  = ',soil_resis_method
-!!$    endif
-!!$!scs   
-!!$!   soil_resis_method = leepielke_1992
-!!$!   soil_resis_method = sl_14
-!!$!scs
-!!$
-!!$  end subroutine init_soil_resistance
-   
-  !-----------------------------------------------------------------------
-  subroutine soil_resistance_readNL(NLFilename)
-   !
-   !DESCRIPTIONS
-   ! Read the namelist for soil resistance method
-    !
-    ! !USES:
-    use abortutils      , only : endrun   
-    use fileutils       , only : getavu, relavu
-    use spmdMod         , only : mpicom, masterproc
-    use shr_mpi_mod     , only : shr_mpi_bcast
-    use clm_varctl      , only : iulog
-    use clm_nlUtilsMod  , only : find_nlgroup_name
-
-    ! !ARGUMENTS:
-    !------------------------------------------------------------------------------
-    implicit none
-    character(len=*), intent(IN) :: NLFilename ! Namelist filename
-    integer                      :: nu_nml     ! unit for namelist file
-    integer                      :: nml_error  ! namelist i/o error flag
-    character(*), parameter      :: subName = "('init_soil_resistance')"
-
-    !-----------------------------------------------------------------------
-
-! MUST agree with name in namelist and read statement
-    namelist /soil_resis_inparm/ soil_resis_method
-
-    ! Default values for namelist
-
-   soil_resis_method = sl_14
-
-    ! Read soil_resis namelist
-    if (masterproc) then
-       nu_nml = getavu()
-       open( nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
-       call find_nlgroup_name(nu_nml, 'soil_resis_inparm', status=nml_error)
-       if (nml_error == 0) then
-          read(nu_nml, nml=soil_resis_inparm,iostat=nml_error)
-          if (nml_error /= 0) then
-             call endrun(subname // ':: ERROR reading soil_resis namelist')
-          end if
-       else
-          call endrun(subname // ':: ERROR reading soil_resis namelist')
-       end if
-       close(nu_nml)
-       call relavu( nu_nml )
-
-    endif
-
-    call shr_mpi_bcast(soil_resis_method, mpicom)
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) 'soil_resis settings:'
-       write(iulog,*) '  soil_resis_method  = ',soil_resis_method
-    endif
-
-  end subroutine soil_resistance_readNL
-   
    !------------------------------------------------------------------------------   
    subroutine calc_soilevap_resis(bounds, num_nolakec, filter_nolakec, &
         soilstate_inst, waterstate_inst, temperature_inst)

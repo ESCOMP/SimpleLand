@@ -22,7 +22,6 @@ module FrictionVelocityMod
   save
   !
   ! !PUBLIC MEMBER FUNCTIONS:
-  public :: FrictionVelReadNML     ! Read in the namelist for settings and parameters
   public :: FrictionVelocity       ! Calculate friction velocity
   public :: MoninObukIni           ! Initialization of the Monin-Obukhov length
   !
@@ -306,67 +305,6 @@ contains
     endif
 
   end subroutine Restart
-
-  !-----------------------------------------------------------------------
-  subroutine FrictionVelReadNML( NLFilename )
-    !
-    ! !DESCRIPTION:
-    ! Read the namelist for Friction Velocity
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    use clm_varctl     , only : iulog
-    use shr_log_mod    , only : errMsg => shr_log_errMsg
-    use abortutils     , only : endrun
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-
-    character(len=*), parameter :: subname = 'FrictionVelocityReadNML'
-    character(len=*), parameter :: nmlname = 'friction_velocity'
-    !-----------------------------------------------------------------------
-    real(r8) :: zetamaxstable
-    namelist /friction_velocity/ zetamaxstable
-
-    ! Initialize options to default values, in case they are not specified in
-    ! the namelist
-
-    zetamaxstable = 0.5_r8
-
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=friction_velocity, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(__FILE__, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(__FILE__, __LINE__))
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast (zetamaxstable, mpicom)
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) nmlname//' settings:'
-       write(iulog,nml=friction_velocity)
-       write(iulog,*) ' '
-    end if
-    frictionvel_parms_inst%zetamaxstable = zetamaxstable
-
-  end subroutine FrictionVelReadNML
 
   !------------------------------------------------------------------------------
   subroutine FrictionVelocity(lbn, ubn, fn, filtern, &
