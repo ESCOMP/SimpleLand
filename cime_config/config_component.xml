@@ -89,7 +89,6 @@
       <value compset="_BGC%BDRD"   >diagnostic</value>
       <value compset="_BGC%BPRP"   >prognostic</value>
       <value compset="HIST.*_DATM" >diagnostic</value>
-      <value compset="RCP.*_DATM"  >diagnostic</value>
     </values>
     <group>run_component_clm</group>
     <file>env_run.xml</file>
@@ -119,11 +118,11 @@
 
   <entry id="CLM_ACCELERATED_SPINUP">
     <type>char</type>
-    <valid_values>on,off</valid_values>
+    <valid_values>off</valid_values>
     <default_value>off</default_value>
     <group>run_component_clm</group>
     <file>env_run.xml</file>
-    <desc>Turn on any settings for accellerating the model spinup.
+    <desc>Turn on any settings for accellerating the model spinup. This is unused for SLIM!
     </desc>
   </entry>
 
