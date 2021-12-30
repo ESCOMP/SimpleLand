@@ -25,14 +25,9 @@ module controlMod
   use histFileMod                      , only: hist_fincl4, hist_fincl5, hist_fincl6, hist_fexcl1, hist_fexcl2, hist_fexcl3
   use histFileMod                      , only: hist_fexcl4, hist_fexcl5, hist_fexcl6
   use initInterpMod                    , only: initInterp_readnl
-  use SurfaceResistanceMod             , only: soil_resistance_readNL
   use UrbanParamsType                  , only: UrbanReadNML
   use SurfaceAlbedoMod                 , only: albice
-  use CNPrecisionControlMod            , only: CNPrecisionControlReadNML
-  use SoilHydrologyMod                 , only: soilHydReadNML
   use CNSharedParamsMod                , only: use_fun
-  use CanopyFluxesMod                  , only: CanopyFluxesReadNML
-  use SoilBiogeochemNitrifDenitrifMod  , only: nitrifReadNML
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
@@ -112,12 +107,6 @@ contains
     ! !USES:
     use clm_time_manager                 , only : set_timemgr_init
     use fileutils                        , only : getavu, relavu
-    use CNMRespMod                       , only : CNMRespReadNML
-    use LunaMod                          , only : LunaReadNML
-    use FrictionVelocityMod              , only : FrictionVelReadNML
-    use CNNDynamicsMod                   , only : CNNDynamicsReadNML
-    use SoilBiogeochemDecompCascadeBGCMod, only : DecompCascadeBGCreadNML
-    use CNPhenologyMod                   , only : CNPhenologyReadNML
     !
     ! !LOCAL VARIABLES:
     integer :: i                    ! loop indices
@@ -375,11 +364,8 @@ contains
     !call init_hydrology( NLFilename )
 
     !call soil_resistance_readnl ( NLFilename )
-    !call CanopyFluxesReadNML    ( NLFilename )
 
     call UrbanReadNML           ( NLFilename )
-    !call LunaReadNML            ( NLFilename )
-    !call FrictionVelReadNML     ( NLFilename )
 
     ! ----------------------------------------------------------------------
     ! Broadcast all control information if appropriate
@@ -387,25 +373,6 @@ contains
 
     call control_spmd()
     
-    ! ----------------------------------------------------------------------
-    ! Read in other namelists that are dependent on other namelist setttings
-    ! ----------------------------------------------------------------------
-
-    !if ( use_fun ) then
-    !   call CNMRespReadNML( NLFilename )
-    !end if
-
-    !call soilHydReadNML(   NLFilename )
-    if ( use_cn ) then
-       !call nitrifReadNML(             NLFilename )
-       !call CNPrecisionControlReadNML( NLFilename )
-       !call CNNDynamicsReadNML       ( NLFilename )
-       !call CNPhenologyReadNML       ( NLFilename )
-    end if
-    if ( use_century_decomp ) then
-       !call DecompCascadeBGCreadNML( NLFilename )
-    end if
-
     ! ----------------------------------------------------------------------
     ! consistency checks
     ! ----------------------------------------------------------------------
