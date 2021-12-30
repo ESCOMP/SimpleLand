@@ -165,7 +165,6 @@ OPTIONS
      -glc_nec <name>          Glacier number of elevation classes [0 | 3 | 5 | 10 | 36]
                               (default is 0) (standard option with land-ice model is 10)
      -help [or -h]            Print usage to STDOUT.
-     -light_res <value>       Resolution of lightning dataset to use for CN fire (hcru or T62)
      -ignore_ic_date          Ignore the date on the initial condition files
                               when determining what input initial condition file to use.
      -ignore_ic_year          Ignore just the year part of the date on the initial condition files
@@ -249,7 +248,6 @@ sub process_commandline {
                clm_demand            => "null",
                help                  => 0,
                glc_nec               => "default",
-               light_res             => "default",
                l_ncpl                => undef,
                lnd_tuning_mode       => "default",
                lnd_frac              => undef,
@@ -292,7 +290,6 @@ sub process_commandline {
              "note!"                     => \$opts{'note'},
              "megan!"                    => \$opts{'megan'},
              "glc_nec=i"                 => \$opts{'glc_nec'},
-             "light_res=s"               => \$opts{'light_res'},
              "irrig=s"                   => \$opts{'irrig'},
              "d:s"                       => \$opts{'dir'},
              "h|help"                    => \$opts{'help'},
@@ -623,7 +620,6 @@ sub process_namelist_commandline_options {
   setup_cmdl_resolution($opts, $nl_flags, $definition, $defaults);
   setup_cmdl_mask($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_bgc($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
-  setup_cmdl_fire_light_res($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
   setup_cmdl_spinup($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
   setup_cmdl_crop($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
   setup_cmdl_maxpft($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
@@ -872,68 +868,6 @@ sub setup_cmdl_bgc {
   }
 } # end bgc
 
-
-#-------------------------------------------------------------------------------
-sub setup_cmdl_fire_light_res {
-  # light_res - alias for lightning resolution
-
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv) = @_;
-
-  my $var = "light_res";
-  my $val = $opts->{$var};
-  if ( $physv->as_long() == $physv->as_long("clm4_0") ) {
-    if ( $val !~ /default|none/ ) {
-      $log->fatal_error("-$var option used with clm4_0 physics. -$var can ONLY be used with clm4_5/clm5_0 physics");
-    }
-  } else {
-    if ( $val eq "default" ) {
-       $nl_flags->{$var} = remove_leading_and_trailing_quotes($defaults->get_value($var));
-    } else {
-       my $fire_method = remove_leading_and_trailing_quotes( $nl->get_value('fire_method') );
-       if ( defined($fire_method) && $val ne "none" ) {
-         if ( $fire_method eq "nofire" ) {
-           $log->fatal_error("-$var option used with fire_method='nofire'. -$var can ONLY be used without the nofire option");
-         }
-       }
-       my $stream_fldfilename_lightng = remove_leading_and_trailing_quotes( $nl->get_value('stream_fldfilename_lightng') );
-       if ( defined($stream_fldfilename_lightng) && $val ne "none" ) {
-          $log->fatal_error("-$var option used while also explicitly setting stream_fldfilename_lightng filename which is a contradiction. Use one or the other not both.");
-       }
-       if ( ! &value_is_true($nl->get_value('use_cn')) ) {
-          $log->fatal_error("-$var option used CN is NOT on. -$var can only be used when CN is on (with bgc: cn or bgc)");
-       }
-       if ( &value_is_true($nl->get_value('use_cn')) && $val eq "none" ) {
-          $log->fatal_error("-$var option is set to none, but CN is on (with bgc: cn or bgc) which is a contradiction");
-       }
-       $nl_flags->{$var} = $val;
-    }
-    my $group = $definition->get_group_name($var);
-    $nl->set_variable_value($group, $var, quote_string($nl_flags->{$var}) );
-    if (  ! $definition->is_valid_value( $var, $nl_flags->{$var}, 'noquotes'=>1 ) ) {
-      my @valid_values   = $definition->get_valid_values( $var );
-      $log->fatal_error("$var has a value (".$nl_flags->{$var}.") that is NOT valid. Valid values are: @valid_values");
-    }
-    $log->verbose_message("Using $nl_flags->{$var} for $var.");
-    #
-    # Set flag if cn-fires are on or not
-    #
-    $var = "cnfireson";
-    if ( $physv->as_long() >= $physv->as_long("clm4_5") && &value_is_true($nl->get_value('use_cn')) ) {
-       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fire_method');
-    }
-    my $fire_method = remove_leading_and_trailing_quotes( $nl->get_value('fire_method') );
-    if ( defined($fire_method) && ! &value_is_true($nl_flags->{'use_cn'}) ) {
-       $log->fatal_error("fire_method is being set even though bgc is NOT cn or bgc.");
-    }
-    if ( defined($fire_method) && $fire_method eq "nofire" ) {
-       $nl_flags->{$var} = ".false.";
-    } elsif ( &value_is_true($nl->get_value('use_cn')) ) {
-       $nl_flags->{$var} = ".true.";
-    } else {
-       $nl_flags->{$var} = ".false.";
-    }
-  }
-}
 
 #-------------------------------------------------------------------------------
 
@@ -1493,15 +1427,12 @@ sub process_namelist_inline_logic {
   setup_logic_start_type($opts, $nl_flags, $nl);
   setup_logic_delta_time($opts, $nl_flags, $definition, $defaults, $nl);
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
-  setup_logic_snow($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_glacier($opts, $nl_flags, $definition, $defaults, $nl,  $envxml_ref, $physv);
   setup_logic_dynamic_plant_nitrogen_alloc($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_hydrstress($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_dynamic_roots($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_params_file($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_create_crop_landunit($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_fertilizer($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_grainproduct($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_soilstate($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_demand($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_surface_dataset($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
@@ -1788,18 +1719,6 @@ sub setup_logic_decomp_performance {
 
   # Set the number of segments per clump
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'nsegspc', 'hgrid'=>$nl_flags->{'res'});
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_snow {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'snowveg_flag', 'phys'=>$nl_flags->{'phys'} );
-  }
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fsnowoptics' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fsnowaging' );
 }
 
 #-------------------------------------------------------------------------------
@@ -2428,36 +2347,6 @@ sub setup_logic_hydrstress {
     if ( &value_is_true( $nl_flags->{'use_fates'} ) && &value_is_true( $nl_flags->{'use_hydrstress'} ) ) {
        $log->fatal_error("Cannot turn use_hydrstress on when use_fates is on" );
     }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_fertilizer {
-  #
-  # Flags to control fertilizer application
-  #
-   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-   if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
-     $nl_flags->{'use_crop'} = $nl->get_value('use_crop');
-     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_fertilizer',
-     'use_crop'=>$nl_flags->{'use_crop'} );
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_grainproduct {
-  #
-  # Flags to control 1-year grain product pool
-  #
-   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-   if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
-     $nl_flags->{'use_crop'} = $nl->get_value('use_crop');
-     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_grainproduct',
-     'use_crop'=>$nl_flags->{'use_crop'}, 'phys'=>$physv->as_string() );
   }
 }
 

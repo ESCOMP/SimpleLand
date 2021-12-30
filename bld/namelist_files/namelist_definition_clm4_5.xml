@@ -421,45 +421,6 @@ Toggle to turn on the FATES model
 (use_fates= '.true.' is EXPERIMENTAL NOT SUPPORTED!)
 </entry>
 
-<entry id="use_fates_spitfire" type="logical" category="physics"
-        group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on spitfire module for modeling fire (only relevant if FATES is being used).
-</entry>
-
-<entry id="use_fates_logging" type="logical" category="physics"
-        group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on the logging module (only relevant if FATES is being used).
-</entry>
-
-<entry id="use_fates_planthydro" type="logical" category="physics"
-        group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on plant hydraulics (only relevant if FATES is on).
-(use_fates_planthydro=".true." is EXPERIMENTAL NOT SUPPORTED! Nor is it Tested!)
-</entry>
-
-<entry id="use_fates_ed_st3" type="logical" category="physics"
-        group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on Static Stand Structure Mode (only relevant if FATES is being used).
-(use_fates_ed_st3=".true." is EXPERIMENTAL NOT SUPPORTED! Nor is it Tested!)
-</entry>
-
-<entry id="use_fates_ed_prescribed_phys" type="logical" category="physics"
-        group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on prescribed physiology (only relevant if FATES is being used).
-</entry>
-
-<entry id="use_fates_inventory_init" type="logical" category="physics"
-        group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on inventory initialization to startup FATES (only relevant if FATES is being used).
-(use_fates_inventory_init=".true." is EXPERIMENTAL NOT SUPPORTED! Nor is it Tested!)
-</entry>
-
-<entry id="fates_inventory_ctrl_filename" type="char*256" category="datasets"
-       input_pathname="abs" group="clm_inparm" valid_values="" >
-Full pathname to the inventory initialization control file.
-(Required, if use_fates_inventory_init=T)
-</entry>
-
 <entry id="use_luna" type="logical" category="physics"
         group="clm_inparm" valid_values="" value=".false.">
 Toggle to turn on the LUNA model, to effect Photosynthesis by leaf Nitrogen
@@ -498,16 +459,6 @@ Full pathname of surface data file.
 <entry id="mml_surdat" type="char*256"     category="datasets"
        input_pathname="abs" group="clm_inparm" valid_values="" >
 Full pathname of MML surface data forcing file.
-</entry>
-
-<entry id="fsnowoptics" type="char*256" category="datasets" 
-       input_pathname="abs" group="clm_inparm" valid_values="" >
-SNICAR (SNow, ICe, and Aerosol Radiative model) optical data file name
-</entry>
-
-<entry id="fsnowaging" type="char*256"  category="datasets" 
-       input_pathname="abs" group="clm_inparm" valid_values="" >
-SNICAR (SNow, ICe, and Aerosol Radiative model) snow aging data file name
 </entry>
 
 <entry id="hist_avgflag_pertape" type="char*1(6)" category="history"
@@ -687,12 +638,6 @@ CLM Biogeochemistry mode : Carbon Nitrogen model (CN)
 (or CLM45BGC if phys=clm4_5, vsoilc_centbgc='on', and clm4me='on')
 </entry>
 
-<entry id="use_cndv" type="logical" category="bgc"
-       group="clm_inparm" valid_values="" value=".false.">
-CLM Biogeochemistry mode : Carbon Nitrogen with Dynamic Global Vegetation Model (CNDV)
-(or CLM45BGCDV if phys=clm4_5, vsoilc_centbgc='on', and clm4me='on')
-</entry>
-
 <entry id="use_fun" type="logical" category="bgc"
        group="clm_inparm" valid_values="" value=".false.">
 Turn the Fixation and Uptate of Nitrogen model version 2 (FUN2.0)
@@ -718,31 +663,9 @@ Use parameters for decomposition from the CENTURY Carbon model
 Requires the CN or FATES model to work (either CN or CNDV).
 </entry>
 
-<entry id="use_extralakelayers" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to use 25 lake layers instead of 10
-(extralaklayers=".true." is EXPERIMENTAL NOT SUPPORTED! Nor is it Tested!)
-</entry>
-
-<entry id="use_vichydro" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on the VIC hydrologic parameterizations
-(vichydro=".true." is EXPERIMENTAL NOT SUPPORTED!)
-</entry>
-
 <entry id="use_crop" type="logical" category="physics"
        group="clm_inparm" valid_values="" value=".false.">
 Toggle to turn on the prognostic crop model
-</entry>
-
-<entry id="use_fertilizer" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on the prognostic fertilizer for crop model 
-</entry>
-
-<entry id="use_grainproduct" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on the 1-year grain product pool in the crop model 
 </entry>
 
 <entry id="initial_seed_at_planting" type="real" category="physics"
@@ -751,30 +674,9 @@ Initial seed Carbon to use at planting
 (only used when CN is on as well as crop)
 </entry>
 
-<entry id="use_ozone" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on ozone stress
-</entry>
-
-<entry id="use_snicar_frc" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on calculation of SNow and Ice Aerosol Radiation model (SNICAR) radiative forcing
-(snicar_frc=".true." is EXPERIMENTAL NOT SUPPORTED!)
-</entry>
-
 <entry id="use_noio" type="logical" category="default_settings"
        group="clm_inparm" valid_values="" value=".false." >
 Toggle to turn all history output completely OFF (possibly used for testing)
-</entry>
-
-<entry id="use_vancouver" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle for vancouver specific logic.
-</entry>
-
-<entry id="use_mexicocity" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle for mexico city specific logic.
 </entry>
 
 <entry id="maxpatch_pft" type="integer" category="physics"
@@ -1414,11 +1316,6 @@ Command line arguement for biogeochemistry mode for CLM4.5
 <!-- namelist elements associated with the vertical CN model                                   -->
 <!-- ========================================================================================  -->
 
-<entry id="override_bgc_restart_mismatch_dump" type="logical" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-Flag for overriding the crash that should occur if user tries to start the model from a restart file made with a different version of the soil decomposition structure than is currently being used.
-</entry>
-
 <entry id="spinup_state" type="integer" category="clm_vertcn"
        group="clm_inparm" valid_values="0,1,2" >
 Flag for setting the state of the Accelerated decomposition spinup state for the BGC model.  
@@ -1429,34 +1326,10 @@ Entering and exiting spinup mode occurs automatically by comparing the namelist 
 NOTE: THIS CAN ONLY BE SET TO NON-ZERO WHEN BGC_MODE IS NOT SATELITE PHENOLOGY!
 </entry>
 
-<!-- vertical mixing switches    -->
-<entry id="som_adv_flux" type="real" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-Base advective flux (downwards) for SOM.
-</entry>
-
-<entry id="max_depth_cryoturb" type="real" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-Maximum depth to mix soils to by croturbation, in permafrost soils.
-</entry>
-
 <!-- turnover time modifications    -->
 <entry id="decomp_depth_efolding" type="real" category="clm_vertcn"
        group="bgc_shared" valid_values="" >
 E-folding depth over which decomposition is slowed with depth in all soils.
-</entry>
-
-<entry id="anoxia" type="logical" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-If TRUE, reduce heterotrophic respiration according to available oxygen predicted by CH4 submodel.
-</entry>
-
-<entry id="anoxia_wtsat" type="logical" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-If TRUE, weight calculation of oxygen limitation by the inundated fraction and diagnostic saturated column gas
-concentration profile calculated in the CH4 submodel. Only applies if anoxia = TRUE.
-(EXPERIMENTAL AND NOT FUNCTIONAL!)
-(deprecated -- will be removed)
 </entry>
 
 <entry id="froz_q10" type="real" category="clm_vertcn"
@@ -1466,43 +1339,10 @@ separate q10 for frozen soil respiration rates.  default to same as above zero r
 
 <!-- rooting parameters    -->
 
-<entry id="hist_wrtch4diag" type="logical" category="history"
-       group="clm_inparm" valid_values="" >
-If TRUE, add extra diagnostics for methane model to the history files
-</entry>
-
-<entry id="surfprof_exp" type="real" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-Profile over which to distribute C and N coming from surface pools (leaves, stem, grain).
-</entry>
-
-<!-- some N cycle flags  -->
-<entry id="no_frozen_nitrif_denitrif" type="logical" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-If true, no denitrification or nitrification in frozen soil layers.
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="nfix_timeconst" type="real" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-Number of days over which to use exponential relaxation of NPP in N fixation calculation
-</entry>
-
 <!-- General CN flags -->
 <entry id="reseed_dead_plants" type="logical" category="clm_physics"
        group="cn_general" valid_values="" >
 Flag to reseed any dead plants on startup from reading the initial conditions file
-</entry>
-
-<!-- C isotope flags    -->
-<entry id="use_c13" type="logical" category="clm_isotope"
-       group="clm_inparm" valid_values="" >
-Enable C13 model
-</entry>
-
-<entry id="use_c14" type="logical" category="clm_isotope"
-       group="clm_inparm" valid_values="" >
-Enable C14 model
 </entry>
 
 <entry id="use_c14_bombspike" type="logical" category="clm_isotope"
@@ -1531,19 +1371,6 @@ Filename with time series of atmospheric Delta C13 data, which use CMIP6 format.
 
 
 <!-- permfrost-specific flags    -->
-
-<entry id="perchroot" type="logical" category="clm_permafrost"
-       group="clm_inparm" valid_values="" >
-If TRUE, weight btran (vegetation soil moisture availability) by unfrozen layers only, assuming that vegetation
-will allocate roots preferentially to the active layer.
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="perchroot_alt" type="logical" category="clm_permafrost"
-       group="clm_inparm" valid_values="" >
-If TRUE, weight btran (vegetation soil moisture availability) by the active layer, as defined by the greatest thaw depth over the current and prior years.
-(EXPERIMENTAL and NOT tested)
-</entry>
 
 <!-- stress deciduous onset trigger    -->
 <entry id="constrain_stress_deciduous_onset" type="logical" category="clm_physics"
@@ -1649,30 +1476,6 @@ Evergreen phenology option for CNPhenology
        group="clm_nitrogen" valid_values="0,1">
 Carbon respiration option to burn off carbon when CN ratio is too high (do NOT use when FUN is on)
 (EXPERIMENTAL and NOT tested)
-</entry>
-
-
-<!-- ========================================================================================  -->
-<!-- namelist elements associated with the LISSS Lake Model                                    -->
-<!-- ========================================================================================  -->
-
-<entry id="deepmixing_depthcrit" type="real" category="clm_lake"
-       group="clm_inparm" valid_values="" >
-Minimum lake depth to increase non-molecular thermal diffusivities by the factor deepmixing_mixfact.
-</entry>
-
-<entry id="deepmixing_mixfact" type="real" category="clm_lake"
-       group="clm_inparm" valid_values="" >
-Factor to increase non-molecular thermal diffusivities for lakes deeper than deepmixing_depthcrit
-to account for unresolved 3D processes.
-Set to 1 to 
-</entry>
-
-<entry id="lake_melt_icealb" type="real(2)" category="clm_lake"
-       group="clm_inparm" valid_values="" >
-Visible and Near-infrared albedo values for melting lakes. Albedo will relax to these values as temperature
-reaches melting when ice is present with no snow layers. Represents puddling, ice disintegration, and white ice.
-Set to alblak values (0.6, 0.4) to keep albedo constant for ice-covered lakes without snow layers.
 </entry>
 
 <!-- ========================================================================================  -->
