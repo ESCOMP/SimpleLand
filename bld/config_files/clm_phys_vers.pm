@@ -6,7 +6,7 @@ my $pkg_nm = 'config_files::clm_phys_vers';
 #
 # require config_files::clm_phys_vers;
 #
-# my $phys = config_files::clm_phys_vers->new("clm4_0");
+# my $phys = config_files::clm_phys_vers->new("clm4_5");
 # print $phys->as_float();
 # print $phys->as_long();
 # print $phys->as_string();
@@ -33,8 +33,8 @@ use bigint;
 
 my $major_mask      = 1000000;
 my $minor_mask      =    1000;
-my @version_strings = (       "clm4_0",                     "clm4_5",      "clm5_0" );
-my @version_long    = (  4*$major_mask,  4*$major_mask+5*$minor_mask, 5*$major_mask );
+my @version_strings = (  "clm4_5",                   "clm5_0" );
+my @version_long    = (  4*$major_mask+5*$minor_mask, 5*$major_mask );
 
 #-------------------------------------------------------------------------------
 
@@ -145,12 +145,12 @@ if ( ! defined(caller) && $#ARGV == -1 ) {
    require Test::More;
    Test::More->import( );
 
-   plan( tests=>13 );
+   plan( tests=>8);
 
    sub testit {
       print "unit tester\n";
       my %lastv;
-      my @vers_list = ( "clm4_0", "clm4_5", "clm5_0" );
+      my @vers_list = ( "clm4_5", "clm5_0" );
       foreach my $vers ( @vers_list ) {
          my $phys = config_files::clm_phys_vers->new($vers);
          isa_ok($phys, "config_files::clm_phys_vers", "created clm_phys_vers object");
@@ -173,9 +173,7 @@ if ( ! defined(caller) && $#ARGV == -1 ) {
          $lastv{'long'}   = $phys->as_long();
          $lastv{'float'}  = $phys->as_float();
       }
-      my $phys = config_files::clm_phys_vers->new("clm4_0");
-      is( 4.0, $phys->as_float(), "Make sure clm4_0 correct float value" );
-      $phys = config_files::clm_phys_vers->new("clm4_5");
+      my $phys = config_files::clm_phys_vers->new("clm4_5");
       no  bigint;
       use bignum;
       is( 4.5, $phys->as_float(), "Make sure clm4_5 correct float value" );
