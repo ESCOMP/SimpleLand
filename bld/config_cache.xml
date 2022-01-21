@@ -17,8 +17,8 @@ User specified CPP defines to append to Makefile defaults.
 Note: It's recommended to use configure options to set standard CPP values rather
 than defining them here.
 </entry>
-<entry id="phys" value="clm5_0" list="" valid_values="clm4_0,clm4_5,clm5_0">
-Specifies either clm4_0, clm4_5, or clm5_0 physics
+<entry id="phys" value="clm5_0" list="" valid_values="clm4_5,clm5_0">
+Specifies either clm4_5, or clm5_0 physics
 </entry>
 <entry id="usr_src" value="" list="1" valid_values="">
 User source directories to prepend to the filepath.  Multiple directories

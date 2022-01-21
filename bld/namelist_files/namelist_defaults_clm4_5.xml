@@ -33,49 +33,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- Default Biogeochemistry mode -->
 <bgc_mode >sp</bgc_mode>
 
-<lnd_tuning_mode phys="clm4_0">clm4_0_cam6.0</lnd_tuning_mode>
-<lnd_tuning_mode phys="clm4_5">clm4_5_CRUv7</lnd_tuning_mode>
-<lnd_tuning_mode phys="clm5_0">clm5_0_cam6.0</lnd_tuning_mode>
-
-<!-- Accelerated spinup mode -->
-<clm_accelerated_spinup>off</clm_accelerated_spinup>
-
-<!-- Spinup state for BGC -->
-<spinup_state clm_accelerated_spinup="on"  use_cn=".true." phys="clm5_0" >2</spinup_state>
-<spinup_state clm_accelerated_spinup="on"  use_cn=".true." phys="clm4_5" >1</spinup_state>
-<spinup_state clm_accelerated_spinup="on"  use_fates=".true." phys="clm5_0" >2</spinup_state>
-<spinup_state clm_accelerated_spinup="on"  use_fates=".true." phys="clm4_5" >1</spinup_state>
-<spinup_state clm_accelerated_spinup="off"                               >0</spinup_state>
-
-<!-- In accelerated spinup mode reduce the amount of history output -->
-<hist_empty_htapes clm_accelerated_spinup="on">.true.</hist_empty_htapes>
-<hist_fincl1 clm_accelerated_spinup="on" use_cn=".true." use_cndv=".true."
->'TOTECOSYSC','TOTECOSYSN','TOTSOMC','TOTSOMN','TOTVEGC','TOTVEGN','TLAI','GPP','NPP','TWS','TSAI','HTOP','HBOT'</hist_fincl1>
-<hist_fincl1 clm_accelerated_spinup="on" use_cn=".true."
->'TOTECOSYSC','TOTECOSYSN','TOTSOMC','TOTSOMN','TOTVEGC','TOTVEGN','TLAI','GPP','CPOOL','NPP','TWS'</hist_fincl1>
-<hist_fincl1 clm_accelerated_spinup="on" use_fates=".true."
->'TOTSOMC','TOTSOMN','TLAI','GPP','NPP','TWS'</hist_fincl1>
-<hist_fincl1 clm_accelerated_spinup="on" use_cn=".false."
->'TLAI','TWS'</hist_fincl1>
-<hist_nhtfrq clm_accelerated_spinup="on">-8760</hist_nhtfrq>
-<hist_mfilt  clm_accelerated_spinup="on">20</hist_mfilt>
-
-<!-- Carbon isotope concentration files -->
-<atm_c13_filename use_c13=".true." use_c13_timeseries=".true." >lnd/clm2/isotopes/atm_delta_C13_CMIP6_1850-2015_yearly_v2.0_c171012.nc</atm_c13_filename>
-<atm_c14_filename use_c14=".true." use_c14_bombspike =".true." >lnd/clm2/isotopes/atm_delta_C14_CMIP6_3x1_global_1850-2015_yearly_v2.0_c171012.nc</atm_c14_filename>
-
-<!-- Irrigation default -->
-<irrigate use_crop=".true." >.false.</irrigate>
-<irrigate use_crop=".false.">.true.</irrigate>
-
-<!-- MEGAN model -->
-<megan clm_accelerated_spinup="on" >0</megan>
-<megan clm_accelerated_spinup="off">1</megan>
-
-<!-- Supplmental Nitrogen mode -->
-<suplnitro use_cn=".true." >NONE</suplnitro>
-<suplnitro use_fates=".true." >NONE</suplnitro>
-
 <!-- Albedo for glaciers -->
 <albice phys="clm5_0">0.50,0.30</albice>
 <albice phys="clm4_5">0.60,0.40</albice>
