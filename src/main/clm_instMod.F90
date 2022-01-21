@@ -43,7 +43,6 @@ module clm_instMod
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
   use GlacierSurfaceMassBalanceMod    , only : glacier_smb_type
-  use IrrigationMod                   , only : irrigation_type
   use LakeStateType                   , only : lakestate_type
   use OzoneBaseMod                    , only : ozone_base_type
   use OzoneFactoryMod                 , only : create_and_init_ozone_type
@@ -89,7 +88,6 @@ module clm_instMod
   type(energyflux_type)                   :: energyflux_inst
   type(frictionvel_type)                  :: frictionvel_inst
   type(glacier_smb_type)                  :: glacier_smb_inst
-  type(irrigation_type)                   :: irrigation_inst
   type(lakestate_type)                    :: lakestate_inst
   class(ozone_base_type), allocatable     :: ozone_inst
   type(photosyns_type)                    :: photosyns_inst
@@ -295,15 +293,6 @@ contains
 
     call dust_inst%Init(bounds)
 
-    ! Once namelist options are added to control the soil water retention curve method,
-    ! we'll need to either pass the namelist file as an argument to this routine, or pass
-    ! the namelist value itself (if the namelist is read elsewhere).
-
-    allocate(soil_water_retention_curve, &
-         source=create_soil_water_retention_curve())
-
-    call irrigation_inst%init(bounds, nlfilename, soilstate_inst, soil_water_retention_curve)
-
     call topo_inst%Init(bounds)
 
     ! Note - always initialize the memory for ch4_inst
@@ -448,8 +437,6 @@ contains
 
     call waterstate_inst%restart (bounds, ncid, flag=flag, &
          watsat_col=soilstate_inst%watsat_col(bounds%begc:bounds%endc,:)) 
-
-    call irrigation_inst%restart (bounds, ncid, flag=flag)
 
     !call aerosol_inst%restart (bounds, ncid,  flag=flag, &
          !h2osoi_ice_col=waterstate_inst%h2osoi_ice_col(bounds%begc:bounds%endc,:), &
