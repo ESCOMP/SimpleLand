@@ -304,14 +304,14 @@ contains
     this%lnca_patch(begp:endp) = spval
     call hist_addfld1d (fname='LNC', units='gN leaf/m^2', &
          avgflag='A', long_name='leaf N concentration', &
-         ptr_patch=this%lnca_patch, set_spec=spval)
+         ptr_patch=this%lnca_patch, set_spec=spval, default='inactive')
 
     ! Don't output photosynthesis variables when FATES is on as they aren't calculated
     if (.not. use_fates) then
        this%fpsn_patch(begp:endp) = spval
        call hist_addfld1d (fname='FPSN', units='umol/m2s',  &
             avgflag='A', long_name='photosynthesis', &
-            ptr_patch=this%fpsn_patch, set_lake=0._r8, set_urb=0._r8)
+            ptr_patch=this%fpsn_patch, set_lake=0._r8, set_urb=0._r8, default='inactive')
 
        ! Don't by default output this rate limiting step as only makes sense if you are outputing
        ! the others each time-step
@@ -342,44 +342,44 @@ contains
        this%psnsun_patch(begp:endp) = spval
        call hist_addfld1d (fname='PSNSUN', units='umolCO2/m^2/s', &
             avgflag='A', long_name='sunlit leaf photosynthesis', &
-            ptr_patch=this%psnsun_patch)
+            ptr_patch=this%psnsun_patch, default='inactive')
 
        this%psnsha_patch(begp:endp) = spval
        call hist_addfld1d (fname='PSNSHA', units='umolCO2/m^2/s', &
             avgflag='A', long_name='shaded leaf photosynthesis', &
-            ptr_patch=this%psnsha_patch)
+            ptr_patch=this%psnsha_patch, default='inactive')
     end if
 
     this%rssun_patch(begp:endp) = spval
     call hist_addfld1d (fname='RSSUN', units='s/m',  &
          avgflag='M', long_name='sunlit leaf stomatal resistance', &
-         ptr_patch=this%rssun_patch, set_lake=spval, set_urb=spval)
+         ptr_patch=this%rssun_patch, set_lake=spval, set_urb=spval, default='inactive')
 
     this%rssha_patch(begp:endp) = spval
     call hist_addfld1d (fname='RSSHA', units='s/m',  &
          avgflag='M', long_name='shaded leaf stomatal resistance', &
-         ptr_patch=this%rssha_patch, set_lake=spval, set_urb=spval)
+         ptr_patch=this%rssha_patch, set_lake=spval, set_urb=spval, default='inactive')
 
     this%gs_mol_sun_patch(begp:endp,:) = spval
     this%gs_mol_sha_patch(begp:endp,:) = spval
     if (nlevcan>1) then 
        call hist_addfld2d (fname='GSSUN', units='umol H20/m2/s', type2d='nlevcan', &
           avgflag='A', long_name='sunlit leaf stomatal conductance', &
-          ptr_patch=this%gs_mol_sun_patch, set_lake=spval, set_urb=spval)
+          ptr_patch=this%gs_mol_sun_patch, set_lake=spval, set_urb=spval, default='inactive')
 
        call hist_addfld2d (fname='GSSHA', units='umol H20/m2/s', type2d='nlevcan', &
           avgflag='A', long_name='shaded leaf stomatal conductance', &
-          ptr_patch=this%gs_mol_sha_patch, set_lake=spval, set_urb=spval)
+          ptr_patch=this%gs_mol_sha_patch, set_lake=spval, set_urb=spval, default='inactive')
     else
        ptr_1d => this%gs_mol_sun_patch(begp:endp,1)
        call hist_addfld1d (fname='GSSUN', units='umol H20/m2/s', &
           avgflag='A', long_name='sunlit leaf stomatal conductance', &
-          ptr_patch=ptr_1d)
+          ptr_patch=ptr_1d, default='inactive')
 
        ptr_1d => this%gs_mol_sha_patch(begp:endp,1)
        call hist_addfld1d (fname='GSSHA', units='umol H20/m2/s', &
           avgflag='A', long_name='shaded leaf stomatal conductance', &
-          ptr_patch=ptr_1d)
+          ptr_patch=ptr_1d, default='inactive')
 
     endif
 
@@ -387,11 +387,11 @@ contains
        if(nlevcan>1)then
          call hist_addfld2d (fname='Vcmx25Z', units='umol/m2/s', type2d='nlevcan', &
             avgflag='A', long_name='canopy profile of vcmax25 predicted by LUNA model', &
-            ptr_patch=this%vcmx25_z_patch)
+            ptr_patch=this%vcmx25_z_patch, default='inactive')
  
          call hist_addfld2d (fname='Jmx25Z', units='umol/m2/s', type2d='nlevcan', &
             avgflag='A', long_name='canopy profile of  vcmax25 predicted by LUNA model', &
-            ptr_patch=this%jmx25_z_patch)
+            ptr_patch=this%jmx25_z_patch, default='inactive')
 
          call hist_addfld2d (fname='PNLCZ', units='unitless', type2d='nlevcan', &
             avgflag='A', long_name='Proportion of nitrogen allocated for light capture', &
@@ -400,11 +400,11 @@ contains
          ptr_1d => this%vcmx25_z_patch(:,1)
          call hist_addfld1d (fname='Vcmx25Z', units='umol/m2/s',&
             avgflag='A', long_name='canopy profile of vcmax25 predicted by LUNA model', &
-            ptr_patch=ptr_1d)
+            ptr_patch=ptr_1d, default='inactive')
          ptr_1d => this%jmx25_z_patch(:,1)
          call hist_addfld1d (fname='Jmx25Z', units='umol/m2/s',&
             avgflag='A', long_name='canopy profile of  vcmax25 predicted by LUNA model', &
-            ptr_patch=ptr_1d)
+            ptr_patch=ptr_1d, default='inactive')
          ptr_1d => this%pnlc_z_patch(:,1)
          call hist_addfld1d (fname='PNLCZ', units='unitless', &
             avgflag='A', long_name='Proportion of nitrogen allocated for light capture', &
@@ -413,17 +413,17 @@ contains
          this%luvcmax25top_patch(begp:endp) = spval
          call hist_addfld1d (fname='VCMX25T', units='umol/m2/s',  &
             avgflag='M', long_name='canopy profile of vcmax25', &
-            ptr_patch=this%luvcmax25top_patch, set_lake=spval, set_urb=spval)
+            ptr_patch=this%luvcmax25top_patch, set_lake=spval, set_urb=spval, default='inactive')
 
          this%lujmax25top_patch(begp:endp) = spval
          call hist_addfld1d (fname='JMX25T', units='umol/m2/s',  &
             avgflag='M', long_name='canopy profile of jmax', &
-            ptr_patch=this%lujmax25top_patch, set_lake=spval, set_urb=spval)
+            ptr_patch=this%lujmax25top_patch, set_lake=spval, set_urb=spval, default='inactive')
 
             this%lutpu25top_patch(begp:endp) = spval
             call hist_addfld1d (fname='TPU25T', units='umol/m2/s',  &
             avgflag='M', long_name='canopy profile of tpu', &
-            ptr_patch=this%lutpu25top_patch, set_lake=spval, set_urb=spval)
+            ptr_patch=this%lutpu25top_patch, set_lake=spval, set_urb=spval, default='inactive')
 
        endif
        this%fpsn24_patch = spval 

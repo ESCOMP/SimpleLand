@@ -175,7 +175,7 @@ contains
     this%u10_clm_patch(begp:endp) = spval
     call hist_addfld1d (fname='U10', units='m/s', &
          avgflag='A', long_name='10-m wind', &
-         ptr_patch=this%u10_clm_patch)
+         ptr_patch=this%u10_clm_patch, default='inactive')
 
     call hist_addfld1d (fname='U10_ICE', units='m/s',  &
          avgflag='A', long_name='10-m wind (ice landunits only)', &
@@ -184,7 +184,7 @@ contains
     this%u10_patch(begp:endp) = spval
     call hist_addfld1d (fname='U10_DUST', units='m/s', &
          avgflag='A', long_name='10-m wind for dust model', &
-         ptr_patch=this%u10_patch)
+         ptr_patch=this%u10_patch, default='inactive')
 
     if (use_cn) then
        this%ram1_patch(begp:endp) = spval

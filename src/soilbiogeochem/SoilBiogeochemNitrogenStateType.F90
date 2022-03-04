@@ -169,7 +169,7 @@ contains
           longname =  trim(decomp_cascade_con%decomp_pool_name_history(l))//' N (vertically resolved)'
           call hist_addfld2d (fname=fieldname, units='gN/m^3',  type2d='levdcmp', &
                avgflag='A', long_name=longname, &
-               ptr_col=data2dptr)
+               ptr_col=data2dptr, default='inactive')
        endif
 
        data1dptr => this%decomp_npools_col(:,l)
@@ -177,7 +177,7 @@ contains
        longname =  trim(decomp_cascade_con%decomp_pool_name_history(l))//' N'
        call hist_addfld1d (fname=fieldname, units='gN/m^2', &
             avgflag='A', long_name=longname, &
-            ptr_col=data1dptr)
+            ptr_col=data1dptr, default='inactive')
 
        if ( nlevdecomp_full > 1 ) then
           data1dptr => this%decomp_npools_1m_col(:,l)
@@ -195,17 +195,17 @@ contains
        this%sminn_col(begc:endc) = spval
        call hist_addfld1d (fname='SMINN', units='gN/m^2', &
             avgflag='A', long_name='soil mineral N', &
-            ptr_col=this%sminn_col)
+            ptr_col=this%sminn_col, default='inactive')
 
        this%totlitn_1m_col(begc:endc) = spval
        call hist_addfld1d (fname='TOTLITN_1m', units='gN/m^2', &
             avgflag='A', long_name='total litter N to 1 meter', &
-            ptr_col=this%totlitn_1m_col)
+            ptr_col=this%totlitn_1m_col, default='inactive')
 
        this%totsomn_1m_col(begc:endc) = spval
        call hist_addfld1d (fname='TOTSOMN_1m', units='gN/m^2', &
             avgflag='A', long_name='total soil organic matter N to 1 meter', &
-            ptr_col=this%totsomn_1m_col)
+            ptr_col=this%totsomn_1m_col, default='inactive')
     endif
 
     this%ntrunc_col(begc:endc) = spval
@@ -225,34 +225,34 @@ contains
           data2dptr => this%smin_no3_vr_col(begc:endc,1:nlevsoi)
           call hist_addfld_decomp (fname='SMIN_NO3'//trim(vr_suffix), units='gN/m^3',  type2d='levsoi', &
                avgflag='A', long_name='soil mineral NO3 (vert. res.)', &
-               ptr_col=data2dptr)
+               ptr_col=data2dptr, default='inactive')
 
           data2dptr => this%smin_nh4_vr_col(begc:endc,1:nlevsoi)
           call hist_addfld_decomp (fname='SMIN_NH4'//trim(vr_suffix), units='gN/m^3',  type2d='levsoi', &
                avgflag='A', long_name='soil mineral NH4 (vert. res.)', &
-               ptr_col=data2dptr)
+               ptr_col=data2dptr, default='inactive')
 
           data2dptr => this%sminn_vr_col(begc:endc,1:nlevsoi)
           call hist_addfld_decomp (fname='SMINN'//trim(vr_suffix), units='gN/m^3',  type2d='levsoi', &
                avgflag='A', long_name='soil mineral N', &
-               ptr_col=data2dptr)
+               ptr_col=data2dptr, default='inactive')
 
           this%smin_no3_col(begc:endc) = spval
           call hist_addfld1d (fname='SMIN_NO3', units='gN/m^2', &
                avgflag='A', long_name='soil mineral NO3', &
-               ptr_col=this%smin_no3_col)
+               ptr_col=this%smin_no3_col, default='inactive')
 
           this%smin_nh4_col(begc:endc) = spval
           call hist_addfld1d (fname='SMIN_NH4', units='gN/m^2', &
                avgflag='A', long_name='soil mineral NH4', &
-               ptr_col=this%smin_nh4_col)
+               ptr_col=this%smin_nh4_col, default='inactive')
        endif
     else
        if ( nlevdecomp_full > 1 ) then
           data2dptr => this%sminn_vr_col(begc:endc,1:nlevsoi) 
           call hist_addfld_decomp (fname='SMINN'//trim(vr_suffix), units='gN/m^3', type2d='levsoi', &
                avgflag='A', long_name='soil mineral N', &
-               ptr_col=data2dptr)
+               ptr_col=data2dptr, default='inactive')
        end if
 
     end if
@@ -260,12 +260,12 @@ contains
     this%totlitn_col(begc:endc) = spval
     call hist_addfld1d (fname='TOTLITN', units='gN/m^2', &
          avgflag='A', long_name='total litter N', &
-         ptr_col=this%totlitn_col)
+         ptr_col=this%totlitn_col, default='inactive')
 
     this%totsomn_col(begc:endc) = spval
     call hist_addfld1d (fname='TOTSOMN', units='gN/m^2', &
          avgflag='A', long_name='total soil organic matter N', &
-         ptr_col=this%totsomn_col)
+         ptr_col=this%totsomn_col, default='inactive')
 
     this%dyn_nbal_adjustments_col(begc:endc) = spval
     call hist_addfld1d (fname='DYN_COL_SOIL_ADJUSTMENTS_N', units='gN/m^2', &

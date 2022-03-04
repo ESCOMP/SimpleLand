@@ -192,23 +192,23 @@ contains
 
     call hist_addfld2d (fname='PCT_LANDUNIT', units='%', type2d='ltype', &
          avgflag='A', long_name='% of each landunit on grid cell', &
-         ptr_lnd=subgrid_weights_diagnostics%pct_landunit)
+         ptr_lnd=subgrid_weights_diagnostics%pct_landunit, default='inactive')
 
     if(.not.use_fates) then
        call hist_addfld2d (fname='PCT_NAT_PFT', units='%', type2d='natpft', &
              avgflag='A', long_name='% of each PFT on the natural vegetation (i.e., soil) landunit', &
-             ptr_lnd=subgrid_weights_diagnostics%pct_nat_pft)
+             ptr_lnd=subgrid_weights_diagnostics%pct_nat_pft, default='inactive')
     end if
        
     if (cft_size > 0) then
        call hist_addfld2d (fname='PCT_CFT', units='%', type2d='cft', &
             avgflag='A', long_name='% of each crop on the crop landunit', &
-            ptr_lnd=subgrid_weights_diagnostics%pct_cft)
+            ptr_lnd=subgrid_weights_diagnostics%pct_cft, default='inactive')
     end if
 
     call hist_addfld2d (fname='PCT_GLC_MEC', units='%', type2d='glc_nec', &
          avgflag='A', long_name='% of each GLC elevation class on the glc_mec landunit', &
-         ptr_lnd=subgrid_weights_diagnostics%pct_glc_mec)
+         ptr_lnd=subgrid_weights_diagnostics%pct_glc_mec, default='inactive')
 
   end subroutine init_subgrid_weights_mod
 

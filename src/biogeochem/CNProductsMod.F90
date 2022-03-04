@@ -175,7 +175,7 @@ contains
          units = 'g' // this%species%get_species() // '/m^2', &
          avgflag = 'A', &
          long_name = '1-yr grain product ' // this%species%get_species(), &
-         ptr_gcell = this%cropprod1_grc)
+         ptr_gcell = this%cropprod1_grc, default='inactive')
 
     this%prod10_grc(begg:endg) = spval
     call hist_addfld1d( &
@@ -199,7 +199,7 @@ contains
          units = 'g' // this%species%get_species() // '/m^2', &
          avgflag = 'A', &
          long_name = 'total wood product ' // this%species%get_species(), &
-         ptr_gcell = this%tot_woodprod_grc)
+         ptr_gcell = this%tot_woodprod_grc, default='inactive')
 
     this%dwt_prod10_gain_grc(begg:endg) = spval
     call hist_addfld1d( &
@@ -223,7 +223,7 @@ contains
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'landcover change-driven addition to wood product pools', &
-         ptr_gcell = this%dwt_woodprod_gain_grc)
+         ptr_gcell = this%dwt_woodprod_gain_grc, default='inactive')
 
     this%dwt_cropprod1_gain_grc(begg:endg) = spval
     call hist_addfld1d( &
@@ -231,7 +231,7 @@ contains
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'landcover change-driven addition to 1-year crop product pool', &
-         ptr_gcell = this%dwt_cropprod1_gain_grc)
+         ptr_gcell = this%dwt_cropprod1_gain_grc, default='inactive')
 
     this%cropprod1_loss_grc(begg:endg) = spval
     call hist_addfld1d( &
@@ -239,7 +239,7 @@ contains
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'loss from 1-yr grain product pool', &
-         ptr_gcell = this%cropprod1_loss_grc)
+         ptr_gcell = this%cropprod1_loss_grc, default='inactive')
 
     this%prod10_loss_grc(begg:endg) = spval
     call hist_addfld1d( &
@@ -263,7 +263,7 @@ contains
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'total loss from wood product pools', &
-         ptr_gcell = this%tot_woodprod_loss_grc)
+         ptr_gcell = this%tot_woodprod_loss_grc, default='inactive')
 
   end subroutine InitHistory
 

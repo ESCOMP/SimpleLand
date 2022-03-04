@@ -197,29 +197,29 @@ contains
         this%hr_col(begc:endc) = spval
         call hist_addfld1d (fname='HR', units='gC/m^2/s', &
              avgflag='A', long_name='total heterotrophic respiration', &
-             ptr_col=this%hr_col)
+             ptr_col=this%hr_col, default='inactive')
 
         this%lithr_col(begc:endc) = spval
         call hist_addfld1d (fname='LITTERC_HR', units='gC/m^2/s', &
              avgflag='A', long_name='litter C heterotrophic respiration', &
-             ptr_col=this%lithr_col)
+             ptr_col=this%lithr_col, default='inactive')
 
         this%somhr_col(begc:endc) = spval
         call hist_addfld1d (fname='SOILC_HR', units='gC/m^2/s', &
              avgflag='A', long_name='soil C heterotrophic respiration', &
-             ptr_col=this%somhr_col)
+             ptr_col=this%somhr_col, default='inactive')
 
         if (hist_wrtch4diag) then
            this%fphr_col(begc:endc,1:nlevgrnd) = spval
            call hist_addfld_decomp (fname='FPHR'//trim(vr_suffix), units='unitless', type2d='levdcmp', &
                 avgflag='A', long_name='fraction of potential HR due to N limitation', &
-                ptr_col=this%fphr_col)
+                ptr_col=this%fphr_col, default='inactive')
         end if
 
         this%somc_fire_col(begc:endc) = spval
         call hist_addfld1d (fname='SOMC_FIRE', units='gC/m^2/s', &
              avgflag='A', long_name='C loss due to peat burning', &
-             ptr_col=this%somc_fire_col)
+             ptr_col=this%somc_fire_col, default='inactive')
 
         do k = 1, ndecomp_pools
            ! decomposition k
@@ -324,23 +324,23 @@ contains
            data2dptr => this%t_scalar_col(begc:endc,1:nlevsoi)
            call hist_addfld_decomp (fname='T_SCALAR', units='unitless',  type2d='levsoi', &
                 avgflag='A', long_name='temperature inhibition of decomposition', &
-                ptr_col=data2dptr)
+                ptr_col=data2dptr, default='inactive')
 
            data2dptr => this%w_scalar_col(begc:endc,1:nlevsoi)
            call hist_addfld_decomp (fname='W_SCALAR', units='unitless',  type2d='levsoi', &
                 avgflag='A', long_name='Moisture (dryness) inhibition of decomposition', &
-                ptr_col=data2dptr)
+                ptr_col=data2dptr, default='inactive')
 
            data2dptr => this%o_scalar_col(begc:endc,1:nlevsoi)
            call hist_addfld_decomp (fname='O_SCALAR', units='unitless', type2d='levsoi', &
                 avgflag='A', long_name='fraction by which decomposition is reduced due to anoxia', &
-                ptr_col=data2dptr)
+                ptr_col=data2dptr, default='inactive')
         end if
         
         this%som_c_leached_col(begc:endc) = spval
         call hist_addfld1d (fname='SOM_C_LEACHED', units='gC/m^2/s', &
              avgflag='A', long_name='total flux of C from SOM pools due to leaching', &
-             ptr_col=this%som_c_leached_col)!, default='inactive')
+             ptr_col=this%som_c_leached_col, default='inactive')
 
         this%decomp_cpools_leached_col(begc:endc,:) = spval
         this%decomp_cpools_transport_tendency_col(begc:endc,:,:) = spval
@@ -366,7 +366,7 @@ contains
            data2dptr => this%hr_vr_col(begc:endc,1:nlevsoi)
            call hist_addfld2d (fname='HR_vr', units='gC/m^3/s', type2d='levsoi', &
                 avgflag='A', long_name='total vertically resolved heterotrophic respiration', &
-                ptr_col=data2dptr)
+                ptr_col=data2dptr, default='inactive')
         endif
 
      end if
@@ -380,17 +380,17 @@ contains
         this%hr_col(begc:endc) = spval
         call hist_addfld1d (fname='C13_HR', units='gC13/m^2/s', &
              avgflag='A', long_name='C13 total heterotrophic respiration', &
-             ptr_col=this%hr_col)
+             ptr_col=this%hr_col, default='inactive')
 
         this%lithr_col(begc:endc) = spval
         call hist_addfld1d (fname='C13_LITTERC_HR', units='gC13/m^2/s', &
              avgflag='A', long_name='C13 fine root C litterfall to litter 3 C', &
-             ptr_col=this%lithr_col)
+             ptr_col=this%lithr_col, default='inactive')
 
         this%somhr_col(begc:endc) = spval
         call hist_addfld1d (fname='C13_SOILC_HR', units='gC13/m^2/s', &
              avgflag='A', long_name='C13 soil organic matter heterotrophic respiration', &
-             ptr_col=this%somhr_col)
+             ptr_col=this%somhr_col, default='inactive')
 
 
         this%decomp_cascade_hr_col(begc:endc,:)             = spval
@@ -450,17 +450,17 @@ contains
         this%hr_col(begc:endc) = spval
         call hist_addfld1d (fname='C14_HR', units='gC14/m^2/s', &
              avgflag='A', long_name='C14 total heterotrophic respiration', &
-             ptr_col=this%hr_col)
+             ptr_col=this%hr_col, default='inactive')
 
         this%lithr_col(begc:endc) = spval
         call hist_addfld1d (fname='C14_LITTERC_HR', units='gC14/m^2/s', &
              avgflag='A', long_name='C14 litter carbon heterotrophic respiration', &
-             ptr_col=this%lithr_col)
+             ptr_col=this%lithr_col, default='inactive')
 
         this%somhr_col(begc:endc) = spval
         call hist_addfld1d (fname='C14_SOILC_HR', units='gC14/m^2/s', &
              avgflag='A', long_name='C14 soil organic matter heterotrophic respiration', &
-             ptr_col=this%somhr_col)
+             ptr_col=this%somhr_col, default='inactive')
 
         this%decomp_cascade_hr_col(begc:endc,:)             = spval
         this%decomp_cascade_hr_vr_col(begc:endc,:,:)        = spval
@@ -530,15 +530,15 @@ contains
 
        call hist_addfld_decomp(fname='FATES_c_to_litr_lab_c', units='gC/m^3/s',  type2d='levdcmp', &
                    avgflag='A', long_name='litter labile carbon flux from FATES to BGC', &
-                   ptr_col=this%FATES_c_to_litr_lab_c_col)
+                   ptr_col=this%FATES_c_to_litr_lab_c_col, default='inactive')
 
        call hist_addfld_decomp(fname='FATES_c_to_litr_cel_c', units='gC/m^3/s',  type2d='levdcmp', &
                    avgflag='A', long_name='litter celluluse carbon flux from FATES to BGC', &
-                   ptr_col=this%FATES_c_to_litr_cel_c_col)
+                   ptr_col=this%FATES_c_to_litr_cel_c_col, default='inactive')
 
        call hist_addfld_decomp(fname='FATES_c_to_litr_lig_c', units='gC/m^3/s',  type2d='levdcmp', &
                    avgflag='A', long_name='litter lignin carbon flux from FATES to BGC', &
-                   ptr_col=this%FATES_c_to_litr_lig_c_col)
+                   ptr_col=this%FATES_c_to_litr_lig_c_col, default='inactive')
 
      endif
 

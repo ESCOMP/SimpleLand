@@ -202,7 +202,7 @@ contains
     
     call hist_addfld1d (fname='AGDD', units='K',  &
          avgflag='A', long_name='growing degree-days base 5C', &
-         ptr_patch=this%agdd_patch)
+         ptr_patch=this%agdd_patch, default='inactive')
 
   end subroutine InitHistory
 

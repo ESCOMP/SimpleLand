@@ -166,22 +166,22 @@ contains
     this%wa_col(begc:endc) = spval
     call hist_addfld1d (fname='WA',  units='mm',  &
          avgflag='A', long_name='water in the unconfined aquifer (vegetated landunits only)', &
-         ptr_col=this%wa_col, l2g_scale_type='veg')
+         ptr_col=this%wa_col, l2g_scale_type='veg', default='inactive')
 
     this%qcharge_col(begc:endc) = spval
     call hist_addfld1d (fname='QCHARGE',  units='mm/s',  &
          avgflag='A', long_name='aquifer recharge rate (vegetated landunits only)', &
-         ptr_col=this%qcharge_col, l2g_scale_type='veg')
+         ptr_col=this%qcharge_col, l2g_scale_type='veg', default='inactive')
 
     this%fcov_col(begc:endc) = spval
     call hist_addfld1d (fname='FCOV',  units='unitless',  &
          avgflag='A', long_name='fractional impermeable area', &
-         ptr_col=this%fcov_col, l2g_scale_type='veg')
+         ptr_col=this%fcov_col, l2g_scale_type='veg', default='inactive')
 
     this%fsat_col(begc:endc) = spval
     call hist_addfld1d (fname='FSAT',  units='unitless',  &
          avgflag='A', long_name='fractional area with water table at surface', &
-         ptr_col=this%fsat_col, l2g_scale_type='veg')
+         ptr_col=this%fsat_col, l2g_scale_type='veg', default='inactive')
 
     this%num_substeps_col(begc:endc) = spval
     call hist_addfld1d (fname='NSUBSTEPS',  units='unitless',  &
@@ -197,12 +197,12 @@ contains
     this%zwt_col(begc:endc) = spval
     call hist_addfld1d (fname='ZWT',  units='m',  &
          avgflag='A', long_name='water table depth (vegetated landunits only)', &
-         ptr_col=this%zwt_col, l2g_scale_type='veg')
+         ptr_col=this%zwt_col, l2g_scale_type='veg', default='inactive')
 
     this%zwt_perched_col(begc:endc) = spval
     call hist_addfld1d (fname='ZWT_PERCH',  units='m',  &
          avgflag='A', long_name='perched water table depth (vegetated landunits only)', &
-         ptr_col=this%zwt_perched_col, l2g_scale_type='veg')
+         ptr_col=this%zwt_perched_col, l2g_scale_type='veg', default='inactive')
 
   end subroutine InitHistory
 

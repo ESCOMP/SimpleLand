@@ -134,17 +134,17 @@ contains
     this%lake_icefracsurf_col(begc:endc) = spval
     call hist_addfld1d (fname='LAKEICEFRAC_SURF',  units='unitless', &
          avgflag='A', long_name='surface lake layer ice mass fraction', &
-         ptr_col=this%lake_icefracsurf_col, set_nolake=spval)
+         ptr_col=this%lake_icefracsurf_col, set_nolake=spval, default='inactive')
     
     this%lake_icethick_col(begc:endc) = spval ! This will be more useful than LAKEICEFRAC for many users.
     call hist_addfld1d (fname='LAKEICETHICK', units='m', &
          avgflag='A', long_name='thickness of lake ice (including physical expansion on freezing)', &
-         ptr_col=this%lake_icethick_col, set_nolake=spval)
+         ptr_col=this%lake_icethick_col, set_nolake=spval, default='inactive')
 
     this%savedtke1_col(begc:endc) = spval
     call hist_addfld1d (fname='TKE1',  units='W/(mK)', &
          avgflag='A', long_name='top lake level eddy thermal conductivity', &
-         ptr_col=this%savedtke1_col)
+         ptr_col=this%savedtke1_col, default='inactive')
 
     this%ram1_lake_patch(begp:endp) = spval
     call hist_addfld1d (fname='RAM_LAKE', units='s/m', &

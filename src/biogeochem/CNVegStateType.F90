@@ -262,7 +262,7 @@ contains
     this%lfc2_col(begc:endc) = spval
     call hist_addfld1d (fname='LFC2', units='per sec', &
          avgflag='A', long_name='conversion area fraction of BET and BDT that burned', &
-         ptr_col=this%lfc2_col)
+         ptr_col=this%lfc2_col, default='inactive')
 
     this%annsum_counter_col(begc:endc) = spval
     call hist_addfld1d (fname='ANNSUM_COUNTER', units='s', &
@@ -277,22 +277,22 @@ contains
     this%nfire_col(begc:endc) = spval
     call hist_addfld1d (fname='NFIRE',  units='counts/km2/sec', &
          avgflag='A', long_name='fire counts valid only in Reg.C', &
-         ptr_col=this%nfire_col)
+         ptr_col=this%nfire_col, default='inactive')
 
     this%farea_burned_col(begc:endc) = spval
     call hist_addfld1d (fname='FAREA_BURNED',  units='proportion/sec', &
          avgflag='A', long_name='timestep fractional area burned', &
-         ptr_col=this%farea_burned_col)
+         ptr_col=this%farea_burned_col, default='inactive')
 
     this%baf_crop_col(begc:endc) = spval
     call hist_addfld1d (fname='BAF_CROP',  units='proportion/sec', &
          avgflag='A', long_name='fractional area burned for crop', &
-         ptr_col=this%baf_crop_col)
+         ptr_col=this%baf_crop_col, default='inactive')
 
     this%baf_peatf_col(begc:endc) = spval
     call hist_addfld1d (fname='BAF_PEATF',  units='proportion/sec', &
          avgflag='A', long_name='fractional area burned in peatland', &
-         ptr_col=this%baf_peatf_col)
+         ptr_col=this%baf_peatf_col, default='inactive')
  
     this%annavg_t2m_patch(begp:endp) = spval
     call hist_addfld1d (fname='ANNAVG_T2M', units='K', &

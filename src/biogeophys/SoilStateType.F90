@@ -204,7 +204,7 @@ contains
 
     call hist_addfld2d (fname='SMP',  units='mm', type2d='levgrnd',  &
          avgflag='A', long_name='soil matric potential (vegetated landunits only)', &
-         ptr_col=this%smp_l_col, set_spec=spval, l2g_scale_type='veg')
+         ptr_col=this%smp_l_col, set_spec=spval, l2g_scale_type='veg', default='inactive')
 
        this%root_conductance_patch(begp:endp,:) = spval
        call hist_addfld2d (fname='KROOT', units='1/s', type2d='levsoi', &
@@ -227,14 +227,14 @@ contains
        this%rootfr_patch(begp:endp,:) = spval
        call hist_addfld2d (fname='ROOTFR', units='proportion', type2d='levgrnd', &
             avgflag='A', long_name='fraction of roots in each soil layer', &
-            ptr_patch=this%rootfr_patch, default='active')
+            ptr_patch=this%rootfr_patch, default='inactive')
     end if
 
     if ( use_dynroot ) then
        this%root_depth_patch(begp:endp) = spval
         call hist_addfld1d (fname='ROOT_DEPTH', units="m", &
              avgflag='A', long_name='rooting depth', &
-             ptr_patch=this%root_depth_patch )
+             ptr_patch=this%root_depth_patch, default='inactive' )
      end if
 
     if (use_cn) then
@@ -309,12 +309,12 @@ contains
     this%soilresis_col(begc:endc) = spval
     call hist_addfld1d (fname='SOILRESIS',  units='s/m',  &
          avgflag='A', long_name='soil resistance to evaporation', &
-         ptr_col=this%soilresis_col)
+         ptr_col=this%soilresis_col, default='inactive')
 
     this%dsl_col(begc:endc) = spval
     call hist_addfld1d (fname='DSL',  units='mm',  &
          avgflag='A', long_name='dry surface layer thickness', &
-         ptr_col=this%dsl_col)
+         ptr_col=this%dsl_col, default='inactive')
 
   end subroutine InitHistory
 

@@ -297,12 +297,12 @@ contains
     this%eflx_dynbal_grc(begg:endg) = spval 
     call hist_addfld1d (fname='EFLX_DYNBAL',  units='W/m^2',  &
          avgflag='A', long_name='dynamic land cover change conversion energy flux', &
-         ptr_lnd=this%eflx_dynbal_grc)
+         ptr_lnd=this%eflx_dynbal_grc, default='inactive')
 
     this%eflx_snomelt_col(begc:endc) = spval
     call hist_addfld1d (fname='FSM',  units='W/m^2',  &
          avgflag='A', long_name='snow melt heat flux', &
-         ptr_col=this%eflx_snomelt_col, c2l_scale_type='urbanf')
+         ptr_col=this%eflx_snomelt_col, c2l_scale_type='urbanf', default='inactive')
 
     call hist_addfld1d (fname='FSM_ICE', units='W/m^2',  &
          avgflag='A', long_name='snow melt heat flux (ice landunits only)', &
@@ -322,7 +322,7 @@ contains
     this%eflx_lwrad_net_patch(begp:endp) = spval
     call hist_addfld1d (fname='FIRA', units='W/m^2',  &
          avgflag='A', long_name='net infrared (longwave) radiation', &
-         ptr_patch=this%eflx_lwrad_net_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_lwrad_net_patch, c2l_scale_type='urbanf', default='inactive')
 
     call hist_addfld1d (fname='FIRA_ICE', units='W/m^2',  &
          avgflag='A', long_name='net infrared (longwave) radiation (ice landunits only)', &
@@ -332,12 +332,12 @@ contains
     this%eflx_lwrad_net_r_patch(begp:endp) = spval 
     call hist_addfld1d (fname='FIRA_R', units='W/m^2',  &
          avgflag='A', long_name='Rural net infrared (longwave) radiation', &
-         ptr_patch=this%eflx_lwrad_net_r_patch, set_spec=spval)
+         ptr_patch=this%eflx_lwrad_net_r_patch, set_spec=spval, default='inactive')
 
     this%eflx_lwrad_out_patch(begp:endp) = spval 
     call hist_addfld1d (fname='FIRE', units='W/m^2',  &
          avgflag='A', long_name='emitted infrared (longwave) radiation', &
-         ptr_patch=this%eflx_lwrad_out_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_lwrad_out_patch, c2l_scale_type='urbanf', default='inactive')
     ! Rename of FIRE for Urban intercomparision project
     call hist_addfld1d (fname='LWup', units='W/m^2',  &
          avgflag='A', long_name='upwelling longwave radiation', &
@@ -351,27 +351,27 @@ contains
     this%eflx_lwrad_out_r_patch(begp:endp) = spval
     call hist_addfld1d (fname='FIRE_R', units='W/m^2',  &
          avgflag='A', long_name='Rural emitted infrared (longwave) radiation', &
-         ptr_patch=this%eflx_lwrad_out_r_patch, set_spec=spval)
+         ptr_patch=this%eflx_lwrad_out_r_patch, set_spec=spval, default='inactive')
 
     this%eflx_lh_vegt_patch(begp:endp) = spval
     call hist_addfld1d (fname='FCTR', units='W/m^2',  &
          avgflag='A', long_name='canopy transpiration', &
-         ptr_patch=this%eflx_lh_vegt_patch, set_lake=0._r8, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_lh_vegt_patch, set_lake=0._r8, c2l_scale_type='urbanf', default='inactive')
 
     this%eflx_lh_vege_patch(begp:endp) = spval
     call hist_addfld1d (fname='FCEV', units='W/m^2',  &
          avgflag='A', long_name='canopy evaporation', &
-         ptr_patch=this%eflx_lh_vege_patch, set_lake=0._r8, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_lh_vege_patch, set_lake=0._r8, c2l_scale_type='urbanf', default='inactive')
 
     this%eflx_lh_grnd_patch(begp:endp) = spval
     call hist_addfld1d (fname='FGEV', units='W/m^2',  &
          avgflag='A', long_name='ground evaporation', &
-         ptr_patch=this%eflx_lh_grnd_patch, c2l_scale_type='urbanf') 
+         ptr_patch=this%eflx_lh_grnd_patch, c2l_scale_type='urbanf', default='inactive') 
 
     this%eflx_sh_tot_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSH', units='W/m^2',  &
          avgflag='A', long_name='sensible heat not including correction for land use change and rain/snow conversion', &
-         ptr_patch=this%eflx_sh_tot_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_sh_tot_patch, c2l_scale_type='urbanf', default='inactive')
 
     call hist_addfld1d (fname='FSH_ICE', units='W/m^2',  &
          avgflag='A', &
@@ -382,7 +382,7 @@ contains
     this%eflx_sh_tot_r_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSH_R', units='W/m^2',  &
          avgflag='A', long_name='Rural sensible heat', &
-         ptr_patch=this%eflx_sh_tot_r_patch, set_spec=spval)
+         ptr_patch=this%eflx_sh_tot_r_patch, set_spec=spval, default='inactive')
 
     this%eflx_sh_tot_patch(begp:endp) = spval
     call hist_addfld1d (fname='Qh', units='W/m^2',  &
@@ -399,7 +399,7 @@ contains
     this%eflx_lh_tot_patch(begp:endp) = spval
     call hist_addfld1d (fname='EFLX_LH_TOT', units='W/m^2', &
          avgflag='A', long_name='total latent heat flux [+ to atm]', &
-         ptr_patch=this%eflx_lh_tot_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_lh_tot_patch, c2l_scale_type='urbanf', default='inactive')
 
     call hist_addfld1d (fname='EFLX_LH_TOT_ICE', units='W/m^2',  &
          avgflag='A', long_name='total latent heat flux [+ to atm] (ice landunits only)', &
@@ -409,7 +409,7 @@ contains
     this%eflx_lh_tot_r_patch(begp:endp) = spval
     call hist_addfld1d (fname='EFLX_LH_TOT_R', units='W/m^2',  &
          avgflag='A', long_name='Rural total evaporation', &
-         ptr_patch=this%eflx_lh_tot_r_patch, set_spec=spval)
+         ptr_patch=this%eflx_lh_tot_r_patch, set_spec=spval, default='inactive')
 
     this%eflx_soil_grnd_patch(begp:endp) = spval
     call hist_addfld1d (fname='Qstor', units='W/m^2',  &
@@ -419,17 +419,17 @@ contains
     this%eflx_sh_veg_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSH_V', units='W/m^2',  &
          avgflag='A', long_name='sensible heat from veg', &
-         ptr_patch=this%eflx_sh_veg_patch, set_lake=0._r8, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_sh_veg_patch, set_lake=0._r8, c2l_scale_type='urbanf', default='inactive')
 
     this%eflx_sh_grnd_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSH_G', units='W/m^2',  &
          avgflag='A', long_name='sensible heat from ground', &
-         ptr_patch=this%eflx_sh_grnd_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_sh_grnd_patch, c2l_scale_type='urbanf', default='inactive')
 
     this%eflx_soil_grnd_patch(begp:endp) = spval
     call hist_addfld1d (fname='FGR', units='W/m^2',  &
          avgflag='A', long_name='heat flux into soil/snow including snow melt and lake / snow light transmission', &
-         ptr_patch=this%eflx_soil_grnd_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_soil_grnd_patch, c2l_scale_type='urbanf', default='inactive')
 
     call hist_addfld1d (fname='FGR_ICE', units='W/m^2',  &
          avgflag='A', &
@@ -465,7 +465,7 @@ contains
     this%eflx_sh_precip_conversion_col(begc:endc) = spval
     call hist_addfld1d (fname = 'FSH_PRECIP_CONVERSION', units='W/m^2', &
          avgflag='A', long_name='Sensible heat flux from conversion of rain/snow atm forcing', &
-         ptr_col=this%eflx_sh_precip_conversion_col, c2l_scale_type='urbanf')
+         ptr_col=this%eflx_sh_precip_conversion_col, c2l_scale_type='urbanf', default='inactive')
 
     this%eflx_lh_tot_u_patch(begp:endp) = spval
     call hist_addfld1d (fname='EFLX_LH_TOT_U', units='W/m^2',  &
@@ -528,38 +528,38 @@ contains
     this%eflx_grnd_lake_patch(begp:endp) = spval
     call hist_addfld1d (fname='EFLX_GRND_LAKE', units='W/m^2', &
          avgflag='A', long_name='net heat flux into lake/snow surface, excluding light transmission', &
-         ptr_patch=this%eflx_grnd_lake_patch, set_nolake=spval)
+         ptr_patch=this%eflx_grnd_lake_patch, set_nolake=spval, default='inactive')
 
     if (      is_simple_buildtemp )then
        this%eflx_building_heat_errsoi_col(begc:endc) = spval
        call hist_addfld1d (fname='BUILDHEAT', units='W/m^2',  &
             avgflag='A', long_name='heat flux from urban building interior to walls and roof', &
-            ptr_col=this%eflx_building_heat_errsoi_col, set_nourb=0._r8, c2l_scale_type='urbanf')
+            ptr_col=this%eflx_building_heat_errsoi_col, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
 
        this%eflx_urban_ac_col(begc:endc) = spval
        call hist_addfld1d (fname='URBAN_AC', units='W/m^2',  &
             avgflag='A', long_name='urban air conditioning flux', &
-            ptr_col=this%eflx_urban_ac_col, set_nourb=0._r8, c2l_scale_type='urbanf')
+            ptr_col=this%eflx_urban_ac_col, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
    
        this%eflx_urban_heat_col(begc:endc) = spval
        call hist_addfld1d (fname='URBAN_HEAT', units='W/m^2',  &
             avgflag='A', long_name='urban heating flux', &
-            ptr_col=this%eflx_urban_heat_col, set_nourb=0._r8, c2l_scale_type='urbanf')
+            ptr_col=this%eflx_urban_heat_col, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
     else
        this%eflx_urban_ac_lun(begl:endl) = spval
        call hist_addfld1d (fname='EFLXBUILD', units='W/m^2',  &
             avgflag='A', long_name='building heat flux from change in interior building air temperature', &
-            ptr_lunit=this%eflx_building_lun, set_nourb=0._r8, l2g_scale_type='unity')
+            ptr_lunit=this%eflx_building_lun, set_nourb=0._r8, l2g_scale_type='unity', default='inactive')
 
        this%eflx_urban_ac_lun(begl:endl) = spval
        call hist_addfld1d (fname='URBAN_AC', units='W/m^2',  &
             avgflag='A', long_name='urban air conditioning flux', &
-            ptr_lunit=this%eflx_urban_ac_lun, set_nourb=0._r8, l2g_scale_type='unity')
+            ptr_lunit=this%eflx_urban_ac_lun, set_nourb=0._r8, l2g_scale_type='unity', default='inactive')
 
        this%eflx_urban_heat_lun(begl:endl) = spval
        call hist_addfld1d (fname='URBAN_HEAT', units='W/m^2',  &
             avgflag='A', long_name='urban heating flux', &
-            ptr_lunit=this%eflx_urban_heat_lun, set_nourb=0._r8, l2g_scale_type='unity')
+            ptr_lunit=this%eflx_urban_heat_lun, set_nourb=0._r8, l2g_scale_type='unity', default='inactive')
     end if
 
 
@@ -571,7 +571,7 @@ contains
     this%eflx_fgr12_col(begc:endc) = spval
     call hist_addfld1d (fname='FGR12',  units='W/m^2',  &
          avgflag='A', long_name='heat flux between soil layers 1 and 2', &
-         ptr_col=this%eflx_fgr12_col, set_lake=spval)
+         ptr_col=this%eflx_fgr12_col, set_lake=spval, default='inactive')
 
     this%eflx_fgr_col(begc:endc,:) = spval
     call hist_addfld2d (fname='FGR_SOIL_R', units='watt/m^2', type2d='levgrnd', &
@@ -587,12 +587,12 @@ contains
     this%eflx_wasteheat_patch(begp:endp) = spval
     call hist_addfld1d (fname='WASTEHEAT', units='W/m^2',  &
          avgflag='A', long_name='sensible heat flux from heating/cooling sources of urban waste heat', &
-         ptr_patch=this%eflx_wasteheat_patch, set_nourb=0._r8, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_wasteheat_patch, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
 
     this%eflx_heat_from_ac_patch(begp:endp) = spval
     call hist_addfld1d (fname='HEAT_FROM_AC', units='W/m^2',  &
          avgflag='A', long_name='sensible heat flux put into canyon due to heat removed from air conditioning', &
-         ptr_patch=this%eflx_heat_from_ac_patch, set_nourb=0._r8, c2l_scale_type='urbanf')
+         ptr_patch=this%eflx_heat_from_ac_patch, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
 
     if ( is_simple_buildtemp )then
        this%eflx_anthro_patch(begp:endp) = spval
@@ -605,7 +605,7 @@ contains
     this%taux_patch(begp:endp) = spval
     call hist_addfld1d (fname='TAUX', units='kg/m/s^2',  &
          avgflag='A', long_name='zonal surface stress', &
-         ptr_patch=this%taux_patch)
+         ptr_patch=this%taux_patch, default='inactive')
     ! Rename of TAUX for Urban intercomparision project (when U=V)    
     call hist_addfld1d (fname='Qtau', units='kg/m/s^2',  &  
          avgflag='A', long_name='momentum flux', &
@@ -614,24 +614,24 @@ contains
     this%tauy_patch(begp:endp) = spval
     call hist_addfld1d (fname='TAUY', units='kg/m/s^2',  &
          avgflag='A', long_name='meridional surface stress', &
-         ptr_patch=this%tauy_patch)
+         ptr_patch=this%tauy_patch, default='inactive')
 
     this%btran_patch(begp:endp) = spval
     if (.not. use_hydrstress) then
        call hist_addfld1d (fname='BTRAN', units='unitless',  &
             avgflag='A', long_name='transpiration beta factor', &
-            ptr_patch=this%btran_patch, set_lake=spval, set_urb=spval)
+            ptr_patch=this%btran_patch, set_lake=spval, set_urb=spval, default='inactive')
     end if
 
     this%btran_min_patch(begp:endp) = spval
     call hist_addfld1d (fname='BTRANMN', units='unitless',  &
          avgflag='A', long_name='daily minimum of transpiration beta factor', &
-         ptr_patch=this%btran_min_patch, set_lake=spval, set_urb=spval)
+         ptr_patch=this%btran_min_patch, set_lake=spval, set_urb=spval, default='inactive')
 
     this%btran2_patch(begp:endp) = spval
     call hist_addfld1d (fname='BTRAN2', units='unitless',  &
          avgflag='A', long_name='root zone soil wetness factor', &
-         ptr_patch=this%btran2_patch, set_lake=spval, set_urb=spval)
+         ptr_patch=this%btran2_patch, set_lake=spval, set_urb=spval, default='inactive')
 
     if (use_cn) then
        this%rresis_patch(begp:endp,:) = spval
@@ -643,17 +643,17 @@ contains
     this%errsoi_col(begc:endc) = spval
     call hist_addfld1d (fname='ERRSOI',  units='W/m^2',  &
          avgflag='A', long_name='soil/lake energy conservation error', &
-         ptr_col=this%errsoi_col)
+         ptr_col=this%errsoi_col, default='inactive')
 
     this%errseb_patch(begp:endp) = spval
     call hist_addfld1d (fname='ERRSEB',  units='W/m^2',  &
          avgflag='A', long_name='surface energy conservation error', &
-         ptr_patch=this%errseb_patch)
+         ptr_patch=this%errseb_patch, default='inactive')
 
     this%errsol_patch(begp:endp) = spval
     call hist_addfld1d (fname='ERRSOL',  units='W/m^2',  &
          avgflag='A', long_name='solar radiation conservation error', &
-         ptr_patch=this%errsol_patch, set_urb=spval)
+         ptr_patch=this%errsol_patch, set_urb=spval, default='inactive')
 
   end subroutine InitHistory
 

@@ -790,7 +790,7 @@ contains
     this%leafn_to_litter_patch(begp:endp) = spval
     call hist_addfld1d (fname='LEAFN_TO_LITTER', units='gN/m^2/s', &
          avgflag='A', long_name='leaf N litterfall', &
-         ptr_patch=this%leafn_to_litter_patch)
+         ptr_patch=this%leafn_to_litter_patch, default='inactive')
 
     this%leafn_to_retransn_patch(begp:endp) = spval
     call hist_addfld1d (fname='LEAFN_TO_RETRANSN', units='gN/m^2/s', &
@@ -805,17 +805,17 @@ contains
     this%retransn_to_npool_patch(begp:endp) = spval
     call hist_addfld1d (fname='RETRANSN_TO_NPOOL', units='gN/m^2/s', &
          avgflag='A', long_name='deployment of retranslocated N', &
-         ptr_patch=this%retransn_to_npool_patch)
+         ptr_patch=this%retransn_to_npool_patch, default='inactive')
          
     this%free_retransn_to_npool_patch(begp:endp) = spval
     call hist_addfld1d (fname='FREE_RETRANSN_TO_NPOOL', units='gN/m^2/s', &
          avgflag='A', long_name='deployment of retranslocated N', &
-         ptr_patch=this%free_retransn_to_npool_patch)
+         ptr_patch=this%free_retransn_to_npool_patch, default='inactive')
 
     this%sminn_to_npool_patch(begp:endp) = spval
     call hist_addfld1d (fname='SMINN_TO_NPOOL', units='gN/m^2/s', &
          avgflag='A', long_name='deployment of soil mineral N uptake', &
-         ptr_patch=this%sminn_to_npool_patch)
+         ptr_patch=this%sminn_to_npool_patch, default='inactive')
 
     this%npool_to_leafn_patch(begp:endp) = spval
     call hist_addfld1d (fname='NPOOL_TO_LEAFN', units='gN/m^2/s', &
@@ -930,30 +930,30 @@ contains
     this%ndeploy_patch(begp:endp) = spval
     call hist_addfld1d (fname='NDEPLOY', units='gN/m^2/s', &
          avgflag='A', long_name='total N deployed in new growth', &
-         ptr_patch=this%ndeploy_patch)
+         ptr_patch=this%ndeploy_patch, default='inactive')
 
     this%wood_harvestn_patch(begp:endp) = spval
     call hist_addfld1d (fname='WOOD_HARVESTN', units='gN/m^2/s', &
          avgflag='A', long_name='wood harvest N (to product pools)', &
-         ptr_patch=this%wood_harvestn_patch)
+         ptr_patch=this%wood_harvestn_patch, default='inactive')
 
     this%fire_nloss_patch(begp:endp) = spval
     call hist_addfld1d (fname='PFT_FIRE_NLOSS', units='gN/m^2/s', &
          avgflag='A', long_name='total patch-level fire N loss', &
-         ptr_patch=this%fire_nloss_patch)
+         ptr_patch=this%fire_nloss_patch, default='inactive')
 
     if (use_crop) then
        this%fert_patch(begp:endp) = spval
        call hist_addfld1d (fname='NFERTILIZATION', units='gN/m^2/s', &
             avgflag='A', long_name='fertilizer added', &
-            ptr_patch=this%fert_patch)
+            ptr_patch=this%fert_patch, default='inactive')
     end if
 
     if (use_crop) then
        this%soyfixn_patch(begp:endp) = spval
        call hist_addfld1d (fname='SOYFIXN', units='gN/m^2/s', &
             avgflag='A', long_name='soybean fixation', &
-            ptr_patch=this%soyfixn_patch)
+            ptr_patch=this%soyfixn_patch, default='inactive')
     end if
 
     if (use_crop) then
@@ -992,12 +992,12 @@ contains
     this%fire_nloss_col(begc:endc) = spval
     call hist_addfld1d (fname='COL_FIRE_NLOSS', units='gN/m^2/s', &
          avgflag='A', long_name='total column-level fire N loss', &
-         ptr_col=this%fire_nloss_col)
+         ptr_col=this%fire_nloss_col, default='inactive')
 
     this%dwt_seedn_to_leaf_grc(begg:endg) = spval
     call hist_addfld1d (fname='DWT_SEEDN_TO_LEAF', units='gN/m^2/s', &
          avgflag='A', long_name='seed source to patch-level leaf', &
-         ptr_gcell=this%dwt_seedn_to_leaf_grc)
+         ptr_gcell=this%dwt_seedn_to_leaf_grc, default='inactive')
 
     this%dwt_seedn_to_leaf_patch(begp:endp) = spval
     call hist_addfld1d (fname='DWT_SEEDN_TO_LEAF_PATCH', units='gN/m^2/s', &
@@ -1009,7 +1009,7 @@ contains
     this%dwt_seedn_to_deadstem_grc(begg:endg) = spval
     call hist_addfld1d (fname='DWT_SEEDN_TO_DEADSTEM', units='gN/m^2/s', &
          avgflag='A', long_name='seed source to patch-level deadstem', &
-         ptr_gcell=this%dwt_seedn_to_deadstem_grc)
+         ptr_gcell=this%dwt_seedn_to_deadstem_grc, default='inactive')
 
     this%dwt_seedn_to_deadstem_patch(begp:endp) = spval
     call hist_addfld1d (fname='DWT_SEEDN_TO_DEADSTEM_PATCH', units='gN/m^2/s', &
@@ -1022,7 +1022,7 @@ contains
     call hist_addfld1d (fname='DWT_CONV_NFLUX', units='gN/m^2/s', &
          avgflag='A', &
          long_name='conversion N flux (immediate loss to atm) (0 at all times except first timestep of year)', &
-         ptr_gcell=this%dwt_conv_nflux_grc)
+         ptr_gcell=this%dwt_conv_nflux_grc, default='inactive')
 
     this%dwt_conv_nflux_patch(begp:endp) = spval
     call hist_addfld1d (fname='DWT_CONV_NFLUX_PATCH', units='gN/m^2/s', &
@@ -1065,7 +1065,7 @@ contains
     this%plant_ndemand_patch(begp:endp) = spval
     call hist_addfld1d (fname='PLANT_NDEMAND', units='gN/m^2/s', &
          avgflag='A', long_name='N flux required to support initial GPP', &
-         ptr_patch=this%plant_ndemand_patch)
+         ptr_patch=this%plant_ndemand_patch, default='inactive')
 
     this%avail_retransn_patch(begp:endp) = spval
     call hist_addfld1d (fname='AVAIL_RETRANSN', units='gN/m^2/s', &
@@ -1081,124 +1081,124 @@ contains
        this%Nactive_patch(begp:endp)  = spval
        call hist_addfld1d (fname='NACTIVE', units='gN/m^2/s',       &
             avgflag='A', long_name='Mycorrhizal N uptake flux',     &
-            ptr_patch=this%Nactive_patch)
+            ptr_patch=this%Nactive_patch, default='inactive')
    
        this%Nnonmyc_patch(begp:endp)  = spval
        call hist_addfld1d (fname='NNONMYC', units='gN/m^2/s',       &
             avgflag='A', long_name='Non-mycorrhizal N uptake flux', &
-            ptr_patch=this%Nnonmyc_patch)    
+            ptr_patch=this%Nnonmyc_patch, default='inactive')    
 
        this%Nam_patch(begp:endp)      = spval
        call hist_addfld1d (fname='NAM', units='gN/m^2/s',           &
             avgflag='A', long_name='AM-associated N uptake flux',   &
-            ptr_patch=this%Nam_patch)
+            ptr_patch=this%Nam_patch, default='inactive')
 
        this%Necm_patch(begp:endp)     = spval
        call hist_addfld1d (fname='NECM', units='gN/m^2/s',          &
             avgflag='A', long_name='ECM-associated N uptake flux',  &
-            ptr_patch=this%Necm_patch)
+            ptr_patch=this%Necm_patch, default='inactive')
 
        if (use_nitrif_denitrif) then
           this%Nactive_no3_patch(begp:endp)  = spval
           call hist_addfld1d (fname='NACTIVE_NO3', units='gN/m^2/s',   &
                avgflag='A', long_name='Mycorrhizal N uptake flux',     &
-               ptr_patch=this%Nactive_no3_patch)
+               ptr_patch=this%Nactive_no3_patch, default='inactive')
    
           this%Nactive_nh4_patch(begp:endp)  = spval
           call hist_addfld1d (fname='NACTIVE_NH4', units='gN/m^2/s',   &
                avgflag='A', long_name='Mycorrhizal N uptake flux',     &
-               ptr_patch=this%Nactive_nh4_patch)
+               ptr_patch=this%Nactive_nh4_patch, default='inactive')
 
           this%Nnonmyc_no3_patch(begp:endp)  = spval
           call hist_addfld1d (fname='NNONMYC_NO3', units='gN/m^2/s',   &
                avgflag='A', long_name='Non-mycorrhizal N uptake flux', &
-               ptr_patch=this%Nnonmyc_no3_patch)
+               ptr_patch=this%Nnonmyc_no3_patch, default='inactive')
   
           this%Nnonmyc_nh4_patch(begp:endp)  = spval
           call hist_addfld1d (fname='NNONMYC_NH4', units='gN/m^2/s',   &
                avgflag='A', long_name='Non-mycorrhizal N uptake flux', &
-               ptr_patch=this%Nnonmyc_nh4_patch)
+               ptr_patch=this%Nnonmyc_nh4_patch, default='inactive')
 
           this%Nam_no3_patch(begp:endp)      = spval
           call hist_addfld1d (fname='NAM_NO3', units='gN/m^2/s',       &
                avgflag='A', long_name='AM-associated N uptake flux',   &
-               ptr_patch=this%Nam_no3_patch)
+               ptr_patch=this%Nam_no3_patch, default='inactive')
  
           this%Nam_nh4_patch(begp:endp)      = spval
           call hist_addfld1d (fname='NAM_NH4', units='gN/m^2/s',       &
                avgflag='A', long_name='AM-associated N uptake flux',   &
-               ptr_patch=this%Nam_nh4_patch)
+               ptr_patch=this%Nam_nh4_patch, default='inactive')
 
           this%Necm_no3_patch(begp:endp)     = spval
           call hist_addfld1d (fname='NECM_NO3', units='gN/m^2/s',      &
                avgflag='A', long_name='ECM-associated N uptake flux',  &
-               ptr_patch=this%Necm_no3_patch) 
+               ptr_patch=this%Necm_no3_patch, default='inactive') 
   
           this%Necm_nh4_patch(begp:endp)     = spval
           call hist_addfld1d (fname='NECM_NH4', units='gN/m^2/s',      &
                avgflag='A', long_name='ECM-associated N uptake flux',  &
-               ptr_patch=this%Necm_nh4_patch)   
+               ptr_patch=this%Necm_nh4_patch, default='inactive')   
        end if 
 
        this%Npassive_patch(begp:endp) = spval
        call hist_addfld1d (fname='NPASSIVE', units='gN/m^2/s',        &
             avgflag='A', long_name='Passive N uptake flux',           &
-            ptr_patch=this%Npassive_patch)
+            ptr_patch=this%Npassive_patch, default='inactive')
 
        this%Nfix_patch(begp:endp)     = spval
        call hist_addfld1d (fname='NFIX', units='gN/m^2/s',            &
             avgflag='A', long_name='Symbiotic BNF uptake flux',       &
-            ptr_patch=this%Nfix_patch)
+            ptr_patch=this%Nfix_patch, default='inactive')
 
        this%Nretrans_patch(begp:endp) = spval
        call hist_addfld1d (fname='NRETRANS', units='gN/m^2/s',        &
             avgflag='A', long_name='Retranslocated N uptake flux',    &
-            ptr_patch=this%Nretrans_patch)
+            ptr_patch=this%Nretrans_patch, default='inactive')
   
        this%Nretrans_org_patch(begp:endp) = spval
        call hist_addfld1d (fname='NRETRANS_REG', units='gN/m^2/s',    &
             avgflag='A', long_name='Retranslocated N uptake flux',    &
-            ptr_patch=this%Nretrans_org_patch)
+            ptr_patch=this%Nretrans_org_patch, default='inactive')
 
        this%Nretrans_season_patch(begp:endp) = spval
        call hist_addfld1d (fname='NRETRANS_SEASON', units='gN/m^2/s', &
             avgflag='A', long_name='Retranslocated N uptake flux',    &
-            ptr_patch=this%Nretrans_season_patch)
+            ptr_patch=this%Nretrans_season_patch, default='inactive')
 
        this%Nretrans_stress_patch(begp:endp) = spval
        call hist_addfld1d (fname='NRETRANS_STRESS', units='gN/m^2/s', &
             avgflag='A', long_name='Retranslocated N uptake flux',    &
-            ptr_patch=this%Nretrans_stress_patch)
+            ptr_patch=this%Nretrans_stress_patch, default='inactive')
   
        this%Nuptake_patch(begp:endp) = spval
        call hist_addfld1d (fname='NUPTAKE', units='gN/m^2/s',         &
             avgflag='A', long_name='Total N uptake of FUN',           &
-            ptr_patch=this%Nuptake_patch)
+            ptr_patch=this%Nuptake_patch, default='inactive')
 
        this%sminn_to_plant_fun_patch(begp:endp) = spval
        call hist_addfld1d (fname='SMINN_TO_PLANT_FUN', units='gN/m^2/s',&
             avgflag='A', long_name='Total soil N uptake of FUN',        &
-            ptr_patch=this%sminn_to_plant_fun_patch)      
+            ptr_patch=this%sminn_to_plant_fun_patch, default='inactive')      
        
        this%cost_nfix_patch(begp:endp)     = spval
        call hist_addfld1d (fname='COST_NFIX', units='gN/gC',            &
             avgflag='A', long_name='Cost of fixation',       &
-            ptr_patch=this%cost_nfix_patch)
+            ptr_patch=this%cost_nfix_patch, default='inactive')
             
        this%cost_nactive_patch(begp:endp)     = spval
        call hist_addfld1d (fname='COST_NACTIVE', units='gN/gC',            &
             avgflag='A', long_name='Cost of active uptake',       &
-            ptr_patch=this%cost_nactive_patch)
+            ptr_patch=this%cost_nactive_patch, default='inactive')
             
        this%cost_nretrans_patch(begp:endp)     = spval
        call hist_addfld1d (fname='COST_NRETRANS', units='gN/gC',            &
             avgflag='A', long_name='Cost of retranslocation',       &
-            ptr_patch=this%cost_nretrans_patch)
+            ptr_patch=this%cost_nretrans_patch, default='inactive')
             
       this%nuptake_npp_fraction_patch(begp:endp)     = spval
        call hist_addfld1d (fname='NUPTAKE_NPP_FRACTION', units='-',            &
             avgflag='A', long_name='frac of NPP used in N uptake',       &
-            ptr_patch=this%nuptake_npp_fraction_patch)
+            ptr_patch=this%nuptake_npp_fraction_patch, default='inactive')
                   
      
     end if

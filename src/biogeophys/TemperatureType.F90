@@ -304,7 +304,7 @@ contains
     this%t_h2osfc_col(begc:endc) = spval
     call hist_addfld1d (fname='TH2OSFC',  units='K',  &
          avgflag='A', long_name='surface water temperature', &
-         ptr_col=this%t_h2osfc_col)
+         ptr_col=this%t_h2osfc_col, default='inactive')
 
     this%t_grnd_u_col(begc:endc) = spval
     call hist_addfld1d (fname='TG_U', units='K',  &
@@ -314,7 +314,7 @@ contains
     this%t_lake_col(begc:endc,:) = spval
     call hist_addfld2d (fname='TLAKE',  units='K', type2d='levlak', &
          avgflag='A', long_name='lake temperature', &
-         ptr_col=this%t_lake_col)
+         ptr_col=this%t_lake_col, default='inactive')
 
     this%t_soisno_col(begc:endc,-nlevsno+1:0) = spval
     data2dptr => this%t_soisno_col(:,-nlevsno+1:0)
@@ -330,7 +330,7 @@ contains
     this%t_ref2m_patch(begp:endp) = spval
     call hist_addfld1d (fname='TSA', units='K',  &
          avgflag='A', long_name='2m air temperature', &
-         ptr_patch=this%t_ref2m_patch)
+         ptr_patch=this%t_ref2m_patch, default='inactive')
 
     call hist_addfld1d (fname='TSA_ICE', units='K',  &
          avgflag='A', long_name='2m air temperature (ice landunits only)', &
@@ -344,12 +344,12 @@ contains
     this%t_ref2m_min_patch(begp:endp) = spval
     call hist_addfld1d (fname='TREFMNAV', units='K',  &
          avgflag='A', long_name='daily minimum of average 2-m temperature', &
-         ptr_patch=this%t_ref2m_min_patch)
+         ptr_patch=this%t_ref2m_min_patch, default='inactive')
 
     this%t_ref2m_max_patch(begp:endp) = spval
     call hist_addfld1d (fname='TREFMXAV', units='K',  &
          avgflag='A', long_name='daily maximum of average 2-m temperature', &
-         ptr_patch=this%t_ref2m_max_patch)
+         ptr_patch=this%t_ref2m_max_patch, default='inactive')
 
     this%t_ref2m_min_r_patch(begp:endp) = spval
     call hist_addfld1d (fname='TREFMNAV_R', units='K',  &
@@ -379,12 +379,12 @@ contains
     this%t_veg_patch(begp:endp) = spval
     call hist_addfld1d (fname='TV', units='K',  &
          avgflag='A', long_name='vegetation temperature', &
-         ptr_patch=this%t_veg_patch)
+         ptr_patch=this%t_veg_patch, default='inactive')
 
     this%t_grnd_col(begc:endc) = spval
     call hist_addfld1d (fname='TG',  units='K',  &
          avgflag='A', long_name='ground temperature', &
-         ptr_col=this%t_grnd_col, c2l_scale_type='urbans')
+         ptr_col=this%t_grnd_col, c2l_scale_type='urbans', default='inactive')
 
     call hist_addfld1d (fname='TG_ICE', units='K',  &
          avgflag='A', long_name='ground temperature (ice landunits only)', &
@@ -399,21 +399,21 @@ contains
     this%t_soisno_col(begc:endc,:) = spval
     call hist_addfld2d (fname='TSOI',  units='K', type2d='levgrnd', &
          avgflag='A', long_name='soil temperature (vegetated landunits only)', &
-         ptr_col=this%t_soisno_col, l2g_scale_type='veg')
+         ptr_col=this%t_soisno_col, l2g_scale_type='veg', default='inactive')
 
     call hist_addfld2d (fname='TSOI_ICE',  units='K', type2d='levgrnd', &
          avgflag='A', long_name='soil temperature (ice landunits only)', &
-         ptr_col=this%t_soisno_col, l2g_scale_type='ice')
+         ptr_col=this%t_soisno_col, l2g_scale_type='ice', default='inactive')
 
     this%t_soi10cm_col(begc:endc) = spval
     call hist_addfld1d (fname='TSOI_10CM',  units='K', &
          avgflag='A', long_name='soil temperature in top 10cm of soil', &
-         ptr_col=this%t_soi10cm_col, set_urb=spval)
+         ptr_col=this%t_soi10cm_col, set_urb=spval, default='inactive')
 
     if (use_cndv .or. use_crop) then
        active = "active"
     else
-       active = "inactive"
+       active = "active"
     end if
     this%t_a10_patch(begp:endp) = spval
     call hist_addfld1d (fname='T10', units='K',  &
@@ -442,7 +442,7 @@ contains
     end if
     call hist_addfld1d(fname='TBUILD', units='K',  &
          avgflag='A', long_name=lname, &
-         ptr_lunit=this%t_building_lun, set_nourb=spval, l2g_scale_type='unity')
+         ptr_lunit=this%t_building_lun, set_nourb=spval, l2g_scale_type='unity', default='inactive')
 
     if ( is_prog_buildtemp )then
        this%t_roof_inner_lun(begl:endl) = spval
@@ -473,7 +473,7 @@ contains
     this%heat1_grc(begg:endg) = spval
     call hist_addfld1d (fname='HEAT_CONTENT1',  units='J/m^2',  &
          avgflag='A', long_name='initial gridcell total heat content', &
-         ptr_lnd=this%heat1_grc)
+         ptr_lnd=this%heat1_grc, default='inactive')
     call hist_addfld1d (fname='HEAT_CONTENT1_VEG',  units='J/m^2',  &
          avgflag='A', long_name='initial gridcell total heat content - vegetated landunits only', &
          ptr_lnd=this%heat1_grc, l2g_scale_type='veg', default='inactive')

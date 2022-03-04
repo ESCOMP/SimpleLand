@@ -208,12 +208,12 @@ contains
     this%o3uptakesun_patch(begp:endp) = spval
     call hist_addfld1d (fname='O3UPTAKESUN', units='mmol/m^2', &
          avgflag='A', long_name='total ozone flux into sunlit leaves', &
-         ptr_patch=this%o3uptakesun_patch)
+         ptr_patch=this%o3uptakesun_patch, default='inactive')
 
     this%o3uptakesha_patch(begp:endp) = spval
     call hist_addfld1d (fname='O3UPTAKESHA', units='mmol/m^2', &
          avgflag='A', long_name='total ozone flux into shaded leaves', &
-         ptr_patch=this%o3uptakesha_patch)
+         ptr_patch=this%o3uptakesha_patch, default='inactive')
 
   end subroutine InitHistory
 

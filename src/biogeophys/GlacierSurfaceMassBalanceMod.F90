@@ -122,17 +122,17 @@ contains
     this%qflx_glcice_col(begc:endc) = spval
     call hist_addfld1d (fname='QICE',  units='mm/s',  &
          avgflag='A', long_name='ice growth/melt', &
-         ptr_col=this%qflx_glcice_col, l2g_scale_type='ice')
+         ptr_col=this%qflx_glcice_col, l2g_scale_type='ice', default='inactive')
 
     this%qflx_glcice_frz_col(begc:endc) = spval
     call hist_addfld1d (fname='QICE_FRZ',  units='mm/s',  &
          avgflag='A', long_name='ice growth', &
-         ptr_col=this%qflx_glcice_frz_col, l2g_scale_type='ice')
+         ptr_col=this%qflx_glcice_frz_col, l2g_scale_type='ice', default='inactive')
 
     this%qflx_glcice_melt_col(begc:endc) = spval
     call hist_addfld1d (fname='QICE_MELT',  units='mm/s',  &
          avgflag='A', long_name='ice melt', &
-         ptr_col=this%qflx_glcice_melt_col, l2g_scale_type='ice')
+         ptr_col=this%qflx_glcice_melt_col, l2g_scale_type='ice', default='inactive')
 
   end subroutine InitHistory
 

@@ -171,32 +171,32 @@ contains
     this%elai_patch(begp:endp) = spval
     call hist_addfld1d (fname='ELAI', units='m^2/m^2', &
         avgflag='A', long_name='exposed one-sided leaf area index', &
-         ptr_patch=this%elai_patch)
+         ptr_patch=this%elai_patch, default='inactive')
 
     this%esai_patch(begp:endp) = spval
     call hist_addfld1d (fname='ESAI', units='m^2/m^2', &
          avgflag='A', long_name='exposed one-sided stem area index', &
-         ptr_patch=this%esai_patch)
+         ptr_patch=this%esai_patch, default='inactive')
 
     this%tlai_patch(begp:endp) = spval
     call hist_addfld1d (fname='TLAI', units='none', &
          avgflag='A', long_name='total projected leaf area index', &
-         ptr_patch=this%tlai_patch)
+         ptr_patch=this%tlai_patch, default='inactive')
 
     this%tsai_patch(begp:endp) = spval
     call hist_addfld1d (fname='TSAI', units='none', &
          avgflag='A', long_name='total projected stem area index', &
-         ptr_patch=this%tsai_patch)
+         ptr_patch=this%tsai_patch, default='inactive')
 
     this%laisun_patch(begp:endp) = spval
     call hist_addfld1d (fname='LAISUN', units='none', &
          avgflag='A', long_name='sunlit projected leaf area index', &
-         ptr_patch=this%laisun_patch, set_urb=0._r8)
+         ptr_patch=this%laisun_patch, set_urb=0._r8, default='inactive')
 
     this%laisha_patch(begp:endp) = spval
     call hist_addfld1d (fname='LAISHA', units='none', &
          avgflag='A', long_name='shaded projected leaf area index', &
-         ptr_patch=this%laisha_patch, set_urb=0._r8)
+         ptr_patch=this%laisha_patch, set_urb=0._r8, default='inactive')
 
     if (use_cn .or. use_fates) then
        this%fsun_patch(begp:endp) = spval
@@ -212,7 +212,7 @@ contains
        this%htop_patch(begp:endp) = spval
        call hist_addfld1d (fname='HTOP', units='m', &
             avgflag='A', long_name='canopy top', &
-            ptr_patch=this%htop_patch)
+            ptr_patch=this%htop_patch, default='inactive')
 
        this%hbot_patch(begp:endp) = spval
        call hist_addfld1d (fname='HBOT', units='m', &
@@ -229,12 +229,12 @@ contains
        this%alt_col(begc:endc) = spval
        call hist_addfld1d (fname='ALT', units='m', &
             avgflag='A', long_name='current active layer thickness', &
-            ptr_col=this%alt_col)
+            ptr_col=this%alt_col, default='inactive')
 
        this%altmax_col(begc:endc) = spval
        call hist_addfld1d (fname='ALTMAX', units='m', &
             avgflag='A', long_name='maximum annual active layer thickness', &
-            ptr_col=this%altmax_col)
+            ptr_col=this%altmax_col, default='inactive')
 
        this%altmax_lastyear_col(begc:endc) = spval
        call hist_addfld1d (fname='ALTMAX_LASTYEAR', units='m', &
@@ -284,7 +284,7 @@ contains
        this%rscanopy_patch(begp:endp) = spval
        call hist_addfld1d (fname='RSCANOPY', units=' s m-1',  &
             avgflag='A', long_name='canopy resistance', &
-            ptr_patch=this%rscanopy_patch, set_lake=0._r8, set_urb=0._r8)
+            ptr_patch=this%rscanopy_patch, set_lake=0._r8, set_urb=0._r8, default='inactive')
     end if
 
 !    call hist_addfld1d (fname='GCCANOPY', units='none',  &
@@ -295,7 +295,7 @@ contains
        this%vegwp_patch(begp:endp,:) = spval
        call hist_addfld2d (fname='VEGWP',  units='mm', type2d='nvegwcs', &
             avgflag='A', long_name='vegetation water matric potential for sun/sha canopy,xyl,root segments', &
-            ptr_patch=this%vegwp_patch)
+            ptr_patch=this%vegwp_patch, default='inactive')
     end if
 
   end subroutine InitHistory

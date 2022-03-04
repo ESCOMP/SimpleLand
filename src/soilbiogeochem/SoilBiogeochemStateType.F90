@@ -180,14 +180,14 @@ contains
        this%fpi_col(begc:endc) = spval
        call hist_addfld1d (fname='FPI', units='proportion', &
             avgflag='A', long_name='fraction of potential immobilization', &
-            ptr_col=this%fpi_col)
+            ptr_col=this%fpi_col, default='inactive')
     endif
    
     if (.not. use_fun) then
        this%fpg_col(begc:endc) = spval
        call hist_addfld1d (fname='FPG', units='proportion', &
             avgflag='A', long_name='fraction of potential gpp', &
-            ptr_col=this%fpg_col)
+            ptr_col=this%fpg_col, default='inactive')
     end if
 
     if (nlevdecomp > 1) then

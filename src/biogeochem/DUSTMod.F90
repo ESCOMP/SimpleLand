@@ -136,7 +136,7 @@ contains
     this%flx_mss_vrt_dst_tot_patch(begp:endp) = spval
     call hist_addfld1d (fname='DSTFLXT', units='kg/m2/s',  &
          avgflag='A', long_name='total surface dust emission', &
-         ptr_patch=this%flx_mss_vrt_dst_tot_patch, set_lake=0._r8, set_urb=0._r8)
+         ptr_patch=this%flx_mss_vrt_dst_tot_patch, set_lake=0._r8, set_urb=0._r8, default='inactive')
 
     this%vlc_trb_1_patch(begp:endp) = spval
     call hist_addfld1d (fname='DPVLTRB1', units='m/s',  &

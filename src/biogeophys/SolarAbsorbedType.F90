@@ -176,7 +176,7 @@ contains
     this%fsa_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSA', units='W/m^2',  &
          avgflag='A', long_name='absorbed solar radiation', &
-         ptr_patch=this%fsa_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%fsa_patch, c2l_scale_type='urbanf', default='inactive')
 
     call hist_addfld1d (fname='FSA_ICE', units='W/m^2',  &
          avgflag='A', long_name='absorbed solar radiation (ice landunits only)', &
@@ -196,7 +196,7 @@ contains
     this%fsr_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSR', units='W/m^2',  &
          avgflag='A', long_name='reflected solar radiation', &
-         ptr_patch=this%fsr_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%fsr_patch, c2l_scale_type='urbanf', default='inactive')
     ! Rename of FSR for Urban intercomparision project
     call hist_addfld1d (fname='SWup', units='W/m^2',  &
          avgflag='A', long_name='upwelling shortwave radiation', &
@@ -221,53 +221,53 @@ contains
     this%sabv_patch(begp:endp) = spval
     call hist_addfld1d (fname='SABV', units='W/m^2',  &
          avgflag='A', long_name='solar rad absorbed by veg', &
-         ptr_patch=this%sabv_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%sabv_patch, c2l_scale_type='urbanf', default='inactive')
 
     this%sabg_patch(begp:endp) = spval
     call hist_addfld1d (fname='SABG', units='W/m^2',  &
          avgflag='A', long_name='solar rad absorbed by ground', &
-         ptr_patch=this%sabg_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%sabg_patch, c2l_scale_type='urbanf', default='inactive')
 
     this%sabg_pen_patch(begp:endp) = spval
     call hist_addfld1d (fname='SABG_PEN', units='watt/m^2',  &
          avgflag='A', long_name='Rural solar rad penetrating top soil or snow layer', &
-         ptr_patch=this%sabg_pen_patch, set_spec=spval)
+         ptr_patch=this%sabg_pen_patch, set_spec=spval, default='inactive')
 
      ! Currently needed by lake code - TODO should not be here
     this%fsds_nir_d_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSDSND', units='W/m^2',  &
          avgflag='A', long_name='direct nir incident solar radiation', &
-         ptr_patch=this%fsds_nir_d_patch)
+         ptr_patch=this%fsds_nir_d_patch, default='inactive')
 
     this%fsds_nir_i_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSDSNI', units='W/m^2',  &
          avgflag='A', long_name='diffuse nir incident solar radiation', &
-         ptr_patch=this%fsds_nir_i_patch)
+         ptr_patch=this%fsds_nir_i_patch, default='inactive')
 
     this%fsds_nir_d_ln_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSDSNDLN', units='W/m^2',  &
          avgflag='A', long_name='direct nir incident solar radiation at local noon', &
-         ptr_patch=this%fsds_nir_d_ln_patch)
+         ptr_patch=this%fsds_nir_d_ln_patch, default='inactive')
 
     this%fsr_nir_d_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSRND', units='W/m^2',  &
          avgflag='A', long_name='direct nir reflected solar radiation', &
-         ptr_patch=this%fsr_nir_d_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%fsr_nir_d_patch, c2l_scale_type='urbanf', default='inactive')
 
     this%fsr_nir_i_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSRNI', units='W/m^2',  &
          avgflag='A', long_name='diffuse nir reflected solar radiation', &
-         ptr_patch=this%fsr_nir_i_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%fsr_nir_i_patch, c2l_scale_type='urbanf', default='inactive')
 
     this%fsr_nir_d_ln_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSRNDLN', units='W/m^2',  &
          avgflag='A', long_name='direct nir reflected solar radiation at local noon', &
-         ptr_patch=this%fsr_nir_d_ln_patch, c2l_scale_type='urbanf')
+         ptr_patch=this%fsr_nir_d_ln_patch, c2l_scale_type='urbanf', default='inactive')
 
     this%sub_surf_abs_SW_patch(begp:endp) = spval
     call hist_addfld1d (fname='SNOINTABS', units='-', &
          avgflag='A', long_name='Fraction of incoming solar absorbed by lower snow layers', &
-         ptr_patch=this%sub_surf_abs_SW_patch, set_lake=spval, set_urb=spval)
+         ptr_patch=this%sub_surf_abs_SW_patch, set_lake=spval, set_urb=spval, default='inactive')
 
     if(use_luna)then
        ptr_1d => this%par240d_z_patch(:,1)

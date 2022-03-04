@@ -313,17 +313,17 @@ contains
     this%ndep_to_sminn_col(begc:endc) = spval
     call hist_addfld1d (fname='NDEP_TO_SMINN', units='gN/m^2/s', &
          avgflag='A', long_name='atmospheric N deposition to soil mineral N', &
-         ptr_col=this%ndep_to_sminn_col)
+         ptr_col=this%ndep_to_sminn_col, default='inactive')
 
     this%nfix_to_sminn_col(begc:endc) = spval
     call hist_addfld1d (fname='NFIX_TO_SMINN', units='gN/m^2/s', &
          avgflag='A', long_name='symbiotic/asymbiotic N fixation to soil mineral N', &
-         ptr_col=this%nfix_to_sminn_col)
+         ptr_col=this%nfix_to_sminn_col, default='inactive')
 
     this%ffix_to_sminn_col(begc:endc) = spval
     call hist_addfld1d (fname='FFIX_TO_SMINN', units='gN/m^2/s', &
          avgflag='A', long_name='free living  N fixation to soil mineral N', &
-         ptr_col=this%ffix_to_sminn_col)
+         ptr_col=this%ffix_to_sminn_col, default='inactive')
 
     do l = 1, ndecomp_cascade_transitions
        ! vertically integrated fluxes
@@ -407,7 +407,7 @@ contains
     this%denit_col(begc:endc) = spval
     call hist_addfld1d (fname='DENIT', units='gN/m^2/s', &
          avgflag='A', long_name='total rate of denitrification', &
-         ptr_col=this%denit_col)
+         ptr_col=this%denit_col, default='inactive')
 
     this%som_n_leached_col(begc:endc) = spval
     call hist_addfld1d (fname='SOM_N_LEACHED', units='gN/m^2/s', &
@@ -477,7 +477,7 @@ contains
        this%sminn_leached_col(begc:endc) = spval
        call hist_addfld1d (fname='SMINN_LEACHED', units='gN/m^2/s',   &
             avgflag='A', long_name='soil mineral N pool loss to leaching', &
-            ptr_col=this%sminn_leached_col)
+            ptr_col=this%sminn_leached_col, default='inactive')
     end if
 
     if (.not. use_nitrif_denitrif) then
@@ -498,42 +498,42 @@ contains
        this%f_nit_col(begc:endc) = spval
        call hist_addfld1d (fname='F_NIT', units='gN/m^2/s',  &
             avgflag='A', long_name='nitrification flux', &
-            ptr_col=this%f_nit_col)
+            ptr_col=this%f_nit_col, default='inactive')
     end if
 
     if (use_nitrif_denitrif) then
        this%f_denit_col(begc:endc) = spval
        call hist_addfld1d (fname='F_DENIT', units='gN/m^2/s', &
             avgflag='A', long_name='denitrification flux', &
-            ptr_col=this%f_denit_col)
+            ptr_col=this%f_denit_col, default='inactive')
     end if
 
     if (use_nitrif_denitrif) then
        this%pot_f_nit_col(begc:endc) = spval
        call hist_addfld1d (fname='POT_F_NIT', units='gN/m^2/s', &
             avgflag='A', long_name='potential nitrification flux', &
-            ptr_col=this%pot_f_nit_col)
+            ptr_col=this%pot_f_nit_col, default='inactive')
     end if
 
     if (use_nitrif_denitrif) then
        this%pot_f_denit_col(begc:endc) = spval
        call hist_addfld1d (fname='POT_F_DENIT', units='gN/m^2/s', &
             avgflag='A', long_name='potential denitrification flux', &
-            ptr_col=this%pot_f_denit_col)
+            ptr_col=this%pot_f_denit_col, default='inactive')
     end if
 
     if (use_nitrif_denitrif) then
        this%smin_no3_leached_col(begc:endc) = spval
        call hist_addfld1d (fname='SMIN_NO3_LEACHED', units='gN/m^2/s', &
             avgflag='A', long_name='soil NO3 pool loss to leaching', &
-            ptr_col=this%smin_no3_leached_col)
+            ptr_col=this%smin_no3_leached_col, default='inactive')
     end if
 
     if (use_nitrif_denitrif) then
        this%smin_no3_runoff_col(begc:endc) = spval
        call hist_addfld1d (fname='SMIN_NO3_RUNOFF', units='gN/m^2/s', &
             avgflag='A', long_name='soil NO3 pool loss to runoff', &
-            ptr_col=this%smin_no3_runoff_col)
+            ptr_col=this%smin_no3_runoff_col, default='inactive')
     end if
        
     if (use_nitrif_denitrif .and.  nlevdecomp_full > 1 ) then 
@@ -778,43 +778,43 @@ contains
     this%potential_immob_col(begc:endc) = spval
     call hist_addfld1d (fname='POTENTIAL_IMMOB', units='gN/m^2/s', &
          avgflag='A', long_name='potential N immobilization', &
-         ptr_col=this%potential_immob_col)
+         ptr_col=this%potential_immob_col, default='inactive')
 
     this%actual_immob_col(begc:endc) = spval
     call hist_addfld1d (fname='ACTUAL_IMMOB', units='gN/m^2/s', &
          avgflag='A', long_name='actual N immobilization', &
-         ptr_col=this%actual_immob_col)
+         ptr_col=this%actual_immob_col, default='inactive')
 
     this%sminn_to_plant_col(begc:endc) = spval
     call hist_addfld1d (fname='SMINN_TO_PLANT', units='gN/m^2/s', &
          avgflag='A', long_name='plant uptake of soil mineral N', &
-         ptr_col=this%sminn_to_plant_col)
+         ptr_col=this%sminn_to_plant_col, default='inactive')
 
     this%supplement_to_sminn_col(begc:endc) = spval
     call hist_addfld1d (fname='SUPPLEMENT_TO_SMINN', units='gN/m^2/s', &
          avgflag='A', long_name='supplemental N supply', &
-         ptr_col=this%supplement_to_sminn_col)
+         ptr_col=this%supplement_to_sminn_col, default='inactive')
 
     this%gross_nmin_col(begc:endc) = spval
     call hist_addfld1d (fname='GROSS_NMIN', units='gN/m^2/s', &
          avgflag='A', long_name='gross rate of N mineralization', &
-         ptr_col=this%gross_nmin_col)
+         ptr_col=this%gross_nmin_col, default='inactive')
 
     this%net_nmin_col(begc:endc) = spval
     call hist_addfld1d (fname='NET_NMIN', units='gN/m^2/s', &
          avgflag='A', long_name='net rate of N mineralization', &
-         ptr_col=this%net_nmin_col)
+         ptr_col=this%net_nmin_col, default='inactive')
 
     if (use_nitrif_denitrif) then
        this%f_n2o_nit_col(begc:endc) = spval
        call hist_addfld1d (fname='F_N2O_NIT', units='gN/m^2/s', &
             avgflag='A', long_name='nitrification N2O flux', &
-            ptr_col=this%f_n2o_nit_col)
+            ptr_col=this%f_n2o_nit_col, default='inactive')
 
        this%f_n2o_denit_col(begc:endc) = spval
        call hist_addfld1d (fname='F_N2O_DENIT', units='gN/m^2/s', &
             avgflag='A', long_name='denitrification N2O flux', &
-            ptr_col=this%f_n2o_denit_col)
+            ptr_col=this%f_n2o_denit_col, default='inactive')
     end if
 
     if (use_crop) then

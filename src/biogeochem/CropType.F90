@@ -159,7 +159,7 @@ contains
     this%cphase_patch(begp:endp) = spval
     call hist_addfld1d (fname='CPHASE', units='0-not planted, 1-planted, 2-leaf emerge, 3-grain fill, 4-harvest', &
          avgflag='A', long_name='crop phenology phase', &
-         ptr_patch=this%cphase_patch, default='active')
+         ptr_patch=this%cphase_patch, default='inactive')
 
     if ( (trim(this%baset_mapping) == baset_map_latvary) )then
        this%latbaset_patch(begp:endp) = spval

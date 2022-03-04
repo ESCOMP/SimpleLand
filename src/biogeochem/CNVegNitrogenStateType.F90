@@ -201,7 +201,7 @@ contains
        this%grainn_patch(begp:endp) = spval
        call hist_addfld1d (fname='GRAINN', units='gN/m^2', &
             avgflag='A', long_name='grain N', &
-            ptr_patch=this%grainn_patch)
+            ptr_patch=this%grainn_patch, default='inactive')
        call hist_addfld1d (fname='CROPSEEDN_DEFICIT', units='gN/m^2', &
             avgflag='A', long_name='N used for crop seed that needs to be repaid', &
             ptr_patch=this%cropseedn_deficit_patch, default='inactive')
@@ -210,7 +210,7 @@ contains
     this%leafn_patch(begp:endp) = spval
     call hist_addfld1d (fname='LEAFN', units='gN/m^2', &
          avgflag='A', long_name='leaf N', &
-         ptr_patch=this%leafn_patch)
+         ptr_patch=this%leafn_patch, default='inactive')
 
     this%leafn_storage_patch(begp:endp) = spval
     call hist_addfld1d (fname='LEAFN_STORAGE', units='gN/m^2', &
@@ -237,7 +237,7 @@ contains
     this%frootn_patch(begp:endp) = spval
     call hist_addfld1d (fname='FROOTN', units='gN/m^2', &
          avgflag='A', long_name='fine root N', &
-         ptr_patch=this%frootn_patch)
+         ptr_patch=this%frootn_patch, default='inactive')
 
     this%frootn_storage_patch(begp:endp) = spval
     call hist_addfld1d (fname='FROOTN_STORAGE', units='gN/m^2', &
@@ -252,7 +252,7 @@ contains
     this%livestemn_patch(begp:endp) = spval
     call hist_addfld1d (fname='LIVESTEMN', units='gN/m^2', &
          avgflag='A', long_name='live stem N', &
-         ptr_patch=this%livestemn_patch)
+         ptr_patch=this%livestemn_patch, default='inactive')
 
     this%livestemn_storage_patch(begp:endp) = spval
     call hist_addfld1d (fname='LIVESTEMN_STORAGE', units='gN/m^2', &
@@ -267,7 +267,7 @@ contains
     this%deadstemn_patch(begp:endp) = spval
     call hist_addfld1d (fname='DEADSTEMN', units='gN/m^2', &
          avgflag='A', long_name='dead stem N', &
-         ptr_patch=this%deadstemn_patch)
+         ptr_patch=this%deadstemn_patch, default='inactive')
 
     this%deadstemn_storage_patch(begp:endp) = spval
     call hist_addfld1d (fname='DEADSTEMN_STORAGE', units='gN/m^2', &
@@ -282,7 +282,7 @@ contains
     this%livecrootn_patch(begp:endp) = spval
     call hist_addfld1d (fname='LIVECROOTN', units='gN/m^2', &
          avgflag='A', long_name='live coarse root N', &
-         ptr_patch=this%livecrootn_patch)
+         ptr_patch=this%livecrootn_patch, default='inactive')
 
     this%livecrootn_storage_patch(begp:endp) = spval
     call hist_addfld1d (fname='LIVECROOTN_STORAGE', units='gN/m^2', &
@@ -297,7 +297,7 @@ contains
     this%deadcrootn_patch(begp:endp) = spval
     call hist_addfld1d (fname='DEADCROOTN', units='gN/m^2', &
          avgflag='A', long_name='dead coarse root N', &
-         ptr_patch=this%deadcrootn_patch)
+         ptr_patch=this%deadcrootn_patch, default='inactive')
 
     this%deadcrootn_storage_patch(begp:endp) = spval
     call hist_addfld1d (fname='DEADCROOTN_STORAGE', units='gN/m^2', &
@@ -312,12 +312,12 @@ contains
     this%retransn_patch(begp:endp) = spval
     call hist_addfld1d (fname='RETRANSN', units='gN/m^2', &
          avgflag='A', long_name='plant pool of retranslocated N', &
-         ptr_patch=this%retransn_patch)
+         ptr_patch=this%retransn_patch, default='inactive')
 
     this%npool_patch(begp:endp) = spval
     call hist_addfld1d (fname='NPOOL', units='gN/m^2', &
          avgflag='A', long_name='temporary plant N pool', &
-         ptr_patch=this%npool_patch)     
+         ptr_patch=this%npool_patch, default='inactive')     
 
     this%ntrunc_patch(begp:endp) = spval
     call hist_addfld1d (fname='PFT_NTRUNC', units='gN/m^2', &
@@ -327,22 +327,22 @@ contains
     this%dispvegn_patch(begp:endp) = spval
     call hist_addfld1d (fname='DISPVEGN', units='gN/m^2', &
          avgflag='A', long_name='displayed vegetation nitrogen', &
-         ptr_patch=this%dispvegn_patch)
+         ptr_patch=this%dispvegn_patch, default='inactive')
 
     this%storvegn_patch(begp:endp) = spval
     call hist_addfld1d (fname='STORVEGN', units='gN/m^2', &
          avgflag='A', long_name='stored vegetation nitrogen', &
-         ptr_patch=this%storvegn_patch)
+         ptr_patch=this%storvegn_patch, default='inactive')
 
     this%totvegn_patch(begp:endp) = spval
     call hist_addfld1d (fname='TOTVEGN', units='gN/m^2', &
          avgflag='A', long_name='total vegetation nitrogen', &
-         ptr_patch=this%totvegn_patch)
+         ptr_patch=this%totvegn_patch, default='inactive')
 
     this%totn_patch(begp:endp) = spval
     call hist_addfld1d (fname='TOTPFTN', units='gN/m^2', &
          avgflag='A', long_name='total patch-level nitrogen', &
-         ptr_patch=this%totn_patch)
+         ptr_patch=this%totn_patch, default='inactive')
 
     !-------------------------------
     ! column state variables 
@@ -351,17 +351,17 @@ contains
     this%seedn_grc(begg:endg) = spval
     call hist_addfld1d (fname='SEEDN', units='gN/m^2', &
          avgflag='A', long_name='pool for seeding new PFTs via dynamic landcover', &
-         ptr_gcell=this%seedn_grc)
+         ptr_gcell=this%seedn_grc, default='inactive')
 
     this%totecosysn_col(begc:endc) = spval
     call hist_addfld1d (fname='TOTECOSYSN', units='gN/m^2', &
          avgflag='A', long_name='total ecosystem N, excluding product pools', &
-         ptr_col=this%totecosysn_col)
+         ptr_col=this%totecosysn_col, default='inactive')
 
     this%totn_col(begc:endc) = spval
     call hist_addfld1d (fname='TOTCOLN', units='gN/m^2', &
          avgflag='A', long_name='total column-level N, excluding product pools', &
-         ptr_col=this%totn_col)
+         ptr_col=this%totn_col, default='inactive')
 
   end subroutine InitHistory
 
