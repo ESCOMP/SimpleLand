@@ -2304,7 +2304,18 @@ contains
          dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
          long_name='amount of frozen water in each soil layer', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_ice_grc)          
-    
+   
+    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_t_grc', xtype=ncd_double, &
+         dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
+         long_name='MML soil temperature at each layer', units='K', &
+         interpinic_flag='skip', readvar=readvar, data=this%mml_soil_t_grc)   
+
+    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_dtsoi_grc', xtype=ncd_double, &
+         dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
+         long_name='MML temperature tendency in each soil layer', units='K', &
+         interpinic_flag='skip', readvar=readvar, data=this%mml_soil_dtsoi_grc) 
+
+ 
     ! MML nc vars, so if I stop mid-month / mid-day I can still know what that month's nc params are
     call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gvd_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
