@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-build clm library
+build slim ibrary
 """
 import sys, os, time, filecmp, shutil, imp
 
@@ -34,28 +34,17 @@ def _main_func():
         mach = case.get_value("MACH")
         nthrds = case.get_value("LND_NTHRDS")
 
-        clm_config_opts = case.get_value("CLM_CONFIG_OPTS")
-        if "clm4_5" in clm_config_opts:
-            clm_phys = "clm4_5"
-        elif "clm5_0" in clm_config_opts:
-            clm_phys = "clm5_0"
-        else:
-            expect(False, "CLM_CONFIG_OPTS must support either clm4_5 or clm5_0 physics")
-
         if ( nthrds > 1 ):
             expect(False, "LND_NTHRDS must be 1 as threading isn't implemented (see issue #14)" )
 
         #-------------------------------------------------------
-        # create Filepath file for clm4_5 or clm5_0
+        # create Filepath file
         #-------------------------------------------------------
         filepath_file = os.path.join(bldroot,"Filepath")
         if not os.path.isfile(filepath_file):
             caseroot = case.get_value("CASEROOT")
-            paths = [os.path.join(caseroot,"SourceMods","src.clm"), 
+            paths = [os.path.join(caseroot,"SourceMods","src.slim"), 
                      os.path.join(lnd_root,"src","main"),
-                     os.path.join(lnd_root,"src","biogeophys"),
-                     os.path.join(lnd_root,"src","biogeochem"),
-                     os.path.join(lnd_root,"src","soilbiogeochem"),
                      os.path.join(lnd_root,"src","init_interp"),
                      os.path.join(lnd_root,"src","utils"),
                      os.path.join(lnd_root,"src","cpl")]
@@ -68,12 +57,11 @@ def _main_func():
         # create the library in libroot
         #-------------------------------------------------------
 
-        clm_config_opts = case.get_value("CLM_CONFIG_OPTS")
-        complib = os.path.join(libroot,"libclm.a")
+        complib = os.path.join(libroot,"libslim.a")
         makefile = os.path.join(casetools, "Makefile")
         macfile  = os.path.join(caseroot, "Macros.%s" % mach)
 
-        cmd = "%s complib -j %d MODEL=clm COMPLIB=%s -f %s MACFILE=%s " \
+        cmd = "%s complib -j %d MODEL=slim COMPLIB=%s -f %s MACFILE=%s " \
                % (gmake, gmake_j, complib, makefile, macfile )
 
         rc, out, err = run_cmd(cmd)

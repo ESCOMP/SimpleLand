@@ -1,5 +1,5 @@
 <components version="2.0">
-  <comp_archive_spec compname="clm" compclass="lnd">
+  <comp_archive_spec compname="slim" compclass="lnd">
     <rest_file_extension>r</rest_file_extension>
     <rest_file_extension>rh\d?</rest_file_extension>
     <hist_file_extension>h\d*.*\.nc$</hist_file_extension>
@@ -7,18 +7,18 @@
     <rest_history_varname>locfnh</rest_history_varname>
     <rpointer>
       <rpointer_file>rpointer.lnd$NINST_STRING</rpointer_file>
-      <rpointer_content>./$CASE.clm2$NINST_STRING.r.$DATENAME.nc</rpointer_content>
+      <rpointer_content>./$CASE.slim$NINST_STRING.r.$DATENAME.nc</rpointer_content>
     </rpointer>
     <test_file_names>
       <tfile disposition="copy">rpointer.lnd</tfile>
       <tfile disposition="copy">rpointer.lnd_9999</tfile>
-      <tfile disposition="copy">casename.clm2.r.1976-01-01-00000.nc</tfile>
-      <tfile disposition="copy">casename.clm2.rh4.1976-01-01-00000.nc</tfile>
-      <tfile disposition="move">casename.clm2.h0.1976-01-01-00000.nc</tfile>
-      <tfile disposition="ignore">casename.clm2.h0.1976-01-01-00000.nc.base</tfile>
-      <tfile disposition="move">casename.clm2_0002.e.postassim.1976-01-01-00000.nc</tfile>
-      <tfile disposition="move">casename.clm2_0002.e.preassim.1976-01-01-00000.nc</tfile>
-      <tfile disposition="ignore">anothercasename.clm2.i.1976-01-01-00000.nc</tfile>
+      <tfile disposition="copy">casename.slim.r.1976-01-01-00000.nc</tfile>
+      <tfile disposition="copy">casename.slim.rh4.1976-01-01-00000.nc</tfile>
+      <tfile disposition="move">casename.slim.h0.1976-01-01-00000.nc</tfile>
+      <tfile disposition="ignore">casename.slim.h0.1976-01-01-00000.nc.base</tfile>
+      <tfile disposition="move">casename.slim_0002.e.postassim.1976-01-01-00000.nc</tfile>
+      <tfile disposition="move">casename.slim_0002.e.preassim.1976-01-01-00000.nc</tfile>
+      <tfile disposition="ignore">anothercasename.slim.i.1976-01-01-00000.nc</tfile>
     </test_file_names>
   </comp_archive_spec>
 </components>

@@ -14,7 +14,7 @@
     Where for the CAM specific compsets below the following is supported
     TIME = Time period (e.g. 2000, HIST, RCP8...)
     ATM  = [CAM40, CAM50, CAM55]
-    LND  = [CLM45, CLM50, SLND]
+    LND  = [SLIM, SLND]
     ICE  = [CICE, DICE, SICE]
     OCN  = [DOCN, ,AQUAP, SOCN]
     ROF  = [RTM, SROF]
@@ -39,88 +39,69 @@
   <!-- CAM6 -->
   <compset>
     <alias>H_MML_2000_CAM6</alias>
-    <lname>2000_CAM60_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>2000_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>H_MML_1850_CAM6</alias>
-    <lname>1850_CAM60_CLM50%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>1850_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
 
   <compset>
     <alias>F2000Cam6SlimRsGs</alias>
-    <lname>2000_CAM60_CLM50%SP_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
+    <lname>2000_CAM60_SLIM_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
   </compset>
   
-  <!-- CAM5 with CLM45 SP -->
+  <!-- CAM5 -->
   <compset>
     <alias>H_MML_2000_CAM5</alias>
-    <lname>2000_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>2000_CAM50_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   
-  <!-- CAM5 with CLM45 BGC -->
-  <compset>
-    <alias>H_MML_2000_CAM5_BGC</alias>
-    <lname>2000_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
-  </compset>
-
+  <!-- CAM5 Historical BGC -->
   <compset>
     <alias>FHistCam5SlimRsGs</alias>
-    <lname>HIST_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>HIST_CAM50_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- I MML compsets for running offline -->
   <compset>
     <alias>K1850MMLOFFLINE_CPLHIST</alias>
-    <lname>1850_DATM%CPLHIST_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>1850_DATM%CPLHIST_SLIM_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>K2000MMLOFFLINE_CPLHIST</alias>
-    <lname>2000_DATM%CPLHIST_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>2000_DATM%CPLHIST_SLIM_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>K1850MMLOFFLINE_CRU</alias>
-    <lname>1850_DATM%CRUv7_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>1850_DATM%CRUv7_SLIM_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
   <compset>
     <alias>K1850MMLOFFLINE_GSWP3</alias>
-    <lname>1850_DATM%GSWP3v1_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>1850_DATM%GSWP3v1_SLIM_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- Historical MML offline compsets, Historical Period-->
   <compset>
     <alias>K_HIST_MMLOFFLINE_GSWP3</alias>
-    <lname>HIST_DATM%GSWP3v1_CLM45%BGC_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>HIST_DATM%GSWP3v1_SLIM_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>  
   <compset>
     <alias>K_HIST_MMLOFFLINE_QIA</alias>
-    <lname>HIST_DATM%QIA_CLM50%BGC_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>HIST_DATM%QIA_SLIM_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>  
   
   <!-- Primarily for testing; uses Qian atmospheric forcing simply to give
        faster datm throughput, which is particularly relevant for single-point
        cases (where datm dominates the runtime) -->
   <compset>
-    <alias>IHistClm45BgcQianGs</alias>
-    <lname>HIST_DATM%QIA_CLM45%BGC_SICE_SOCN_RTM_SGLC_SWAV</lname>
+    <alias>IHistSlimQianGs</alias>
+    <lname>HIST_DATM%QIA_SLIM_SICE_SOCN_RTM_SGLC_SWAV</lname>
   </compset>
-
-  <!-- This is here to validate that the SP and BGC cases are identical as well as with CLM4.5 or CLM5.0 physics -->
-  <compset>
-    <alias>IHistSlim50QianGs</alias>
-    <lname>HIST_DATM%QIA_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
-  </compset>
-
-  <!-- Stub glacier needed for regional / single-point -->
-
-  <compset>
-    <alias>I1850Clm45BgcGs</alias>
-    <lname>1850_DATM%GSWP3v1_CLM45%BGC_SICE_SOCN_RTM_SGLC_SWAV</lname>
-  </compset>
-
 
   <compset>
     <alias>I2000SlimRsGs</alias>
-    <lname>2000_DATM%GSWP3v1_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>2000_DATM%GSWP3v1_SLIM_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
 
 
