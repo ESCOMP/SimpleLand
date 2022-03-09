@@ -3,9 +3,7 @@ Important files in main directories:
 =============================================================================================
 
 Externals.cfg --------------- File for management of the main high level externals
-Externals_CLM.cfg ----------- File for management of the CLM specific externals (i.e. FATES)
-
-bld/configure --------------- Script to prepare CLM to be built.
+Externals_SLIM.cfg ---------- File for management of the SLIM specific externals (if any)
 
 =============================================================================================
     QUICKSTART: using the CPL7 scripts:
@@ -13,9 +11,9 @@ bld/configure --------------- Script to prepare CLM to be built.
 
          cd cime/scripts
          ./create_newcase            # get help on how to run create_newcase
-         ./create_newcase --case testI --res f19_g16 --compset I2000Clm50BgcCrop --mach cheyenne
+         ./create_newcase --case testI --res f19_g17 --compset I2000SlimRsGs --mach cheyenne
                                      # create new "I" case for cheyenne_intel at 1.9x2.5_gx1v7 res
-                                     # "I2000Clm50BgcCrop" case is clm5_0 active, datm8, and inactive ice/ocn
+                                     # "I2000SlimRsGs" case is SLIM active, datm8, and inactive ice/ocn/glc/rof
          cd testI
          ./case.setup                # create the $CASE.run file
          ./case.build                # build model and create namelists
