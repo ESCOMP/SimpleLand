@@ -4,4 +4,326 @@
 
 <entry_id version="2.0">
 
+  <!-- =============================================================  -->
+  <!-- datasets                                                       -->
+  <!-- =============================================================  -->
+
+  <entry id="mml_surdat">
+     <type>char(256)</type>
+     <category>datasets</category>
+     <group>slim_inparm</group>
+     <desc>
+           Surface dataset describing surface properties at each gridcell
+     </desc>
+  </entry>
+
+  <entry id="finidat_interp_dest">
+     <type>char(256)</type> 
+     <category>datasets</category>
+     <input_pathname>abs</input_pathname> 
+     <group>slim_inparm</group> 
+     <valid_values></valid_values>
+     <desc>
+           If use_init_interp is set to .true., interpinic will be called to interpolate
+           the file given by finidat, creating the output file specified by finidat_interp_dest.
+     </desc>
+  </entry>
+
+  <entry id="finidat">
+     <type>char(256)</type> 
+     <category>datasets</category>
+     <input_pathname>abs</input_pathname> 
+     <group>slim_inparm</group> 
+     <valid_values></valid_values>
+     <desc>
+           Full pathname of initial conditions file. If blank SLIM will startup from
+           arbitrary initial conditions.
+     </desc>
+  </entry>
+
+  <entry id="use_init_interp">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>slim_inparm</group>
+     <valid_values></valid_values>
+     <desc>
+           If set to .true., interpinic will be called to interpolate the file given by finidat,
+           creating the output file specified by finidat_interp_dest.
+
+           This requires that finidat be non-blank.
+     </desc>
+  </entry>
+
+  <entry id="nrevsn">
+     <type>char(256)</type> 
+     <category>slim_restart</category>
+     <input_pathname>abs</input_pathname> 
+     <group>slim_inparm</group> 
+     <valid_values></valid_values>
+     <desc>
+           Full pathname of master restart file for a branch run. (only used if RUN_TYPE=branch)
+           (Set with RUN_REFCASE and RUN_REFDATE)
+     </desc>
+  </entry>
+
+  <entry id="fatmlndfrc">
+     <type>char(256)</type> 
+     <category>datasets</category>
+     <input_pathname>abs</input_pathname> 
+     <group>slim_inparm</group> 
+     <valid_values></valid_values>
+     <desc>Full pathname of land fraction data file.</desc>
+  </entry>
+
+  <!-- =============================================================  -->
+  <!-- Performance                                                    -->
+  <!-- =============================================================  -->
+
+  <entry id="clump_pproc">
+     <type>integer</type> 
+     <category>slim_performance</category>
+     <group>slim_inparm</group>
+     <desc>Clumps per processor.</desc>
+  </entry>
+
+  <entry id="nsegspc">
+     <type>integer</type> 
+     <category>slim_performance</category>
+     <group>slim_inparm</group>
+     <desc>number of segments per clump for decomposition</desc>
+     <default_value>20</default_value>
+  </entry>
+
+  <!-- =============================================================  -->
+  <!-- Physics: CO2, time-step, etc.                                  -->
+  <!-- =============================================================  -->
+
+  <entry id="co2_ppmv">
+    <type>real</type> 
+    <category>slim_physics</category>
+    <group>slim_inparm</group>
+    <desc>
+          Atmospheric CO2 molar ratio (by volume) only used when co2_type==constant (umol/mol)
+          (Set by CCSM_CO2_PPMV)
+    </desc>
+  </entry>
+
+  <entry id="co2_type">
+    <type>char*16</type> 
+    <category>slim_physics</category>
+    <group>slim_inparm</group> 
+    <valid_values>constant,prognostic,diagnostic</valid_values>
+    <desc>
+          Type of CO2 feedback.
+          constant   = use the input co2_ppmv value
+          prognostic = use the prognostic value sent from the atmosphere
+          diagnostic = use the diagnostic value sent from the atmosphere
+    </desc>
+  </entry>
+
+  <entry id="dtime">
+    <type>real</type>  
+    <category>slim_physics</category> 
+    <group>slim_inparm</group>
+    <desc>Time step (seconds)</desc>
+  </entry>
+
+  <!-- =============================================================  -->
+  <!-- History fields                                                 -->
+  <!-- =============================================================  -->
+
+  <entry id="hist_avgflag_pertape">
+    <type>char*1(6)</type> 
+    <category>history</category>
+    <group>slim_inparm</group> 
+    <valid_values>A,I,X,M</valid_values>
+    <desc>
+          Per file averaging flag.
+          'A' (average over history period)
+          'I' (instantaneous)
+          'X' (maximum over history period)
+          'M' (minimum over history period)
+    </desc>
+  </entry>
+
+  <entry id="hist_type1d_pertape">
+    <type>char*4(6)</type> 
+    <category>history</category>
+    <group>slim_inparm</group> 
+    <valid_values>GRID</valid_values>
+    <desc>
+          Averaging type of output for 1D vector output (when hist_dov2xy is false).
+          GRID means average all land-units up to the grid-point level
+     </desc>
+  </entry>
+
+  <entry id="hist_dov2xy">
+    <type>logical(6)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>>
+    <desc>
+          If TRUE, implies output data on a 2D latitude/longitude grid. False means
+          output in 1D vector format.  One setting per history tape series.
+    </desc>
+  </entry>
+
+  <entry id="hist_empty_htapes">
+    <type>logical</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>
+          If TRUE, indicates do NOT output any default history fields (requires you to use
+          hist_fincl* to set the exact output fields to use)..
+    </desc>
+  </entry>
+
+  <entry id="hist_fexcl1">
+     <type>char*64(1000)</type> 
+     <category>history</category>
+     <group>slim_inparm</group>
+     <desc>Fields to exclude from history tape series 1.</desc>
+  </entry>
+
+  <entry id="hist_fexcl2">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to exclude from history tape series  2.</desc>
+  </entry>
+
+  <entry id="hist_fexcl3">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to exclude from history tape series  3.</desc>
+  </entry>
+
+  <entry id="hist_fexcl4">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to exclude from history tape series  4.</desc>
+  </entry>
+
+  <entry id="hist_fexcl5">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to exclude from history tape series  5.</desc>
+  </entry>
+
+  <entry id="hist_fexcl6">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to exclude from history tape series  6.</desc>
+  </entry>
+
+  <entry id="hist_fincl1">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to add to history tape series  1.</desc>
+  </entry>
+
+  <entry id="hist_fincl2">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to add to history tape series  2.</desc>
+  </entry>
+
+  <entry id="hist_fincl3">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to add to history tape series  3.</desc>
+  </entry>
+
+  <entry id="hist_fincl4">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to add to history tape series  4.</desc>
+  </entry>
+
+  <entry id="hist_fincl5">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to add to history tape series  5.</desc>
+  </entry>
+
+  <entry id="hist_fincl6">
+    <type>char*64(1000)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Fields to add to history tape series  6.</desc>
+  </entry>
+
+  <entry id="hist_mfilt">
+    <type>integer(6)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>Per tape series  maximum number of time samples.</desc>
+  </entry>
+
+  <entry id="hist_ndens">
+    <type>integer(6)</type> 
+    <category>history</category>
+    <group>slim_inparm</group> 
+    <valid_values>1,2</valid_values>
+    <desc>
+          Per tape series  history file density (i.e. output precision)
+          1=double precision
+          2=single precision
+    </desc>
+    <default_value>2,2,2,2,2,2</default_value>
+  </entry>
+
+  <entry id="hist_nhtfrq">
+    <type>integer(6)</type> 
+    <category>history</category>
+    <group>slim_inparm</group>
+    <desc>
+            Per tape series history write frequency.
+            positive means in time steps
+            0=monthly
+            negative means hours
+        (i.e. 5 means every 24 time-steps and -24 means every day
+    </desc>
+    <default_value>0,-24,-24,-24,-24,-24</default_value>
+  </entry>
+
+  <!-- =============================================================  -->
+  <!-- General settings: resolution etc.                              -->
+  <!-- =============================================================  -->
+
+  <entry id="slim_start_type">
+       <type>char*8</type>  
+       <category>default_settings</category>
+       <group>default_settings</group> 
+       <valid_values>default,cold,arb_ic,startup,continue,branch</valid_values>
+       <desc>
+             SLIM run type.
+             'default' use the default type of slim_start type for this configuration
+             'cold' is a run from arbitrary initial conditions
+             'arb_ic' is a run using initial conditions if provided, OR arbitrary initial conditions if no files can be found
+             'startup' is an initial run with initial conditions provided.
+             'continue' is a restart run.
+             'branch' is a restart run in which properties of the output history files may be changed.
+       </desc>
+  </entry>
+
+  <entry id="res">
+       <type>char*30</type> 
+       <category>default_settings</category>
+       <group>default_settings</group>  
+       <valid_values>0.9x1.25,1.9x2.5,4x5,10x15</valid_values>
+       <values>
+           <value>1.9x2.5</value>
+       </values>
+      <desc>Horizontal resolutions</desc>
+  </entry>
+
 </entry_id>
