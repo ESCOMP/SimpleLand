@@ -20,7 +20,7 @@
 </p>
     <h1>Definition of SLIM namelist variables</h1>
     <p>We list all of the relevant namelist variables for SLIM cases. This includes
-    SLIM Namelistitems.</p>
+    SLIM Namelist items.</p>
 <hr/>
     <h2>Definition of SLIM namelist variables</h2>
     <p>Note, these all would go into the user_nl_slim file</p>
@@ -49,7 +49,7 @@
       <tr>
       <th colspan="1">Valid values</th>
       </tr>
-      <xsl:apply-templates select="entry[@category='slim_physics']"/>
+      <xsl:apply-templates select="entry[category='slim_physics']"/>
     </table>
 
     <table border="1" cellpadding="10">
@@ -63,7 +63,7 @@
       <tr>
       <th colspan="1">Valid values</th>
       </tr>
-      <xsl:apply-templates select="entry[@category='datasets']"/>
+      <xsl:apply-templates select="entry[category='datasets']"/>
     </table>
 
     <table border="1" cellpadding="10">
@@ -76,20 +76,7 @@
       <tr>
       <th colspan="1">Valid values</th>
       </tr>
-      <xsl:apply-templates select="entry[@category='history']"/>
-    </table>
-
-    <table border="1" cellpadding="10">
-    <caption>SLIM Namelist Restart settings</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='slim_restart']"/>
+      <xsl:apply-templates select="entry[category='history']"/>
     </table>
 
     <table border="1" cellpadding="10">
@@ -102,24 +89,25 @@
       <tr>
       <th colspan="1">Valid values</th>
       </tr>
-      <xsl:apply-templates select="entry[@category='slim_performance']"/>
+      <xsl:apply-templates select="entry[category='slim_performance']"/>
     </table>
 
 <p>
 <hr/>
 
-  </body>
+</p>
+</body>
 </xsl:template>
 
 <xsl:template match="entry">
   <tr>
     <td rowspan="2"><font color="#ff0000"><xsl:value-of select="@id"/></font></td>
-    <td rowspan="2"><xsl:value-of select="@type"/></td>
-    <td><xsl:apply-templates/></td>
+    <td rowspan="2"><xsl:value-of select="type"/></td>
+    <td><xsl:value-of select="desc"/><xsl:apply-templates/></td>
   </tr>
   <tr>
-    <td colspan="1"><xsl:if test="string-length(@valid_values)>0"><b>Valid Values: </b>
-         <xsl:value-of select="@valid_values"/></xsl:if></td>
+    <td colspan="1"><xsl:if test="string-length(valid_values)>0"><b>Valid Values: </b>
+         <xsl:value-of select="valid_values"/></xsl:if></td>
   </tr>
 </xsl:template>
 
