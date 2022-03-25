@@ -26,31 +26,20 @@
     <desc>Name of land component</desc>
   </entry>
 
-  <entry id="SLIM_NML_USE_CASE">
+  <entry id="SLIM_SCENARIO">
     <type>char</type>
     <default_value>UNSET</default_value>
+    <valid_values>UNSET,global_uniform,1850_control,2000_control</valid_values>
     <values>
-      <!-- Use rcp4.5 for PI to PDAY so will have data up to the current year available (for WACCM compsets that use PDAY) -->
       <value compset="2000.*"		>2000_control</value>
       <value compset="1850.*_"		>1850_control</value>
     </values>
     <group>run_component_slim</group>
     <file>env_run.xml</file>
-    <desc>SLIM namelist use_case.
-      Determines the use-case that will be sent to the SLIM build-namelist utility.
-      This is normally set by the component set. This is an advanced flag and should only be
-      used by expert users.</desc>
-  </entry>
-
-  <!-- SLIMBLDNML_OPTS is not additive, we must list all possible combinations -->
-  <entry id="SLIM_BLDNML_OPTS">
-    <type>char</type>
-    <default_value></default_value>
-    <values>
-    </values>
-    <group>run_component_slim</group>
-    <file>env_run.xml</file>
-    <desc>SLIM build-namelist options</desc>
+    <desc>SLIM namelist use_case scenario.
+      Determines the use-case scenario that will be used in the SLIM buildnml utility.
+      This is normally set by the component set.
+    </desc>
   </entry>
 
   <entry id="SLIM_CO2_TYPE">
@@ -58,7 +47,7 @@
     <valid_values>constant,diagnostic,prognostic</valid_values>
     <default_value>constant</default_value>
     <values>
-      <value compset="_CAM"     >diagnostic</value>
+      <value compset="_CAM"        >diagnostic</value>
       <value compset="_BGC%BDRD"   >diagnostic</value>
       <value compset="_BGC%BPRP"   >prognostic</value>
       <value compset="HIST.*_DATM" >diagnostic</value>
@@ -72,7 +61,7 @@
       compset, since it HAS to be coordinated with settings for the
       atmospheric model. Do not modify this variable. If you want to modify for
       your experiment, use your own user-defined component set
-      This is an advanced flag and should only be used by expert users.</desc>
+    </desc>
   </entry>
 
   <entry id="SLIM_NAMELIST_OPTS">
@@ -81,7 +70,7 @@
     <group>run_component_slim</group>
     <file>env_run.xml</file>
     <desc>SLIM-specific namelist settings for -namelist option in the SLIM
-      build-namelist. SLIM_NAMELIST_OPTS is normally set as a compset variable
+      buildnml. SLIM_NAMELIST_OPTS is normally set as a compset variable
       and in general should not be modified for supported compsets.
       It is recommended that if you want to modify this value for your experiment,
       you should use your own user-defined component sets via using create_newcase
@@ -89,17 +78,18 @@
       This is an advanced flag and should only be used by expert users.</desc>
   </entry>
 
-  <entry id="SLIM_FORCE_COLDSTART">
+  <entry id="SLIM_START_TYPE">
     <type>char</type>
-    <valid_values>on,off</valid_values>
-    <default_value>off</default_value>
+    <valid_values>default,cold,arb_ic</valid_values>
+    <default_value>default</default_value>
     <group>run_component_slim</group>
     <file>env_run.xml</file>
-    <desc>Flag to the SLIM build-namelist command to force SLIM to do a
-      cold start (finidat will be set to blanks).
-      A value of on forces the model to spin up from a cold-start
-      (arbitrary initial conditions). Setting this value in the xml file will take
-      precedence over any settings for finidat in the $CASEROOT/user_nl_slim file.</desc>
+    <desc>
+        SLIM run type.
+        'default' use the default type of slim_start type for this configuration
+        'cold' is a run from arbitrary initial conditions
+        'arb_ic' is a run using initial conditions if provided, OR arbitrary initial conditions if no files can be found
+    </desc>
   </entry>
 
   <help>
