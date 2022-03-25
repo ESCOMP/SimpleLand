@@ -160,7 +160,7 @@
   <entry id="hist_dov2xy">
     <type>logical(6)</type> 
     <category>history</category>
-    <group>slim_inparm</group>>
+    <group>slim_inparm</group>
     <desc>
           If TRUE, implies output data on a 2D latitude/longitude grid. False means
           output in 1D vector format.  One setting per history tape series.
