@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
-CLM namelist creator
+SLIM namelist creator
 """
-import sys, os, time, shutil, re, imp, filecmp
+import sys, os, shutil
 
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
@@ -14,97 +14,106 @@ sys.path.append(_LIBDIR)
 
 from standard_script_setup          import *
 from CIME.buildnml                  import create_namelist_infile, parse_input
+from CIME.nmlgen                    import NamelistGenerator
 from CIME.case                      import Case
 from CIME.utils                     import expect, run_cmd
 
 logger = logging.getLogger(__name__)
 
-_config_cache_template = """
-<?xml version="1.0"?>
-<config_definition>
-<commandline></commandline>
-<entry id="phys" value="{clm_phys}" list="" valid_values="clm4_5,clm5_0">Specifies clm physics</entry>
-</config_definition>
-"""
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
+def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path):
+####################################################################################
+    """Write out the namelist for this component.
+
+    Most arguments are the same as those for `NamelistGenerator`. The
+    `inst_string` argument is used as a suffix to distinguish files for
+    different instances. The `confdir` argument is used to specify the directory
+    in which output files will be placed.
+    """
+    #------------------------------------------------------
+    # Create config dictionary
+    #------------------------------------------------------
+    config = {}
+    config['din_loc_root'] = case.get_value("DIN_LOC_ROOT")
+    config['ccsm_co2_ppmv'] = case.get_value("CCSM_CO2_PPMV")
+    config['slim_co2_type'] = case.get_value("SLIM_CO2_TYPE")
+    config['slim_namelist_opts'] = case.get_value("SLIM_NAMELIST_OPTS")
+    config['slim_bldnml_opts'] = case.get_value("SLIM_BLDNML_OPTS")
+    config['slim_nml_use_case'] = case.get_value("SLIM_NML_USE_CASE")
+    config['slim_force_coldstart'] = case.get_value("SLIM_FORCE_COLDSTART")
+    config['comp_glc'] = case.get_value("COMP_GLC")
+    config['comp_atm'] = case.get_value("COMP_ATM")
+    config['lnd_grid'] = case.get_value("LND_GRID")
+    config['lnd_ncpl'] = case.get_value("LND_NCPL")
+    config['lnd_domain_path'] = case.get_value("LND_DOMAIN_PATH")
+    config['lnd_domain_file'] = case.get_value("LND_DOMAIN_FILE")
+    config['ninst_lnd'] = case.get_value("NINST_LND")
+    config['rundir'] = case.get_value("RUNDIR")
+    config['run_type'] = case.get_value("RUN_TYPE")
+    config['run_startdate'] = case.get_value("RUN_STARTDATE")
+    config['run_refcase'] = case.get_value("RUN_REFCASE")
+    config['run_refdate'] = case.get_value("RUN_REFDATE")
+    config['run_reftod'] = case.get_value("RUN_REFTOD")
+    config['mask'] = case.get_value("MASK_GRID")
+
+    logger.debug( " SLIM lnd grid is %s", config['lnd_grid'] )
+
+    #------------------------------------------------------
+    # Initialize namelist defaults
+    #------------------------------------------------------
+    nmlgen.init_defaults(infile, config)
+
+    #----------------------------------------------------
+    # Write output namelist
+    #----------------------------------------------------
+    namelist_file = os.path.join(confdir, "lnd_in")
+    nmlgen.write_output_file(namelist_file, data_list_path, groups=['slim_inparm'])
+
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
 ###############################################################################
-    """Build the clm namelist """
+    """Build the slim namelist """
 
     # Build the component namelist 
-    if compname != "clm":
+    if compname != "slim":
         raise AttributeError
 
     lnd_root = case.get_value("COMP_ROOT_DIR_LND")
-    din_loc_root = case.get_value("DIN_LOC_ROOT")
-    ccsm_co2_ppmv = case.get_value("CCSM_CO2_PPMV")
-    clm_co2_type = case.get_value("CLM_CO2_TYPE")
-    clm_namelist_opts = case.get_value("CLM_NAMELIST_OPTS")
-    clm_bldnml_opts = case.get_value("CLM_BLDNML_OPTS")
-    clm_nml_use_case = case.get_value("CLM_NML_USE_CASE")
-    clm_force_coldstart = case.get_value("CLM_FORCE_COLDSTART")
-    clm_accelerated_spinup = case.get_value("CLM_ACCELERATED_SPINUP")
-    comp_glc = case.get_value("COMP_GLC")
-    comp_atm = case.get_value("COMP_ATM")
-    lnd_grid = case.get_value("LND_GRID")
-    lnd_ncpl = case.get_value("LND_NCPL")
-    lnd_domain_path = case.get_value("LND_DOMAIN_PATH")
-    lnd_domain_file = case.get_value("LND_DOMAIN_FILE")
-    ninst_lnd = case.get_value("NINST_LND")
-    rundir = case.get_value("RUNDIR")
-    run_type = case.get_value("RUN_TYPE")
-    run_startdate = case.get_value("RUN_STARTDATE")
-    run_refcase = case.get_value("RUN_REFCASE")
-    run_refdate = case.get_value("RUN_REFDATE")
-    run_reftod = case.get_value("RUN_REFTOD")
-    glc_nec = case.get_value("GLC_NEC")
-    mask = case.get_value("MASK_GRID")
-
-
-    if ( clm_accelerated_spinup != "off" ):
-        expect(False, "CLM_ACCELERATED_SPINUP is not OFF -- SLIM can not use this!" )
 
     # -----------------------------------------------------
     # Clear out old data
     # -----------------------------------------------------
 
-    input_data_list = os.path.join(caseroot,"Buildconf","clm.input_data_list")
+    input_data_list = os.path.join(caseroot,"Buildconf","slim.input_data_list")
     if os.path.exists(input_data_list):
         os.remove(input_data_list)
 
     # -----------------------------------------------------
-    # Set clmconf
+    # Set confdir
     # -----------------------------------------------------
 
-    clmconf = os.path.join(caseroot, "Buildconf", "clmconf")
-    if not os.path.isdir(clmconf):
-        os.makedirs(clmconf)
+    confdir = os.path.join(caseroot, "Buildconf", "slimconf")
+    if not os.path.isdir(confdir):
+        os.makedirs(confdir)
 
-    # -----------------------------------------------------
-    # Create config_cache.xml file 
-    # -----------------------------------------------------
+    # namelist definition file
+    namelist_xml_dir = os.path.join(lnd_root, "cime_config")
+    definition_file = os.path.join(namelist_xml_dir, "namelist_definition_slim.xml")
+    expect(os.path.isfile(definition_file), "Namelist XML file %s not found!" % definition_file)
 
-    # Note that build-namelist utilizes the contents of the config_cache.xml file in 
-    # the namelist_defaults.xml file to obtain namelist variables
+    # Create the namelist generator object - independent of instance
+    nmlgen = NamelistGenerator(case, definition_file)
 
-    clm_config_opts = case.get_value("CLM_CONFIG_OPTS")
-    if "clm4_5" in clm_config_opts:
-        clm_phys = "clm4_5"
-    elif "clm5_0" in clm_config_opts:
-        clm_phys = "clm5_0"
-    else:
-        expect(False, "CLM_CONFIG_OPTS must support either clm4_5 or clm5_0 physics")
+    #----------------------------------------------------
+    # Clear out old data list
+    #----------------------------------------------------
+    data_list_path = os.path.join(case.get_case_root(), "Buildconf", "slim.input_data_list")
+    if os.path.exists(data_list_path):
+        os.remove(data_list_path)
 
-    config_cache_text = _config_cache_template.format(clm_phys=clm_phys)
-    config_cache_path = os.path.join(caseroot, "Buildconf", "clmconf", "config_cache.xml")
-    with open(config_cache_path, 'w') as config_cache_file:
-        config_cache_file.write(config_cache_text)
-
-    # -----------------------------------------------------
-    # Determine input arguments into build-namelist
-    # -----------------------------------------------------
-
+    ### Independent of instance...
     startfile_type = "finidat"
     start_type = "default"
     if run_type == "hybrid":
@@ -114,27 +123,18 @@ def buildnml(case, caseroot, compname):
 
     if run_type == "branch":
         startfile_type = "nrevsn"
-        if clm_force_coldstart == "on":
-           clm_force_coldstart = "off"
-           logger.warning( "WARNING: You've turned on CLM_FORCE_COLDSTART for a branch run_type, which is a contradiction, the coldstart will be ignored\n" +
-                           "  turn off CLM_FORCE_COLDSTART, or set RUN_TYPE=hybrid to get rid of this warning"
+        if slim_force_coldstart == "on":
+           slim_force_coldstart = "off"
+           logger.warning( "WARNING: You've turned on SLIM_FORCE_COLDSTART for a branch run_type, which is a contradiction, the coldstart will be ignored\n" +
+                           "  turn off SLIM_FORCE_COLDSTART, or set RUN_TYPE=hybrid to get rid of this warning"
                          )
 
-    if (clm_force_coldstart == "on"):
-        logger.warning( "WARNING: CLM is starting up from a cold state" )
+    if (slim_force_coldstart == "on"):
+        logger.warning( "WARNING: SLIM is starting up from a cold state" )
         start_type = "cold"
 
-    if lnd_grid == 'T31':
-        lnd_grid = '48x96'
-    if lnd_grid == 'T42':
-        lnd_grid = '64x128'
-    if lnd_grid == 'T85':
-        lnd_grid = '128x256'
-    if lnd_grid == 'T341':
-        lnd_grid = '512x1024'
-
-    if clm_nml_use_case != "UNSET":
-        usecase = "-use_case %s" %clm_nml_use_case
+    if slim_nml_use_case != "UNSET":
+        usecase = "-use_case %s" %slim_nml_use_case
     else:
         usecase = ""
 
@@ -150,14 +150,12 @@ def buildnml(case, caseroot, compname):
     else:
         ignore = "-ignore_ic_date"
 
-    infile = os.path.join(clmconf, "namelist")
+    infile = os.path.join(confdir, "namelist")
     
-    inputdata_file = os.path.join(caseroot,"Buildconf","clm.input_data_list")
+    inputdata_file = os.path.join(caseroot,"Buildconf","slim.input_data_list")
     
     lndfrac_file = os.path.join(lnd_domain_path,lnd_domain_file)
     
-    config_cache_file = os.path.join(caseroot,"Buildconf","clmconf","config_cache.xml")
-
     # -----------------------------------------------------
     # loop over instances
     # -----------------------------------------------------
@@ -178,54 +176,37 @@ def buildnml(case, caseroot, compname):
             shutil.copy(os.path.join(rundir, rpointer),
                         os.path.join(rundir, rpointer + inst_string))
 
-        # -----------------------------------------------------
-        # call build-namelist
-        # -----------------------------------------------------
-
+        ###
+        ### instance dependent information...
+        ###
         if run_type == "hybrid" or run_type == "branch":
-            clm_startfile = "%s.clm2%s.r.%s-%s.nc"%(run_refcase,inst_string,run_refdate,run_reftod)
-            if not os.path.exists(os.path.join(rundir, clm_startfile)):
-                clm_startfile = "%s.clm2.r.%s-%s.nc"%(run_refcase,run_refdate,run_reftod)
-            clm_icfile = "%s = \'%s\'"%(startfile_type, clm_startfile)
+            slim_startfile = "%s.slim%s.r.%s-%s.nc"%(run_refcase,inst_string,run_refdate,run_reftod)
+            if not os.path.exists(os.path.join(rundir, slim_startfile)):
+                slim_startfile = "%s.slim.r.%s-%s.nc"%(run_refcase,run_refdate,run_reftod)
+            slim_icfile = "%s = \'%s\'"%(startfile_type, slim_startfile)
         else:
-            clm_icfile = ""
+            slim_icfile = ""
+        ###
 
         infile_lines = []
-        infile_lines.append(clm_icfile)
+        infile_lines.append(slim_icfile)
 
-        user_nl_file = os.path.join(caseroot, "user_nl_clm" + inst_string)
-        namelist_infile = os.path.join(clmconf, "namelist")
+        user_nl_file = os.path.join(caseroot, "user_nl_slim" + inst_string)
+        namelist_infile = os.path.join(confdir, "namelist_infile")
 
         create_namelist_infile(case, user_nl_file, namelist_infile, "\n".join(infile_lines))
 
-        cmd = os.path.join(lnd_root,"bld","build-namelist")
-
-        command = ("%s -cimeroot %s -infile %s -csmdata %s -inputdata %s %s -namelist \"&clm_inparm  start_ymd=%s/ \" "
-                   "%s %s -res %s -clm_start_type %s -envxml_dir %s -l_ncpl %s "
-                   "-lnd_frac %s -glc_nec %s -co2_ppmv %s -co2_type %s -config %s "
-                   "%s %s"
-                   %(cmd, _CIMEROOT, infile, din_loc_root, inputdata_file, ignore, start_ymd, clm_namelist_opts, 
-                     usecase, lnd_grid, start_type, caseroot, lnd_ncpl,
-                     lndfrac_file, glc_nec, ccsm_co2_ppmv, clm_co2_type, config_cache_file, 
-                     clm_bldnml_opts, gridmask))
-
-        rc, out, err = run_cmd(command, from_dir=clmconf)
-        expect(rc==0,"Command %s failed rc=%d\nout=%s\nerr=%s"%(cmd,rc,out,err))
-        if out is not None:
-            logger.debug("     %s"%out)
-        if err is not None:
-            logger.debug("     %s"%err)
-
+        # create namelist
+        _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
         # -----------------------------------------------------
         # copy resolved namelist to rundir
         # -----------------------------------------------------
-
         if os.path.isdir(rundir):
-            file1 = os.path.join(clmconf, "lnd_in")
+            file1 = os.path.join(confdir, "lnd_in")
             file2 = os.path.join(rundir, "lnd_in")
             if ninst > 1:
                 file2 += inst_string
-            logger.debug("CLM namelist copy: file1 %s file2 %s " %(file1, file2))
+            logger.debug("SLIM namelist copy: file1 %s file2 %s " %(file1, file2))
             shutil.copy(file1,file2)
 
 ###############################################################################
@@ -233,7 +214,7 @@ def _main_func():
 
     caseroot = parse_input(sys.argv)
     with Case(caseroot) as case:
-        buildnml(case, caseroot, "clm")
+        buildnml(case, caseroot, "slim")
 
 if __name__ == "__main__":
     _main_func()
