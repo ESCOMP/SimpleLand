@@ -9,7 +9,7 @@
   <!-- =============================================================  -->
 
   <entry id="mml_surdat">
-     <type>char(256)</type>
+     <type>char</type>
      <category>datasets</category>
      <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group>
@@ -25,7 +25,7 @@
   </entry>
 
   <entry id="finidat_interp_dest">
-     <type>char(256)</type> 
+     <type>char</type> 
      <category>datasets</category>
      <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group> 
@@ -37,7 +37,7 @@
   </entry>
 
   <entry id="finidat">
-     <type>char(256)</type> 
+     <type>char</type> 
      <category>datasets</category>
      <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group> 
@@ -62,7 +62,7 @@
   </entry>
 
   <entry id="nrevsn">
-     <type>char(256)</type> 
+     <type>char</type> 
      <category>datasets</category>
      <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group> 
@@ -74,7 +74,7 @@
   </entry>
 
   <entry id="fatmlndfrc" modify_via_xml="LND_DOMAIN_FILE">
-     <type>char(256)</type> 
+     <type>char</type> 
      <category>datasets</category>
      <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group> 
@@ -122,7 +122,7 @@
   </entry>
 
   <entry id="co2_type" modify_via_xml="SLIM_CO2_TYPE">
-    <type>char*16</type> 
+    <type>char</type> 
     <category>slim_physics</category>
     <group>slim_inparm</group> 
     <valid_values>constant,prognostic,diagnostic</valid_values>
@@ -149,7 +149,7 @@
   <!-- =============================================================  -->
 
   <entry id="hist_avgflag_pertape">
-    <type>char*1(6)</type> 
+    <type>char(6)</type> 
     <category>history</category>
     <group>slim_history</group> 
     <valid_values>A,I,X,M</valid_values>
@@ -163,7 +163,7 @@
   </entry>
 
   <entry id="hist_type1d_pertape">
-    <type>char*4(6)</type> 
+    <type>char(6)</type> 
     <category>history</category>
     <group>slim_history</group> 
     <valid_values>GRID</valid_values>
@@ -194,84 +194,84 @@
   </entry>
 
   <entry id="hist_fexcl1">
-     <type>char*64(1000)</type> 
+     <type>char(1000)</type> 
      <category>history</category>
      <group>slim_history</group>
      <desc>Fields to exclude from history tape series 1.</desc>
   </entry>
 
   <entry id="hist_fexcl2">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  2.</desc>
   </entry>
 
   <entry id="hist_fexcl3">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  3.</desc>
   </entry>
 
   <entry id="hist_fexcl4">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  4.</desc>
   </entry>
 
   <entry id="hist_fexcl5">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  5.</desc>
   </entry>
 
   <entry id="hist_fexcl6">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  6.</desc>
   </entry>
 
   <entry id="hist_fincl1">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  1.</desc>
   </entry>
 
   <entry id="hist_fincl2">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  2.</desc>
   </entry>
 
   <entry id="hist_fincl3">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  3.</desc>
   </entry>
 
   <entry id="hist_fincl4">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  4.</desc>
   </entry>
 
   <entry id="hist_fincl5">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  5.</desc>
   </entry>
 
   <entry id="hist_fincl6">
-    <type>char*64(1000)</type> 
+    <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  6.</desc>
@@ -316,7 +316,7 @@
   <!-- =============================================================  -->
 
   <entry id="slim_start_type" modify_via_xml="SLIM_START_TYPE">
-       <type>char*8</type>  
+       <type>char</type>  
        <category>default_settings</category>
        <group>default_settings</group> 
        <valid_values>default,cold,arb_ic</valid_values>
@@ -332,7 +332,7 @@
   </entry>
 
   <entry id="res" modify_via_xml="LND_GRID">
-       <type>char*30</type> 
+       <type>char</type> 
        <category>default_settings</category>
        <group>default_settings</group>  
        <values>
