@@ -35,27 +35,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # Create config dictionary
     #------------------------------------------------------
     config = {}
-    config['din_loc_root'] = case.get_value("DIN_LOC_ROOT")
-    config['ccsm_co2_ppmv'] = case.get_value("CCSM_CO2_PPMV")
-    config['slim_co2_type'] = case.get_value("SLIM_CO2_TYPE")
-    config['slim_namelist_opts'] = case.get_value("SLIM_NAMELIST_OPTS")
-    config['slim_bldnml_opts'] = case.get_value("SLIM_BLDNML_OPTS")
-    config['slim_nml_use_case'] = case.get_value("SLIM_NML_USE_CASE")
-    config['slim_force_coldstart'] = case.get_value("SLIM_FORCE_COLDSTART")
-    config['comp_glc'] = case.get_value("COMP_GLC")
-    config['comp_atm'] = case.get_value("COMP_ATM")
-    config['lnd_grid'] = case.get_value("LND_GRID")
-    config['lnd_ncpl'] = case.get_value("LND_NCPL")
-    config['lnd_domain_path'] = case.get_value("LND_DOMAIN_PATH")
-    config['lnd_domain_file'] = case.get_value("LND_DOMAIN_FILE")
-    config['ninst_lnd'] = case.get_value("NINST_LND")
-    config['rundir'] = case.get_value("RUNDIR")
-    config['run_type'] = case.get_value("RUN_TYPE")
-    config['run_startdate'] = case.get_value("RUN_STARTDATE")
-    config['run_refcase'] = case.get_value("RUN_REFCASE")
-    config['run_refdate'] = case.get_value("RUN_REFDATE")
-    config['run_reftod'] = case.get_value("RUN_REFTOD")
-    config['mask'] = case.get_value("MASK_GRID")
+    config['lnd_grid']      = case.get_value("LND_GRID")
+    config['slim_scenario'] = case.get_value("SLIM_SCENARIO")
 
     logger.debug( " SLIM lnd grid is %s", config['lnd_grid'] )
 
@@ -64,11 +45,16 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     #------------------------------------------------------
     nmlgen.init_defaults(infile, config)
 
+    #------------------------------------------------------
+    # 
+    #------------------------------------------------------
+
     #----------------------------------------------------
     # Write output namelist
     #----------------------------------------------------
     namelist_file = os.path.join(confdir, "lnd_in")
-    nmlgen.write_output_file(namelist_file, data_list_path, groups=['slim_inparm'])
+    nmlgen.write_output_file(namelist_file, data_list_path, \
+                             groups=['slim_inparm', 'slim_data_and_initial', 'slim_history', 'slim_perf'])
 
 
 ###############################################################################
@@ -100,8 +86,9 @@ def buildnml(case, caseroot, compname):
 
     # namelist definition file
     namelist_xml_dir = os.path.join(lnd_root, "cime_config")
-    definition_file = os.path.join(namelist_xml_dir, "namelist_definition_slim.xml")
-    expect(os.path.isfile(definition_file), "Namelist XML file %s not found!" % definition_file)
+    definition_file = [os.path.join(namelist_xml_dir, "namelist_definition_slim.xml")]
+    for file_ in definition_file:
+        expect(os.path.isfile(file_), "Namelist XML file %s not found!" % file_ )
 
     # Create the namelist generator object - independent of instance
     nmlgen = NamelistGenerator(case, definition_file)
@@ -116,11 +103,13 @@ def buildnml(case, caseroot, compname):
     ### Independent of instance...
     startfile_type = "finidat"
     start_type = "default"
+    run_type = case.get_value("RUN_TYPE")
     if run_type == "hybrid":
         start_type = "startup"
     elif run_type != "startup":
         start_type = run_type
 
+    slim_force_coldstart = case.get_value("SLIM_FORCE_COLDSTART")
     if run_type == "branch":
         startfile_type = "nrevsn"
         if slim_force_coldstart == "on":
@@ -133,33 +122,19 @@ def buildnml(case, caseroot, compname):
         logger.warning( "WARNING: SLIM is starting up from a cold state" )
         start_type = "cold"
 
-    if slim_nml_use_case != "UNSET":
-        usecase = "-use_case %s" %slim_nml_use_case
-    else:
-        usecase = ""
 
-    if ( (mask != "null") and (mask != "UNSET") ):
-       gridmask = "-mask %s" %mask
-    else:
-       gridmask = ""
-
+    run_startdate = case.get_value("RUN_STARTDATE")
     start_ymd = run_startdate.replace('-','')
 
-    if ('-01-01' in run_startdate) or ('-09-01' in run_startdate):
-        ignore = "-ignore_ic_year"
-    else:
-        ignore = "-ignore_ic_date"
-
-    infile = os.path.join(confdir, "namelist")
-    
     inputdata_file = os.path.join(caseroot,"Buildconf","slim.input_data_list")
     
-    lndfrac_file = os.path.join(lnd_domain_path,lnd_domain_file)
+    rundir = case.get_value("RUNDIR")
     
     # -----------------------------------------------------
     # loop over instances
     # -----------------------------------------------------
 
+    ninst_lnd = case.get_value("NINST_LND")
     ninst = int(ninst_lnd)
     for inst_counter in range(1, ninst+1):
 
@@ -179,6 +154,9 @@ def buildnml(case, caseroot, compname):
         ###
         ### instance dependent information...
         ###
+        run_refcase = case.get_value("RUN_REFCASE")
+        run_refdate = case.get_value("RUN_REFDATE")
+        run_reftod = case.get_value("RUN_REFTOD")
         if run_type == "hybrid" or run_type == "branch":
             slim_startfile = "%s.slim%s.r.%s-%s.nc"%(run_refcase,inst_string,run_refdate,run_reftod)
             if not os.path.exists(os.path.join(rundir, slim_startfile)):
@@ -192,9 +170,10 @@ def buildnml(case, caseroot, compname):
         infile_lines.append(slim_icfile)
 
         user_nl_file = os.path.join(caseroot, "user_nl_slim" + inst_string)
-        namelist_infile = os.path.join(confdir, "namelist_infile")
+        infile = os.path.join(confdir, "namelist_infile")
 
-        create_namelist_infile(case, user_nl_file, namelist_infile, "\n".join(infile_lines))
+        create_namelist_infile(case, user_nl_file, infile, "\n".join(infile_lines))
+        namelist_infile = [infile]
 
         # create namelist
         _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
