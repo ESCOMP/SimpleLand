@@ -33,3 +33,7 @@ core.*
 *.gz
 *.log !run.log
 *.pyc
+
+# buildnml testing
+cime_config/buildnml_test/Buildconf
+cime_config/buildnml_test/buildnml.log
