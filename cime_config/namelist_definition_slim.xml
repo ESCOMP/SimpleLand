@@ -24,7 +24,7 @@
      </desc>
   </entry>
 
-  <entry id="finidat_interp_dest">
+  <entry id="finidat_interp_dest" skip_default_entry="true">
      <type>char</type> 
      <category>datasets</category>
      <input_pathname>abs</input_pathname> 
@@ -48,7 +48,7 @@
      </desc>
   </entry>
 
-  <entry id="use_init_interp">
+  <entry id="use_init_interp" skip_default_entry="true">
      <type>logical</type>
      <category>datasets</category>
      <group>slim_data_and_initial</group>
@@ -61,7 +61,7 @@
      </desc>
   </entry>
 
-  <entry id="nrevsn">
+  <entry id="nrevsn" skip_default_entry="true">
      <type>char</type> 
      <category>datasets</category>
      <input_pathname>abs</input_pathname> 
@@ -89,7 +89,7 @@
   <!-- Performance                                                    -->
   <!-- =============================================================  -->
 
-  <entry id="clump_pproc">
+  <entry id="clump_pproc" skip_default_entry="true">
      <type>integer</type> 
      <category>slim_performance</category>
      <group>slim_perf</group>
@@ -102,6 +102,9 @@
      <group>slim_perf</group>
      <desc>number of segments per clump for decomposition</desc>
      <default_value>20</default_value>
+     <values>
+       <value>20</value>
+     </values>
   </entry>
 
   <!-- =============================================================  -->
@@ -148,7 +151,7 @@
   <!-- History fields                                                 -->
   <!-- =============================================================  -->
 
-  <entry id="hist_avgflag_pertape">
+  <entry id="hist_avgflag_pertape" skip_default_entry="true">
     <type>char(6)</type> 
     <category>history</category>
     <group>slim_history</group> 
@@ -162,7 +165,7 @@
     </desc>
   </entry>
 
-  <entry id="hist_type1d_pertape">
+  <entry id="hist_type1d_pertape" skip_default_entry="true">
     <type>char(6)</type> 
     <category>history</category>
     <group>slim_history</group> 
@@ -181,9 +184,12 @@
           If TRUE, implies output data on a 2D latitude/longitude grid. False means
           output in 1D vector format.  One setting per history tape series.
     </desc>
+    <values>
+        <value>.true.</value>
+    </values>
   </entry>
 
-  <entry id="hist_empty_htapes">
+  <entry id="hist_empty_htapes" skip_default_entry="true">
     <type>logical</type> 
     <category>history</category>
     <group>slim_history</group>
@@ -198,37 +204,40 @@
      <category>history</category>
      <group>slim_history</group>
      <desc>Fields to exclude from history tape series 1.</desc>
+    <values>
+        <value>''</value>
+    </values>
   </entry>
 
-  <entry id="hist_fexcl2">
+  <entry id="hist_fexcl2" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  2.</desc>
   </entry>
 
-  <entry id="hist_fexcl3">
+  <entry id="hist_fexcl3" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  3.</desc>
   </entry>
 
-  <entry id="hist_fexcl4">
+  <entry id="hist_fexcl4" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  4.</desc>
   </entry>
 
-  <entry id="hist_fexcl5">
+  <entry id="hist_fexcl5" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to exclude from history tape series  5.</desc>
   </entry>
 
-  <entry id="hist_fexcl6">
+  <entry id="hist_fexcl6" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
@@ -240,37 +249,40 @@
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  1.</desc>
+    <values>
+        <value>''</value>
+    </values>
   </entry>
 
-  <entry id="hist_fincl2">
+  <entry id="hist_fincl2" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  2.</desc>
   </entry>
 
-  <entry id="hist_fincl3">
+  <entry id="hist_fincl3" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  3.</desc>
   </entry>
 
-  <entry id="hist_fincl4">
+  <entry id="hist_fincl4" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  4.</desc>
   </entry>
 
-  <entry id="hist_fincl5">
+  <entry id="hist_fincl5" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
     <desc>Fields to add to history tape series  5.</desc>
   </entry>
 
-  <entry id="hist_fincl6">
+  <entry id="hist_fincl6" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>
@@ -282,6 +294,9 @@
     <category>history</category>
     <group>slim_history</group>
     <desc>Per tape series  maximum number of time samples.</desc>
+    <values>
+      <value>1</value>
+    </values>
   </entry>
 
   <entry id="hist_ndens">
@@ -295,6 +310,9 @@
           2=single precision
     </desc>
     <default_value>2,2,2,2,2,2</default_value>
+    <values>
+      <value>2</value>
+    </values>
   </entry>
 
   <entry id="hist_nhtfrq">
@@ -309,6 +327,9 @@
         (i.e. 5 means every 5 time-steps and -24 means every day
     </desc>
     <default_value>0,-24,-24,-24,-24,-24</default_value>
+    <values>
+      <value>0</value>
+    </values>
   </entry>
 
   <!-- =============================================================  -->

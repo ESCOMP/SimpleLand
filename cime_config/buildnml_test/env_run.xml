@@ -11,7 +11,7 @@ Sample env_run.xml file that allows buildnml to be run for testing in this direc
 
 -->
 <group>
-<entry id="DIN_LOC_ROOT"         value="MYDINLOCROOT"  /> 
+<entry id="DIN_LOC_ROOT"         value="/glade/p/cesmdata/cseg/inputdata"  /> 
 
     <entry id="CASESTR" value="test">
     </entry>
@@ -33,9 +33,15 @@ Sample env_run.xml file that allows buildnml to be run for testing in this direc
     <entry id="RUN_STARTDATE" value="0001-01-01">
     </entry>
 
+    <entry id="CCSM_CO2_PPMV" value="284.7">
+    </entry>
     <entry id="SLIM_SCENARIO" value="global_uniform">
     </entry>
-    <entry id="LND_DOMAIN_FILE" value="domainfile">
+    <entry id="SLIM_CO2_TYPE" value="diagnostic">
+    </entry>
+    <entry id="SLIM_START_TYPE" value="default">
+    </entry>
+    <entry id="LND_DOMAIN_FILE" value="domain.lnd.f19_gh72.151104.nc">
     </entry>
     <entry id="LND_DOMAIN_PATH" value="$DIN_LOC_ROOT/share/domains">
     </entry>
