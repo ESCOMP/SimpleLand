@@ -108,37 +108,8 @@
   </entry>
 
   <!-- =============================================================  -->
-  <!-- Physics: CO2, time-step, etc.                                  -->
+  <!-- Physics: time-step, etc.                                  -->
   <!-- =============================================================  -->
-
-  <entry id="co2_ppmv" modify_via_xml="CCSM_CO2_PPMV">
-    <type>real</type> 
-    <category>slim_physics</category>
-    <group>slim_inparm</group>
-     <values>
-       <value>$CCSM_CO2_PPMV</value>
-     </values>
-    <desc>
-          Atmospheric CO2 molar ratio (by volume) only used when co2_type==constant (umol/mol)
-          (Set by CCSM_CO2_PPMV)
-    </desc>
-  </entry>
-
-  <entry id="co2_type" modify_via_xml="SLIM_CO2_TYPE">
-    <type>char</type> 
-    <category>slim_physics</category>
-    <group>slim_inparm</group> 
-    <valid_values>constant,prognostic,diagnostic</valid_values>
-     <values>
-       <value>$SLIM_CO2_TYPE</value>
-     </values>
-    <desc>
-          Type of CO2 feedback.
-          constant   = use the input co2_ppmv value
-          prognostic = use the prognostic value sent from the atmosphere
-          diagnostic = use the diagnostic value sent from the atmosphere
-    </desc>
-  </entry>
 
   <entry id="dtime" modify_via_xml="LND_NCPL">
     <type>real</type>  

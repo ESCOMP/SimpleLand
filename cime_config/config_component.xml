@@ -42,28 +42,6 @@
     </desc>
   </entry>
 
-  <entry id="SLIM_CO2_TYPE">
-    <type>char</type>
-    <valid_values>constant,diagnostic,prognostic</valid_values>
-    <default_value>constant</default_value>
-    <values>
-      <value compset="_CAM"        >diagnostic</value>
-      <value compset="_BGC%BDRD"   >diagnostic</value>
-      <value compset="_BGC%BPRP"   >prognostic</value>
-      <value compset="HIST.*_DATM" >diagnostic</value>
-    </values>
-    <group>run_component_slim</group>
-    <file>env_run.xml</file>
-    <desc>Determines how SLIM will determine where CO2 is set.
-      If value is constant, it will be set to CCSM_CO2_PPMV,
-      if value is either diagnostic or prognostic, the atmosphere model
-      MUST send it to SLIM. SLIM_CO2_TYPE is normally set by the specific
-      compset, since it HAS to be coordinated with settings for the
-      atmospheric model. Do not modify this variable. If you want to modify for
-      your experiment, use your own user-defined component set
-    </desc>
-  </entry>
-
   <entry id="SLIM_NAMELIST_OPTS">
     <type>char</type>
     <default_value></default_value>
