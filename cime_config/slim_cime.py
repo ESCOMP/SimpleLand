@@ -4,13 +4,9 @@ SLIM namelist creator
 import sys, os, shutil
 
 _CIMEROOT = os.environ.get("CIMEROOT")
-if _CIMEROOT is None:
-    raise SystemExit("ERROR: must set CIMEROOT environment variable")
-
 _LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
 sys.path.append(_LIBDIR)
 
-from standard_script_setup          import *
 from CIME.buildnml                  import create_namelist_infile, parse_input
 from CIME.nmlgen                    import NamelistGenerator
 from CIME.case                      import Case
@@ -155,6 +151,7 @@ def buildnml(case, caseroot, compname):
         run_refcase = case.get_value("RUN_REFCASE")
         run_refdate = case.get_value("RUN_REFDATE")
         run_reftod = case.get_value("RUN_REFTOD")
+        rundir     = case.get_value("RUNDIR")
         if run_type == "hybrid" or run_type == "branch":
             slim_startfile = "%s.slim%s.r.%s-%s.nc"%(run_refcase,inst_string,run_refdate,run_reftod)
             if not os.path.exists(os.path.join(rundir, slim_startfile)):
