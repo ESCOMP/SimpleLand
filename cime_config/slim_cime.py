@@ -7,6 +7,7 @@ _CIMEROOT = os.environ.get("CIMEROOT")
 _LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
 sys.path.append(_LIBDIR)
 
+from standard_script_setup          import *
 from CIME.buildnml                  import create_namelist_infile, parse_input
 from CIME.nmlgen                    import NamelistGenerator
 from CIME.case                      import Case
@@ -25,6 +26,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     different instances. The `confdir` argument is used to specify the directory
     in which output files will be placed.
     """
+    global logger
     #------------------------------------------------------
     # Create config dictionary
     #------------------------------------------------------
@@ -55,6 +57,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 def buildnml(case, caseroot, compname):
 ###############################################################################
     """Build the slim namelist """
+    global logger
 
     # Build the component namelist 
     if compname != "slim":
