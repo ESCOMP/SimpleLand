@@ -17,6 +17,66 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
+def check_nml_dtime( nmlgen ):
+####################################################################################
+    """ Set the namelist settings for time-step
+    """
+    global logger
+    #------------------------------------------------------
+    logger.info( " check_nml_dtime" )
+
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
+def check_nml_general( nmlgen ):
+####################################################################################
+    """ Set the namelist settings for general settings
+    """
+    global logger
+    #------------------------------------------------------
+    logger.info( " check_nml_general" )
+
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
+def check_nml_performance( nmlgen ):
+####################################################################################
+    """ Set the namelist settings for performance
+    """
+    global logger
+    #------------------------------------------------------
+    logger.info( " check_nml_performance" )
+
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
+def check_nml_history( nmlgen ):
+####################################################################################
+    """ Set the namelist settings for history
+    """
+    global logger
+    #------------------------------------------------------
+    logger.info( " check_nml_history" )
+
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
+def check_nml_initial_conditions( nmlgen ):
+####################################################################################
+    """ Set the namelist settings for initial conditions
+    """
+    global logger
+    #------------------------------------------------------
+    logger.info( " check_nml_initial_conditions" )
+
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
+def check_nml_data( nmlgen ):
+####################################################################################
+    """ Set the namelist settings for data
+    """
+    global logger
+    #------------------------------------------------------
+    logger.info( " check_nml_data" )
+
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
 def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path):
 ####################################################################################
     """Write out the namelist for this component.
@@ -34,7 +94,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['lnd_grid']      = case.get_value("LND_GRID")
     config['slim_scenario'] = case.get_value("SLIM_SCENARIO")
 
-    logger.debug( " SLIM lnd grid is %s", config['lnd_grid'] )
+    logger.info( " SLIM lnd grid is %s", config['lnd_grid'] )
 
     #------------------------------------------------------
     # Initialize namelist defaults
@@ -42,8 +102,14 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     nmlgen.init_defaults(infile, config)
 
     #------------------------------------------------------
-    # 
+    #  Process different namelists and parts of the namelist
     #------------------------------------------------------
+    check_nml_dtime( nmlgen ) 
+    check_nml_general( nmlgen ) 
+    check_nml_performance( nmlgen )
+    check_nml_history( nmlgen )
+    check_nml_initial_conditions( nmlgen )
+    check_nml_data( nmlgen )
 
     #----------------------------------------------------
     # Write output namelist
@@ -183,5 +249,5 @@ def buildnml(case, caseroot, compname):
             file2 = os.path.join(rundir, "lnd_in")
             if ninst > 1:
                 file2 += inst_string
-            logger.debug("SLIM namelist copy: file1 %s file2 %s " %(file1, file2))
+            logger.info("SLIM namelist copy: file1 %s file2 %s " %(file1, file2))
             shutil.copy(file1,file2)
