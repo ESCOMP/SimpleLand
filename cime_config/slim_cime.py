@@ -17,13 +17,44 @@ logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
-def check_nml_dtime( nmlgen ):
+def check_nml_dtime( nmlgen, case ):
 ####################################################################################
     """ Set the namelist settings for time-step
     """
     global logger
     #------------------------------------------------------
     logger.info( " check_nml_dtime" )
+    ncpl_base_period = case.get_value('NCPL_BASE_PERIOD')
+    if ncpl_base_period == 'hour':
+        basedt = 3600
+    elif ncpl_base_period == 'day':
+        basedt = 3600 * 24
+    elif ncpl_base_period == 'year':
+        if case.get_value('CALENDAR') == 'NO_LEAP':
+            basedt = 3600 * 24 * 365
+        else:
+            expect(False, "Invalid CALENDAR for NCPL_BASE_PERIOD %s " %ncpl_base_period)
+    elif ncpl_base_period == 'decade':
+        if case.get_value('CALENDAR') == 'NO_LEAP':
+            basedt = 3600 * 24 * 365 * 10
+        else:
+            expect(False, "invalid NCPL_BASE_PERIOD NCPL_BASE_PERIOD %s " %ncpl_base_period)
+    else:
+        expect(False, "invalid NCPL_BASE_PERIOD NCPL_BASE_PERIOD %s " %ncpl_base_period)
+
+    logger.info( " basedt = "+str(basedt) )
+
+
+    if basedt < 0:
+        expect(False, "basedt invalid overflow for NCPL_BASE_PERIOD %s " %ncpl_base_period)
+
+    lnd_ncpl = int(case.get_value("LND_NCPL"))
+    if basedt % lnd_ncpl != 0:
+        expect(False, "lnd_ncpl %s doesn't divide evenly into basedt %s\n"
+               %(lnd_ncpl, basedt))
+    else:
+        dtime = basedt // lnd_ncpl
+    nmlgen.set_value("dtime", value=dtime)
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
@@ -104,7 +135,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     #------------------------------------------------------
     #  Process different namelists and parts of the namelist
     #------------------------------------------------------
-    check_nml_dtime( nmlgen ) 
+    check_nml_dtime( nmlgen, case ) 
     check_nml_general( nmlgen ) 
     check_nml_performance( nmlgen )
     check_nml_history( nmlgen )

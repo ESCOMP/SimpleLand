@@ -33,6 +33,10 @@ Sample env_run.xml file that allows buildnml to be run for testing in this direc
     <entry id="RUN_STARTDATE" value="0001-01-01">
     </entry>
 
+    <entry id="NCPL_BASE_PERIOD" value="day">
+    </entry>
+    <entry id="LND_NCPL" value="48">
+    </entry>
     <entry id="SLIM_SCENARIO" value="global_uniform">
     </entry>
     <entry id="SLIM_START_TYPE" value="default">
