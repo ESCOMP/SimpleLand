@@ -35,5 +35,6 @@ core.*
 *.pyc
 
 # buildnml testing
+cime_config/buildnml_test/run
 cime_config/buildnml_test/Buildconf
 cime_config/buildnml_test/buildnml.log
