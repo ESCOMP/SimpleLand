@@ -30,6 +30,9 @@
      <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group> 
      <valid_values></valid_values>
+     <values>
+       <value>UNSET</value>
+     </values>
      <desc>
            If use_init_interp is set to .true., interpinic will be called to interpolate
            the file given by finidat, creating the output file specified by finidat_interp_dest.
@@ -42,6 +45,9 @@
      <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group> 
      <valid_values></valid_values>
+     <values>
+       <value>UNSET</value>
+     </values>
      <desc>
            Full pathname of initial conditions file. If blank SLIM will startup from
            arbitrary initial conditions.

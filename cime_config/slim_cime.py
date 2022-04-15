@@ -94,13 +94,20 @@ def check_nml_history( nmlgen ):
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
-def check_nml_initial_conditions( nmlgen ):
+def check_nml_initial_conditions( nmlgen, case ):
 ####################################################################################
     """ Set the namelist settings for initial conditions
     """
     global logger
     #------------------------------------------------------
     logger.info( " check_nml_initial_conditions" )
+    start_type = case.get_value( "SLIM_START_TYPE" )
+    if   ( start_type == "cold" ):
+       finidat = nmlgen.get_value("finidat")
+       logger.info( " finidat = "+finidat )
+       if ( finidat != "UNSET" ):
+          raise SystemExit( "finidat is set but SLIM_START_TYPE is cold which is a contradiction")
+       nmlgen.set_value("finidat", value=" ")
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
@@ -149,7 +156,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     check_nml_general( nmlgen ) 
     check_nml_performance( nmlgen )
     check_nml_history( nmlgen )
-    check_nml_initial_conditions( nmlgen )
+    check_nml_initial_conditions( nmlgen, case )
     check_nml_data( nmlgen )
 
     #----------------------------------------------------

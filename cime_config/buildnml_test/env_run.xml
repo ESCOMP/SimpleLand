@@ -39,7 +39,7 @@ Sample env_run.xml file that allows buildnml to be run for testing in this direc
     </entry>
     <entry id="SLIM_SCENARIO" value="global_uniform">
     </entry>
-    <entry id="SLIM_START_TYPE" value="default">
+    <entry id="SLIM_START_TYPE" value="cold">
     </entry>
     <entry id="LND_DOMAIN_FILE" value="domain.lnd.f19_gh72.151104.nc">
     </entry>
