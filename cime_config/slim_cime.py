@@ -96,6 +96,12 @@ def check_nml_initial_conditions( nmlgen ):
     #------------------------------------------------------
     logger.info( " check_nml_initial_conditions" )
 
+    hist_mfilt = nmlgen.get_value( "hist_mfilt" )
+    for mfilt in hist_mfilt:
+       logger.info( " hist_mfilt = "+mfilt )
+       if ( int(mfilt) <= 0 ):
+            raise SystemExit( "hist_mfilt must be 1 or larger" )
+
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
 def check_nml_data( nmlgen ):
