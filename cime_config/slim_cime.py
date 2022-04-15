@@ -106,6 +106,10 @@ def check_nml_data( nmlgen ):
     #------------------------------------------------------
     logger.info( " check_nml_data" )
 
+    mml_surdat = nmlgen.get_value( "mml_surdat" )
+    if ( mml_surdat == "UNSET" ):
+        raise SystemExit( "mml_surdat file is NOT set and is required" )
+
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
 def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path):
@@ -145,6 +149,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     #----------------------------------------------------
     # Write output namelist
     #----------------------------------------------------
+    logger.info( "Write namelists" )
     namelist_file = os.path.join(confdir, "lnd_in")
     nmlgen.write_output_file(namelist_file, data_list_path, \
                              groups=['slim_inparm', 'slim_data_and_initial', 'slim_history', 'slim_perf'])

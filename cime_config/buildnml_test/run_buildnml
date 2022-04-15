@@ -1,3 +1,4 @@
 #!/bin/bash
+rm Buildconf/slimconf/lnd_in
 env CIMEROOT=`pwd`/../../cime ../buildnml `pwd` --verbose --debug
 cat Buildconf/slimconf/lnd_in
