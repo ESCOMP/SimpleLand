@@ -1,0 +1,4 @@
+ hist_nhtfrq    = 0
+ hist_mfilt     = 1
+ ! Don't restrict the list of fields
+ hist_empty_htapes = .false.

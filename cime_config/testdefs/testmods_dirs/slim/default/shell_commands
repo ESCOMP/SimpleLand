@@ -1,0 +1,4 @@
+#!/bin/bash
+./xmlchange CLM_FORCE_COLDSTART="on"
+./xmlchange CLM_CO2_TYPE="constant"
+./xmlchange CCSM_CO2_PPMV="999.99"
