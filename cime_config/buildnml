@@ -15,7 +15,7 @@ sys.path.append(_LIBDIR)
 from standard_script_setup import *
 from CIME.buildnml import parse_input
 from CIME.case import Case
-from slim_cime import buildnml
+from slim_cime_py import buildnml
 
 ###############################################################################
 def _main_func():
