@@ -5,6 +5,10 @@
 To run all tests (unit tests, system tests and pylint), simply run `make
 all` from this directory.
 
+## Python environment
+
+use the "npl" conda environment on cheyenne
+
 ## Unit and system tests
 
 Unit and system tests can be run in one of two ways; these do the same

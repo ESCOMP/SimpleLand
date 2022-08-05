@@ -1,19 +1,14 @@
 """
 SLIM namelist creator
 """
-import sys
 import os
 import shutil
+import logging
 
-_CIMEROOT = os.environ.get("CIMEROOT")
-_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
-sys.path.append(_LIBDIR)
-
-from standard_script_setup import *
-from CIME.buildnml import create_namelist_infile, parse_input
+from CIME.buildnml import create_namelist_infile
 from CIME.nmlgen import NamelistGenerator
 from CIME.case import Case
-from CIME.utils import expect, run_cmd
+from CIME.utils import expect
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +17,7 @@ logger = logging.getLogger(__name__)
 def check_nml_dtime(nmlgen, case):
     ####################################################################################
     """Set the namelist settings for time-step"""
+    # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_dtime")
@@ -46,7 +42,7 @@ def check_nml_dtime(nmlgen, case):
     else:
         expect(False, "invalid NCPL_BASE_PERIOD NCPL_BASE_PERIOD %s " % ncpl_base_period)
 
-    logger.info(" basedt = " + str(basedt))
+    logger.info(" basedt = %s", str(basedt))
 
     if basedt < 0:
         expect(False, "basedt invalid overflow for NCPL_BASE_PERIOD %s " % ncpl_base_period)
@@ -67,6 +63,7 @@ def check_nml_dtime(nmlgen, case):
 def check_nml_general(nmlgen):
     ####################################################################################
     """Set the namelist settings for general settings"""
+    # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_general")
@@ -77,6 +74,7 @@ def check_nml_general(nmlgen):
 def check_nml_performance(nmlgen):
     ####################################################################################
     """Set the namelist settings for performance"""
+    # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_performance")
@@ -87,13 +85,14 @@ def check_nml_performance(nmlgen):
 def check_nml_history(nmlgen):
     ####################################################################################
     """Set the namelist settings for history"""
+    # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_history")
 
     hist_mfilt = nmlgen.get_value("hist_mfilt")
     for mfilt in hist_mfilt:
-        logger.info(" hist_mfilt = " + mfilt)
+        logger.info(" hist_mfilt = %d", int(mfilt))
         if int(mfilt) <= 0:
             raise SystemExit("hist_mfilt must be 1 or larger")
 
@@ -103,13 +102,14 @@ def check_nml_history(nmlgen):
 def check_nml_initial_conditions(nmlgen, case):
     ####################################################################################
     """Set the namelist settings for initial conditions"""
+    # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_initial_conditions")
     start_type = case.get_value("SLIM_START_TYPE")
     if start_type == "cold":
         finidat = nmlgen.get_value("finidat")
-        logger.info(" finidat = " + finidat)
+        logger.info(" finidat = %s", finidat)
         if finidat != "UNSET":
             raise SystemExit("finidat is set but SLIM_START_TYPE is cold which is a contradiction")
         nmlgen.set_value("finidat", value=" ")
@@ -120,6 +120,7 @@ def check_nml_initial_conditions(nmlgen, case):
 def check_nml_data(nmlgen):
     ####################################################################################
     """Set the namelist settings for data"""
+    # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_data")
@@ -140,6 +141,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     different instances. The `confdir` argument is used to specify the directory
     in which output files will be placed.
     """
+    # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
     # Create config dictionary
@@ -181,6 +183,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 def buildnml(case, caseroot, compname):
     ###############################################################################
     """Build the slim namelist"""
+    # pylint: disable=global-statement
     global logger
 
     # Build the component namelist
@@ -236,10 +239,11 @@ def buildnml(case, caseroot, compname):
         if slim_force_coldstart == "on":
             slim_force_coldstart = "off"
             logger.warning(
+                "%s",
                 "WARNING: You've turned on SLIM_FORCE_COLDSTART for a branch run_type,"
                 + " which is a contradiction, the coldstart will be ignored\n"
                 + "  turn off SLIM_FORCE_COLDSTART, or set RUN_TYPE=hybrid"
-                + " to get rid of this warning"
+                + " to get rid of this warning",
             )
 
     if slim_force_coldstart == "on":
@@ -247,7 +251,6 @@ def buildnml(case, caseroot, compname):
         start_type = "cold"
 
     run_startdate = case.get_value("RUN_STARTDATE")
-    start_ymd = run_startdate.replace("-", "")
 
     inputdata_file = os.path.join(caseroot, "Buildconf", "slim.input_data_list")
 
@@ -284,7 +287,7 @@ def buildnml(case, caseroot, compname):
         run_refdate = case.get_value("RUN_REFDATE")
         run_reftod = case.get_value("RUN_REFTOD")
         rundir = case.get_value("RUNDIR")
-        if run_type == "hybrid" or run_type == "branch":
+        if run_type in ("hybrid", "branch"):
             slim_startfile = "%s.slim%s.r.%s-%s.nc" % (
                 run_refcase,
                 inst_string,
@@ -321,5 +324,5 @@ def buildnml(case, caseroot, compname):
             file2 = os.path.join(rundir, "lnd_in")
             if ninst > 1:
                 file2 += inst_string
-            logger.info("SLIM namelist copy: file1 %s file2 %s " % (file1, file2))
+            logger.info("SLIM namelist copy: file1 %s file2 %s ", file1, file2)
             shutil.copy(file1, file2)

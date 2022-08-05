@@ -22,7 +22,7 @@ PYLINT=pylint
 PYLINT_ARGS=-j 4 --rcfile=slim/.pylintrc
 PYLINT_SRC = \
 	slim \
-	../cime_config
+	../cime_config/slim_cime_py
 
 all: lint black test
 test: utest stest

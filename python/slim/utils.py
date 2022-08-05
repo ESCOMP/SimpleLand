@@ -1,13 +1,8 @@
 """General-purpose utility functions"""
 
 import logging
-import os
 import sys
-import string
 import pdb
-
-from datetime import date
-from getpass import getuser
 
 logger = logging.getLogger(__name__)
 
