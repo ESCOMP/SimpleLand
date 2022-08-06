@@ -22,4 +22,5 @@ convenience that can be used by scripts with simple needs, but does not need to 
 """
 
 from slim.path_utils import add_cime_lib_to_path
+
 _ = add_cime_lib_to_path()

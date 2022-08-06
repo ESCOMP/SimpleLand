@@ -6,6 +6,7 @@ import pdb
 
 logger = logging.getLogger(__name__)
 
+
 def abort(errmsg):
     """Abort the program with the given error message
 

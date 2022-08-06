@@ -2,6 +2,7 @@
 
 from slim.slim_logging import setup_logging_for_tests
 
+
 def setup_for_tests(enable_critical_logs=False):
     """Call this at the beginning of unit testing
 

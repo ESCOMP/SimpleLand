@@ -20,7 +20,7 @@ endif
 
 PYLINT=pylint
 PYLINT_ARGS=-j 4 --rcfile=slim/.pylintrc
-PYLINT_SRC = \
+DIR_SRC = \
 	slim \
 	../cime_config/slim_cime_py
 
@@ -37,13 +37,13 @@ stest: FORCE
 
 .PHONY: lint
 lint: FORCE
-	$(PYLINT) $(PYLINT_ARGS) $(PYLINT_SRC)
+	$(PYLINT) $(PYLINT_ARGS) $(DIR_SRC)
 
 .PHONY: black
 # Run black on all of the python files here and undeneath.
 # Use the black configure file to explicitly set a few things and specifiy the exact files.
 black: FORCE
-	black --check --config pyproject.toml .
+	black --check --config pyproject.toml $(DIR_SRC)
 
 .PHONY: clean
 clean: FORCE
