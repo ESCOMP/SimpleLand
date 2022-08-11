@@ -7,7 +7,6 @@ import logging
 
 from CIME.buildnml import create_namelist_infile
 from CIME.nmlgen import NamelistGenerator
-from CIME.case import Case
 from CIME.utils import expect
 
 logger = logging.getLogger(__name__)
@@ -67,7 +66,8 @@ def check_nml_general(nmlgen):
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_general")
-
+    for var in ( "slim_start_type", "res" ):
+        expect(nmlgen.get_value(var) is not None, var+" must be set" )
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
@@ -78,6 +78,7 @@ def check_nml_performance(nmlgen):
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_performance")
+    expect(int(nmlgen.get_value("nsegspc")) > 0, "nsegspc must be positive" )
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
@@ -131,6 +132,8 @@ def check_nml_data(nmlgen):
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+# Turn off unused-argument for inst_string, since isn't in place right now
+# pylint: disable=unused-argument
 ####################################################################################
 def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path):
     ####################################################################################
