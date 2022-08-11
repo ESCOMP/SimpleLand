@@ -66,8 +66,9 @@ def check_nml_general(nmlgen):
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_general")
-    for var in ( "slim_start_type", "res" ):
-        expect(nmlgen.get_value(var) is not None, var+" must be set" )
+    for var in ("slim_start_type", "res"):
+        expect(nmlgen.get_value(var) is not None, var + " must be set")
+
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
@@ -78,7 +79,7 @@ def check_nml_performance(nmlgen):
     global logger
     # ------------------------------------------------------
     logger.info(" check_nml_performance")
-    expect(int(nmlgen.get_value("nsegspc")) > 0, "nsegspc must be positive" )
+    expect(int(nmlgen.get_value("nsegspc")) > 0, "nsegspc must be positive")
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
