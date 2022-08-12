@@ -6,10 +6,6 @@ import pdb
 
 logger = logging.getLogger(__name__)
 
-_assertNotRegex = "assertNotRegex"
-
-def assertNotRegex(self, *args, **kwargs):
-    return getattr(self, _assertNotRegex)(*args, **kwargs)
 
 def abort(errmsg):
     """Abort the program with the given error message

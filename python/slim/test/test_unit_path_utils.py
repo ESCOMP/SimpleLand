@@ -8,7 +8,6 @@ import tempfile
 import shutil
 import os
 
-from slim import utils
 from unittest import mock
 from slim import unit_testing
 from slim import path_utils
@@ -122,9 +121,7 @@ class TestPathUtils(unittest.TestCase):
         os.makedirs(slim_path)
 
         with mock.patch("slim.path_utils.path_to_slim_root", return_value=slim_path):
-            with self.assertRaisesRegex(
-                RuntimeError, "Cannot find cime.*or within CESM checkout"
-            ):
+            with self.assertRaisesRegex(RuntimeError, "Cannot find cime.*or within CESM checkout"):
                 _ = path_utils.path_to_cime()
 
     def test_pathToCime_cimeInStandaloneAndCesm(self):
