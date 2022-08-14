@@ -103,6 +103,16 @@ def add_cime_lib_to_path(standalone_only=False):
     return cime_path
 
 
+def add_slim_cime_pylib_to_path():
+    """Adds the slime_cime_py python library to the python path
+
+    Returns the path to the top-level slim_cime_py directory
+    """
+    slim_cime_py_path = path_to_slim_cime_py_root()
+    prepend_to_python_path(slim_cime_py_path)
+    return slim_cime_py_path
+
+
 # ========================================================================
 # Private functions
 # ========================================================================
