@@ -17,6 +17,7 @@ import sys
 _SLIM_ROOT = os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir)
 )
+_SLIM_CIME_PY_ROOT = os.path.join(_SLIM_ROOT, "cime_config")
 
 # Candidates for the last path components to the SLIM directory within a
 # CESM checkout
@@ -25,6 +26,14 @@ _CESM_SLIM_PATHS = [os.path.join("components", "slim")]
 # ========================================================================
 # Public functions
 # ========================================================================
+
+
+def path_to_slim_cime_py_root():
+    """Returns the path to the buildnml directory of SLIM"""
+    if not os.path.isdir(_SLIM_CIME_PY_ROOT):
+        raise RuntimeError("Cannot find cime_config within SLIM checkout")
+
+    return _SLIM_CIME_PY_ROOT
 
 
 def path_to_slim_root():
