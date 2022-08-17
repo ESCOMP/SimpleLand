@@ -5,12 +5,12 @@ SLIM namelist creator executable
 """
 import sys, os
 
-_CIMEROOT = os.environ.get("CIMEROOT")
-if _CIMEROOT is None:
-    raise SystemExit("ERROR: must set CIMEROOT environment variable")
+_SLIM_PYTHON = os.path.normpath( os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'python') )
+sys.path.insert(1, _SLIM_PYTHON)
 
-_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
-sys.path.append(_LIBDIR)
+from slim import add_cime_to_path
+from slim import add_slim_cime_py_to_path
+from slim.slim_logging import setup_logging
 
 from standard_script_setup import *
 from CIME.buildnml import parse_input
@@ -21,6 +21,12 @@ from slim_cime_py import buildnml
 def _main_func():
 
     caseroot = parse_input(sys.argv)
+    level = logging.WARNING
+    if ( "-v" in sys.argv ):
+       level = logging.INFO
+    if ( "-d" in sys.argv ):
+       level = logging.DEBUG
+    setup_logging( level )
     with Case(caseroot) as case:
         buildnml(case, caseroot, "slim")
 
