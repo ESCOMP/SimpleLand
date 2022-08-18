@@ -49,19 +49,19 @@ class TestPathUtils(unittest.TestCase):
         for file_ in definition_file:
             expect(os.path.isfile(file_), "Namelist XML file %s not found!" % file_)
 
-        fake_case = FakeCase(compiler=None, mpilib=None, debug=None)
-        fake_case.set_value("DIN_LOC_ROOT", ".")
-        fake_case.set_value("LND_DOMAIN_PATH", ".")
-        fake_case.set_value("LND_DOMAIN_FILE", "domain.nc")
-        fake_case.set_value("SLIM_START_TYPE", "cold")
-        fake_case.set_value("LND_GRID", "0.9x1.25")
+        self.case = FakeCase(compiler=None, mpilib=None, debug=None)
+        self.case.set_value("DIN_LOC_ROOT", ".")
+        self.case.set_value("LND_DOMAIN_PATH", ".")
+        self.case.set_value("LND_DOMAIN_FILE", "domain.nc")
+        self.case.set_value("SLIM_START_TYPE", "cold")
+        self.case.set_value("LND_GRID", "0.9x1.25")
         # Create the namelist generator object - independent of instance
-        self.nmlgen = NamelistGenerator(fake_case, definition_file)
+        self.nmlgen = NamelistGenerator(self.case, definition_file)
         # ------------------------------------------------------
         # Create config dictionary
         # ------------------------------------------------------
         config = {}
-        config["lnd_grid"] = fake_case.get_value("LND_GRID")
+        config["lnd_grid"] = self.case.get_value("LND_GRID")
         config["slim_scenario"] = "1850_control"
 
         # ------------------------------------------------------
@@ -80,6 +80,19 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value("nsegspc", -1)
         with self.assertRaisesRegex(SystemExit, "nsegspc must be positive"):
             check_nml_performance(self.nmlgen)
+
+    def test_check_nml_general(self):
+        """Test the check nml general subroutine"""
+        self.nmlgen.set_value("res", self.case.get_value("LND_GRID"))
+        self.nmlgen.set_value("slim_start_type", "cold")
+        check_nml_general(self.nmlgen)
+        for var in ("slim_start_type", "res"):
+            val = self.nmlgen.get_value(var)
+            self.nmlgen.set_value(var, None)
+            with self.assertRaisesRegex(SystemExit, var + " must be set"):
+                check_nml_general(self.nmlgen)
+
+            self.nmlgen.set_value(var, val)
 
 
 if __name__ == "__main__":
