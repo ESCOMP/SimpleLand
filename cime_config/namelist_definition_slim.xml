@@ -95,13 +95,6 @@
   <!-- Performance                                                    -->
   <!-- =============================================================  -->
 
-  <entry id="clump_pproc" skip_default_entry="true">
-     <type>integer</type> 
-     <category>slim_performance</category>
-     <group>slim_perf</group>
-     <desc>Clumps per processor.</desc>
-  </entry>
-
   <entry id="nsegspc">
      <type>integer</type> 
      <category>slim_performance</category>
