@@ -94,6 +94,23 @@ class TestPathUtils(unittest.TestCase):
 
             self.nmlgen.set_value(var, val)
 
+    def test_check_nml_data(self):
+        """Test the check nml data subroutine"""
+        self.nmlgen.set_value("res", self.case.get_value("LND_GRID"))
+        config = {}
+        # Loop through the scenarios that we have datasets for
+        config["lnd_grid"] = "1.9x2.5"
+        for scen in ("global_uniform", "realistic_from_1850", "realistic_from_2000"):
+            config["slim_scenario"] = scen
+            self.nmlgen.init_defaults(infiles=[], config=config)
+            check_nml_data(self.nmlgen)
+
+        # make the dataset unset and make sure it fails
+        var = "mml_surdat"
+        self.nmlgen.set_value(var, "UNSET")
+        with self.assertRaisesRegex(SystemExit, var + " file is NOT set and is required"):
+            check_nml_data(self.nmlgen)
+
 
 if __name__ == "__main__":
     unit_testing.setup_for_tests()
