@@ -51,6 +51,7 @@ class TestPathUtils(unittest.TestCase):
             expect(os.path.isfile(file_), "Namelist XML file %s not found!" % file_)
 
         self.case = FakeCase(compiler=None, mpilib=None, debug=None)
+        self.case.set_value("RUN_TYPE", "startup")
         self.case.set_value("DIN_LOC_ROOT", ".")
         self.case.set_value("LND_DOMAIN_PATH", ".")
         self.case.set_value("LND_DOMAIN_FILE", "domain.nc")
@@ -114,6 +115,10 @@ class TestPathUtils(unittest.TestCase):
     def test_check_init_data(self):
         """Test the check nml initial data subroutine"""
         check_nml_initial_conditions(self.nmlgen, self.case)
+
+        #
+        # Check that normal startup acts as expected
+        #
         # A cold start should have a blank finidat file
         self.case.set_value("SLIM_START_TYPE", "cold")
         self.nmlgen.init_defaults(infiles=[], config=self.config)
@@ -134,6 +139,34 @@ class TestPathUtils(unittest.TestCase):
         # Don't set the IC file, so make sure it aborts
         self.nmlgen.set_value("finidat", "UNSET")
         check_nml_initial_conditions(self.nmlgen, self.case)
+        # Make sure nrevsn can't be set
+        self.nmlgen.set_value("nrevsn", "file_is_set.nc")
+        with self.assertRaisesRegex(
+            SystemExit, "nrevsn is set but RUN_TYPE is NOT branch which is a contradiction"
+        ):
+            check_nml_initial_conditions(self.nmlgen, self.case)
+        #
+        # Check that a branch works correctly
+        #
+        self.case.set_value("RUN_TYPE", "branch")
+        self.nmlgen.set_value("nrevsn", "file_is_set.nc")
+        check_nml_initial_conditions(self.nmlgen, self.case)
+        # Make sure finidat can't be set
+        self.nmlgen.set_value("finidat", "file_is_set.nc")
+        with self.assertRaisesRegex(
+            SystemExit, "finidat is set but RUN_TYPE is branch which is a contradiction"
+        ):
+            check_nml_initial_conditions(self.nmlgen, self.case)
+        #
+        # Check that a hybrid works correctly
+        #
+        self.case.set_value("RUN_TYPE", "hybrid")
+        self.nmlgen.set_value("finidat", "file_is_set.nc")
+        check_nml_initial_conditions(self.nmlgen, self.case)
+        # Make sure will die if finidat is NOT set
+        self.nmlgen.set_value("finidat", "UNSET")
+        with self.assertRaisesRegex(SystemExit, "finidat is required for a hybrid RUN_TYPE"):
+            check_nml_initial_conditions(self.nmlgen, self.case)
 
 
 if __name__ == "__main__":
