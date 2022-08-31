@@ -23,6 +23,7 @@ from slim_cime_py.buildnml import (
     check_nml_general,
     check_nml_history,
     check_nml_data,
+    check_nml_initial_conditions,
 )
 
 logger = logging.getLogger(__name__)
@@ -60,14 +61,14 @@ class TestPathUtils(unittest.TestCase):
         # ------------------------------------------------------
         # Create config dictionary
         # ------------------------------------------------------
-        config = {}
-        config["lnd_grid"] = self.case.get_value("LND_GRID")
-        config["slim_scenario"] = "1850_control"
+        self.config = {}
+        self.config["lnd_grid"] = self.case.get_value("LND_GRID")
+        self.config["slim_scenario"] = "1850_control"
 
         # ------------------------------------------------------
         # Initialize namelist defaults
         # ------------------------------------------------------
-        self.nmlgen.init_defaults(infiles=[], config=config)
+        self.nmlgen.init_defaults(infiles=[], config=self.config)
 
     def tearDown(self):
         """Finalize"""
@@ -97,12 +98,11 @@ class TestPathUtils(unittest.TestCase):
     def test_check_nml_data(self):
         """Test the check nml data subroutine"""
         self.nmlgen.set_value("res", self.case.get_value("LND_GRID"))
-        config = {}
         # Loop through the scenarios that we have datasets for
-        config["lnd_grid"] = "1.9x2.5"
+        self.config["lnd_grid"] = "1.9x2.5"
         for scen in ("global_uniform", "realistic_from_1850", "realistic_from_2000"):
-            config["slim_scenario"] = scen
-            self.nmlgen.init_defaults(infiles=[], config=config)
+            self.config["slim_scenario"] = scen
+            self.nmlgen.init_defaults(infiles=[], config=self.config)
             check_nml_data(self.nmlgen)
 
         # make the dataset unset and make sure it fails
@@ -110,6 +110,30 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value(var, "UNSET")
         with self.assertRaisesRegex(SystemExit, var + " file is NOT set and is required"):
             check_nml_data(self.nmlgen)
+
+    def test_check_init_data(self):
+        """Test the check nml initial data subroutine"""
+        check_nml_initial_conditions(self.nmlgen, self.case)
+        # A cold start should have a blank finidat file
+        self.case.set_value("SLIM_START_TYPE", "cold")
+        self.nmlgen.init_defaults(infiles=[], config=self.config)
+        check_nml_initial_conditions(self.nmlgen, self.case)
+        val = self.nmlgen.get_value("finidat")
+        expect("' '", val)
+        # If you have a cold-start and explicitly set the finidat file that should error out
+        self.nmlgen.set_value("finidat", "file_is_set.nc")
+        with self.assertRaisesRegex(
+            SystemExit, "finidat is set but SLIM_START_TYPE is cold which is a contradiction"
+        ):
+            check_nml_initial_conditions(self.nmlgen, self.case)
+        # Set to startup so that finidat is required
+        self.case.set_value("SLIM_START_TYPE", "startup")
+        self.nmlgen.init_defaults(infiles=[], config=self.config)
+        self.nmlgen.set_value("finidat", "file_is_set.nc")
+        check_nml_initial_conditions(self.nmlgen, self.case)
+        # Don't set the IC file, so make sure it aborts
+        self.nmlgen.set_value("finidat", "UNSET")
+        check_nml_initial_conditions(self.nmlgen, self.case)
 
 
 if __name__ == "__main__":

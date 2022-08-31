@@ -310,7 +310,7 @@
        <type>char</type>  
        <category>default_settings</category>
        <group>default_settings</group> 
-       <valid_values>default,cold,arb_ic</valid_values>
+       <valid_values>default,cold,arb_ic,startup</valid_values>
        <values>
            <value>$SLIM_START_TYPE</value>
        </values>
@@ -319,6 +319,7 @@
              'default' use the default type of slim_start type for this configuration
              'cold' is a run from arbitrary initial conditions
              'arb_ic' is a run using initial conditions if provided, OR arbitrary initial conditions if no files can be found
+             'startup' is a startup run which requires setting initial conditions
        </desc>
   </entry>
 
