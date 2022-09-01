@@ -56,7 +56,7 @@ class TestBuildNML(unittest.TestCase):
         self.case.set_value("LND_DOMAIN_PATH", ".")
         self.case.set_value("LND_DOMAIN_FILE", "domain.nc")
         self.case.set_value("SLIM_START_TYPE", "cold")
-        self.case.set_value("LND_GRID", "0.9x1.25")
+        self.case.set_value("LND_GRID", "1.9x2.5")
 
     def tearDown(self):
         """Finalize"""
