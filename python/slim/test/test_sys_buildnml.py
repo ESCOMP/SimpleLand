@@ -31,6 +31,8 @@ class TestBuildNML(unittest.TestCase):
     def setUp(self):
         """Initialize"""
         self._testdir = tempfile.mkdtemp()
+        self.curdir = os.getcwd()
+        os.chdir(self._testdir)
         # namelist definition file
         lnd_root = os.path.normpath(
             os.path.join(
@@ -60,11 +62,22 @@ class TestBuildNML(unittest.TestCase):
 
     def tearDown(self):
         """Finalize"""
+        os.chdir(self.curdir)
         shutil.rmtree(self._testdir, ignore_errors=True)
 
     def test_simple(self):
         """Test a simple call of buildnml"""
         buildnml(self.case, self._testdir, "slim")
+        print(os.listdir("Buildconf"))
+        expect(
+            os.path.isfile("Buildconf/slimconf/lnd_in"),
+            "Namelist file lnd_in should exist in Buildconf after running buildnml",
+        )
+        expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
+        expect(
+            os.path.isfile("Buildconf/slim.input_data_list"),
+            "Input data list file should exist after running buildnml",
+        )
 
 
 if __name__ == "__main__":
