@@ -83,16 +83,18 @@ class TestBuildNML(unittest.TestCase):
 
     def test_simple(self):
         """Test a simple call of buildnml"""
-        buildnml(self.case, self._testdir, "slim")
-        expect(
-            os.path.isfile("Buildconf/slimconf/lnd_in"),
-            "Namelist file lnd_in should exist in Buildconf after running buildnml",
-        )
-        expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
-        expect(
-            os.path.isfile("Buildconf/slim.input_data_list"),
-            "Input data list file should exist after running buildnml",
-        )
+        for scenario in ("global_uniform", "realistic_from_1850", "realistic_from_2000" ):
+           self.case.set_value("SLIM_SCENARIO", scenario )
+           buildnml(self.case, self._testdir, "slim")
+           expect(
+               os.path.isfile("Buildconf/slimconf/lnd_in"),
+               "Namelist file lnd_in should exist in Buildconf after running buildnml",
+           )
+           expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
+           expect(
+               os.path.isfile("Buildconf/slim.input_data_list"),
+               "Input data list file should exist after running buildnml",
+           )
 
     def test_hybrid_start(self):
         """Test a hybrid startup call of buildnml"""
