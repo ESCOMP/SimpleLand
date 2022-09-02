@@ -68,18 +68,18 @@ class TestBuildNML(unittest.TestCase):
 
     def getVariableFromNML(self, nmlfile, variable):
         """Get a variable from the namelist file"""
-        with open(nmlfile,"r") as nfile:
-           for line in nfile:
-              if ( variable in line ):
-                 print( line )
-                 match = re.search( '= ["]*([a-zA-Z0-9._//-]+)["]*', line )
-                 if ( match != None ):
-                    return( match.group(1) )
-                 else:
-                    match = re.search( "= [']*([a-zA-Z0-9._//-]+)[']*", line )
-                    if ( match != None ):
-                       return( match.group(1) )
-        return( None )
+        with open(nmlfile, "r") as nfile:
+            for line in nfile:
+                if variable in line:
+                    print(line)
+                    match = re.search('= ["]*([a-zA-Z0-9._//-]+)["]*', line)
+                    if match is not None:
+                        return match.group(1)
+                    else:
+                        match = re.search("= [']*([a-zA-Z0-9._//-]+)[']*", line)
+                        if match is not None:
+                            return match.group(1)
+        return None
 
     def test_simple(self):
         """Test a simple call of buildnml"""
@@ -112,7 +112,9 @@ class TestBuildNML(unittest.TestCase):
             "Input data list file should exist after running buildnml",
         )
         value = self.getVariableFromNML("lnd_in", "finidat")
-        self.assertEqual( value, "./TESTCASE.slim.r.0001-01-01-00000.nc", msg="finidat not set as expected" )
+        self.assertEqual(
+            value, "./TESTCASE.slim.r.0001-01-01-00000.nc", msg="finidat not set as expected"
+        )
 
     def test_branch_start(self):
         """Test a branch startup call of buildnml"""
@@ -132,7 +134,9 @@ class TestBuildNML(unittest.TestCase):
             "Input data list file should exist after running buildnml",
         )
         value = self.getVariableFromNML("lnd_in", "nrevsn")
-        self.assertEqual( value, "TESTCASE.slim.r.0001-01-01-00000.nc", msg="nrevsn not set as expected" )
+        self.assertEqual(
+            value, "TESTCASE.slim.r.0001-01-01-00000.nc", msg="nrevsn not set as expected"
+        )
 
 
 if __name__ == "__main__":
