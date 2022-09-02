@@ -7,6 +7,7 @@ import unittest
 import tempfile
 import shutil
 import os
+import re
 import logging
 
 from CIME.BuildTools.configure import FakeCase
@@ -65,10 +66,24 @@ class TestBuildNML(unittest.TestCase):
         os.chdir(self.curdir)
         shutil.rmtree(self._testdir, ignore_errors=True)
 
+    def getVariableFromNML(self, nmlfile, variable):
+        """Get a variable from the namelist file"""
+        with open(nmlfile,"r") as nfile:
+           for line in nfile:
+              if ( variable in line ):
+                 print( line )
+                 match = re.search( '= ["]*([a-zA-Z0-9._//-]+)["]*', line )
+                 if ( match != None ):
+                    return( match.group(1) )
+                 else:
+                    match = re.search( "= [']*([a-zA-Z0-9._//-]+)[']*", line )
+                    if ( match != None ):
+                       return( match.group(1) )
+        return( None )
+
     def test_simple(self):
         """Test a simple call of buildnml"""
         buildnml(self.case, self._testdir, "slim")
-        print(os.listdir("Buildconf"))
         expect(
             os.path.isfile("Buildconf/slimconf/lnd_in"),
             "Namelist file lnd_in should exist in Buildconf after running buildnml",
@@ -78,6 +93,46 @@ class TestBuildNML(unittest.TestCase):
             os.path.isfile("Buildconf/slim.input_data_list"),
             "Input data list file should exist after running buildnml",
         )
+
+    def test_hybrid_start(self):
+        """Test a hybrid startup call of buildnml"""
+        self.case.set_value("SLIM_START_TYPE", "startup")
+        self.case.set_value("RUN_TYPE", "hybrid")
+        self.case.set_value("RUN_REFCASE", "TESTCASE")
+        self.case.set_value("RUN_REFDATE", "0001-01-01")
+        self.case.set_value("RUN_REFTOD", "00000")
+        buildnml(self.case, self._testdir, "slim")
+        expect(
+            os.path.isfile("Buildconf/slimconf/lnd_in"),
+            "Namelist file lnd_in should exist in Buildconf after running buildnml",
+        )
+        expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
+        expect(
+            os.path.isfile("Buildconf/slim.input_data_list"),
+            "Input data list file should exist after running buildnml",
+        )
+        value = self.getVariableFromNML("lnd_in", "finidat")
+        self.assertEqual( value, "./TESTCASE.slim.r.0001-01-01-00000.nc", msg="finidat not set as expected" )
+
+    def test_branch_start(self):
+        """Test a branch startup call of buildnml"""
+        self.case.set_value("SLIM_START_TYPE", "startup")
+        self.case.set_value("RUN_TYPE", "branch")
+        self.case.set_value("RUN_REFCASE", "TESTCASE")
+        self.case.set_value("RUN_REFDATE", "0001-01-01")
+        self.case.set_value("RUN_REFTOD", "00000")
+        buildnml(self.case, self._testdir, "slim")
+        expect(
+            os.path.isfile("Buildconf/slimconf/lnd_in"),
+            "Namelist file lnd_in should exist in Buildconf after running buildnml",
+        )
+        expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
+        expect(
+            os.path.isfile("Buildconf/slim.input_data_list"),
+            "Input data list file should exist after running buildnml",
+        )
+        value = self.getVariableFromNML("lnd_in", "nrevsn")
+        self.assertEqual( value, "TESTCASE.slim.r.0001-01-01-00000.nc", msg="nrevsn not set as expected" )
 
 
 if __name__ == "__main__":
