@@ -26,6 +26,34 @@ logger = logging.getLogger(__name__)
 # pylint: disable=invalid-name
 
 
+def getVariableFromNML(nmlfile, variable):
+    """Get a variable from the namelist file"""
+    with open(nmlfile, "r") as nfile:
+        for line in nfile:
+            if variable in line:
+                print("lnd_in:" + line)
+                match = re.search('= ["]*([ a-zA-Z0-9._//-]+)["]*', line)
+                if match is not None:
+                    return match.group(1)
+                match = re.search("= [']*([ a-zA-Z0-9._//-]+)[']*", line)
+                if match is not None:
+                    return match.group(1)
+    return None
+
+
+def addLinesToUserNL(user_nl_file, lines):
+    """Add some lines to the user_nl_file for SLIM"""
+    if os.path.exists(user_nl_file):
+        os.remove(user_nl_file)
+    print("Add lines to " + user_nl_file)
+    with open(user_nl_file, "x") as userfile:
+        for line in lines:
+            userfile.write(line)
+            print(line)
+    userfile.close()
+    print("Close file")
+
+
 class TestBuildNML(unittest.TestCase):
     """System Tests of buildnml"""
 
@@ -66,35 +94,22 @@ class TestBuildNML(unittest.TestCase):
         os.chdir(self.curdir)
         shutil.rmtree(self._testdir, ignore_errors=True)
 
-    def getVariableFromNML(self, nmlfile, variable):
-        """Get a variable from the namelist file"""
-        with open(nmlfile, "r") as nfile:
-            for line in nfile:
-                if variable in line:
-                    print(line)
-                    match = re.search('= ["]*([a-zA-Z0-9._//-]+)["]*', line)
-                    if match is not None:
-                        return match.group(1)
-                    else:
-                        match = re.search("= [']*([a-zA-Z0-9._//-]+)[']*", line)
-                        if match is not None:
-                            return match.group(1)
-        return None
-
     def test_simple(self):
         """Test a simple call of buildnml"""
-        for scenario in ("global_uniform", "realistic_from_1850", "realistic_from_2000" ):
-           self.case.set_value("SLIM_SCENARIO", scenario )
-           buildnml(self.case, self._testdir, "slim")
-           expect(
-               os.path.isfile("Buildconf/slimconf/lnd_in"),
-               "Namelist file lnd_in should exist in Buildconf after running buildnml",
-           )
-           expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
-           expect(
-               os.path.isfile("Buildconf/slim.input_data_list"),
-               "Input data list file should exist after running buildnml",
-           )
+        for scenario in ("global_uniform", "realistic_from_1850", "realistic_from_2000"):
+            self.case.set_value("SLIM_SCENARIO", scenario)
+            buildnml(self.case, self._testdir, "slim")
+            expect(
+                os.path.isfile("Buildconf/slimconf/lnd_in"),
+                "Namelist file lnd_in should exist in Buildconf after running buildnml",
+            )
+            expect(
+                os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml"
+            )
+            expect(
+                os.path.isfile("Buildconf/slim.input_data_list"),
+                "Input data list file should exist after running buildnml",
+            )
 
     def test_hybrid_start(self):
         """Test a hybrid startup call of buildnml"""
@@ -113,7 +128,7 @@ class TestBuildNML(unittest.TestCase):
             os.path.isfile("Buildconf/slim.input_data_list"),
             "Input data list file should exist after running buildnml",
         )
-        value = self.getVariableFromNML("lnd_in", "finidat")
+        value = getVariableFromNML("lnd_in", "finidat")
         self.assertEqual(
             value, "./TESTCASE.slim.r.0001-01-01-00000.nc", msg="finidat not set as expected"
         )
@@ -135,10 +150,54 @@ class TestBuildNML(unittest.TestCase):
             os.path.isfile("Buildconf/slim.input_data_list"),
             "Input data list file should exist after running buildnml",
         )
-        value = self.getVariableFromNML("lnd_in", "nrevsn")
+        value = getVariableFromNML("lnd_in", "nrevsn")
         self.assertEqual(
             value, "TESTCASE.slim.r.0001-01-01-00000.nc", msg="nrevsn not set as expected"
         )
+
+    def test_start_types(self):
+        """Test start types of buildnml"""
+        # Cold start types
+        finidat = " "
+        lines = []
+        for stype in ("default", "cold", "arb_ic"):
+            print("Type: " + stype)
+            addLinesToUserNL("user_nl_slim", lines)
+
+            self.case.set_value("SLIM_START_TYPE", stype)
+            buildnml(self.case, self._testdir, "slim")
+            expect(
+                os.path.isfile("Buildconf/slimconf/lnd_in"),
+                "Namelist file lnd_in should exist in Buildconf after running buildnml",
+            )
+            expect(
+                os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml"
+            )
+            expect(
+                os.path.isfile("Buildconf/slim.input_data_list"),
+                "Input data list file should exist after running buildnml",
+            )
+            value = getVariableFromNML("lnd_in", "finidat")
+            self.assertEqual(value, finidat, msg="finidat not set as expected")
+        stype = "startup"
+        finidat = "./TESTFINIDATFILENAME.nc"
+        lines = ["finidat = '" + finidat + "'\n"]
+        print("Type: " + stype)
+        addLinesToUserNL("user_nl_slim", lines)
+
+        self.case.set_value("SLIM_START_TYPE", stype)
+        buildnml(self.case, self._testdir, "slim")
+        expect(
+            os.path.isfile("Buildconf/slimconf/lnd_in"),
+            "Namelist file lnd_in should exist in Buildconf after running buildnml",
+        )
+        expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
+        expect(
+            os.path.isfile("Buildconf/slim.input_data_list"),
+            "Input data list file should exist after running buildnml",
+        )
+        value = getVariableFromNML("lnd_in", "finidat")
+        self.assertEqual(value, "./" + finidat, msg="finidat not set as expected")
 
 
 if __name__ == "__main__":
