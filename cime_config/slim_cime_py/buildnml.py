@@ -109,17 +109,39 @@ def check_nml_initial_conditions(nmlgen, case):
     # ------------------------------------------------------
     logger.info(" check_nml_initial_conditions")
     start_type = case.get_value("SLIM_START_TYPE")
-    # Handle a cold start
-    finidat = nmlgen.get_value("finidat")
-    if start_type == "cold":
-        logger.info(" finidat = %s", finidat)
-        if finidat != "UNSET":
-            raise SystemExit("finidat is set but SLIM_START_TYPE is cold which is a contradiction")
-        nmlgen.set_value("finidat", value=" ")
+    run_type = case.get_value("RUN_TYPE")
 
-    # Set to blank meaning a cold start if still UNSET
-    if finidat == "UNSET":
-        nmlgen.set_value("finidat", value=" ")
+    nrevsn = nmlgen.get_value("nrevsn")
+    finidat = nmlgen.get_value("finidat")
+    #
+    # Non branch types
+    #
+    if run_type != "branch":
+        # Handle a cold start
+        if start_type == "cold":
+            logger.info(" finidat = %s", finidat)
+            if finidat != "UNSET":
+                raise SystemExit(
+                    "finidat is set but SLIM_START_TYPE is cold which is a contradiction"
+                )
+            nmlgen.set_value("finidat", value=" ")
+
+        # Set to blank meaning a cold start if still UNSET
+        if finidat == "UNSET" or finidat is None:
+            if run_type == "hybrid":
+                raise SystemExit("finidat is required for a hybrid RUN_TYPE")
+            nmlgen.set_value("finidat", value=" ")
+
+        if nrevsn is not None:
+            raise SystemExit("nrevsn can NOT be set except when RUN_TYPE is a branch")
+    #
+    # branch types
+    #
+    else:
+        if nrevsn is None:
+            raise SystemExit("nrevsn is required to be set when RUN_TYPE is a branch")
+        # if finidat is not None:
+        # raise SystemExit("finidat can NOT be set when RUN_TYPE is a branch")
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
