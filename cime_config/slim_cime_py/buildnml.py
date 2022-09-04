@@ -109,11 +109,16 @@ def check_nml_initial_conditions(nmlgen, case):
     # ------------------------------------------------------
     logger.info(" check_nml_initial_conditions")
     start_type = case.get_value("SLIM_START_TYPE")
+    # Handle a cold start
+    finidat = nmlgen.get_value("finidat")
     if start_type == "cold":
-        finidat = nmlgen.get_value("finidat")
         logger.info(" finidat = %s", finidat)
         if finidat != "UNSET":
             raise SystemExit("finidat is set but SLIM_START_TYPE is cold which is a contradiction")
+        nmlgen.set_value("finidat", value=" ")
+
+    # Set to blank meaning a cold start if still UNSET
+    if finidat == "UNSET":
         nmlgen.set_value("finidat", value=" ")
 
 
