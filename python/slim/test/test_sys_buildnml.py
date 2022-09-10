@@ -10,6 +10,8 @@ import os
 import re
 import logging
 
+from pathlib import Path
+
 from CIME.BuildTools.configure import FakeCase
 from CIME.utils import expect
 
@@ -118,6 +120,7 @@ class TestBuildNML(unittest.TestCase):
         self.case.set_value("RUN_REFCASE", "TESTCASE")
         self.case.set_value("RUN_REFDATE", "0001-01-01")
         self.case.set_value("RUN_REFTOD", "00000")
+        Path("TESTCASE.slim.r.0001-01-01-00000.nc").touch()
         buildnml(self.case, self._testdir, "slim")
         expect(
             os.path.isfile("Buildconf/slimconf/lnd_in"),
@@ -130,7 +133,7 @@ class TestBuildNML(unittest.TestCase):
         )
         value = getVariableFromNML("lnd_in", "finidat")
         self.assertEqual(
-            value, "./TESTCASE.slim.r.0001-01-01-00000.nc", msg="finidat not set as expected"
+            value, "TESTCASE.slim.r.0001-01-01-00000.nc", msg="finidat not set as expected"
         )
 
     def test_branch_start(self):
@@ -140,6 +143,7 @@ class TestBuildNML(unittest.TestCase):
         self.case.set_value("RUN_REFCASE", "TESTCASE")
         self.case.set_value("RUN_REFDATE", "0001-01-01")
         self.case.set_value("RUN_REFTOD", "00000")
+        Path("TESTCASE.slim.r.0001-01-01-00000.nc").touch()
         buildnml(self.case, self._testdir, "slim")
         expect(
             os.path.isfile("Buildconf/slimconf/lnd_in"),
@@ -180,7 +184,8 @@ class TestBuildNML(unittest.TestCase):
             value = getVariableFromNML("lnd_in", "finidat")
             self.assertEqual(value, finidat, msg="finidat not set as expected")
         stype = "startup"
-        finidat = "./TESTFINIDATFILENAME.nc"
+        finidat = "TESTFINIDATFILENAME.nc"
+        Path(finidat).touch()
         lines = ["finidat = '" + finidat + "'\n"]
         print("Type: " + stype)
         addLinesToUserNL("user_nl_slim", lines)
@@ -197,7 +202,8 @@ class TestBuildNML(unittest.TestCase):
             "Input data list file should exist after running buildnml",
         )
         value = getVariableFromNML("lnd_in", "finidat")
-        self.assertEqual(value, "./" + finidat, msg="finidat not set as expected")
+        self.assertEqual(value, finidat, msg="finidat not set as expected")
+        os.remove("user_nl_slim")
 
 
 if __name__ == "__main__":
