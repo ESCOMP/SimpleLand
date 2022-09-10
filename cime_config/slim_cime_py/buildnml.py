@@ -276,12 +276,7 @@ def buildnml(case, caseroot, compname):
 
     ### Independent of instance...
     startfile_type = "finidat"
-    start_type = "default"
     run_type = case.get_value("RUN_TYPE")
-    if run_type == "hybrid":
-        start_type = "startup"
-    elif run_type != "startup":
-        start_type = run_type
 
     slim_force_coldstart = case.get_value("SLIM_FORCE_COLDSTART")
     if run_type == "branch":
@@ -298,11 +293,6 @@ def buildnml(case, caseroot, compname):
 
     if slim_force_coldstart == "on":
         logger.warning("WARNING: SLIM is starting up from a cold state")
-        start_type = "cold"
-
-    run_startdate = case.get_value("RUN_STARTDATE")
-
-    inputdata_file = os.path.join(caseroot, "Buildconf", "slim.input_data_list")
 
     rundir = case.get_value("RUNDIR")
 
