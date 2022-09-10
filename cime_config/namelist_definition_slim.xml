@@ -39,14 +39,15 @@
      </desc>
   </entry>
 
-  <entry id="finidat">
+  <entry id="finidat" skip_default_entry="true">
      <type>char</type> 
      <category>datasets</category>
-     <input_pathname>abs</input_pathname> 
      <group>slim_data_and_initial</group> 
      <valid_values></valid_values>
      <values>
-       <value>UNSET</value>
+       <value slim_start_type="cold">UNSET</value>
+       <value slim_start_type="arb_ic">UNSET</value>
+       <value slim_start_type="default">UNSET</value>
      </values>
      <desc>
            Full pathname of initial conditions file. If blank SLIM will startup from

@@ -70,6 +70,18 @@ def check_nml_general(nmlgen):
         expect(nmlgen.get_value(var) is not None, var + " must be set")
 
 
+####################################################################################
+def check_file(filename, case):
+    ####################################################################################
+    """Check that the file exists"""
+    if os.path.isabs(filename):
+        expect(os.path.isfile(filename), "filename must exist:" + filename)
+    else:
+        rundir = case.get_value("RUNDIR")
+        fname = os.path.normpath(os.path.join(rundir, filename))
+        expect(os.path.isfile(fname), "filename must exist:" + fname)
+
+
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
 def check_nml_performance(nmlgen):
@@ -120,17 +132,20 @@ def check_nml_initial_conditions(nmlgen, case):
         # Handle a cold start
         if start_type == "cold":
             logger.info(" finidat = %s", finidat)
-            if finidat != "UNSET":
+            if finidat != " " and finidat != "UNSET" and finidat is not None:
+                print(" finidat = '" + finidat + "'")
                 raise SystemExit(
                     "finidat is set but SLIM_START_TYPE is cold which is a contradiction"
                 )
             nmlgen.set_value("finidat", value=" ")
 
         # Set to blank meaning a cold start if still UNSET
-        if finidat == "UNSET" or finidat is None:
+        if finidat == " " or finidat == "UNSET" or finidat is None:
             if run_type == "hybrid":
                 raise SystemExit("finidat is required for a hybrid RUN_TYPE")
             nmlgen.set_value("finidat", value=" ")
+        else:
+            check_file(finidat, case)
 
         if nrevsn is not None:
             raise SystemExit("nrevsn can NOT be set except when RUN_TYPE is a branch")
@@ -140,8 +155,11 @@ def check_nml_initial_conditions(nmlgen, case):
     else:
         if nrevsn is None:
             raise SystemExit("nrevsn is required to be set when RUN_TYPE is a branch")
-        # if finidat is not None:
-        # raise SystemExit("finidat can NOT be set when RUN_TYPE is a branch")
+
+        check_file(nrevsn, case)
+        if finidat is not None:
+            print(finidat)
+            raise SystemExit("finidat can NOT be set when RUN_TYPE is a branch")
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
@@ -180,6 +198,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config = {}
     config["lnd_grid"] = case.get_value("LND_GRID")
     config["slim_scenario"] = case.get_value("SLIM_SCENARIO")
+    config["slim_start_type"] = case.get_value("SLIM_START_TYPE")
 
     logger.info(" SLIM lnd grid is %s", config["lnd_grid"])
 
