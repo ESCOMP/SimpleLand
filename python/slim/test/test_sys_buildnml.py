@@ -72,7 +72,7 @@ class TestBuildNML(unittest.TestCase):
         )
         self.case = FakeCase(compiler=None, mpilib=None, debug=None)
         self.case.set_value("CASEROOT", self._testdir)
-        self.case.set_value("RUN_TYPE", "startup")
+        self.case.set_value("RUN_TYPE", "any")
         self.case.set_value("RUN_STARTDATE", "2000-01-01")
         self.case.set_value("RUN_REFCASE", "case.std")
         self.case.set_value("RUN_REFDATE", "0001-01-01")
@@ -115,7 +115,7 @@ class TestBuildNML(unittest.TestCase):
 
     def test_hybrid_start(self):
         """Test a hybrid startup call of buildnml"""
-        self.case.set_value("SLIM_START_TYPE", "startup")
+        self.case.set_value("SLIM_START_TYPE", "required")
         self.case.set_value("RUN_TYPE", "hybrid")
         self.case.set_value("RUN_REFCASE", "TESTCASE")
         self.case.set_value("RUN_REFDATE", "0001-01-01")
@@ -138,7 +138,7 @@ class TestBuildNML(unittest.TestCase):
 
     def test_branch_start(self):
         """Test a branch startup call of buildnml"""
-        self.case.set_value("SLIM_START_TYPE", "startup")
+        self.case.set_value("SLIM_START_TYPE", "required")
         self.case.set_value("RUN_TYPE", "branch")
         self.case.set_value("RUN_REFCASE", "TESTCASE")
         self.case.set_value("RUN_REFDATE", "0001-01-01")
@@ -164,7 +164,7 @@ class TestBuildNML(unittest.TestCase):
         # Cold start types
         finidat = " "
         lines = []
-        for stype in ("default", "cold", "arb_ic"):
+        for stype in ("cold", "any", "required"):
             print("Type: " + stype)
             addLinesToUserNL("user_nl_slim", lines)
 
@@ -183,7 +183,7 @@ class TestBuildNML(unittest.TestCase):
             )
             value = getVariableFromNML("lnd_in", "finidat")
             self.assertEqual(value, finidat, msg="finidat not set as expected")
-        stype = "startup"
+        stype = "required"
         finidat = "TESTFINIDATFILENAME.nc"
         Path(finidat).touch()
         lines = ["finidat = '" + finidat + "'\n"]
