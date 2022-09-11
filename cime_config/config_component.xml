@@ -29,10 +29,10 @@
   <entry id="SLIM_SCENARIO">
     <type>char</type>
     <default_value>UNSET</default_value>
-    <valid_values>UNSET,global_uniform,1850_control,2000_control</valid_values>
+    <valid_values>UNSET,global_uniform,realistic_from_1850,realistic_from_2000</valid_values>
     <values>
-      <value compset="2000.*"		>2000_control</value>
-      <value compset="1850.*_"		>1850_control</value>
+      <value compset="2000.*"   >realistic_from_2000</value>
+      <value compset="1850.*_"  >realistic_from_1850</value>
     </values>
     <group>run_component_slim</group>
     <file>env_run.xml</file>
@@ -58,15 +58,20 @@
 
   <entry id="SLIM_START_TYPE">
     <type>char</type>
-    <valid_values>default,cold,arb_ic</valid_values>
-    <default_value>default</default_value>
+    <valid_values>cold,any,required</valid_values>
+    <default_value>any</default_value>
+    <values>
+      <value run_type="branch" >required</value>
+      <value run_type="hybrid" >required</value>
+      <value run_type="startup">any</value>
+    </values>
     <group>run_component_slim</group>
     <file>env_run.xml</file>
     <desc>
         SLIM run type.
-        'default' use the default type of slim_start type for this configuration
-        'cold' is a run from arbitrary initial conditions
-        'arb_ic' is a run using initial conditions if provided, OR arbitrary initial conditions if no files can be found
+        'cold' is a cold start from arbitrary initial conditions, it will fail if you do provide initial conditions
+        'any' is a run using initial conditions if provided, OR arbitrary initial conditions if no files can be found
+        'required' is a run where starting from provided initial conditions is required, it will fail if they aren't
     </desc>
   </entry>
 
