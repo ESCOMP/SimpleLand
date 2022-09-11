@@ -136,6 +136,28 @@ class TestBuildNML(unittest.TestCase):
             value, "TESTCASE.slim.r.0001-01-01-00000.nc", msg="finidat not set as expected"
         )
 
+    def test_hybrid_start_override_cold(self):
+        """Test a hybrid startup call of buildnml where you override with a cold start"""
+        self.case.set_value("SLIM_START_TYPE", "required")
+        self.case.set_value("RUN_TYPE", "hybrid")
+        self.case.set_value("RUN_REFCASE", "TESTCASE")
+        self.case.set_value("RUN_REFDATE", "0001-01-01")
+        self.case.set_value("RUN_REFTOD", "00000")
+        Path("TESTCASE.slim.r.0001-01-01-00000.nc").touch()
+        self.case.set_value("SLIM_START_TYPE", "cold")  # Set start type to cold
+        buildnml(self.case, self._testdir, "slim")
+        expect(
+            os.path.isfile("Buildconf/slimconf/lnd_in"),
+            "Namelist file lnd_in should exist in Buildconf after running buildnml",
+        )
+        expect(os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml")
+        expect(
+            os.path.isfile("Buildconf/slim.input_data_list"),
+            "Input data list file should exist after running buildnml",
+        )
+        value = getVariableFromNML("lnd_in", "finidat")
+        self.assertEqual(value, " ", msg="finidat not set as expected")
+
     def test_branch_start(self):
         """Test a branch startup call of buildnml"""
         self.case.set_value("SLIM_START_TYPE", "required")
