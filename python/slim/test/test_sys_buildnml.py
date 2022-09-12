@@ -82,7 +82,6 @@ class TestBuildNML(unittest.TestCase):
         self.case.set_value("NINST_LND", 1)
         self.case.set_value("NCPL_BASE_PERIOD", "day")
         self.case.set_value("LND_NCPL", 48)
-        self.case.set_value("SLIM_FORCE_COLDSTART", "off")
         self.case.set_value("SLIM_SCENARIO", "global_uniform")
         self.case.set_value("COMP_ROOT_DIR_LND", lnd_root)
         self.case.set_value("DIN_LOC_ROOT", ".")

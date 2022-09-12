@@ -144,6 +144,8 @@ def check_nml_initial_conditions(nmlgen, case):
             if run_type == "hybrid":
                 raise SystemExit("finidat is required for a hybrid RUN_TYPE")
             nmlgen.set_value("finidat", value=" ")
+            logger.warning("WARNING: SLIM is starting up from a cold state")
+
         else:
             check_file(finidat, case)
 
@@ -278,21 +280,8 @@ def buildnml(case, caseroot, compname):
     startfile_type = "finidat"
     run_type = case.get_value("RUN_TYPE")
 
-    slim_force_coldstart = case.get_value("SLIM_FORCE_COLDSTART")
     if run_type == "branch":
         startfile_type = "nrevsn"
-        if slim_force_coldstart == "on":
-            slim_force_coldstart = "off"
-            logger.warning(
-                "%s",
-                "WARNING: You've turned on SLIM_FORCE_COLDSTART for a branch run_type,"
-                + " which is a contradiction, the coldstart will be ignored\n"
-                + "  turn off SLIM_FORCE_COLDSTART, or set RUN_TYPE=hybrid"
-                + " to get rid of this warning",
-            )
-
-    if slim_force_coldstart == "on":
-        logger.warning("WARNING: SLIM is starting up from a cold state")
 
     rundir = case.get_value("RUNDIR")
 

@@ -7,7 +7,7 @@
 ! Set fatmlndfrc         with LND_DOMAIN_PATH/LND_DOMAIN_FILE    options
 ! Set finidat            with RUN_REFCASE/RUN_REFDATE/RUN_REFTOD options for hybrid or branch cases
 !                        (includes $inst_string for multi-ensemble cases)
-!                        or with SLIM_FORCE_COLDSTART to do a cold start
+!                        or with SLIM_START_TYPE=cold to do a cold start
 !                        or set it with an explicit filename here.
 !----------------------------------------------------------------------------------
 
