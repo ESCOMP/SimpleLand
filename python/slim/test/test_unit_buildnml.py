@@ -59,11 +59,16 @@ class TestPathUtils(unittest.TestCase):
         self.case = FakeCase(compiler=None, mpilib=None, debug=None)
         self.case.set_value("RUNDIR", self._testdir)
         self.case.set_value("RUN_TYPE", "startup")
+        self.case.set_value("RUN_STARTDATE", "2000-01-01")
+        self.case.set_value("RUN_REFCASE", "case.std")
+        self.case.set_value("RUN_REFDATE", "0001-01-01")
+        self.case.set_value("RUN_REFTOD", "00000")
+        self.case.set_value("RUN_REFDIR", "cesm2_init")
         self.case.set_value("DIN_LOC_ROOT", ".")
         self.case.set_value("LND_DOMAIN_PATH", ".")
         self.case.set_value("LND_DOMAIN_FILE", "domain.nc")
         self.case.set_value("SLIM_SCENARIO", "global_uniform")
-        self.case.set_value("SLIM_START_TYPE", "startup")
+        self.case.set_value("SLIM_START_TYPE", "any")
         self.case.set_value("LND_GRID", "1.9x2.5")
 
         self.InitNML()
@@ -171,10 +176,18 @@ class TestPathUtils(unittest.TestCase):
         # Check that a branch works correctly
         #
         self.case.set_value("RUN_TYPE", "branch")
-        Path("file_is_set.nc").touch()
+        self.case.set_value("SLIM_START_TYPE", "required")
+        self.case.set_value("RUN_REFCASE", "TESTCASE")
+        self.case.set_value("RUN_REFDATE", "0001-01-01")
+        nrevsn = "TESTCASE.slim.r.0001-01-01-00000.nc"
+        Path(nrevsn).touch()
         self.InitNML()
-        self.nmlgen.set_value("nrevsn", "file_is_set.nc")
         check_nml_initial_conditions(self.nmlgen, self.case)
+        expect(
+            self.nmlgen.get_value("nrevsn"),
+            nrevsn,
+            "finidat should be set correctly for hybrid case",
+        )
         # Make sure finidat can't be set
         self.nmlgen.set_value("finidat", "file_is_set.nc")
         with self.assertRaisesRegex(SystemExit, "finidat can NOT be set when RUN_TYPE is a branch"):
@@ -186,14 +199,18 @@ class TestPathUtils(unittest.TestCase):
         # Check that a hybrid works correctly
         #
         self.case.set_value("RUN_TYPE", "hybrid")
-        Path("file_is_set.nc").touch()
+        self.case.set_value("SLIM_START_TYPE", "required")
+        self.case.set_value("RUN_REFCASE", "TESTCASE")
+        self.case.set_value("RUN_REFDATE", "0001-01-01")
+        finidat = "TESTCASE.slim.r.0001-01-01-00000.nc"
+        Path(finidat).touch()
         self.InitNML()
-        self.nmlgen.set_value("finidat", "file_is_set.nc")
         check_nml_initial_conditions(self.nmlgen, self.case)
-        # Make sure will die if finidat is NOT set
-        self.nmlgen.set_value("finidat", None)
-        with self.assertRaisesRegex(SystemExit, "finidat is required for a hybrid RUN_TYPE"):
-            check_nml_initial_conditions(self.nmlgen, self.case)
+        expect(
+            self.nmlgen.get_value("finidat"),
+            finidat,
+            "finidat should be set correctly for hybrid case",
+        )
 
 
 if __name__ == "__main__":

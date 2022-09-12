@@ -113,7 +113,7 @@ def check_nml_history(nmlgen):
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
-def check_nml_initial_conditions(nmlgen, case):
+def check_nml_initial_conditions(nmlgen, case, inst_string=""):
     ####################################################################################
     """Set the namelist settings for initial conditions"""
     # pylint: disable=global-statement
@@ -122,6 +122,23 @@ def check_nml_initial_conditions(nmlgen, case):
     logger.info(" check_nml_initial_conditions")
     start_type = case.get_value("SLIM_START_TYPE")
     run_type = case.get_value("RUN_TYPE")
+    run_refcase = case.get_value("RUN_REFCASE")
+    run_refdate = case.get_value("RUN_REFDATE")
+    run_reftod = case.get_value("RUN_REFTOD")
+    rundir = case.get_value("RUNDIR")
+    if run_type in ("hybrid", "branch"):
+        slim_startfile = "%s.slim%s.r.%s-%s.nc" % (
+            run_refcase,
+            inst_string,
+            run_refdate,
+            run_reftod,
+        )
+        if not os.path.exists(os.path.join(rundir, slim_startfile)):
+            slim_startfile = "%s.slim.r.%s-%s.nc" % (
+                run_refcase,
+                run_refdate,
+                run_reftod,
+            )
 
     nrevsn = nmlgen.get_value("nrevsn")
     finidat = nmlgen.get_value("finidat")
@@ -141,10 +158,13 @@ def check_nml_initial_conditions(nmlgen, case):
 
         # Set to blank meaning a cold start if still UNSET
         if finidat == " " or finidat == "UNSET" or finidat is None:
-            if run_type == "hybrid":
-                raise SystemExit("finidat is required for a hybrid RUN_TYPE")
-            nmlgen.set_value("finidat", value=" ")
-            logger.warning("WARNING: SLIM is starting up from a cold state")
+            if run_type == "hybrid" and start_type != "cold":
+                finidat = slim_startfile
+                check_file(finidat, case)
+                nmlgen.set_value("finidat", value=finidat)
+            else:
+                nmlgen.set_value("finidat", value=" ")
+                logger.warning("WARNING: SLIM is starting up from a cold state")
 
         else:
             check_file(finidat, case)
@@ -156,7 +176,8 @@ def check_nml_initial_conditions(nmlgen, case):
     #
     else:
         if nrevsn is None:
-            raise SystemExit("nrevsn is required to be set when RUN_TYPE is a branch")
+            nrevsn = slim_startfile
+            nmlgen.set_value("nrevsn", value=nrevsn)
 
         check_file(nrevsn, case)
         if finidat is not None:
@@ -216,7 +237,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     check_nml_general(nmlgen)
     check_nml_performance(nmlgen)
     check_nml_history(nmlgen)
-    check_nml_initial_conditions(nmlgen, case)
+    check_nml_initial_conditions(nmlgen, case, inst_string)
     check_nml_data(nmlgen)
 
     # ----------------------------------------------------
@@ -277,12 +298,6 @@ def buildnml(case, caseroot, compname):
         os.remove(data_list_path)
 
     ### Independent of instance...
-    startfile_type = "finidat"
-    run_type = case.get_value("RUN_TYPE")
-
-    if run_type == "branch":
-        startfile_type = "nrevsn"
-
     rundir = case.get_value("RUNDIR")
 
     # -----------------------------------------------------
@@ -308,34 +323,10 @@ def buildnml(case, caseroot, compname):
                 os.path.join(rundir, rpointer),
                 os.path.join(rundir, rpointer + inst_string),
             )
-
         ###
-        ### instance dependent information...
+        ### Namelist infile
         ###
-        run_refcase = case.get_value("RUN_REFCASE")
-        run_refdate = case.get_value("RUN_REFDATE")
-        run_reftod = case.get_value("RUN_REFTOD")
-        rundir = case.get_value("RUNDIR")
-        if run_type in ("hybrid", "branch"):
-            slim_startfile = "%s.slim%s.r.%s-%s.nc" % (
-                run_refcase,
-                inst_string,
-                run_refdate,
-                run_reftod,
-            )
-            if not os.path.exists(os.path.join(rundir, slim_startfile)):
-                slim_startfile = "%s.slim.r.%s-%s.nc" % (
-                    run_refcase,
-                    run_refdate,
-                    run_reftod,
-                )
-            slim_icfile = "%s = '%s'" % (startfile_type, slim_startfile)
-        else:
-            slim_icfile = ""
-        ###
-
         infile_lines = []
-        infile_lines.append(slim_icfile)
 
         user_nl_file = os.path.join(caseroot, "user_nl_slim" + inst_string)
         infile = os.path.join(confdir, "namelist_infile")
