@@ -42,20 +42,6 @@
     </desc>
   </entry>
 
-  <entry id="SLIM_NAMELIST_OPTS">
-    <type>char</type>
-    <default_value></default_value>
-    <group>run_component_slim</group>
-    <file>env_run.xml</file>
-    <desc>SLIM-specific namelist settings for -namelist option in the SLIM
-      buildnml. SLIM_NAMELIST_OPTS is normally set as a compset variable
-      and in general should not be modified for supported compsets.
-      It is recommended that if you want to modify this value for your experiment,
-      you should use your own user-defined component sets via using create_newcase
-      with a compset_file argument.
-      This is an advanced flag and should only be used by expert users.</desc>
-  </entry>
-
   <entry id="SLIM_START_TYPE">
     <type>char</type>
     <valid_values>cold,any,required</valid_values>
