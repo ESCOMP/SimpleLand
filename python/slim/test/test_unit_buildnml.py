@@ -128,6 +128,16 @@ class TestPathUtils(unittest.TestCase):
             print("SLIM_SCENARIO = " + scen)
             self.InitNML()
             check_nml_data(self.nmlgen)
+        # 1-degree has one dataset
+        self.case.set_value("LND_GRID", "0.9x1.25")
+        self.case.set_value("SLIM_SCENARIO", "realistic_from_2000")
+        self.InitNML()
+        check_nml_data(self.nmlgen)
+        # Check that 1-degree for another scenario fails
+        self.case.set_value("SLIM_SCENARIO", "global_uniform")
+        self.InitNML()
+        with self.assertRaisesRegex(SystemExit, " file is NOT set and is required"):
+            check_nml_data(self.nmlgen)
 
         # make the dataset unset and make sure it fails
         var = "mml_surdat"
