@@ -104,6 +104,29 @@ class TestPathUtils(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "nsegspc must be positive"):
             check_nml_performance(self.nmlgen)
 
+
+    def test_check_nml_history(self):
+        """Test the check nml history subroutine"""
+        self.nmlgen.set_value("hist_mfilt", [20])
+        check_nml_history(self.nmlgen)
+        self.nmlgen.set_value("hist_mfilt", [0])
+        with self.assertRaisesRegex(SystemExit, "hist_mfilt must be 1 or larger"):
+            check_nml_history(self.nmlgen)
+        # Make a list of settings to a list of history tape streams
+        self.nmlgen.set_value("hist_empty_htapes", '.true.')
+        self.nmlgen.set_value("hist_mfilt", [1,1,2,3,4,5])
+        self.nmlgen.set_value("hist_ndens", [1,1,2,1,1,1])
+        self.nmlgen.set_value("hist_nhtfrq", [1,1,-24,2,2,2])
+        self.nmlgen.set_value("hist_avgflag_pertape", ['A','I','X','M','A','A'])
+        self.nmlgen.set_value("hist_dov2xy", ['.true.','TRUE','FALSE','.T.','.F.','.true.'])
+        self.nmlgen.set_value("hist_fincl1", ['A','B','C','D','E','F'])
+        self.nmlgen.set_value("hist_fincl2", ['A','B','C','D','E','F'])
+        self.nmlgen.set_value("hist_fincl3", ['A','B','C','D','E','F'])
+        self.nmlgen.set_value("hist_fincl4", ['A','B','C','D','E','F'])
+        self.nmlgen.set_value("hist_fincl5", ['A','B','C','D','E','F'])
+        self.nmlgen.set_value("hist_fincl6", ['A','B','C','D','E','F'])
+        check_nml_history(self.nmlgen)
+
     def test_check_nml_general(self):
         """Test the check nml general subroutine"""
         self.case.set_value("SLIM_START_TYPE", "cold")
