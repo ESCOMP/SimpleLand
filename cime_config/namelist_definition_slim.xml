@@ -170,7 +170,7 @@
     </desc>
   </entry>
 
-  <entry id="hist_fexcl1">
+  <entry id="hist_fexcl1" skip_default_entry="true">
      <type>char(1000)</type> 
      <category>history</category>
      <group>slim_history</group>
@@ -215,7 +215,7 @@
     <desc>Fields to exclude from history tape series  6.</desc>
   </entry>
 
-  <entry id="hist_fincl1">
+  <entry id="hist_fincl1" skip_default_entry="true">
     <type>char(1000)</type> 
     <category>history</category>
     <group>slim_history</group>

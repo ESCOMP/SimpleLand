@@ -4,6 +4,7 @@ SLIM namelist creator
 import os
 import shutil
 import logging
+import re
 
 from CIME.buildnml import create_namelist_infile
 from CIME.nmlgen import NamelistGenerator
@@ -109,6 +110,25 @@ def check_nml_history(nmlgen):
         logger.info(" hist_mfilt = %d", int(mfilt))
         if int(mfilt) <= 0:
             raise SystemExit("hist_mfilt must be 1 or larger")
+
+    #
+    # Check the list of fincl/fexcl for validity and get number of tapes
+    #
+    for tape in (1, 2, 3, 4, 5, 6):
+        for ftype in ("fincl", "fexcl"):
+            var = "hist_" + ftype + str(tape)
+            val = nmlgen.get_value(var)
+            for field in val:
+                if field is None:
+                    break
+                match = re.search(r"^[A-Za-z0-9_.:]+\s*$", field)
+                if match is None:
+                    raise SystemExit(
+                        "History field name "
+                        + var
+                        + " has invalid characters or whitespace in it="
+                        + field
+                    )
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements

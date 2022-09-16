@@ -154,13 +154,19 @@ class TestPathUtils(unittest.TestCase):
     def test_check_nml_history_simple_fails_bad_characters(self):
         """Test the check nml history subroutine for simple fails bad characters in field"""
         self.nmlgen.set_value("hist_fincl1", ["A%$#@!~"])
-        with self.assertRaisesRegex(SystemExit, "Invalid characters in fieldname"):
+        with self.assertRaisesRegex(
+            SystemExit,
+            "History field name hist_fincl1 has " + "invalid characters or whitespace in it= ",
+        ):
             check_nml_history(self.nmlgen)
 
     def test_check_nml_history_simple_fails_white_space_in_field(self):
         """Test the check nml history subroutine for simple fails bad characters in field"""
         self.nmlgen.set_value("hist_fincl1", [" "])
-        with self.assertRaisesRegex(SystemExit, "White space in fieldname"):
+        with self.assertRaisesRegex(
+            SystemExit,
+            "History field name hist_fincl1 has " + "invalid characters or whitespace in it= ",
+        ):
             check_nml_history(self.nmlgen)
 
     def test_check_nml_history_complex_fails_array_size_not_consistent(self):
