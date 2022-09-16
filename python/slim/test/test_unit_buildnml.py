@@ -104,7 +104,6 @@ class TestPathUtils(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "nsegspc must be positive"):
             check_nml_performance(self.nmlgen)
 
-
     def test_check_nml_history(self):
         """Test the check nml history subroutine"""
         self.nmlgen.set_value("hist_mfilt", [20])
@@ -112,20 +111,94 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value("hist_mfilt", [0])
         with self.assertRaisesRegex(SystemExit, "hist_mfilt must be 1 or larger"):
             check_nml_history(self.nmlgen)
+
+        self.InitNML()
         # Make a list of settings to a list of history tape streams
-        self.nmlgen.set_value("hist_empty_htapes", '.true.')
-        self.nmlgen.set_value("hist_mfilt", [1,1,2,3,4,5])
-        self.nmlgen.set_value("hist_ndens", [1,1,2,1,1,1])
-        self.nmlgen.set_value("hist_nhtfrq", [1,1,-24,2,2,2])
-        self.nmlgen.set_value("hist_avgflag_pertape", ['A','I','X','M','A','A'])
-        self.nmlgen.set_value("hist_dov2xy", ['.true.','TRUE','FALSE','.T.','.F.','.true.'])
-        self.nmlgen.set_value("hist_fincl1", ['A','B','C','D','E','F'])
-        self.nmlgen.set_value("hist_fincl2", ['A','B','C','D','E','F'])
-        self.nmlgen.set_value("hist_fincl3", ['A','B','C','D','E','F'])
-        self.nmlgen.set_value("hist_fincl4", ['A','B','C','D','E','F'])
-        self.nmlgen.set_value("hist_fincl5", ['A','B','C','D','E','F'])
-        self.nmlgen.set_value("hist_fincl6", ['A','B','C','D','E','F'])
+        self.nmlgen.set_value("hist_empty_htapes", ".true.")
+        self.nmlgen.set_value("hist_mfilt", [1, 1, 2, 3, 4, 5])
+        self.nmlgen.set_value("hist_ndens", [1, 1, 2, 1, 1, 1])
+        self.nmlgen.set_value("hist_nhtfrq", [1, 1, -24, 2, 2, 2])
+        self.nmlgen.set_value("hist_avgflag_pertape", ["A", "I", "X", "M", "A", "A"])
+        self.nmlgen.set_value("hist_dov2xy", [".true.", "TRUE", "FALSE", ".T.", ".F.", ".true."])
+        self.nmlgen.set_value("hist_fincl1", ["A:I", "B:A", "C:X", "D:M", "E:A", "F:A"])
+        self.nmlgen.set_value("hist_fincl2", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fincl3", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fincl4", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fincl5", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fincl6", ["A", "B", "C", "D", "E", "F"])
         check_nml_history(self.nmlgen)
+        # and another complex case
+        self.InitNML()
+        self.nmlgen.set_value("hist_empty_htapes", ".false.")
+        self.nmlgen.set_value("hist_fexcl1", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fexcl2", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fexcl3", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fexcl4", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fexcl5", ["A", "B", "C", "D", "E", "F"])
+        self.nmlgen.set_value("hist_fexcl6", ["A", "B", "C", "D", "E", "F"])
+        check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_simple_fails_bad_timeavg(self):
+        """Test the check nml history subroutine for simple fails bad time avg"""
+        self.nmlgen.set_value("hist_fincl1", ["A:Z"])
+        with self.assertRaisesRegex(SystemExit, "Bad averaging option"):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_simple_fails_bad_timeavg_per_tape(self):
+        """Test the check nml history subroutine for simple fails bad time avg per tape"""
+        self.nmlgen.set_value("hist_fincl1", ["A"])
+        self.nmlgen.set_value("hist_avgflag_pertape", ["Z"])
+        with self.assertRaisesRegex(SystemExit, "Bad averaging option per tape"):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_simple_fails_bad_characters(self):
+        """Test the check nml history subroutine for simple fails bad characters in field"""
+        self.nmlgen.set_value("hist_fincl1", ["A%$#@!~"])
+        with self.assertRaisesRegex(SystemExit, "Invalid characters in fieldname"):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_simple_fails_white_space_in_field(self):
+        """Test the check nml history subroutine for simple fails bad characters in field"""
+        self.nmlgen.set_value("hist_fincl1", [" "])
+        with self.assertRaisesRegex(SystemExit, "White space in fieldname"):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_complex_fails_array_size_not_consistent(self):
+        """Test the check nml history subroutine for complex fails array size not consistent"""
+        self.nmlgen.set_value("hist_mfilt", [1])
+        self.nmlgen.set_value("hist_ndens", [1, 1])
+        self.nmlgen.set_value("hist_fincl2", ["A"])
+        with self.assertRaisesRegex(
+            SystemExit, "Sizes of history array options must be consistent"
+        ):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_complex_fails_array_size(self):
+        """Test the check nml history subroutine for complex fails array size"""
+        self.nmlgen.set_value("hist_fincl1", ["A", "B", "C", "D", "E", "F", "G"])
+        with self.assertRaisesRegex(SystemExit, "History array options can not exceed array size"):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_complex_fails_excl_with_empty(self):
+        """Test the check nml history subroutine for complex fails exclude used with
+        empty history
+        """
+        self.nmlgen.set_value("hist_empty_htapes", ".true.")
+        self.nmlgen.set_value("hist_fexcl1", ["A"])
+        with self.assertRaisesRegex(
+            SystemExit, "Exclude history options can not be used when hist_empty_htapes is on"
+        ):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_complex_fails_excl_beyond_first(self):
+        """Test the check nml history subroutine for complex fails exclude used beyond first"""
+        self.nmlgen.set_value("hist_fexcl2", ["A"])
+        with self.assertRaisesRegex(
+            SystemExit,
+            "Exclude history options should not be used for tape other than"
+            + " the first one which has defaults",
+        ):
+            check_nml_history(self.nmlgen)
 
     def test_check_nml_general(self):
         """Test the check nml general subroutine"""
