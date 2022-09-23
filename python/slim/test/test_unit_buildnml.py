@@ -156,7 +156,7 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value("hist_fincl1", ["A%$#@!~"])
         with self.assertRaisesRegex(
             SystemExit,
-            "History field name hist_fincl1 has " + "invalid characters or whitespace in it= ",
+            r"History field name hist_fincl1 has invalid characters or whitespace in it="
         ):
             check_nml_history(self.nmlgen)
 
@@ -165,7 +165,7 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value("hist_fincl1", [" "])
         with self.assertRaisesRegex(
             SystemExit,
-            "History field name hist_fincl1 has " + "invalid characters or whitespace in it= ",
+            r"History field name hist_fincl1 has invalid characters or whitespace in it="
         ):
             check_nml_history(self.nmlgen)
 
