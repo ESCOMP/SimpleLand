@@ -276,7 +276,7 @@ def check_nml_initial_conditions(nmlgen, case, inst_string=""):
 ####################################################################################
 def check_nml_data(nmlgen):
     ####################################################################################
-    """Set the namelist settings for data"""
+    """Set the namelist settings for data must be after check_nml_initial_conditions"""
     # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
@@ -285,6 +285,19 @@ def check_nml_data(nmlgen):
     mml_surdat = nmlgen.get_value("mml_surdat")
     if mml_surdat == "UNSET":
         raise SystemExit("mml_surdat file is NOT set and is required")
+
+    #
+    # use_init_interp requires that finidat be set
+    #
+    finidat = nmlgen.get_value("finidat")
+    use_init_interp = nmlgen.get_value("use_init_interp")
+    if use_init_interp is not None:
+        interp = literal_to_python_value(use_init_interp, type_="logical")
+    else:
+        interp = False
+
+    if finidat == " " and interp:
+        raise SystemExit("use_init_interp can not be set to TRUE for a cold start")
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
