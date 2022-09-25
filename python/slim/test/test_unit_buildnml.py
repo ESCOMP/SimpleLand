@@ -361,6 +361,49 @@ class TestPathUtils(unittest.TestCase):
             "finidat should be set correctly for hybrid case",
         )
 
+    def test_check_dtime(self):
+        """Test the check nml dtime"""
+        self.case.set_value("NCPL_BASE_PERIOD", "hour")
+        self.case.set_value("CALENDAR", "GREGORIAN")
+        self.case.set_value("LND_NCPL", 1)
+        self.InitNML()
+        check_nml_dtime(self.nmlgen, self.case)
+        expect(
+            self.nmlgen.get_value("dtime"),
+            3600,
+            "dtime should be 3600 seconds for an hour",
+        )
+        self.case.set_value("NCPL_BASE_PERIOD", "day")
+        self.case.set_value("CALENDAR", "NO_LEAP")
+        self.case.set_value("LND_NCPL", 48)
+        self.InitNML()
+        check_nml_dtime(self.nmlgen, self.case)
+        expect(
+            self.nmlgen.get_value("dtime"),
+            1800,
+            "dtime should be 1800 seconds for 48 cycles per day",
+        )
+        self.case.set_value("NCPL_BASE_PERIOD", "year")
+        self.case.set_value("CALENDAR", "NO_LEAP")
+        self.case.set_value("LND_NCPL", 365)
+        self.InitNML()
+        check_nml_dtime(self.nmlgen, self.case)
+        expect(
+            self.nmlgen.get_value("dtime"),
+            86400,
+            "dtime should be 86400 seconds for 365 cycles per year",
+        )
+        self.case.set_value("NCPL_BASE_PERIOD", "year")
+        self.case.set_value("CALENDAR", "NO_LEAP")
+        self.case.set_value("LND_NCPL", 36500)
+        self.InitNML()
+        check_nml_dtime(self.nmlgen, self.case)
+        expect(
+            self.nmlgen.get_value("dtime"),
+            8640,
+            "dtime should be 8640 seconds for 36500 cycles per decade",
+        )
+
 
 if __name__ == "__main__":
     unit_testing.setup_for_tests()
