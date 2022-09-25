@@ -305,6 +305,13 @@ def check_nml_data(nmlgen, case):
     if run_type == "branch" and interp:
         raise SystemExit("use_init_interp can NOT be set to TRUE for a branch run type")
 
+    #
+    # finidat destination file can only be set if interp is on
+    #
+    finidat_dest = nmlgen.get_value("finidat_interp_dest")
+    if finidat_dest is not None and not interp:
+        raise SystemExit("finidat_interp_dest can NOT be set if use_init_interp is not on")
+
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 # Turn off unused-argument for inst_string, since isn't in place right now
