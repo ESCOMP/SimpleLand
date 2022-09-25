@@ -119,7 +119,6 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value("hist_ndens", [1, 1, 2, 1, 1, 1])
         self.nmlgen.set_value("hist_nhtfrq", [1, 1, -24, 2, 2, 2])
         self.nmlgen.set_value("hist_avgflag_pertape", ["A", "I", "X", "M", "A", "A"])
-        self.nmlgen.set_value("hist_dov2xy", [".true.", "TRUE", "FALSE", ".T.", ".F.", ".true."])
         self.nmlgen.set_value("hist_fincl1", ["A:I", "B:A", "C:X", "D:M", "E:A", "F:A"])
         self.nmlgen.set_value("hist_fincl2", ["A", "B", "C", "D", "E", "F"])
         self.nmlgen.set_value("hist_fincl3", ["A", "B", "C", "D", "E", "F"])

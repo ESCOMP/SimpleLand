@@ -183,9 +183,7 @@ def check_nml_history(nmlgen):
     for var in (
         "hist_mfilt",
         "hist_ndens",
-        "hist_type1d_pertape",
         "hist_nhtfrq",
-        "hist_dov2xy",
         "hist_avgflag_pertape",
     ):
         val = nmlgen.get_value(var)
