@@ -57,6 +57,15 @@ def check_nml_dtime(nmlgen, case):
         )
     else:
         dtime = basedt // lnd_ncpl
+
+    expect(
+        dtime > 1,
+        "LND_NCPL=%s is too frequent which gives a time step that is too short\n" % lnd_ncpl,
+    )
+    expect(
+        dtime <= 86400,
+        "LND_NCPL=%s is too infrequent which gives a time step that is too long\n" % lnd_ncpl,
+    )
     nmlgen.set_value("dtime", value=dtime)
 
 

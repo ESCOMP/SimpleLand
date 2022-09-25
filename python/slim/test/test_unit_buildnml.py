@@ -455,11 +455,12 @@ class TestPathUtils(unittest.TestCase):
 
     def test_check_dtime_fail_too_long(self):
         """Test the check nml dtime fail test for too long"""
-        self.case.set_value("NCPL_BASE_PERIOD", "day")
-        self.case.set_value("LND_NCPL", 1)
+        self.case.set_value("NCPL_BASE_PERIOD", "year")
+        self.case.set_value("CALENDAR", "NO_LEAP")
+        self.case.set_value("LND_NCPL", 5)
         with self.assertRaisesRegex(
             SystemExit,
-            "ERROR: LND_NCPL=1 is too infrequent which gives a time step that is too long",
+            "ERROR: LND_NCPL=5 is too infrequent which gives a time step that is too long",
         ):
             check_nml_dtime(self.nmlgen, self.case)
 
