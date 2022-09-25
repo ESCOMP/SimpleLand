@@ -409,7 +409,6 @@ class TestPathUtils(unittest.TestCase):
         self.case.set_value("NCPL_BASE_PERIOD", "year")
         self.case.set_value("CALENDAR", "GREGORIAN")
         self.case.set_value("LND_NCPL", 1)
-        self.InitNML()
         with self.assertRaisesRegex(SystemExit, "ERROR: Invalid CALENDAR for NCPL_BASE_PERIOD year"):
            check_nml_dtime(self.nmlgen, self.case)
 
@@ -418,9 +417,17 @@ class TestPathUtils(unittest.TestCase):
         self.case.set_value("NCPL_BASE_PERIOD", "decade")
         self.case.set_value("CALENDAR", "GREGORIAN")
         self.case.set_value("LND_NCPL", 1)
-        self.InitNML()
         with self.assertRaisesRegex(SystemExit, "ERROR: Invalid CALENDAR for NCPL_BASE_PERIOD decade"):
            check_nml_dtime(self.nmlgen, self.case)
+
+    def test_check_dtime_fail_invalid_base_period(self):
+        """Test the check nml dtime fail test for invalid base period"""
+        self.case.set_value("NCPL_BASE_PERIOD", "minute")
+        self.case.set_value("CALENDAR", "GREGORIAN")
+        self.case.set_value("LND_NCPL", 1)
+        with self.assertRaisesRegex(SystemExit, "ERROR: Invalid NCPL_BASE_PERIOD "):
+           check_nml_dtime(self.nmlgen, self.case)
+
 
 
 if __name__ == "__main__":
