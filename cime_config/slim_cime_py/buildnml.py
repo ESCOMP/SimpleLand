@@ -274,7 +274,7 @@ def check_nml_initial_conditions(nmlgen, case, inst_string=""):
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
-def check_nml_data(nmlgen):
+def check_nml_data(nmlgen, case):
     ####################################################################################
     """Set the namelist settings for data must be after check_nml_initial_conditions"""
     # pylint: disable=global-statement
@@ -298,6 +298,12 @@ def check_nml_data(nmlgen):
 
     if finidat == " " and interp:
         raise SystemExit("use_init_interp can not be set to TRUE for a cold start")
+    #
+    # use_init_interp can not be set for a branch case
+    #
+    run_type = case.get_value("RUN_TYPE")
+    if run_type == "branch" and interp:
+        raise SystemExit("use_init_interp can NOT be set to TRUE for a branch run type")
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
@@ -338,7 +344,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     check_nml_performance(nmlgen)
     check_nml_history(nmlgen)
     check_nml_initial_conditions(nmlgen, case, inst_string)
-    check_nml_data(nmlgen)
+    check_nml_data(nmlgen, case)
 
     # ----------------------------------------------------
     # Write output namelist

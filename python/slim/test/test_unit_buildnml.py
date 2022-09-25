@@ -215,23 +215,23 @@ class TestPathUtils(unittest.TestCase):
             self.case.set_value("SLIM_SCENARIO", scen)
             print("SLIM_SCENARIO = " + scen)
             self.InitNML()
-            check_nml_data(self.nmlgen)
+            check_nml_data(self.nmlgen, self.case)
         # 1-degree has one dataset
         self.case.set_value("LND_GRID", "0.9x1.25")
         self.case.set_value("SLIM_SCENARIO", "realistic_from_2000")
         self.InitNML()
-        check_nml_data(self.nmlgen)
+        check_nml_data(self.nmlgen, self.case)
         # Check that 1-degree for another scenario fails
         self.case.set_value("SLIM_SCENARIO", "global_uniform")
         self.InitNML()
         with self.assertRaisesRegex(SystemExit, " file is NOT set and is required"):
-            check_nml_data(self.nmlgen)
+            check_nml_data(self.nmlgen, self.case)
 
         # make the dataset unset and make sure it fails
         var = "mml_surdat"
         self.nmlgen.set_value(var, "UNSET")
         with self.assertRaisesRegex(SystemExit, var + " file is NOT set and is required"):
-            check_nml_data(self.nmlgen)
+            check_nml_data(self.nmlgen, self.case)
 
     def test_check_init_data(self):
         """Test the check nml initial data subroutine"""
@@ -278,7 +278,7 @@ class TestPathUtils(unittest.TestCase):
         finidat_dest = "finidat_file_to_create.nc"
         self.nmlgen.set_value("finidat_interp_dest", finidat_dest)
         check_nml_initial_conditions(self.nmlgen, self.case)
-        check_nml_data(self.nmlgen)
+        check_nml_data(self.nmlgen, self.case)
 
     def test_check_use_init_interp_fails_cold(self):
         """Test the check nml initial data subroutine for use_init_interp options that fail 1"""
@@ -289,7 +289,7 @@ class TestPathUtils(unittest.TestCase):
         with self.assertRaisesRegex(
             SystemExit, "use_init_interp can not be set to TRUE for a cold start"
         ):
-            check_nml_data(self.nmlgen)
+            check_nml_data(self.nmlgen, self.case)
 
     def test_check_use_init_interp_fails_setdest(self):
         """Test the check nml initial data subroutine for use_init_interp options that fail 2"""
@@ -301,7 +301,7 @@ class TestPathUtils(unittest.TestCase):
         with self.assertRaisesRegex(
             SystemExit, "finidat_interp_dest can NOT be set if use_init_interp is not on"
         ):
-            check_nml_data(self.nmlgen)
+            check_nml_data(self.nmlgen, self.case)
 
     def test_check_use_init_interp_fails_branch(self):
         """Test the check nml initial data subroutine for use_init_interp options that fail 3"""
@@ -317,7 +317,7 @@ class TestPathUtils(unittest.TestCase):
         with self.assertRaisesRegex(
             SystemExit, "use_init_interp can NOT be set to TRUE for a branch run type"
         ):
-            check_nml_data(self.nmlgen)
+            check_nml_data(self.nmlgen, self.case)
 
     def test_check_init_data_branch(self):
         """Test the check nml initial data subroutine for branch"""
