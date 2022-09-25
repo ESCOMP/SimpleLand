@@ -428,6 +428,14 @@ class TestPathUtils(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "ERROR: Invalid NCPL_BASE_PERIOD "):
            check_nml_dtime(self.nmlgen, self.case)
 
+    def test_check_dtime_fail_invalid_division(self):
+        """Test the check nml dtime fail test for invalid coupling division"""
+        self.case.set_value("NCPL_BASE_PERIOD", "day")
+        self.case.set_value("CALENDAR", "GREGORIAN")
+        self.case.set_value("LND_NCPL", 47)
+        with self.assertRaisesRegex(SystemExit, "ERROR: LND_NCPL=47 doesn't divide evenly into NCPL_BASE_PERIOD day"):
+           check_nml_dtime(self.nmlgen, self.case)
+
 
 
 if __name__ == "__main__":
