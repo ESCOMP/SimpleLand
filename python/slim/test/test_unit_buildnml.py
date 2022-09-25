@@ -268,6 +268,53 @@ class TestPathUtils(unittest.TestCase):
         ):
             check_nml_initial_conditions(self.nmlgen, self.case)
 
+    def test_check_use_init_interp(self):
+        """Test the check nml initial data subroutine for use_init_interp options"""
+        self.case.set_value("SLIM_START_TYPE", "startup")
+        finidat = "finidat_file_to_interpolate_from.nc"
+        self.nmlgen.set_value("finidat", finidat)
+        Path(finidat).touch()
+        self.nmlgen.set_value("use_init_interp", ".true.")
+        finidat_dest = "finidat_file_to_create.nc"
+        self.nmlgen.set_value("finidat_interp_dest", finidat_dest)
+        check_nml_initial_conditions(self.nmlgen, self.case)
+
+    def test_check_use_init_interp_fails_cold(self):
+        """Test the check nml initial data subroutine for use_init_interp options that fail 1"""
+        # Cold start with use_init_interp should fail
+        self.case.set_value("SLIM_START_TYPE", "cold")
+        self.nmlgen.set_value("use_init_interp", ".true.")
+        with self.assertRaisesRegex(
+            SystemExit, "use_init_interp can not be set to TRUE for a cold start"
+        ):
+            check_nml_initial_conditions(self.nmlgen, self.case)
+
+    def test_check_use_init_interp_fails_setdest(self):
+        """Test the check nml initial data subroutine for use_init_interp options that fail 2"""
+        # Setting finidat_interp_dest without use_init_interp should fail
+        self.nmlgen.set_value("use_init_interp", ".false.")
+        finidat_dest = "finidat_file_to_create.nc"
+        self.nmlgen.set_value("finidat_interp_dest", finidat_dest)
+        with self.assertRaisesRegex(
+            SystemExit, "finidat_interp_dest can NOT be set if use_init_interp is not on"
+        ):
+            check_nml_initial_conditions(self.nmlgen, self.case)
+
+    def test_check_use_init_interp_fails_branch(self):
+        """Test the check nml initial data subroutine for use_init_interp options that fail 3"""
+        # Branch type should fail for use_init_interp set
+        self.case.set_value("RUN_TYPE", "branch")
+        self.case.set_value("SLIM_START_TYPE", "required")
+        self.case.set_value("RUN_REFCASE", "TESTCASE")
+        self.case.set_value("RUN_REFDATE", "0001-01-01")
+        nrevsn = "TESTCASE.slim.r.0001-01-01-00000.nc"
+        self.nmlgen.set_value("use_init_interp", ".true.")
+        Path(nrevsn).touch()
+        with self.assertRaisesRegex(
+            SystemExit, "use_init_interp can NOT be set to TRUE for a branch run type"
+        ):
+            check_nml_initial_conditions(self.nmlgen, self.case)
+
     def test_check_init_data_branch(self):
         """Test the check nml initial data subroutine for branch"""
         #
