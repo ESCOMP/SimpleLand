@@ -52,7 +52,8 @@ def check_nml_dtime(nmlgen, case):
     if basedt % lnd_ncpl != 0:
         expect(
             False,
-            "LND_NCPL=%s doesn't divide evenly into NCPL_BASE_PERIOD %s\n" % (lnd_ncpl, ncpl_base_period),
+            "LND_NCPL=%s doesn't divide evenly into NCPL_BASE_PERIOD %s\n"
+            % (lnd_ncpl, ncpl_base_period),
         )
     else:
         dtime = basedt // lnd_ncpl

@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestPathUtils(unittest.TestCase):
+    # pylint: disable=too-many-public-methods
     """Tests of buildnml"""
 
     def setUp(self):
@@ -409,16 +410,20 @@ class TestPathUtils(unittest.TestCase):
         self.case.set_value("NCPL_BASE_PERIOD", "year")
         self.case.set_value("CALENDAR", "GREGORIAN")
         self.case.set_value("LND_NCPL", 1)
-        with self.assertRaisesRegex(SystemExit, "ERROR: Invalid CALENDAR for NCPL_BASE_PERIOD year"):
-           check_nml_dtime(self.nmlgen, self.case)
+        with self.assertRaisesRegex(
+            SystemExit, "ERROR: Invalid CALENDAR for NCPL_BASE_PERIOD year"
+        ):
+            check_nml_dtime(self.nmlgen, self.case)
 
     def test_check_dtime_fail_invalid_cal_decade(self):
         """Test the check nml dtime fail test for invalid calendar decade"""
         self.case.set_value("NCPL_BASE_PERIOD", "decade")
         self.case.set_value("CALENDAR", "GREGORIAN")
         self.case.set_value("LND_NCPL", 1)
-        with self.assertRaisesRegex(SystemExit, "ERROR: Invalid CALENDAR for NCPL_BASE_PERIOD decade"):
-           check_nml_dtime(self.nmlgen, self.case)
+        with self.assertRaisesRegex(
+            SystemExit, "ERROR: Invalid CALENDAR for NCPL_BASE_PERIOD decade"
+        ):
+            check_nml_dtime(self.nmlgen, self.case)
 
     def test_check_dtime_fail_invalid_base_period(self):
         """Test the check nml dtime fail test for invalid base period"""
@@ -426,16 +431,17 @@ class TestPathUtils(unittest.TestCase):
         self.case.set_value("CALENDAR", "GREGORIAN")
         self.case.set_value("LND_NCPL", 1)
         with self.assertRaisesRegex(SystemExit, "ERROR: Invalid NCPL_BASE_PERIOD "):
-           check_nml_dtime(self.nmlgen, self.case)
+            check_nml_dtime(self.nmlgen, self.case)
 
     def test_check_dtime_fail_invalid_division(self):
         """Test the check nml dtime fail test for invalid coupling division"""
         self.case.set_value("NCPL_BASE_PERIOD", "day")
         self.case.set_value("CALENDAR", "GREGORIAN")
         self.case.set_value("LND_NCPL", 47)
-        with self.assertRaisesRegex(SystemExit, "ERROR: LND_NCPL=47 doesn't divide evenly into NCPL_BASE_PERIOD day"):
-           check_nml_dtime(self.nmlgen, self.case)
-
+        with self.assertRaisesRegex(
+            SystemExit, "ERROR: LND_NCPL=47 doesn't divide evenly into NCPL_BASE_PERIOD day"
+        ):
+            check_nml_dtime(self.nmlgen, self.case)
 
 
 if __name__ == "__main__":
