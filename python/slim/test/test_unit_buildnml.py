@@ -443,6 +443,26 @@ class TestPathUtils(unittest.TestCase):
         ):
             check_nml_dtime(self.nmlgen, self.case)
 
+    def test_check_dtime_fail_too_short(self):
+        """Test the check nml dtime fail test for too short"""
+        self.case.set_value("NCPL_BASE_PERIOD", "hour")
+        self.case.set_value("LND_NCPL", 3600)
+        with self.assertRaisesRegex(
+            SystemExit,
+            "ERROR: LND_NCPL=3600 is too frequent which gives a time step that is too short",
+        ):
+            check_nml_dtime(self.nmlgen, self.case)
+
+    def test_check_dtime_fail_too_long(self):
+        """Test the check nml dtime fail test for too long"""
+        self.case.set_value("NCPL_BASE_PERIOD", "day")
+        self.case.set_value("LND_NCPL", 1)
+        with self.assertRaisesRegex(
+            SystemExit,
+            "ERROR: LND_NCPL=1 is too infrequent which gives a time step that is too long",
+        ):
+            check_nml_dtime(self.nmlgen, self.case)
+
 
 if __name__ == "__main__":
     unit_testing.setup_for_tests()
