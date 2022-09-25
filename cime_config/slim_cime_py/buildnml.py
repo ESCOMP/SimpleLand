@@ -38,7 +38,7 @@ def check_nml_dtime(nmlgen, case):
         else:
             expect(
                 False,
-                "invalid NCPL_BASE_PERIOD NCPL_BASE_PERIOD %s " % ncpl_base_period,
+                "Invalid CALENDAR for NCPL_BASE_PERIOD %s " % ncpl_base_period,
             )
     else:
         expect(False, "invalid NCPL_BASE_PERIOD NCPL_BASE_PERIOD %s " % ncpl_base_period)
