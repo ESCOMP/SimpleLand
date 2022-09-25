@@ -8,6 +8,7 @@ import re
 
 from CIME.buildnml import create_namelist_infile
 from CIME.nmlgen import NamelistGenerator
+from CIME.namelist import literal_to_python_value
 from CIME.utils import expect
 
 logger = logging.getLogger(__name__)
@@ -105,30 +106,98 @@ def check_nml_history(nmlgen):
     # ------------------------------------------------------
     logger.info(" check_nml_history")
 
+    avg_opts = ("A", "I", "X", "M")
     hist_mfilt = nmlgen.get_value("hist_mfilt")
     for mfilt in hist_mfilt:
+        if mfilt is None:
+            break
         logger.info(" hist_mfilt = %d", int(mfilt))
         if int(mfilt) <= 0:
             raise SystemExit("hist_mfilt must be 1 or larger")
 
     #
-    # Check the list of fincl/fexcl for validity and get number of tapes
+    # Check the list of fincl for validity and get number of tapes
     #
+    hist_empty_htapes = nmlgen.get_value("hist_empty_htapes")
+    if hist_empty_htapes is not None:
+        hist_empty = literal_to_python_value(hist_empty_htapes, type_="logical")
+    else:
+        hist_empty = False
+
+    if hist_empty:
+        num_tapes = 0
+    else:
+        num_tapes = 1
+
+    ftype = "fincl"
     for tape in (1, 2, 3, 4, 5, 6):
-        for ftype in ("fincl", "fexcl"):
-            var = "hist_" + ftype + str(tape)
-            val = nmlgen.get_value(var)
-            for field in val:
-                if field is None:
-                    break
-                match = re.search(r"^[A-Za-z0-9_.:]+\s*$", field)
-                if match is None:
+        var = "hist_" + ftype + str(tape)
+        val = nmlgen.get_value(var)
+        for field in val:
+            if field is None:
+                break
+            match = re.fullmatch(r"([A-Za-z0-9_.]+):*([A-Z0-9]*)\s*", field)
+            if match is None:
+                raise SystemExit(
+                    "History field name "
+                    + var
+                    + " has invalid characters or whitespace in it="
+                    + field
+                )
+            if match.group(2):
+                if match.group(2) not in avg_opts:
                     raise SystemExit(
-                        "History field name "
+                        "History averaging option "
+                        + match.group(2)
+                        + " is not valid in "
                         + var
-                        + " has invalid characters or whitespace in it="
+                        + " = "
                         + field
                     )
+        if val != [None]:
+            num_tapes = tape
+    #
+    # hist_fexcl1 can only be set if hist_empty is NOT true
+    #
+    var = "hist_fexcl1"
+    val = nmlgen.get_value(var)
+    if hist_empty:
+        if val != [None]:
+            raise SystemExit("hist_fexcl1 can not be set if hist_empty_htapes is set to true")
+    else:
+        for field in val:
+            if field is None:
+                break
+            match = re.search(r"^[A-Za-z0-9_.]+\s*$", field)
+            if match is None:
+                raise SystemExit(
+                    "History field name "
+                    + var
+                    + " has invalid characters or whitespace in it="
+                    + field
+                )
+    #
+    # Loop through history array types and make sure array sizes
+    # are consistent and match the expected number
+    #
+    for var in (
+        "hist_mfilt",
+        "hist_ndens",
+        "hist_type1d_pertape",
+        "hist_nhtfrq",
+        "hist_dov2xy",
+        "hist_avgflag_pertape",
+    ):
+        val = nmlgen.get_value(var)
+        if val != [None]:
+            if len(val) != num_tapes:
+                raise SystemExit(
+                    var
+                    + " array size does not agree with the expected size of "
+                    + str(num_tapes)
+                    + " "
+                    + str(val)
+                )
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements

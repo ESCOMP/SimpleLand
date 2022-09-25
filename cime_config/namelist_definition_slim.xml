@@ -147,7 +147,7 @@
      </desc>
   </entry>
 
-  <entry id="hist_dov2xy">
+  <entry id="hist_dov2xy" skip_default_entry="true">
     <type>logical(6)</type> 
     <category>history</category>
     <group>slim_history</group>
@@ -174,45 +174,10 @@
      <type>char(1000)</type> 
      <category>history</category>
      <group>slim_history</group>
-     <desc>Fields to exclude from history tape series 1.</desc>
+     <desc>Fields to exclude from default history tape series 1.</desc>
     <values>
         <value>''</value>
     </values>
-  </entry>
-
-  <entry id="hist_fexcl2" skip_default_entry="true">
-    <type>char(1000)</type> 
-    <category>history</category>
-    <group>slim_history</group>
-    <desc>Fields to exclude from history tape series  2.</desc>
-  </entry>
-
-  <entry id="hist_fexcl3" skip_default_entry="true">
-    <type>char(1000)</type> 
-    <category>history</category>
-    <group>slim_history</group>
-    <desc>Fields to exclude from history tape series  3.</desc>
-  </entry>
-
-  <entry id="hist_fexcl4" skip_default_entry="true">
-    <type>char(1000)</type> 
-    <category>history</category>
-    <group>slim_history</group>
-    <desc>Fields to exclude from history tape series  4.</desc>
-  </entry>
-
-  <entry id="hist_fexcl5" skip_default_entry="true">
-    <type>char(1000)</type> 
-    <category>history</category>
-    <group>slim_history</group>
-    <desc>Fields to exclude from history tape series  5.</desc>
-  </entry>
-
-  <entry id="hist_fexcl6" skip_default_entry="true">
-    <type>char(1000)</type> 
-    <category>history</category>
-    <group>slim_history</group>
-    <desc>Fields to exclude from history tape series  6.</desc>
   </entry>
 
   <entry id="hist_fincl1" skip_default_entry="true">
@@ -260,7 +225,7 @@
     <desc>Fields to add to history tape series  6.</desc>
   </entry>
 
-  <entry id="hist_mfilt">
+  <entry id="hist_mfilt" skip_default_entry="true">
     <type>integer(6)</type> 
     <category>history</category>
     <group>slim_history</group>
@@ -270,7 +235,7 @@
     </values>
   </entry>
 
-  <entry id="hist_ndens">
+  <entry id="hist_ndens" skip_default_entry="true">
     <type>integer(6)</type> 
     <category>history</category>
     <group>slim_history</group> 
