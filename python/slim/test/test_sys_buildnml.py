@@ -50,7 +50,7 @@ def addLinesToUserNL(user_nl_file, lines):
     print("Add lines to " + user_nl_file)
     with open(user_nl_file, "x") as userfile:
         for line in lines:
-            userfile.write(line)
+            userfile.write(line+"\n")
             print(line)
     userfile.close()
     print("Close file")
@@ -111,6 +111,43 @@ class TestBuildNML(unittest.TestCase):
                 os.path.isfile("Buildconf/slim.input_data_list"),
                 "Input data list file should exist after running buildnml",
             )
+
+    def test_default_testmod(self):
+        """Test the default testmod options call of buildnml"""
+        lines = []
+        lines.append( "mml_surdat='/glade/p/cesmdata/cseg/inputdata/lnd/slim/surdat/slim2deg_fromCMIP6-AMIP-1deg_ensemble001-010_1991to2010clim_max-ctrl-bucket_rs150_c20210401.nc'")
+        lines.append( "hist_ndens     = 1" )
+        lines.append( "hist_nhtfrq    =-24" )
+        lines.append( "hist_mfilt     = 5" )
+        lines.append( "! Empty the default history tapes and just output the MML fields" )
+        lines.append( "hist_empty_htapes = .true." )
+        lines.append( "hist_fincl1 = 'MML_snowmaskdepth', 'MML_evap_rs', 'MML_bucket_cap', 'MML_soiltype', 'MML_roughness', 'MML_fsds', 'MML_fsdsnd'," )
+        lines.append( "'MML_fsdsni'," )
+        lines.append( "'MML_fsdsvd', 'MML_fsdsvi', 'MML_lwdn', 'MML_zref', 'MML_tbot', 'MML_thref', 'MML_qbot', 'MML_uref'," )
+        lines.append( "'MML_eref', 'MML_pbot', 'MML_psrf', 'MML_pco2', 'MML_rhomol', 'MML_rhoair', 'MML_cpair', 'MML_prec_liq'," )
+        lines.append( "'MML_prec_frz', 'MML_ts', 'MML_qs', 'MML_qa', 'MML_swabs', 'MML_fsr', 'MML_fsrnd', 'MML_fsrni'," )
+        lines.append( "'MML_fsrvd', 'MML_fsrvi', 'MML_snowmelt', 'MML_l2a_taux', 'MML_l2a_tauy', 'MML_lwup', 'MML_shflx', 'MML_lhflx'," )
+        lines.append( "'MML_gsoi', 'MML_gsnow', 'MML_evap', 'MML_ustar', 'MML_tstar', 'MML_qstar', 'MML_tvstar', 'MML_obu'," )
+        lines.append( "'MML_ram', 'MML_rah', 'MML_z0m', 'MML_z0h', 'MML_alb', 'MML_fsns', 'MML_flns', 'MML_maxice'," )
+        lines.append( "'MML_soilz', 'MML_soil_t', 'MML_soil_liq', 'MML_soil_ice', 'MML_dz', 'MML_zh', 'MML_tk', 'MML_tkh'," )
+        lines.append( "'MML_dtsoi', 'MML_cv', 'MML_water', 'MML_snow', 'MML_runoff', 'MML_l2a_tref2m', 'MML_l2a_qref2m', 'MML_l2a_uref10m'," )
+        lines.append( "'MML_diag1_1d', 'MML_diag2_1d', 'MML_diag3_1d', 'MML_diag1_2d', 'MML_diag2_2d', 'MML_diag3_2d', 'MML_q_excess'," )
+        lines.append( "'MML_lh_excess'," )
+        lines.append( "'MML_q_demand', 'MML_lh_demand', 'mml_err_h2o', 'mml_err_h2osno', 'mml_err_seb', 'mml_err_soi', 'mml_err_sol', 'WIND'," )
+        lines.append( "'THBOT', 'RAIN', 'SNOW', 'RH'" )
+        addLinesToUserNL("user_nl_slim", lines)
+        buildnml(self.case, self._testdir, "slim")
+        expect(
+            os.path.isfile("Buildconf/slimconf/lnd_in"),
+            "Namelist file lnd_in should exist in Buildconf after running buildnml",
+        )
+        expect(
+            os.path.isfile("lnd_in"), "Namelist file lnd_in should exist after running buildnml"
+        )
+        expect(
+            os.path.isfile("Buildconf/slim.input_data_list"),
+            "Input data list file should exist after running buildnml",
+        )
 
     def test_hybrid_start(self):
         """Test a hybrid startup call of buildnml"""
