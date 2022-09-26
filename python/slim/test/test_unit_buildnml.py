@@ -115,6 +115,7 @@ class TestPathUtils(unittest.TestCase):
 
         self.InitNML()
         # Make a list of settings to a list of history tape streams
+        self.nmlgen.set_value("use_noio", ".false.")
         self.nmlgen.set_value("hist_empty_htapes", ".true.")
         self.nmlgen.set_value("hist_mfilt", [1, 1, 2, 3, 4, 5])
         self.nmlgen.set_value("hist_ndens", [1, 1, 2, 1, 1, 1])
@@ -131,6 +132,10 @@ class TestPathUtils(unittest.TestCase):
         self.InitNML()
         self.nmlgen.set_value("hist_empty_htapes", ".false.")
         self.nmlgen.set_value("hist_fexcl1", ["A", "B", "C", "D", "E", "F"])
+        check_nml_history(self.nmlgen)
+        # Check that use_noio works if you don't set any hist_* options
+        self.InitNML()
+        self.nmlgen.set_value("use_noio", ".true.")
         check_nml_history(self.nmlgen)
 
     def test_check_nml_history_simple_fails_bad_timeavg(self):
@@ -190,6 +195,18 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value("hist_fexcl1", ["A"])
         with self.assertRaisesRegex(
             SystemExit, "hist_fexcl1 can not be set if hist_empty_htapes is set to true"
+        ):
+            check_nml_history(self.nmlgen)
+
+    def test_check_nml_history_fails_excl_use_noio(self):
+        """Test the check nml history subroutine for fails use_noio used with other
+        history settings
+        """
+        self.nmlgen.set_value("use_noio", ".true.")
+        self.nmlgen.set_value("hist_fincl1", ["A"])
+        with self.assertRaisesRegex(
+            SystemExit,
+            "use_noio turns off all history output, so no hist_* namelist option should be set",
         ):
             check_nml_history(self.nmlgen)
 
