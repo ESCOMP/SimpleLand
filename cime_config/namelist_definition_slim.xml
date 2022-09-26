@@ -146,6 +146,15 @@
     </desc>
   </entry>
 
+  <entry id="use_noio" skip_default_entry="true">
+    <type>logical</type> 
+    <category>history</category>
+    <group>slim_history</group>
+    <desc>
+          Toggle to turn all history output completely OFF (possibly used for testing)
+    </desc>
+  </entry>
+
   <entry id="hist_fexcl1" skip_default_entry="true">
      <type>char(1000)</type> 
      <category>history</category>
