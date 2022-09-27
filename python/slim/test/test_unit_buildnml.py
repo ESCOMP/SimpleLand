@@ -206,7 +206,8 @@ class TestPathUtils(unittest.TestCase):
         self.nmlgen.set_value("hist_fincl1", ["A"])
         with self.assertRaisesRegex(
             SystemExit,
-            "use_noio turns off all history output, so no hist_* namelist option should be set",
+            r"use_noio turns off all history output"
+            + ", so no hist_ namelist option should also be set.*",
         ):
             check_nml_history(self.nmlgen)
 

@@ -206,6 +206,46 @@ def check_nml_history(nmlgen):
                     + " "
                     + str(val)
                 )
+    #
+    # History options should not be used when use_noio is on, because it turns off all history...
+    #
+    use_noio = nmlgen.get_value("use_noio")
+    if use_noio is not None:
+        noio = literal_to_python_value(use_noio, type_="logical")
+    else:
+        noio = False
+
+    if noio:
+        # NOTE: hist_nhtfrq is excluded from this list since it is set by default
+        # Loop over the history array options
+        for var in (
+            "hist_fexcl1",
+            "hist_fincl1",
+            "hist_fincl2",
+            "hist_fincl3",
+            "hist_fincl4",
+            "hist_fincl5",
+            "hist_fincl6",
+            "hist_mfilt",
+            "hist_ndens",
+            "hist_avgflag_pertape",
+        ):
+            val = nmlgen.get_value(var)
+            if val != [None]:
+                raise SystemExit(
+                    "use_noio turns off all history output"
+                    + ", so no hist_ namelist option should also be set"
+                    + ", the %s array is also being set here" % var
+                )
+        # Loop over any history scalar options
+        for var in ("hist_empty_htapes",):
+            val = nmlgen.get_value(var)
+            if val is not None:
+                raise SystemExit(
+                    "use_noio turns off all history output"
+                    + ", so no hist_ namelist option should also be set"
+                    + ", %s is also being set here" % var
+                )
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
