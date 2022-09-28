@@ -66,6 +66,7 @@ class TestPathUtils(unittest.TestCase):
         self.case.set_value("RUN_REFTOD", "00000")
         self.case.set_value("RUN_REFDIR", "cesm2_init")
         self.case.set_value("DIN_LOC_ROOT", ".")
+        self.case.set_value("CALENDAR", "NO_LEAP")
         self.case.set_value("LND_DOMAIN_PATH", ".")
         self.case.set_value("LND_DOMAIN_FILE", "domain.nc")
         self.case.set_value("SLIM_SCENARIO", "global_uniform")

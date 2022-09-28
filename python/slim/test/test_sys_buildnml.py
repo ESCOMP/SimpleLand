@@ -79,6 +79,7 @@ class TestBuildNML(unittest.TestCase):
         self.case.set_value("RUN_REFTOD", "00000")
         self.case.set_value("RUN_REFDIR", "cesm2_init")
         self.case.set_value("RUNDIR", ".")
+        self.case.set_value("CALENDAR", "NO_LEAP")
         self.case.set_value("NINST_LND", 1)
         self.case.set_value("NCPL_BASE_PERIOD", "day")
         self.case.set_value("LND_NCPL", 48)

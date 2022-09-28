@@ -21,21 +21,24 @@ def check_nml_dtime(nmlgen, case):
     # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
-    logger.info(" check_nml_dtime")
+    logger.debug(" check_nml_dtime")
     ncpl_base_period = case.get_value("NCPL_BASE_PERIOD")
+    calendar = case.get_value("CALENDAR")
     if ncpl_base_period == "hour":
         basedt = 3600
     elif ncpl_base_period == "day":
         basedt = 3600 * 24
     elif ncpl_base_period == "year":
-        if case.get_value("CALENDAR") == "NO_LEAP":
+        if calendar == "NO_LEAP":
             basedt = 3600 * 24 * 365
         else:
+            logger.error("CALENDAR = %s", calendar)
             expect(False, "Invalid CALENDAR for NCPL_BASE_PERIOD %s " % ncpl_base_period)
     elif ncpl_base_period == "decade":
-        if case.get_value("CALENDAR") == "NO_LEAP":
+        if calendar == "NO_LEAP":
             basedt = 3600 * 24 * 365 * 10
         else:
+            logger.error("CALENDAR = %s", calendar)
             expect(
                 False,
                 "Invalid CALENDAR for NCPL_BASE_PERIOD %s " % ncpl_base_period,
@@ -43,13 +46,12 @@ def check_nml_dtime(nmlgen, case):
     else:
         expect(False, "Invalid NCPL_BASE_PERIOD %s " % ncpl_base_period)
 
-    logger.info(" basedt = %s", str(basedt))
-
     if basedt < 0:
         expect(False, "basedt invalid overflow for NCPL_BASE_PERIOD %s " % ncpl_base_period)
 
     lnd_ncpl = int(case.get_value("LND_NCPL"))
     if basedt % lnd_ncpl != 0:
+        logger.error("CALENDAR = %s", calendar)
         expect(
             False,
             "LND_NCPL=%s doesn't divide evenly into NCPL_BASE_PERIOD %s\n"
@@ -77,7 +79,7 @@ def check_nml_general(nmlgen):
     # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
-    logger.info(" check_nml_general")
+    logger.debug(" check_nml_general")
     for var in ("slim_start_type", "res"):
         expect(nmlgen.get_value(var) is not None, var + " must be set")
 
@@ -102,7 +104,7 @@ def check_nml_performance(nmlgen):
     # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
-    logger.info(" check_nml_performance")
+    logger.debug(" check_nml_performance")
     expect(int(nmlgen.get_value("nsegspc")) > 0, "nsegspc must be positive")
 
 
@@ -114,14 +116,13 @@ def check_nml_history(nmlgen):
     # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
-    logger.info(" check_nml_history")
+    logger.debug(" check_nml_history")
 
     avg_opts = ("A", "I", "X", "M")
     hist_mfilt = nmlgen.get_value("hist_mfilt")
     for mfilt in hist_mfilt:
         if mfilt is None:
             break
-        logger.info(" hist_mfilt = %d", int(mfilt))
         if int(mfilt) <= 0:
             raise SystemExit("hist_mfilt must be 1 or larger")
 
@@ -256,7 +257,7 @@ def check_nml_initial_conditions(nmlgen, case, inst_string=""):
     # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
-    logger.info(" check_nml_initial_conditions")
+    logger.debug(" check_nml_initial_conditions")
     start_type = case.get_value("SLIM_START_TYPE")
     run_type = case.get_value("RUN_TYPE")
     run_refcase = case.get_value("RUN_REFCASE")
@@ -285,9 +286,7 @@ def check_nml_initial_conditions(nmlgen, case, inst_string=""):
     if run_type != "branch":
         # Handle a cold start
         if start_type == "cold":
-            logger.info(" finidat = %s", finidat)
             if finidat != " " and finidat != "UNSET" and finidat is not None:
-                print(" finidat = '" + finidat + "'")
                 raise SystemExit(
                     "finidat is set but SLIM_START_TYPE is cold which is a contradiction"
                 )
@@ -318,7 +317,6 @@ def check_nml_initial_conditions(nmlgen, case, inst_string=""):
 
         check_file(nrevsn, case)
         if finidat is not None:
-            print(finidat)
             raise SystemExit("finidat can NOT be set when RUN_TYPE is a branch")
 
 
@@ -330,7 +328,7 @@ def check_nml_data(nmlgen, case):
     # pylint: disable=global-statement
     global logger
     # ------------------------------------------------------
-    logger.info(" check_nml_data")
+    logger.debug(" check_nml_data")
 
     mml_surdat = nmlgen.get_value("mml_surdat")
     if mml_surdat == "UNSET":
@@ -424,6 +422,7 @@ def buildnml(case, caseroot, compname):
 
     # Build the component namelist
     if compname != "slim":
+        logger.error("compname = %s", compname)
         raise AttributeError
 
     lnd_root = case.get_value("COMP_ROOT_DIR_LND")
@@ -507,5 +506,5 @@ def buildnml(case, caseroot, compname):
             file2 = os.path.join(rundir, "lnd_in")
             if ninst > 1:
                 file2 += inst_string
-            logger.info("SLIM namelist copy: file1 %s file2 %s ", file1, file2)
+            logger.debug("SLIM namelist copy: file1 %s file2 %s ", file1, file2)
             shutil.copy(file1, file2)
