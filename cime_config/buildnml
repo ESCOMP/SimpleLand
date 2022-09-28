@@ -22,10 +22,6 @@ def _main_func():
 
     caseroot = parse_input(sys.argv)
     level = logging.WARNING
-    if ( "-v" in sys.argv ):
-       level = logging.INFO
-    if ( "-d" in sys.argv ):
-       level = logging.DEBUG
     setup_logging( level )
     with Case(caseroot) as case:
         buildnml(case, caseroot, "slim")
