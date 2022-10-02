@@ -35,7 +35,9 @@ class TestCreateRepositoryDict(unittest.TestCase):
         self._repo = {ExternalsDescription.PROTOCOL: None,
                       ExternalsDescription.REPO_URL: 'junk_root',
                       ExternalsDescription.TAG: 'junk_tag',
-                      ExternalsDescription.BRANCH: EMPTY_STR, }
+                      ExternalsDescription.BRANCH: EMPTY_STR,
+                      ExternalsDescription.HASH: EMPTY_STR,
+                      ExternalsDescription.SPARSE: EMPTY_STR, }
 
     def test_create_repo_git(self):
         """Verify that several possible names for the 'git' protocol
@@ -93,7 +95,9 @@ class TestRepository(unittest.TestCase):
         repo_info = {ExternalsDescription.PROTOCOL: protocol,
                      ExternalsDescription.REPO_URL: url,
                      ExternalsDescription.TAG: tag,
-                     ExternalsDescription.BRANCH: EMPTY_STR, }
+                     ExternalsDescription.BRANCH: EMPTY_STR,
+                     ExternalsDescription.HASH: EMPTY_STR,
+                     ExternalsDescription.SPARSE: EMPTY_STR, }
         repo = Repository(name, repo_info)
         print(repo.__dict__)
         self.assertEqual(repo.tag(), tag)
@@ -109,10 +113,31 @@ class TestRepository(unittest.TestCase):
         repo_info = {ExternalsDescription.PROTOCOL: protocol,
                      ExternalsDescription.REPO_URL: url,
                      ExternalsDescription.BRANCH: branch,
-                     ExternalsDescription.TAG: EMPTY_STR, }
+                     ExternalsDescription.TAG: EMPTY_STR,
+                     ExternalsDescription.HASH: EMPTY_STR,
+                     ExternalsDescription.SPARSE: EMPTY_STR, }
         repo = Repository(name, repo_info)
         print(repo.__dict__)
         self.assertEqual(repo.branch(), branch)
+        self.assertEqual(repo.url(), url)
+
+    def test_hash(self):
+        """Test creation of a repository object with a hash
+        """
+        name = 'test_repo'
+        protocol = 'test_protocol'
+        url = 'test_url'
+        ref = 'deadc0de'
+        sparse = EMPTY_STR
+        repo_info = {ExternalsDescription.PROTOCOL: protocol,
+                     ExternalsDescription.REPO_URL: url,
+                     ExternalsDescription.BRANCH: EMPTY_STR,
+                     ExternalsDescription.TAG: EMPTY_STR,
+                     ExternalsDescription.HASH: ref,
+                     ExternalsDescription.SPARSE: sparse, }
+        repo = Repository(name, repo_info)
+        print(repo.__dict__)
+        self.assertEqual(repo.hash(), ref)
         self.assertEqual(repo.url(), url)
 
     def test_tag_branch(self):
@@ -125,10 +150,35 @@ class TestRepository(unittest.TestCase):
         url = 'test_url'
         branch = 'test_branch'
         tag = 'test_tag'
+        ref = EMPTY_STR
+        sparse = EMPTY_STR
         repo_info = {ExternalsDescription.PROTOCOL: protocol,
                      ExternalsDescription.REPO_URL: url,
                      ExternalsDescription.BRANCH: branch,
-                     ExternalsDescription.TAG: tag, }
+                     ExternalsDescription.TAG: tag,
+                     ExternalsDescription.HASH: ref,
+                     ExternalsDescription.SPARSE: sparse, }
+        with self.assertRaises(RuntimeError):
+            Repository(name, repo_info)
+
+    def test_tag_branch_hash(self):
+        """Test creation of a repository object with a tag, branch and hash raises a
+        runtimer error.
+
+        """
+        name = 'test_repo'
+        protocol = 'test_protocol'
+        url = 'test_url'
+        branch = 'test_branch'
+        tag = 'test_tag'
+        ref = 'deadc0de'
+        sparse = EMPTY_STR
+        repo_info = {ExternalsDescription.PROTOCOL: protocol,
+                     ExternalsDescription.REPO_URL: url,
+                     ExternalsDescription.BRANCH: branch,
+                     ExternalsDescription.TAG: tag,
+                     ExternalsDescription.HASH: ref,
+                     ExternalsDescription.SPARSE: sparse, }
         with self.assertRaises(RuntimeError):
             Repository(name, repo_info)
 
@@ -142,10 +192,14 @@ class TestRepository(unittest.TestCase):
         url = 'test_url'
         branch = EMPTY_STR
         tag = EMPTY_STR
+        ref = EMPTY_STR
+        sparse = EMPTY_STR
         repo_info = {ExternalsDescription.PROTOCOL: protocol,
                      ExternalsDescription.REPO_URL: url,
                      ExternalsDescription.BRANCH: branch,
-                     ExternalsDescription.TAG: tag, }
+                     ExternalsDescription.TAG: tag,
+                     ExternalsDescription.HASH: ref,
+                     ExternalsDescription.SPARSE: sparse, }
         with self.assertRaises(RuntimeError):
             Repository(name, repo_info)
 
