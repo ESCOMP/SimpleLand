@@ -303,5 +303,23 @@
      <desc>Full pathname of land fraction data file.</desc>
   </entry>
 
+  <entry id="fsurdat">
+     <type>char</type>
+     <category>datasets</category>
+     <input_pathname>abs</input_pathname> 
+     <group>clm_inparm</group>
+     <values>
+       <value>UNSET</value>
+       <value slim_scenario="global_uniform"      lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</value>
+       <value slim_scenario="realistic_from_1850" lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</value>
+       <value slim_scenario="realistic_from_1850" lnd_grid="0.9x1.25">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_0.9x1.25_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</value>
+       <value slim_scenario="realistic_from_2000" lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</value>
+       <value slim_scenario="realistic_from_2000" lnd_grid="0.9x1.25">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_0.9x1.25_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</value>
+     </values>
+     <desc>
+           Surface dataset from CLM
+     </desc>
+  </entry>
+
 
 </entry_id>
