@@ -235,6 +235,12 @@ contains
 #else
     clump_pproc = 1
 #endif
+    dtime = 1800
+    maxpatch_glcmec = 10
+    nlevsno = 5
+    h2osno_max = 1000.0_r8
+    int_snow_max = 1.e30_r8
+    n_melt_glcmec = 10.0_r8
 
     override_nsrest = nsrest
 
