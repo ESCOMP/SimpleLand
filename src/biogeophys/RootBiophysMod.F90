@@ -77,7 +77,7 @@ contains
              call endrun(subname // ':: ERROR reading rooting_profile namelist')
           end if
        else
-          call endrun(subname // ':: ERROR finding rooting_profile namelist')
+          write(iulog,*) "Could not find rooting_profile namelist"
        end if
        close(nu_nml)
        call relavu( nu_nml )

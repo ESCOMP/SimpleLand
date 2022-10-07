@@ -870,7 +870,7 @@ contains
              call endrun(msg="ERROR reading clmu_inparm namelist"//errmsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg="ERROR finding clmu_inparm namelist"//errmsg(sourcefile, __LINE__))
+          write(iulog,*) "Could not find clmu_inparm namelist"
        end if
        call relavu( unitn )
 

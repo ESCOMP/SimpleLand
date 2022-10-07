@@ -629,8 +629,7 @@ contains
                   errMsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg='ERROR finding clm_glacier_behavior namelist'// &
-                      errMsg(sourcefile, __LINE__))
+          write(iulog,*) 'Could not find clm_glacier_behavior namelist'
        end if
        call relavu( unitn )
     endif

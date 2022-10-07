@@ -241,7 +241,7 @@ contains
              call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
+          write(iulog,*) "could NOT find "//nmlname//"namelist"
        end if
        call relavu( unitn )
     end if

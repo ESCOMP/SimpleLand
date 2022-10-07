@@ -838,7 +838,7 @@ contains
              call endrun(msg='ERROR reading finidat_consistency_checks namelist'//errMsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg='ERROR finding finidat_consistency_checks namelist'//errMsg(sourcefile, __LINE__))
+          write(iulog,*) 'Could not find finidat_consistency_checks namelist'
        end if
        close(nu_nml)
        call relavu( nu_nml )
