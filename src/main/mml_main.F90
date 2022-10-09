@@ -50,6 +50,8 @@ module mml_mainMod
   
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: mml_main
+
+  public :: readnml_datasets
   
   ! !PRIVATE MEMBER FUNCTIONS:
   private :: nc_import
@@ -80,6 +82,57 @@ module mml_mainMod
  
 
 contains
+  
+  !-----------------------------------------------------------------------
+  subroutine readnml_datasets( NLFilename )
+    use shr_mpi_mod     , only : shr_mpi_bcast
+    use spmdMod         , only : mpicom
+    use clm_nlUtilsMod  , only : find_nlgroup_name
+    use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest
+    use clm_varctl      , only : nrevsn, fname_len
+  
+    implicit none
+
+    character(len=*), intent(IN) :: NLFilename   ! Namelist file names
+    !-----------------------------------------------------------------------
+    ! !LOCAL VARIABLES:
+    integer                     :: nu_nml           ! Unit for namelist file
+    integer                     :: nml_error        ! Error code
+    character(len=fname_len)    :: fatmlndfrc_new
+    character(len=*), parameter :: nml_name = 'slim_data_and_initial'
+    character(len=*), parameter :: subname = 'readnml_datasets'
+    namelist /slim_data_and_initial/ mml_surdat, finidat, fatmlndfrc_new
+    namelist /slim_data_and_initial/ finidat_interp_dest, nrevsn
+    !-----------------------------------------------------------------------
+
+    fatmlndfrc_new = ' '
+    if (masterproc) then
+       open( newunit=nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
+       call find_nlgroup_name(nu_nml, nml_name, status=nml_error) 
+       if (nml_error == 0) then
+          read(nu_nml, nml=slim_data_and_initial,iostat=nml_error)
+          if (nml_error /= 0) then
+             call endrun(subname // ':: ERROR reading '//nml_name//' namelist')
+          end if
+       else
+          call endrun(subname // ':: ERROR could NOT find '//nml_name//' namelist')
+       end if
+       close(nu_nml)
+    end if
+    call shr_mpi_bcast( mml_surdat, mpicom )
+    call shr_mpi_bcast( finidat, mpicom )
+    call shr_mpi_bcast( finidat_interp_dest, mpicom )
+    call shr_mpi_bcast( nrevsn, mpicom )
+    call shr_mpi_bcast( fatmlndfrc_new, mpicom )
+    fatmlndfrc = fatmlndfrc_new
+    if (masterproc) then
+       write(iulog,*) 'mml_surdat          = ', trim(mml_surdat)
+       write(iulog,*) 'nrevsn              = ', trim(nrevsn)
+       write(iulog,*) 'fatmlndfrc          = ', trim(fatmlndfrc)
+       write(iulog,*) 'finidat             = ', trim(finidat)
+       write(iulog,*) 'finidat_interp_dest = ', trim(finidat_interp_dest)
+    end if
+  end subroutine readnml_datasets
   
   !-----------------------------------------------------------------------
   subroutine mml_main (bounds, atm2lnd_inst, lnd2atm_inst) !lnd2atm_inst
