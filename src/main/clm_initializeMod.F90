@@ -54,6 +54,7 @@ contains
     use ncdio_pio        , only: ncd_pio_init
     use initGridCellsMod , only: initGridCells
     use UrbanParamsType  , only: UrbanInput, IsSimpleBuildTemp
+    use mml_MainMod      , only: readnml_datasets
     !
     ! !LOCAL VARIABLES:
     integer           :: ier                     ! error status
@@ -88,6 +89,7 @@ contains
     call clm_varcon_init( IsSimpleBuildTemp() )
     call landunit_varcon_init()
     call ncd_pio_init()
+    call readnml_datasets( NLFilename )
 
     if (masterproc) call control_print()
 
