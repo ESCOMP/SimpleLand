@@ -28,11 +28,12 @@
 
   <entry id="SLIM_SCENARIO">
     <type>char</type>
-    <default_value>UNSET</default_value>
-    <valid_values>UNSET,global_uniform,realistic_from_1850,realistic_from_2000</valid_values>
+    <default_value>global_uniform</default_value>
+    <valid_values>global_uniform,realistic_from_1850,realistic_from_2000</valid_values>
     <values>
       <value compset="2000.*"   >realistic_from_2000</value>
       <value compset="1850.*_"  >realistic_from_1850</value>
+      <value compset="HIST.*_"  >realistic_from_1850</value>
     </values>
     <group>run_component_slim</group>
     <file>env_run.xml</file>
