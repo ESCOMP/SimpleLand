@@ -226,12 +226,6 @@ module clm_varctl
   character(len=16), public :: soil_layerstruct = '10SL_3.5m'
 
   !----------------------------------------------------------
-  ! dynamic root switch
-  !----------------------------------------------------------
-
-  logical, public :: use_dynroot = .false. ! true => use dynamic root module
-
-  !----------------------------------------------------------
   ! glacier_mec control variables: default values (may be overwritten by namelist)
   !----------------------------------------------------------
 
@@ -290,15 +284,12 @@ module clm_varctl
   logical, public :: use_vichydro        = .false.
   logical, public :: use_century_decomp  = .false.
   logical, public :: use_cn              = .false.
-  logical, public :: use_grainproduct    = .false.
   logical, public :: use_fertilizer      = .false.
   logical, public :: use_ozone           = .false.
   logical, public :: use_snicar_frc      = .false.
   logical, public :: use_vancouver       = .false.
   logical, public :: use_mexicocity      = .false.
   logical, public :: use_noio            = .false.
-
-  logical, public :: use_nguardrail      = .false.
 
   !----------------------------------------------------------
   ! To retrieve namelist

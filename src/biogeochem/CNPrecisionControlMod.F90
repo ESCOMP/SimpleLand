@@ -338,7 +338,6 @@ contains
     !
     ! !USES:
     use shr_log_mod, only : errMsg => shr_log_errMsg
-    use clm_varctl , only : use_nguardrail
     use clm_varctl , only : iulog
     use pftconMod  , only : nc3crop
     use decompMod  , only : bounds_type
@@ -384,7 +383,7 @@ contains
              write(iulog,*) 'ERROR: Carbon or Nitrogen patch negative = ', carbon_patch(p), nitrogen_patch(p)
              write(iulog,*) 'ERROR: limits = ', cnegcrit, nnegcrit
              call endrun(msg='ERROR: carbon or nitrogen state critically negative '//errMsg(sourcefile, lineno))
-          else if ( abs(carbon_patch(p)) < ccrit .or. (use_nguardrail .and. abs(nitrogen_patch(p)) < ncrit) ) then
+          else if ( abs(carbon_patch(p)) < ccrit .or. abs(nitrogen_patch(p)) < ncrit ) then
              pc(p) = pc(p) + carbon_patch(p)
              carbon_patch(p) = 0._r8
       

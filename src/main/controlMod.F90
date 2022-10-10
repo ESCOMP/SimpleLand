@@ -35,9 +35,9 @@ module controlMod
   use clm_varctl                       , only: wrtdia, co2_ppmv, use_bedrock, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_cn, use_noio, NLFilename_in, use_century_decomp
   use clm_varctl                       , only: use_nitrif_denitrif, create_crop_landunit, glc_snow_persistence_max_days
-  use clm_varctl                       , only: subgridflag, use_nguardrail, nfix_timeconst, use_vertsoilc
+  use clm_varctl                       , only: subgridflag, nfix_timeconst, use_vertsoilc
   use clm_varctl                       , only: clm_varctl_set
-  use clm_varctl                       , only: use_lch4, irrigate, create_crop_landunit, use_crop, use_dynroot
+  use clm_varctl                       , only: use_lch4, irrigate, create_crop_landunit, use_crop
   use clm_varctl                       , only: use_flexiblecn, use_luna, spinup_state
   use clm_varctl                       , only: single_column
   !
@@ -188,7 +188,7 @@ contains
     namelist /clm_inparm/ &
          use_vertsoilc, &
          use_century_decomp, use_cn, use_noio, &
-         use_nguardrail, use_nitrif_denitrif
+         use_nitrif_denitrif
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ &
@@ -196,16 +196,14 @@ contains
                irrigate,   &
                create_crop_landunit,   &
                use_crop,   &
-               use_dynroot,   &
                use_flexiblecn,   &
                use_luna,   &
                spinup_state, &
                single_column
 
     logical :: use_fertilizer = .false.
-    logical :: use_grainproduct = .false.
     character(len=256) :: fsnowaging, fsnowoptics
-    namelist /clm_inparm/ use_fertilizer, use_grainproduct, &
+    namelist /clm_inparm/ use_fertilizer, &
             fsnowaging, fsnowoptics
 
 
@@ -268,9 +266,6 @@ contains
        call set_timemgr_init( dtime_in=dtime )
 
        ! Check for namelist variables that SLIM can NOT use
-       if ( use_dynroot )then
-          call endrun(msg='ERROR SLIM can NOT run with use_dynroot on'//errMsg(sourcefile, __LINE__))
-       end if
        if ( single_column )then
           call endrun(msg='ERROR SLIM can NOT run with single_column on'//errMsg(sourcefile, __LINE__))
        end if
@@ -431,7 +426,6 @@ contains
     call mpi_bcast (use_vertsoilc, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_century_decomp, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_cn, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_nguardrail, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_crop, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_noio, 1, MPI_LOGICAL, 0, mpicom, ier)
 
@@ -472,8 +466,6 @@ contains
     call mpi_bcast (use_luna, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     call mpi_bcast (use_bedrock, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_dynroot, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     if (use_cn) then
        call mpi_bcast (use_fun,            1, MPI_LOGICAL, 0, mpicom, ier)

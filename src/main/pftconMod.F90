@@ -472,7 +472,7 @@ contains
     use fileutils   , only : getfil
     use ncdio_pio   , only : ncd_io, ncd_pio_closefile, ncd_pio_openfile, file_desc_t
     use ncdio_pio   , only : ncd_inqdid, ncd_inqdlen
-    use clm_varctl  , only : paramfile, use_flexibleCN, use_dynroot
+    use clm_varctl  , only : paramfile, use_flexibleCN
     use spmdMod     , only : masterproc
     !
     ! !ARGUMENTS:
@@ -989,14 +989,6 @@ contains
        if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__)) 
     end if
 
-    !
-    ! Dynamic Root variables for crops
-    !
-    if ( use_crop .and. use_dynroot )then
-       call ncd_io('root_dmx', this%root_dmx, 'read', ncid, readvar=readv)
-       if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__))
-    end if
-   
     call ncd_pio_closefile(ncid)
 
     do i = 0, mxpft

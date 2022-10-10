@@ -668,11 +668,6 @@ Toggle to turn all history output completely OFF (possibly used for testing)
 Max number of plant functional types in naturally vegetated landunit.
 </entry>
 
-<entry id="use_dynroot" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on the dynamic root model
-</entry>
-
 <!--                                                   -->
 <!-- mkmapdata  namelist                               -->
 <!--                                                   -->
@@ -1319,11 +1314,6 @@ Filename with time series of atmospheric Delta C13 data, which use CMIP6 format.
 <entry id="constrain_stress_deciduous_onset" type="logical" category="clm_physics"
        group="bgc_shared" valid_values="" >
 If TRUE use additional stress deciduous onset trigger
-</entry>
-
-<entry id="use_nguardrail" type="logical" category="clm_physics"
-       group="clm_inparm" value=".false.">
-Apply the guardrail for leaf-Nitrogen that ensures it doesn't go negative or too small
 </entry>
 
 

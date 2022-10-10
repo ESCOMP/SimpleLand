@@ -14,7 +14,6 @@ module CNVegCarbonFluxType
   use clm_varpar                         , only : nlevdecomp_full, nlevgrnd, nlevdecomp
   use clm_varcon                         , only : spval, dzsoi_decomp
   use clm_varctl                         , only : use_nitrif_denitrif, use_crop
-  use clm_varctl                         , only : use_grainproduct
   use clm_varctl                         , only : iulog
   use landunit_varcon                    , only : istsoil, istcrop, istdlak 
   use pftconMod                          , only : npcropmin

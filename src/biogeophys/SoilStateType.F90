@@ -9,7 +9,7 @@ module SoilStateType
   use abortutils      , only : endrun
   use clm_varpar      , only : nlevsoi, nlevgrnd, nlevlak, nlayer, nlevsno
   use clm_varcon      , only : spval
-  use clm_varctl      , only : use_cn, use_dynroot
+  use clm_varctl      , only : use_cn
   use clm_varctl      , only : iulog, hist_wrtch4diag
   use LandunitType    , only : lun                
   use ColumnType      , only : col                
@@ -223,20 +223,6 @@ contains
             ptr_col=this%bsw_col, default='inactive')
     end if
 
-    if (use_dynroot) then
-       this%rootfr_patch(begp:endp,:) = spval
-       call hist_addfld2d (fname='ROOTFR', units='proportion', type2d='levgrnd', &
-            avgflag='A', long_name='fraction of roots in each soil layer', &
-            ptr_patch=this%rootfr_patch, default='inactive')
-    end if
-
-    if ( use_dynroot ) then
-       this%root_depth_patch(begp:endp) = spval
-        call hist_addfld1d (fname='ROOT_DEPTH', units="m", &
-             avgflag='A', long_name='rooting depth', &
-             ptr_patch=this%root_depth_patch, default='inactive' )
-     end if
-
     if (use_cn) then
        this%rootr_patch(begp:endp,:) = spval
        call hist_addfld2d (fname='ROOTR', units='proportion', type2d='levgrnd', &
@@ -380,29 +366,15 @@ contains
          long_name='hydraulic conductivity', units='mm/s', &
          interpinic_flag='interp', readvar=readvar, data=this%hk_l_col)
 
-     if( use_dynroot ) then
-         call restartvar(ncid=ncid, flag=flag, varname='root_depth', xtype=ncd_double,  &
-              dim1name='pft', &
-              long_name='root depth', units='m', &
-              interpinic_flag='interp', readvar=readvar, data=this%root_depth_patch)
- 
-         call restartvar(ncid=ncid, flag=flag, varname='rootfr', xtype=ncd_double,  &
-              dim1name='pft', dim2name='levgrnd', switchdim=.true., &
-              long_name='root fraction', units='', &
-              interpinic_flag='interp', readvar=readrootfr, data=this%rootfr_patch)
-     else
-         readrootfr = .false.
-     end if
-     if (flag=='read' .and. .not. readrootfr ) then
-            if (masterproc) then
-               write(iulog,*) "can't find rootfr in restart (or initial) file..."
-               write(iulog,*) "Initialize rootfr to default"
-            end if
-            call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-            this%rootfr_patch(bounds%begp:bounds%endp,1:nlevgrnd), 'water')
-            call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-            this%crootfr_patch(bounds%begp:bounds%endp,1:nlevgrnd), 'carbon')
-         end if
+    if (flag=='read') then
+       if (masterproc) then
+          write(iulog,*) "Initialize rootfr to default"
+       end if
+       call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
+       this%rootfr_patch(bounds%begp:bounds%endp,1:nlevgrnd), 'water')
+       call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
+       this%crootfr_patch(bounds%begp:bounds%endp,1:nlevgrnd), 'carbon')
+    end if
     
   end subroutine Restart
 

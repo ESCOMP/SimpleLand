@@ -1002,7 +1002,6 @@ sub process_namelist_inline_logic {
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
   setup_logic_glacier($opts, $nl_flags, $definition, $defaults, $nl,  $envxml_ref, $physv);
   setup_logic_dynamic_plant_nitrogen_alloc($opts, $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_dynamic_roots($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_params_file($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_create_crop_landunit($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_soilstate($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
@@ -1584,22 +1583,6 @@ sub setup_logic_dynamic_plant_nitrogen_alloc {
      if ( &value_is_true($nl->get_value('use_flexibleCN')) ) {
         $log->fatal_error("use_flexibleCN can ONLY be set if CN is on");
      }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_dynamic_roots {
-  #
-  # dynamic root model
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_dynroot', 'phys'=>$physv->as_string(), 'bgc_mode'=>$nl_flags->{'bgc_mode'});
-  my $use_dynroot = $nl->get_value('use_dynroot');
-  if ( &value_is_true($use_dynroot) && ($nl_flags->{'bgc_mode'} eq "sp") ) {
-    $log->fatal_error("Cannot turn dynroot mode on mode bgc=sp\n" .
-                "Set the bgc mode to 'cn' or 'bgc'.");
   }
 }
 
