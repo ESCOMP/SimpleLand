@@ -486,10 +486,6 @@ lnd/clm2/surfdata_map/surfdata_ne16np4_78pfts_CMIP6_simyr2000_c170824.nc</fsurda
 <!-- 100% Urban single-point datasets (only for sim-year=2000) -->
 <fsurdat hgrid="1x1_camdenNJ"        sim_year="2000" use_crop=".false." irrigate=".true.">
 lnd/clm2/surfdata_map/surfdata_1x1_camdenNJ_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_vancouverCAN"    sim_year="2000" use_crop=".false." irrigate=".true.">
-lnd/clm2/surfdata_map/surfdata_1x1_vancouverCAN_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_mexicocityMEX"   sim_year="2000" use_crop=".false." irrigate=".true.">
-lnd/clm2/surfdata_map/surfdata_1x1_mexicocityMEX_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
 <fsurdat hgrid="1x1_urbanc_alpha"    sim_year="2000" use_crop=".false." irrigate=".true.">
 lnd/clm2/surfdata_map/surfdata_1x1_urbanc_alpha_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
 
@@ -767,15 +763,11 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <lai_mapalgo>bilinear</lai_mapalgo>
 
 <lai_mapalgo  hgrid="1x1_brazil"          >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_mexicocityMEX"   >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_vancouverCAN"    >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_urbanc_alpha"    >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_camdenNJ"        >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_asphaltjungleNJ" >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="5x5_amazon"          >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_brazil"          >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_mexicocityMEX"   >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_vancouverCAN"    >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_urbanc_alpha"    >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_camdenNJ"        >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_asphaltjungleNJ" >nn</lai_mapalgo>
@@ -962,47 +954,6 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 
 <!-- mapping files for 1x1_camdenNJ END --> 
 
-<!-- mapping files for 1x1_mexicocityMEX START added on Thu Jul 19 13:06:18 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.5x0.5_AVHRR_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.5x0.5_MODIS_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.25x0.25_MODIS_to_1x1_mexicocityMEX_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.5x0.5_nomask_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_10x10min_nomask_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_MODIS_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_MODIS-wCsp_to_1x1_mexicocityMEX_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_USGS_to_1x1_mexicocityMEX_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_LandScan2004_to_1x1_mexicocityMEX_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_IGBP-GSDP_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_ISRIC-WISE_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_mexicocityMEX" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_ORNL-Soil_to_1x1_mexicocityMEX_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_nomask_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_mexicocityMEX" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_GLOBE-Gardner_to_1x1_mexicocityMEX_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_mexicocityMEX" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_mexicocityMEX_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.9x1.25_GRDC_to_1x1_mexicocityMEX_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_360x720_cruncep_to_1x1_mexicocityMEX_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_mexicocityMEX_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_mexicocityMEX END --> 
-
 <!-- mapping files for 1x1_numaIA START added on Thu Jul 19 13:06:18 2012--> 
 
 <map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
@@ -1125,47 +1076,6 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 >lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_urbanc_alpha_nomask_aave_da_c130403.nc</map>
 
 <!-- mapping files for 1x1_urbanc_alpha END --> 
-
-<!-- mapping files for 1x1_vancouverCAN START added on Thu Jul 19 13:06:19 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.5x0.5_AVHRR_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.5x0.5_MODIS_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.25x0.25_MODIS_to_1x1_vancouverCAN_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.5x0.5_nomask_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_10x10min_nomask_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_MODIS_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_MODIS-wCsp_to_1x1_vancouverCAN_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_USGS_to_1x1_vancouverCAN_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_LandScan2004_to_1x1_vancouverCAN_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_IGBP-GSDP_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_ISRIC-WISE_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_vancouverCAN" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_ORNL-Soil_to_1x1_vancouverCAN_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_nomask_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_vancouverCAN" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_GLOBE-Gardner_to_1x1_vancouverCAN_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_vancouverCAN" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_vancouverCAN_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.9x1.25_GRDC_to_1x1_vancouverCAN_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_360x720_cruncep_to_1x1_vancouverCAN_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_vancouverCAN_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_vancouverCAN END --> 
 
 <!-- mapping files for 0.47x0.63 start --> 
 

@@ -124,7 +124,6 @@ contains
     use shr_infnan_mod  , only : nan => shr_infnan_nan, assignment(=)
     use clm_varpar      , only : nlevcan, nlevcan, numrad, nlevgrnd, nlevurb
     use clm_varpar      , only : nlevsoi, nlevgrnd
-    use clm_varctl      , only : use_vancouver, use_mexicocity
     use clm_varcon      , only : vkc
     use column_varcon   , only : icol_roof, icol_sunwall, icol_shadewall
     use column_varcon   , only : icol_road_perv, icol_road_imperv, icol_road_perv
@@ -242,14 +241,9 @@ contains
              this%eflx_traffic_factor(l) = 0.0_r8
           end if
 
-          if (use_vancouver .or. use_mexicocity) then
-             ! Freely evolving
+          if (urban_hac == urban_hac_off) then
+             ! Overwrite values read in from urbinp by freely evolving values
              this%t_building_min(l) = 200.00_r8
-          else
-             if (urban_hac == urban_hac_off) then
-                ! Overwrite values read in from urbinp by freely evolving values
-                this%t_building_min(l) = 200.00_r8
-             end if
           end if
 
           !----------------------------------------------------------------------------------
@@ -326,24 +320,12 @@ contains
           frontal_ai = frontal_ai * sqrt(1/build_lw_ratio) * sqrt(plan_ai)
 
           ! Calculate displacement height
-          if (use_vancouver) then
-             lun%z_d_town(l) = 3.5_r8
-          else if (use_mexicocity) then
-             lun%z_d_town(l) = 10.9_r8
-          else
-             lun%z_d_town(l) = (1._r8 + alpha**(-plan_ai) * (plan_ai - 1._r8)) * lun%ht_roof(l)
-          end if
+          lun%z_d_town(l) = (1._r8 + alpha**(-plan_ai) * (plan_ai - 1._r8)) * lun%ht_roof(l)
 
           ! Calculate the roughness length
-          if (use_vancouver) then
-             lun%z_0_town(l) = 0.35_r8
-          else if (use_mexicocity) then
-             lun%z_0_town(l) = 2.2_r8
-          else
-             lun%z_0_town(l) = lun%ht_roof(l) * (1._r8 - lun%z_d_town(l) / lun%ht_roof(l)) * &
-                  exp(-1.0_r8 * (0.5_r8 * beta * C_d / vkc**2 * &
-                  (1 - lun%z_d_town(l) / lun%ht_roof(l)) * frontal_ai)**(-0.5_r8))
-          end if
+          lun%z_0_town(l) = lun%ht_roof(l) * (1._r8 - lun%z_d_town(l) / lun%ht_roof(l)) * &
+               exp(-1.0_r8 * (0.5_r8 * beta * C_d / vkc**2 * &
+               (1 - lun%z_d_town(l) / lun%ht_roof(l)) * frontal_ai)**(-0.5_r8))
 
        else ! Not urban point 
 

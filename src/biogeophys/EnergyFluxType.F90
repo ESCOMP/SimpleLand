@@ -669,7 +669,7 @@ contains
     use landunit_varcon , only : istwet, istsoil, istdlak
     use column_varcon   , only : icol_road_imperv, icol_roof, icol_sunwall
     use column_varcon   , only : icol_shadewall, icol_road_perv
-    use clm_varctl      , only : iulog, use_vancouver, use_mexicocity
+    use clm_varctl      , only : iulog
     implicit none
     !
     ! !ARGUMENTS:

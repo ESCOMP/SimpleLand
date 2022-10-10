@@ -10,7 +10,7 @@ module WaterstateType
   use shr_kind_mod   , only : r8 => shr_kind_r8
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use decompMod      , only : bounds_type
-  use clm_varctl     , only : use_vancouver, use_mexicocity, use_cn, iulog, use_luna
+  use clm_varctl     , only : use_cn, iulog, use_luna
   use clm_varpar     , only : nlevgrnd, nlevurb, nlevsno   
   use clm_varcon     , only : spval
   use LandunitType   , only : lun                
@@ -635,13 +635,7 @@ contains
 
     do l = bounds%begl, bounds%endl 
        if (lun%urbpoi(l)) then
-          if (use_vancouver) then
-             this%qaf_lun(l) = 0.0111_r8
-          else if (use_mexicocity) then
-             this%qaf_lun(l) = 0.00248_r8
-          else
-             this%qaf_lun(l) = 1.e-4_r8 ! Arbitrary set since forc_q is not yet available
-          end if
+          this%qaf_lun(l) = 1.e-4_r8 ! Arbitrary set since forc_q is not yet available
        end if
     end do
 

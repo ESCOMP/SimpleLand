@@ -16,7 +16,7 @@ module initVerticalMod
   use clm_varpar        , only : toplev_equalspace, nlev_equalspace
   use clm_varpar        , only : nlevsoi, nlevsoifl, nlevurb 
   use clm_varctl        , only : fsurdat, iulog
-  use clm_varctl        , only : use_vancouver, use_mexicocity, use_vertsoilc, use_extralakelayers
+  use clm_varctl        , only : use_vertsoilc
   use clm_varctl        , only : use_bedrock, soil_layerstruct
   use clm_varcon        , only : zlak, dzlak, zsoi, dzsoi, zisoi, dzsoi_decomp, spval, ispval, grlnd 
   use column_varcon     , only : icol_roof, icol_sunwall, icol_shadewall, is_hydrologically_active
@@ -313,91 +313,6 @@ contains
 
        ! "0" refers to urban wall/roof surface and "nlevsoi" refers to urban wall/roof bottom
        if (lun%urbpoi(l)) then
-          if (use_vancouver) then       
-             zurb_wall(l,1) = 0.010_r8/2._r8
-             zurb_wall(l,2) = zurb_wall(l,1) + 0.010_r8/2._r8 + 0.020_r8/2._r8
-             zurb_wall(l,3) = zurb_wall(l,2) + 0.020_r8/2._r8 + 0.070_r8/2._r8
-             zurb_wall(l,4) = zurb_wall(l,3) + 0.070_r8/2._r8 + 0.070_r8/2._r8
-             zurb_wall(l,5) = zurb_wall(l,4) + 0.070_r8/2._r8 + 0.030_r8/2._r8
-
-             zurb_roof(l,1) = 0.010_r8/2._r8
-             zurb_roof(l,2) = zurb_roof(l,1) + 0.010_r8/2._r8 + 0.010_r8/2._r8
-             zurb_roof(l,3) = zurb_roof(l,2) + 0.010_r8/2._r8 + 0.010_r8/2._r8
-             zurb_roof(l,4) = zurb_roof(l,3) + 0.010_r8/2._r8 + 0.010_r8/2._r8
-             zurb_roof(l,5) = zurb_roof(l,4) + 0.010_r8/2._r8 + 0.030_r8/2._r8
-
-             dzurb_wall(l,1) = 0.010_r8
-             dzurb_wall(l,2) = 0.020_r8
-             dzurb_wall(l,3) = 0.070_r8
-             dzurb_wall(l,4) = 0.070_r8
-             dzurb_wall(l,5) = 0.030_r8
-             write(iulog,*)'Total thickness of wall: ',sum(dzurb_wall(l,:))
-             write(iulog,*)'Wall layer thicknesses: ',dzurb_wall(l,:)
-
-             dzurb_roof(l,1) = 0.010_r8
-             dzurb_roof(l,2) = 0.010_r8
-             dzurb_roof(l,3) = 0.010_r8
-             dzurb_roof(l,4) = 0.010_r8
-             dzurb_roof(l,5) = 0.030_r8
-             write(iulog,*)'Total thickness of roof: ',sum(dzurb_roof(l,:))
-             write(iulog,*)'Roof layer thicknesses: ',dzurb_roof(l,:)
-
-             ziurb_wall(l,0) = 0.
-             ziurb_wall(l,1) = dzurb_wall(l,1)
-             do j = 2,nlevurb
-                ziurb_wall(l,j) = sum(dzurb_wall(l,1:j))
-             end do
-             write(iulog,*)'Wall layer interface depths: ',ziurb_wall(l,:)
-
-             ziurb_roof(l,0) = 0.
-             ziurb_roof(l,1) = dzurb_roof(l,1)
-             do j = 2,nlevurb
-                ziurb_roof(l,j) = sum(dzurb_roof(l,1:j))
-             end do
-             write(iulog,*)'Roof layer interface depths: ',ziurb_roof(l,:)
-          else if (use_mexicocity) then
-             zurb_wall(l,1) = 0.015_r8/2._r8
-             zurb_wall(l,2) = zurb_wall(l,1) + 0.015_r8/2._r8 + 0.120_r8/2._r8
-             zurb_wall(l,3) = zurb_wall(l,2) + 0.120_r8/2._r8 + 0.150_r8/2._r8
-             zurb_wall(l,4) = zurb_wall(l,3) + 0.150_r8/2._r8 + 0.150_r8/2._r8
-             zurb_wall(l,5) = zurb_wall(l,4) + 0.150_r8/2._r8 + 0.015_r8/2._r8
-
-             zurb_roof(l,1) = 0.010_r8/2._r8
-             zurb_roof(l,2) = zurb_roof(l,1) + 0.010_r8/2._r8 + 0.050_r8/2._r8
-             zurb_roof(l,3) = zurb_roof(l,2) + 0.050_r8/2._r8 + 0.050_r8/2._r8
-             zurb_roof(l,4) = zurb_roof(l,3) + 0.050_r8/2._r8 + 0.050_r8/2._r8
-             zurb_roof(l,5) = zurb_roof(l,4) + 0.050_r8/2._r8 + 0.025_r8/2._r8
-
-             dzurb_wall(l,1) = 0.015_r8
-             dzurb_wall(l,2) = 0.120_r8
-             dzurb_wall(l,3) = 0.150_r8
-             dzurb_wall(l,4) = 0.150_r8
-             dzurb_wall(l,5) = 0.015_r8
-             write(iulog,*)'Total thickness of wall: ',sum(dzurb_wall(l,:))
-             write(iulog,*)'Wall layer thicknesses: ',dzurb_wall(l,:)
-
-             dzurb_roof(l,1) = 0.010_r8
-             dzurb_roof(l,2) = 0.050_r8
-             dzurb_roof(l,3) = 0.050_r8
-             dzurb_roof(l,4) = 0.050_r8
-             dzurb_roof(l,5) = 0.025_r8
-             write(iulog,*)'Total thickness of roof: ',sum(dzurb_roof(l,:))
-             write(iulog,*)'Roof layer thicknesses: ',dzurb_roof(l,:)
-
-             ziurb_wall(l,0) = 0.
-             ziurb_wall(l,1) = dzurb_wall(l,1)
-             do j = 2,nlevurb
-                ziurb_wall(l,j) = sum(dzurb_wall(l,1:j))
-             end do
-             write(iulog,*)'Wall layer interface depths: ',ziurb_wall(l,:)
-
-             ziurb_roof(l,0) = 0.
-             ziurb_roof(l,1) = dzurb_roof(l,1)
-             do j = 2,nlevurb
-                ziurb_roof(l,j) = sum(dzurb_roof(l,1:j))
-             end do
-             write(iulog,*)'Roof layer interface depths: ',ziurb_roof(l,:)
-          else
              do j = 1, nlevurb
                 zurb_wall(l,j) = (j-0.5)*(thick_wall(l)/float(nlevurb))  !node depths
              end do
@@ -428,7 +343,6 @@ contains
                 ziurb_roof(l,j) = 0.5*(zurb_roof(l,j)+zurb_roof(l,j+1))          !interface depths
              enddo
              ziurb_roof(l,nlevurb) = zurb_roof(l,nlevurb) + 0.5*dzurb_roof(l,nlevurb)
-          end if
        end if
     end do
 
@@ -537,60 +451,27 @@ contains
     deallocate(lakedepth_in)
 
     ! Lake layers
-    if (.not. use_extralakelayers) then
-       dzlak(1) = 0.1_r8
-       dzlak(2) = 1._r8
-       dzlak(3) = 2._r8
-       dzlak(4) = 3._r8
-       dzlak(5) = 4._r8
-       dzlak(6) = 5._r8
-       dzlak(7) = 7._r8
-       dzlak(8) = 7._r8
-       dzlak(9) = 10.45_r8
-       dzlak(10)= 10.45_r8
+    dzlak(1) = 0.1_r8
+    dzlak(2) = 1._r8
+    dzlak(3) = 2._r8
+    dzlak(4) = 3._r8
+    dzlak(5) = 4._r8
+    dzlak(6) = 5._r8
+    dzlak(7) = 7._r8
+    dzlak(8) = 7._r8
+    dzlak(9) = 10.45_r8
+    dzlak(10)= 10.45_r8
 
-       zlak(1) =  0.05_r8
-       zlak(2) =  0.6_r8
-       zlak(3) =  2.1_r8
-       zlak(4) =  4.6_r8
-       zlak(5) =  8.1_r8
-       zlak(6) = 12.6_r8
-       zlak(7) = 18.6_r8
-       zlak(8) = 25.6_r8
-       zlak(9) = 34.325_r8
-       zlak(10)= 44.775_r8
-    else
-       dzlak(1) =0.1_r8
-       dzlak(2) =0.25_r8
-       dzlak(3) =0.25_r8
-       dzlak(4) =0.25_r8
-       dzlak(5) =0.25_r8
-       dzlak(6) =0.5_r8
-       dzlak(7) =0.5_r8
-       dzlak(8) =0.5_r8
-       dzlak(9) =0.5_r8
-       dzlak(10) =0.75_r8
-       dzlak(11) =0.75_r8
-       dzlak(12) =0.75_r8
-       dzlak(13) =0.75_r8
-       dzlak(14) =2_r8
-       dzlak(15) =2_r8
-       dzlak(16) =2.5_r8
-       dzlak(17) =2.5_r8
-       dzlak(18) =3.5_r8
-       dzlak(19) =3.5_r8
-       dzlak(20) =3.5_r8
-       dzlak(21) =3.5_r8
-       dzlak(22) =5.225_r8
-       dzlak(23) =5.225_r8
-       dzlak(24) =5.225_r8
-       dzlak(25) =5.225_r8
-
-       zlak(1) = dzlak(1)/2._r8
-       do i=2,nlevlak
-          zlak(i) = zlak(i-1) + (dzlak(i-1)+dzlak(i))/2._r8
-       end do
-    end if
+    zlak(1) =  0.05_r8
+    zlak(2) =  0.6_r8
+    zlak(3) =  2.1_r8
+    zlak(4) =  4.6_r8
+    zlak(5) =  8.1_r8
+    zlak(6) = 12.6_r8
+    zlak(7) = 18.6_r8
+    zlak(8) = 25.6_r8
+    zlak(9) = 34.325_r8
+    zlak(10)= 44.775_r8
 
     do c = bounds%begc,bounds%endc
        l = col%landunit(c)

@@ -603,7 +603,7 @@ contains
     use landunit_varcon, only : istwet, istsoil, istdlak, istice_mec
     use column_varcon  , only : icol_road_imperv, icol_roof, icol_sunwall
     use column_varcon  , only : icol_shadewall, icol_road_perv
-    use clm_varctl     , only : iulog, use_vancouver, use_mexicocity
+    use clm_varctl     , only : iulog
     !
     ! !ARGUMENTS:
     class(temperature_type)        :: this
@@ -656,33 +656,6 @@ contains
                this%t_soisno_col(c,1:nlevgrnd) = 277._r8
 
             else if (lun%urbpoi(l)) then
-               if (use_vancouver) then
-                  if (col%itype(c) == icol_road_perv .or. col%itype(c) == icol_road_imperv) then 
-                     ! Set road top layer to initial air temperature and interpolate other
-                     ! layers down to 20C in bottom layer
-                     do j = 1, nlevgrnd
-                        this%t_soisno_col(c,j) = 297.56 - (j-1) * ((297.56-293.16)/(nlevgrnd-1)) 
-                     end do
-                     ! Set wall and roof layers to initial air temperature
-                  else if (col%itype(c) == icol_sunwall .or. col%itype(c) == icol_shadewall .or. col%itype(c) == icol_roof) then
-                     this%t_soisno_col(c,1:nlevurb) = 297.56
-                  else
-                     this%t_soisno_col(c,1:nlevgrnd) = 283._r8
-                  end if
-               else if (use_mexicocity) then
-                  if (col%itype(c) == icol_road_perv .or. col%itype(c) == icol_road_imperv) then 
-                     ! Set road top layer to initial air temperature and interpolate other
-                     ! layers down to 22C in bottom layer
-                     do j = 1, nlevgrnd
-                        this%t_soisno_col(c,j) = 289.46 - (j-1) * ((289.46-295.16)/(nlevgrnd-1)) 
-                     end do
-                  else if (col%itype(c) == icol_sunwall .or. col%itype(c) == icol_shadewall .or. col%itype(c) == icol_roof) then
-                     ! Set wall and roof layers to initial air temperature
-                     this%t_soisno_col(c,1:nlevurb) = 289.46
-                  else
-                     this%t_soisno_col(c,1:nlevgrnd) = 283._r8
-                  end if
-               else
                   if (col%itype(c) == icol_road_perv .or. col%itype(c) == icol_road_imperv) then 
                      this%t_soisno_col(c,1:nlevgrnd) = 274._r8
                   else if (col%itype(c) == icol_sunwall .or. col%itype(c) == icol_shadewall &
@@ -691,7 +664,6 @@ contains
                      ! shock from large heating/air conditioning flux
                      this%t_soisno_col(c,1:nlevurb) = 292._r8
                   end if
-               end if
             else
                this%t_soisno_col(c,1:nlevgrnd) = 274._r8
 
@@ -748,39 +720,14 @@ contains
          c = patch%column(p)
          l = patch%landunit(p)
 
-         if (use_vancouver) then
-            this%t_veg_patch(p)   = 297.56
-         else if (use_mexicocity) then
-            this%t_veg_patch(p)   = 289.46
-         else
-            this%t_veg_patch(p)   = 283._r8
-         end if
-
-         if (use_vancouver) then
-            this%t_ref2m_patch(p) = 297.56
-         else if (use_mexicocity) then
-            this%t_ref2m_patch(p) = 289.46
-         else
-            this%t_ref2m_patch(p) = 283._r8
-         end if
+         this%t_veg_patch(p)   = 283._r8
+         this%t_ref2m_patch(p) = 283._r8
 
          if (lun%urbpoi(l)) then
-            if (use_vancouver) then
-               this%t_ref2m_u_patch(p) = 297.56
-            else if (use_mexicocity) then
-               this%t_ref2m_u_patch(p) = 289.46
-            else
-               this%t_ref2m_u_patch(p) = 283._r8
-            end if
+            this%t_ref2m_u_patch(p) = 283._r8
          else 
             if (.not. lun%ifspecial(l)) then 
-               if (use_vancouver) then
-                  this%t_ref2m_r_patch(p) = 297.56
-               else if (use_mexicocity) then
-                  this%t_ref2m_r_patch(p) = 289.46
-               else
-                  this%t_ref2m_r_patch(p) = 283._r8
-               end if
+               this%t_ref2m_r_patch(p) = 283._r8
             else 
                this%t_ref2m_r_patch(p) = spval
             end if
@@ -792,13 +739,7 @@ contains
 
     do l = bounds%begl, bounds%endl 
        if (lun%urbpoi(l)) then
-          if (use_vancouver) then
-             this%taf_lun(l) = 297.56_r8
-          else if (use_mexicocity) then
-             this%taf_lun(l) = 289.46_r8
-          else
-             this%taf_lun(l) = 283._r8
-          end if
+          this%taf_lun(l) = 283._r8
        end if
     end do
 

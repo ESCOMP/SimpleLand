@@ -7,7 +7,7 @@ module clm_varpar
   ! !USES:
   use shr_kind_mod , only: r8 => shr_kind_r8
   use spmdMod      , only: masterproc
-  use clm_varctl   , only: use_extralakelayers, use_vertsoilc
+  use clm_varctl   , only: use_vertsoilc
   use clm_varctl   , only: use_century_decomp, use_c13, use_c14
   use clm_varctl   , only: iulog, use_crop, create_crop_landunit, irrigate
   use clm_varctl   , only: use_vichydro, soil_layerstruct
@@ -173,11 +173,7 @@ contains
        nlevdecomp_full = 1
     end if
 
-    if (.not. use_extralakelayers) then
-       nlevlak     =  10     ! number of lake layers
-    else
-       nlevlak     =  25     ! number of lake layers (Yields better results for site simulations)
-    end if
+    nlevlak     =  10     ! number of lake layers
 
     if ( masterproc )then
        write(iulog, *) 'CLM varpar subsurface discretization levels '

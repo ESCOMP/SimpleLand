@@ -280,15 +280,12 @@ module clm_varctl
   logical, public :: use_lch4            = .false.
   logical, public :: use_nitrif_denitrif = .false.
   logical, public :: use_vertsoilc       = .false.
-  logical, public :: use_extralakelayers = .false.
   logical, public :: use_vichydro        = .false.
   logical, public :: use_century_decomp  = .false.
   logical, public :: use_cn              = .false.
   logical, public :: use_fertilizer      = .false.
   logical, public :: use_ozone           = .false.
   logical, public :: use_snicar_frc      = .false.
-  logical, public :: use_vancouver       = .false.
-  logical, public :: use_mexicocity      = .false.
   logical, public :: use_noio            = .false.
 
   !----------------------------------------------------------
