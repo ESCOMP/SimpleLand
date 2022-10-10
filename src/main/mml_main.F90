@@ -98,14 +98,13 @@ contains
     ! !LOCAL VARIABLES:
     integer                     :: nu_nml           ! Unit for namelist file
     integer                     :: nml_error        ! Error code
-    character(len=fname_len)    :: fatmlndfrc_new
     character(len=*), parameter :: nml_name = 'slim_data_and_initial'
     character(len=*), parameter :: subname = 'readnml_datasets'
-    namelist /slim_data_and_initial/ mml_surdat, finidat, fatmlndfrc_new
+    namelist /slim_data_and_initial/ mml_surdat, finidat, fatmlndfrc
     namelist /slim_data_and_initial/ finidat_interp_dest, nrevsn
     !-----------------------------------------------------------------------
 
-    fatmlndfrc_new = ' '
+    fatmlndfrc = ' '
     if (masterproc) then
        open( newunit=nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
        call find_nlgroup_name(nu_nml, nml_name, status=nml_error) 
@@ -123,8 +122,7 @@ contains
     call shr_mpi_bcast( finidat, mpicom )
     call shr_mpi_bcast( finidat_interp_dest, mpicom )
     call shr_mpi_bcast( nrevsn, mpicom )
-    call shr_mpi_bcast( fatmlndfrc_new, mpicom )
-    fatmlndfrc = fatmlndfrc_new
+    call shr_mpi_bcast( fatmlndfrc, mpicom )
     if (masterproc) then
        write(iulog,*) 'nrevsn              = ', trim(nrevsn)
        write(iulog,*) 'finidat             = ', trim(finidat)
