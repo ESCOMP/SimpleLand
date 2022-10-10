@@ -126,11 +126,21 @@ contains
     call shr_mpi_bcast( fatmlndfrc_new, mpicom )
     fatmlndfrc = fatmlndfrc_new
     if (masterproc) then
-       write(iulog,*) 'mml_surdat          = ', trim(mml_surdat)
        write(iulog,*) 'nrevsn              = ', trim(nrevsn)
-       write(iulog,*) 'fatmlndfrc          = ', trim(fatmlndfrc)
        write(iulog,*) 'finidat             = ', trim(finidat)
        write(iulog,*) 'finidat_interp_dest = ', trim(finidat_interp_dest)
+
+       if (fatmlndfrc == ' ') then
+          write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
+       else
+          write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
+       end if
+
+       if (mml_surdat == ' ') then
+           write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
+       else
+           write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
+       end if
     end if
   end subroutine readnml_datasets
   

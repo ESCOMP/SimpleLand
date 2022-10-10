@@ -582,16 +582,6 @@ contains
     else
        write(iulog,*) '   surface data   = ',trim(fsurdat)
     end if
-    if (fatmlndfrc == ' ') then
-       write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
-    else
-       write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
-    end if
-    if (mml_surdat == ' ') then
-       write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
-    else
-       write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
-    end if
     if (use_cn) then
        if (nfix_timeconst /= 0._r8) then
           write(iulog,*) '   nfix_timeconst, timescale for smoothing npp in N fixation term: ', nfix_timeconst
