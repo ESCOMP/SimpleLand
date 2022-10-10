@@ -15,11 +15,10 @@ module CNPhenologyMod
   use shr_sys_mod                     , only : shr_sys_flush
   use decompMod                       , only : bounds_type
   use clm_varpar                      , only : numpft, nlevdecomp_full
-  use clm_varctl                      , only : iulog, use_cndv
+  use clm_varctl                      , only : iulog
   use clm_varcon                      , only : tfrz
   use abortutils                      , only : endrun
   use CanopyStateType                 , only : canopystate_type
-  use CNDVType                        , only : dgvs_type
   use CNVegstateType                  , only : cnveg_state_type
   use CNVegCarbonStateType            , only : cnveg_carbonstate_type
   use CNVegCarbonFluxType             , only : cnveg_carbonflux_type

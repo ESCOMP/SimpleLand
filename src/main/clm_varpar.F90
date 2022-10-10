@@ -11,7 +11,6 @@ module clm_varpar
   use clm_varctl   , only: use_century_decomp, use_c13, use_c14
   use clm_varctl   , only: iulog, use_crop, create_crop_landunit, irrigate
   use clm_varctl   , only: use_vichydro, soil_layerstruct
-  use clm_varctl   , only: use_fates
 
   !
   ! !PUBLIC TYPES:
@@ -190,25 +189,14 @@ contains
        write(iulog, *)
     end if
 
-    if ( use_fates ) then
-       i_cwd = 0
-       if (use_century_decomp) then
-          ndecomp_pools = 6
-          ndecomp_cascade_transitions = 8
-       else
-          ndecomp_pools = 7
-          ndecomp_cascade_transitions = 7
-       end if
+    i_cwd = 4
+    if (use_century_decomp) then
+       ndecomp_pools = 7
+       ndecomp_cascade_transitions = 10
     else
-       i_cwd = 4
-       if (use_century_decomp) then
-          ndecomp_pools = 7
-          ndecomp_cascade_transitions = 10
-       else
-          ndecomp_pools = 8
-          ndecomp_cascade_transitions = 9
-       end if
-    endif
+       ndecomp_pools = 8
+       ndecomp_cascade_transitions = 9
+    end if
 
   end subroutine clm_varpar_init
 

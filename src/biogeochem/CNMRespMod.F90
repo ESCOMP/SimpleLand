@@ -76,8 +76,6 @@ contains
   end subroutine readParams
 
   !-----------------------------------------------------------------------
-  ! FIX(SPM,032414) this shouldn't even be called with fates on.
-  !
   subroutine CNMResp(bounds, num_soilc, filter_soilc, num_soilp, filter_soilp, &
        canopystate_inst, soilstate_inst, temperature_inst, photosyns_inst, &
        cnveg_carbonflux_inst, cnveg_nitrogenstate_inst)

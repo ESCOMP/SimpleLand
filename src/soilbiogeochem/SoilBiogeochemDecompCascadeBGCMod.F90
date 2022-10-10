@@ -11,7 +11,7 @@ module SoilBiogeochemDecompCascadeBGCMod
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
   use clm_varpar                         , only : nlevsoi, nlevgrnd, nlevdecomp, ndecomp_cascade_transitions, ndecomp_pools
   use clm_varpar                         , only : i_met_lit, i_cel_lit, i_lig_lit, i_cwd
-  use clm_varctl                         , only : iulog, spinup_state, anoxia, use_vertsoilc, use_fates
+  use clm_varctl                         , only : iulog, spinup_state, anoxia, use_vertsoilc
   use clm_varcon                         , only : zsoi
   use decompMod                          , only : bounds_type
   use spmdMod                            , only : masterproc
@@ -396,28 +396,22 @@ contains
       is_cellulose(i_litr3) = .false.
       is_lignin(i_litr3) = .true.
 
-      if (.not. use_fates) then
-         ! CWD
-         floating_cn_ratio_decomp_pools(i_cwd) = .true.
-         decomp_pool_name_restart(i_cwd) = 'cwd'
-         decomp_pool_name_history(i_cwd) = 'CWD'
-         decomp_pool_name_long(i_cwd) = 'coarse woody debris'
-         decomp_pool_name_short(i_cwd) = 'CWD'
-         is_litter(i_cwd) = .false.
-         is_soil(i_cwd) = .false.
-         is_cwd(i_cwd) = .true.
-         initial_cn_ratio(i_cwd) = 90._r8
-         initial_stock(i_cwd) = 0._r8
-         is_metabolic(i_cwd) = .false.
-         is_cellulose(i_cwd) = .false.
-         is_lignin(i_cwd) = .false.
-      endif
+      ! CWD
+      floating_cn_ratio_decomp_pools(i_cwd) = .true.
+      decomp_pool_name_restart(i_cwd) = 'cwd'
+      decomp_pool_name_history(i_cwd) = 'CWD'
+      decomp_pool_name_long(i_cwd) = 'coarse woody debris'
+      decomp_pool_name_short(i_cwd) = 'CWD'
+      is_litter(i_cwd) = .false.
+      is_soil(i_cwd) = .false.
+      is_cwd(i_cwd) = .true.
+      initial_cn_ratio(i_cwd) = 90._r8
+      initial_stock(i_cwd) = 0._r8
+      is_metabolic(i_cwd) = .false.
+      is_cellulose(i_cwd) = .false.
+      is_lignin(i_cwd) = .false.
 
-      if (.not. use_fates) then
-         i_soil1 = 5
-      else
-         i_soil1 = 4
-      endif
+      i_soil1 = 5
       floating_cn_ratio_decomp_pools(i_soil1) = .false.
       decomp_pool_name_restart(i_soil1) = 'soil1'
       decomp_pool_name_history(i_soil1) = 'SOIL1'
@@ -432,11 +426,7 @@ contains
       is_cellulose(i_soil1) = .false.
       is_lignin(i_soil1) = .false.
 
-      if (.not. use_fates) then
-         i_soil2 = 6
-      else
-         i_soil2 = 5
-      endif
+      i_soil2 = 6
       floating_cn_ratio_decomp_pools(i_soil2) = .false.
       decomp_pool_name_restart(i_soil2) = 'soil2'
       decomp_pool_name_history(i_soil2) = 'SOIL2'
@@ -451,11 +441,7 @@ contains
       is_cellulose(i_soil2) = .false.
       is_lignin(i_soil2) = .false.
 
-      if (.not. use_fates) then
-         i_soil3 = 7
-      else
-         i_soil3 = 6
-      endif
+      i_soil3 = 7
       floating_cn_ratio_decomp_pools(i_soil3) = .false.
       decomp_pool_name_restart(i_soil3) = 'soil3'
       decomp_pool_name_history(i_soil3) = 'SOIL3'
@@ -479,9 +465,7 @@ contains
       spinup_factor(i_litr2) = 1._r8
       spinup_factor(i_litr3) = 1._r8
       !CWD
-      if (.not. use_fates) then
-         spinup_factor(i_cwd) = max(1._r8, (speedup_fac * params_inst%tau_cwd_bgc / 2._r8 ))
-      end if
+      spinup_factor(i_cwd) = max(1._r8, (speedup_fac * params_inst%tau_cwd_bgc / 2._r8 ))
       !som1
       spinup_factor(i_soil1) = 1._r8
       !som2,3
@@ -550,21 +534,19 @@ contains
       cascade_receiver_pool(i_s3s1) = i_soil1
       pathfrac_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_s3s1) = 1.0_r8
 
-      if (.not. use_fates) then
-         i_cwdl2 = 9
-         cascade_step_name(i_cwdl2) = 'CWDL2'
-         rf_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl2) = rf_cwdl2
-         cascade_donor_pool(i_cwdl2) = i_cwd
-         cascade_receiver_pool(i_cwdl2) = i_litr2
-         pathfrac_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl2) = cwd_fcel
+      i_cwdl2 = 9
+      cascade_step_name(i_cwdl2) = 'CWDL2'
+      rf_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl2) = rf_cwdl2
+      cascade_donor_pool(i_cwdl2) = i_cwd
+      cascade_receiver_pool(i_cwdl2) = i_litr2
+      pathfrac_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl2) = cwd_fcel
          
-         i_cwdl3 = 10
-         cascade_step_name(i_cwdl3) = 'CWDL3'
-         rf_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl3) = rf_cwdl3
-         cascade_donor_pool(i_cwdl3) = i_cwd
-         cascade_receiver_pool(i_cwdl3) = i_litr3
-         pathfrac_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl3) = cwd_flig
-      end if
+      i_cwdl3 = 10
+      cascade_step_name(i_cwdl3) = 'CWDL3'
+      rf_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl3) = rf_cwdl3
+      cascade_donor_pool(i_cwdl3) = i_cwd
+      cascade_receiver_pool(i_cwdl3) = i_litr3
+      pathfrac_decomp_cascade(bounds%begc:bounds%endc,1:nlevdecomp,i_cwdl3) = cwd_flig
 
       deallocate(rf_s1s2)
       deallocate(rf_s1s3)

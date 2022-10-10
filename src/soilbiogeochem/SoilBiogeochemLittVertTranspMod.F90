@@ -5,7 +5,7 @@ module SoilBiogeochemLittVertTranspMod
   !
   use shr_kind_mod                       , only : r8 => shr_kind_r8
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
-  use clm_varctl                         , only : iulog, spinup_state, use_vertsoilc, use_fates, use_cn
+  use clm_varctl                         , only : iulog, spinup_state, use_vertsoilc, use_cn
   use clm_varcon                         , only : secspday
   use decompMod                          , only : bounds_type
   use abortutils                         , only : endrun
@@ -180,9 +180,6 @@ contains
       dtime = get_step_size()
 
       ntype = 2
-      if ( use_fates ) then
-         ntype = 1
-      endif
       spinup_term = 1._r8
       epsilon = 1.e-30
 

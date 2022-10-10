@@ -10,7 +10,7 @@ module atm2lndType
   use shr_log_mod   , only : errMsg => shr_log_errMsg
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.  ! MML: numrad = 2, 1=vis, 2=nir
   use clm_varcon    , only : rair, grav, cpair, hfus, tfrz, spval
-  use clm_varctl    , only : iulog, use_cn, use_cndv, use_fates, use_luna
+  use clm_varctl    , only : iulog, use_cn, use_luna
   use decompMod     , only : bounds_type
   use abortutils    , only : endrun
   use PatchType     , only : patch
@@ -882,11 +882,6 @@ contains
     allocate(this%prec60_patch                  (begp:endp))        ; this%prec60_patch                  (:)   = nan
     allocate(this%rh30_patch                    (begp:endp))        ; this%rh30_patch                    (:)   = nan 
     allocate(this%prec365_col                   (begc:endc))        ; this%prec365_col                   (:)   = nan
-    if (use_fates) then
-       allocate(this%prec24_patch               (begp:endp))        ; this%prec24_patch                  (:)   = nan
-       allocate(this%rh24_patch                 (begp:endp))        ; this%rh24_patch                    (:)   = nan
-       allocate(this%wind24_patch               (begp:endp))        ; this%wind24_patch                  (:)   = nan
-    end if
     allocate(this%t_mo_patch                    (begp:endp))        ; this%t_mo_patch               (:)   = nan
     allocate(this%t_mo_min_patch                (begp:endp))        ; this%t_mo_min_patch           (:)   = spval ! TODO - initialize this elsewhere
 
@@ -1640,12 +1635,6 @@ contains
             ptr_patch=this%prec60_patch, default='inactive')
     end if
 
-    if (use_cndv) then
-       call hist_addfld1d (fname='TDA', units='K',  &
-            avgflag='A', long_name='daily average 2-m temperature', &
-            ptr_patch=this%t_mo_patch)
-    end if
-
     if(use_luna)then
        this%forc_pco2_240_patch = spval
        call hist_addfld1d (fname='PCO2_240', units='Pa',  &
@@ -1903,28 +1892,6 @@ contains
             subgrid_type='pft', numlev=1, init_value=100._r8)
     end if
 
-    if (use_cndv) then
-       ! The following is a running mean with the accumulation period is set to -365 for a 365-day running mean.
-       call init_accum_field (name='PREC365', units='MM H2O/S', &
-            desc='365-day running mean of total precipitation', accum_type='runmean', accum_period=-365, &
-            subgrid_type='column', numlev=1, init_value=0._r8)
-    end if
-
-    if ( use_fates ) then
-       call init_accum_field (name='PREC24', units='m', &
-            desc='24hr sum of precipitation', accum_type='runmean', accum_period=-1, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
-
-       ! Fudge - this neds to be initialized from the restat file eventually. 
-       call init_accum_field (name='RH24', units='m', &
-            desc='24hr average of RH', accum_type='runmean', accum_period=-1, &
-            subgrid_type='pft', numlev=1, init_value=100._r8) 
-
-       call init_accum_field (name='WIND24', units='m', &
-            desc='24hr average of wind', accum_type='runmean', accum_period=-1, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
-    end if
-
     if(use_luna) then
       this%forc_po2_240_patch(bounds%begp:bounds%endp) = spval
       call init_accum_field (name='po2_240', units='Pa',                                            &
@@ -2015,25 +1982,6 @@ contains
        this%rh30_patch(begp:endp) = rbufslp(begp:endp)
     end if
 
-    if (use_cndv) then
-       call extract_accum_field ('PREC365' , rbufslc, nstep) 
-       this%prec365_col(begc:endc) = rbufslc(begc:endc)
-
-       call extract_accum_field ('TDA', rbufslp, nstep) 
-       this%t_mo_patch(begp:endp) = rbufslp(begp:endp)
-    end if
-
-    if (use_fates) then
-       call extract_accum_field ('PREC24', rbufslp, nstep)
-       this%prec24_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('RH24', rbufslp, nstep)
-       this%rh24_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('WIND24', rbufslp, nstep)
-       this%wind24_patch(begp:endp) = rbufslp(begp:endp)
-    end if
-
     if(use_luna) then
        call extract_accum_field ('po2_240', rbufslp, nstep)
        this%forc_po2_240_patch(begp:endp) = rbufslp(begp:endp)
@@ -2112,12 +2060,6 @@ contains
     call extract_accum_field ('FSI240', this%fsi240_patch     , nstep)
 
     ! Precipitation accumulators
-    !
-    ! For CNDV, we use a column-level accumulator. We cannot use a patch-level
-    ! accumulator for CNDV because this is used for establishment, so must be available
-    ! for inactive patches. In principle, we could/should switch to column-level for the
-    ! other precip accumulators, too; we'd just need to be careful about backwards
-    ! compatibility with old restart files.
 
     do p = begp,endp
        c = patch%column(p)
@@ -2133,48 +2075,6 @@ contains
        ! Accumulate and extract PREC10 (accumulates total precipitation as 10-day running mean)
        call update_accum_field  ('PREC10', rbufslp, nstep)
        call extract_accum_field ('PREC10', this%prec10_patch, nstep)
-    end if
-
-    if (use_cndv) then
-       ! Accumulate and extract PREC365 (accumulates total precipitation as 365-day running mean)
-       ! See above comment regarding why this is at the column-level despite other prec
-       ! accumulators being at the patch level.
-       call update_accum_field  ('PREC365', rbufslc, nstep)
-       call extract_accum_field ('PREC365', this%prec365_col, nstep)
-
-       ! Accumulate and extract TDA (accumulates TBOT as 30-day average) and 
-       ! also determines t_mo_min
-       
-       do p = begp,endp
-          c = patch%column(p)
-          rbufslp(p) = this%forc_t_downscaled_col(c)
-       end do
-       call update_accum_field  ('TDA', rbufslp, nstep)
-       call extract_accum_field ('TDA', rbufslp, nstep)
-       do p = begp,endp
-          this%t_mo_patch(p) = rbufslp(p)
-          this%t_mo_min_patch(p) = min(this%t_mo_min_patch(p), rbufslp(p))
-       end do
-
-    end if
-
-    if (use_fates) then
-       call update_accum_field  ('PREC24', rbufslp, nstep)
-       call extract_accum_field ('PREC24', this%prec24_patch, nstep)
-
-       do p = bounds%begp,bounds%endp
-          g = patch%gridcell(p) 
-          rbufslp(p) = this%forc_wind_grc(g) 
-       end do
-       call update_accum_field  ('WIND24', rbufslp, nstep)
-       call extract_accum_field ('WIND24', this%wind24_patch, nstep)
-
-       do p = bounds%begp,bounds%endp
-          g = patch%gridcell(p) 
-          rbufslp(p) = this%forc_rh_grc(g) 
-       end do
-       call update_accum_field  ('RH24', rbufslp, nstep)
-       call extract_accum_field ('RH24', this%rh24_patch, nstep)
     end if
 
     if(use_luna) then
@@ -2241,12 +2141,6 @@ contains
        ! initial run, readvar=readvar, not restart: initialize flood to zero
        this%forc_flood_grc = 0._r8
     endif
-
-    if (use_cndv) then
-       call restartvar(ncid=ncid, flag=flag, varname='T_MO_MIN', xtype=ncd_double,  &
-            dim1name='pft', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%t_mo_min_patch)
-    end if
 
     if(use_luna)then
        call restartvar(ncid=ncid, flag=flag, varname='pco2_240', xtype=ncd_double,  &
@@ -2486,11 +2380,6 @@ contains
     deallocate(this%prec10_patch)
     deallocate(this%prec60_patch)
     deallocate(this%prec365_col)
-    if (use_fates) then
-       deallocate(this%prec24_patch)
-       deallocate(this%rh24_patch)
-       deallocate(this%wind24_patch)
-    end if
     deallocate(this%t_mo_patch)
     deallocate(this%t_mo_min_patch)
     

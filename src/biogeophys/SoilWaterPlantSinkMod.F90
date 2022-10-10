@@ -1,6 +1,5 @@
 module SoilWaterPlantSinkMod
 
-   use clm_varctl       , only : use_hydrstress
    use decompMod        , only : bounds_type
    use shr_kind_mod          , only : r8 => shr_kind_r8
    use shr_log_mod           , only : errMsg => shr_log_errMsg
@@ -28,7 +27,7 @@ contains
       ! There are three groups of columns:
       ! 1) impervious roads, 2) non-natural vegetation and 3) natural vegetation
       ! There are several methods available.
-      ! 1) the default version, 2) hydstress version and 3) fates boundary conditions
+      ! 1) the default version, 2) hydstress version
       !
       ! There are only two quantities that are the result of this routine, and its
       ! children:
@@ -74,13 +73,8 @@ contains
          end if
       end do
       num_filterc_tot = num_filterc_tot+num_filterc
-      if(use_hydrstress) then
-         call Compute_EffecRootFrac_And_VertTranSink_HydStress_Roads(bounds, &
-               num_filterc,filterc, soilstate_inst, waterflux_inst)
-      else
-         call Compute_EffecRootFrac_And_VertTranSink_Default(bounds, &
-               num_filterc,filterc, soilstate_inst, waterflux_inst)
-      end if
+      call Compute_EffecRootFrac_And_VertTranSink_Default(bounds, &
+            num_filterc,filterc, soilstate_inst, waterflux_inst)
 
 
       ! Note: 2 and 3 really don't need to be split.  But I am leaving
@@ -100,14 +94,8 @@ contains
          end if
       end do
       num_filterc_tot = num_filterc_tot+num_filterc
-      if(use_hydrstress) then
-         call Compute_EffecRootFrac_And_VertTranSink_HydStress(bounds, &
-               num_filterc, filterc, waterflux_inst, soilstate_inst, &
-               canopystate_inst, energyflux_inst)
-      else
-         call Compute_EffecRootFrac_And_VertTranSink_Default(bounds, &
-               num_filterc,filterc, soilstate_inst, waterflux_inst)
-      end if
+      call Compute_EffecRootFrac_And_VertTranSink_Default(bounds, &
+            num_filterc,filterc, soilstate_inst, waterflux_inst)
       
 
       ! 3) Natural vegetation
@@ -121,14 +109,8 @@ contains
          end if
       end do
       num_filterc_tot = num_filterc_tot+num_filterc
-      if (use_hydrstress) then
-         call Compute_EffecRootFrac_And_VertTranSink_HydStress(bounds, &
-              num_filterc, filterc, waterflux_inst, soilstate_inst, &
-              canopystate_inst,energyflux_inst)
-      else
-         call Compute_EffecRootFrac_And_VertTranSink_Default(bounds, &
-              num_filterc,filterc, soilstate_inst, waterflux_inst)
-      end if
+      call Compute_EffecRootFrac_And_VertTranSink_Default(bounds, &
+           num_filterc,filterc, soilstate_inst, waterflux_inst)
 
       if (num_hydrologyc /= num_filterc_tot) then
           write(iulog,*) 'The total number of columns flagged to root water uptake'
@@ -359,7 +341,6 @@ contains
     use WaterFluxType    , only : waterflux_type
     use PatchType        , only : patch
     use ColumnType       , only : col
-    use clm_varctl       , only : use_hydrstress
     use column_varcon    , only : icol_road_perv
     !
     ! !ARGUMENTS:

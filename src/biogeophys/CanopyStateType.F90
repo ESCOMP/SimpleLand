@@ -10,7 +10,7 @@ module CanopyStateType
   use landunit_varcon , only : istsoil, istcrop
   use clm_varpar      , only : nlevcan, nvegwcs
   use clm_varcon      , only : spval  
-  use clm_varctl      , only : iulog, use_cn, use_fates, use_hydrstress
+  use clm_varctl      , only : iulog, use_cn
   use LandunitType    , only : lun                
   use ColumnType      , only : col                
   use PatchType       , only : patch                
@@ -52,9 +52,7 @@ module CanopyStateType
 
      real(r8) , pointer :: dewmx_patch              (:)   ! patch maximum allowed dew [mm] 
      real(r8) , pointer :: dleaf_patch              (:)   ! patch characteristic leaf width (diameter) [m]
-                                                          ! for non-ED/FATES this is the same as pftcon%dleaf()
-     real(r8) , pointer :: rscanopy_patch           (:)   ! patch canopy stomatal resistance (s/m) (ED specific)
-
+                                                          ! same as pftcon%dleaf()
      real(r8) , pointer :: vegwp_patch              (:,:) ! patch vegetation water matric potential (mm)
 
      real(r8)           :: leaf_mr_vcm = spval            ! Scalar constant of leaf respiration with Vcmax
@@ -143,8 +141,6 @@ contains
 
     allocate(this%dewmx_patch              (begp:endp))           ; this%dewmx_patch              (:)   = nan
     allocate(this%dleaf_patch              (begp:endp))           ; this%dleaf_patch              (:)   = nan
-    allocate(this%rscanopy_patch           (begp:endp))           ; this%rscanopy_patch           (:)   = nan
-!    allocate(this%gccanopy_patch           (begp:endp))           ; this%gccanopy_patch           (:)   = 0.0_r8     
     allocate(this%vegwp_patch              (begp:endp,1:nvegwcs)) ; this%vegwp_patch              (:,:) = nan
 
   end subroutine InitAllocate
@@ -198,7 +194,7 @@ contains
          avgflag='A', long_name='shaded projected leaf area index', &
          ptr_patch=this%laisha_patch, set_urb=0._r8, default='inactive')
 
-    if (use_cn .or. use_fates) then
+    if (use_cn) then
        this%fsun_patch(begp:endp) = spval
        call hist_addfld1d (fname='FSUN', units='proportion', &
             avgflag='A', long_name='sunlit fraction of canopy', &
@@ -278,25 +274,6 @@ contains
     call hist_addfld1d (fname='LAI240', units='m^2/m^2', &
          avgflag='A', long_name='240hr average of leaf area index', &
          ptr_patch=this%elai240_patch, default='inactive')
-
-    ! Ed specific field
-    if ( use_fates ) then
-       this%rscanopy_patch(begp:endp) = spval
-       call hist_addfld1d (fname='RSCANOPY', units=' s m-1',  &
-            avgflag='A', long_name='canopy resistance', &
-            ptr_patch=this%rscanopy_patch, set_lake=0._r8, set_urb=0._r8, default='inactive')
-    end if
-
-!    call hist_addfld1d (fname='GCCANOPY', units='none',  &
-!         avgflag='A', long_name='Canopy Conductance: mmol m-2 s-1', &
-!         ptr_patch=this%GCcanopy_patch, set_lake=0._r8, set_urb=0._r8)  
-
-    if ( use_hydrstress ) then
-       this%vegwp_patch(begp:endp,:) = spval
-       call hist_addfld2d (fname='VEGWP',  units='mm', type2d='nvegwcs', &
-            avgflag='A', long_name='vegetation water matric potential for sun/sha canopy,xyl,root segments', &
-            ptr_patch=this%vegwp_patch, default='inactive')
-    end if
 
   end subroutine InitHistory
 
@@ -609,7 +586,7 @@ contains
        end do
     end if
 
-    if (use_cn .or. use_fates) then
+    if (use_cn) then
        call restartvar(ncid=ncid, flag=flag, varname='altmax', xtype=ncd_double,  &
             dim1name='column', long_name='', units='', &
             interpinic_flag='interp', readvar=readvar, data=this%altmax_col) 
@@ -625,14 +602,6 @@ contains
        call restartvar(ncid=ncid, flag=flag, varname='altmax_lastyear_indx', xtype=ncd_int,  &
             dim1name='column', long_name='', units='', &
             interpinic_flag='interp', readvar=readvar, data=this%altmax_lastyear_indx_col) 
-    end if
-
-    if ( use_hydrstress ) then
-       call restartvar(ncid=ncid, flag=flag, varname='vegwp', xtype=ncd_double,  &
-            dim1name='pft', dim2name='vegwcs', switchdim=.true., &
-            long_name='vegetation water matric potential', units='mm', &
-            interpinic_flag='interp', readvar=readvar, data=this%vegwp_patch) 
-
     end if
 
   end subroutine Restart

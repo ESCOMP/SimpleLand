@@ -38,7 +38,7 @@ module controlMod
   use clm_varctl                       , only: subgridflag, use_nguardrail, nfix_timeconst, use_vertsoilc
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: use_lch4, irrigate, create_crop_landunit, use_crop, use_dynroot
-  use clm_varctl                       , only: use_fates, use_flexiblecn, use_hydrstress, use_luna, spinup_state
+  use clm_varctl                       , only: use_flexiblecn, use_luna, spinup_state
   use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
@@ -197,18 +197,15 @@ contains
                create_crop_landunit,   &
                use_crop,   &
                use_dynroot,   &
-               use_fates,   &
                use_flexiblecn,   &
-               use_hydrstress,   &
                use_luna,   &
                spinup_state, &
                single_column
 
     logical :: use_fertilizer = .false.
     logical :: use_grainproduct = .false.
-    logical :: use_lai_streams = .false.
     character(len=256) :: fsnowaging, fsnowoptics
-    namelist /clm_inparm/ use_fertilizer, use_grainproduct, use_lai_streams, &
+    namelist /clm_inparm/ use_fertilizer, use_grainproduct, &
             fsnowaging, fsnowoptics
 
 
@@ -271,12 +268,6 @@ contains
        call set_timemgr_init( dtime_in=dtime )
 
        ! Check for namelist variables that SLIM can NOT use
-       if ( use_fates )then
-          call endrun(msg='ERROR SLIM can NOT run with use_fates on'//errMsg(sourcefile, __LINE__))
-       end if
-       if ( use_lai_streams )then
-          call endrun(msg='ERROR SLIM can NOT run with use_lai_streams on'//errMsg(sourcefile, __LINE__))
-       end if
        if ( use_dynroot )then
           call endrun(msg='ERROR SLIM can NOT run with use_dynroot on'//errMsg(sourcefile, __LINE__))
        end if
@@ -475,15 +466,12 @@ contains
        call mpi_bcast (spinup_state, 1, MPI_INTEGER, 0, mpicom, ier)
     end if
 
-    call mpi_bcast (use_fates, 1, MPI_LOGICAL, 0, mpicom, ier)
     ! flexibleCN nitrogen model
     call mpi_bcast (use_flexibleCN, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     call mpi_bcast (use_luna, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     call mpi_bcast (use_bedrock, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_hydrstress, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     call mpi_bcast (use_dynroot, 1, MPI_LOGICAL, 0, mpicom, ier)
 

@@ -47,7 +47,7 @@ OPTIONS
      or double leading dashes.  A consequence of this is that single letter options may
      NOT be bundled.
 
-     -bgc <name>            Build CLM with BGC package [ none | cn | cndv ] 
+     -bgc <name>            Build CLM with BGC package [ none | cn ] 
                             (default is none).
      -cache <file>          Name of output cache file (default: config_cache.xml).
      -cachedir <file>       Name of directory where output cache file is written 
@@ -58,7 +58,7 @@ OPTIONS
      -cppdefs <string>      A string of user specified CPP defines.  Appended to
                             Makefile defaults.  e.g. -cppdefs '-DVAR1 -DVAR2'
      -crop <name>           Toggle for prognostic crop model. [on | off] (default is off) 
-                            (can ONLY be turned on when BGC type is CN or CNDV)
+                            (can ONLY be turned on when BGC type is CN)
      -comp_intf <name>      Component interface to use (ESMF or MCT) (default MCT)
      -defaults <file>       Specify full path to a configuration file which will be used 
                             to supply defaults instead of the defaults in bld/config_files.

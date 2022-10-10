@@ -9,7 +9,7 @@ module pftconMod
   use shr_kind_mod, only : r8 => shr_kind_r8
   use abortutils  , only : endrun
   use clm_varpar  , only : mxpft, numrad, ivis, inir, cft_lb, cft_ub
-  use clm_varctl  , only : iulog, use_cndv, use_vertsoilc, use_crop
+  use clm_varctl  , only : iulog, use_vertsoilc, use_crop
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -189,7 +189,6 @@ module pftconMod
      real(r8), allocatable :: croot_stem    (:)   ! allocation parameter: new coarse root C per new stem C (gC/gC)
      real(r8), allocatable :: flivewd       (:)   ! allocation parameter: fraction of new wood that is live (phloem and ray parenchyma) (no units)
      real(r8), allocatable :: fcur          (:)   ! allocation parameter: fraction of allocation that goes to currently displayed growth, remainder to storage
-     real(r8), allocatable :: fcurdv        (:)   ! alternate fcur for use with cndv
      real(r8), allocatable :: lf_flab       (:)   ! leaf litter labile fraction
      real(r8), allocatable :: lf_fcel       (:)   ! leaf litter cellulose fraction
      real(r8), allocatable :: lf_flig       (:)   ! leaf litter lignin fraction
@@ -398,7 +397,6 @@ contains
     allocate( this%croot_stem    (0:mxpft) )   
     allocate( this%flivewd       (0:mxpft) )      
     allocate( this%fcur          (0:mxpft) )         
-    allocate( this%fcurdv        (0:mxpft) )       
     allocate( this%lf_flab       (0:mxpft) )      
     allocate( this%lf_fcel       (0:mxpft) )      
     allocate( this%lf_flig       (0:mxpft) )      
@@ -703,9 +701,6 @@ contains
     if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__))
 
     call ncd_io('fcur', this%fcur, 'read', ncid, readvar=readv, posNOTonfile=.true.)
-    if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__))
-
-    call ncd_io('fcurdv', this%fcurdv, 'read', ncid, readvar=readv, posNOTonfile=.true.)
     if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__))
 
     call ncd_io('lf_flab', this%lf_flab, 'read', ncid, readvar=readv, posNOTonfile=.true.)
@@ -1099,10 +1094,6 @@ contains
     call this%set_is_pft_known_to_model()
     call this%set_num_cfts_known_to_model()
 
-    if (use_cndv) then
-       this%fcur(:) = this%fcurdv(:)
-    end if
-    !
     ! Do some error checking.
     !
     ! FIX(SPM,032414) double check if some of these should be on...
@@ -1306,7 +1297,6 @@ contains
     deallocate( this%croot_stem)
     deallocate( this%flivewd)
     deallocate( this%fcur)
-    deallocate( this%fcurdv)
     deallocate( this%lf_flab)
     deallocate( this%lf_fcel)
     deallocate( this%lf_flig)

@@ -13,7 +13,7 @@ module CNDVType
   use shr_log_mod  , only : errMsg => shr_log_errMsg
   use abortutils   , only : endrun
   use decompMod    , only : bounds_type
-  use clm_varctl   , only : use_cndv, iulog
+  use clm_varctl   , only : iulog
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -57,12 +57,7 @@ module CNDVType
 
      procedure , public  :: Init   
      procedure , public  :: Restart
-     procedure , public  :: InitAccBuffer
-     procedure , public  :: InitAccVars
-     procedure , public  :: UpdateAccVars
      procedure , private :: InitAllocate 
-     procedure , private :: InitCold     
-     procedure , private :: InitHistory
   end type dgvs_type
 
   character(len=*), parameter, private :: sourcefile = &
@@ -78,15 +73,9 @@ contains
     type(bounds_type), intent(in) :: bounds  
 
     ! Note - need allocation so that associate statements can be used
-    ! at run time for NAG (allocation of variables is needed) - history
-    ! should only be initialized if use_cndv is true
+    ! at run time for NAG (allocation of variables is needed)
 
     call this%InitAllocate (bounds)
-
-    if (use_cndv) then
-       call this%InitCold (bounds)
-       call this%InitHistory (bounds)
-    end if
 
   end subroutine Init
 
@@ -155,57 +144,6 @@ contains
     end do
 
   end subroutine InitAllocate
-
-  !-----------------------------------------------------------------------
-  subroutine InitCold(this, bounds)
-    !
-    ! !USES:
-    use shr_kind_mod  , only : r8 => shr_kind_r8
-    use shr_const_mod , only : SHR_CONST_TKFRZ
-    use decompMod     , only : bounds_type
-    !
-    ! !ARGUMENTS:
-    class(dgvs_type) :: this 
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer  :: p           ! patch index
-    !-----------------------------------------------------------------------
-
-    do p = bounds%begp,bounds%endp
-       this%present_patch(p)   = .false.
-       this%crownarea_patch(p) = 0._r8
-       this%nind_patch(p)      = 0._r8
-       this%agdd20_patch(p)    = 0._r8
-       this%tmomin20_patch(p)  = SHR_CONST_TKFRZ - 5._r8 !initialize this way for Phenology code
-    end do
-
-  end subroutine InitCold
-
-  !-----------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize history variables
-    !
-    ! !USES:
-    use histFileMod, only : hist_addfld1d
-    !
-    ! !ARGUMENTS:
-    class(dgvs_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    
-    character(len=*), parameter :: subname = 'InitHistory'
-    !-----------------------------------------------------------------------
-    
-    call hist_addfld1d (fname='AGDD', units='K',  &
-         avgflag='A', long_name='growing degree-days base 5C', &
-         ptr_patch=this%agdd_patch, default='inactive')
-
-  end subroutine InitHistory
-
 
   !-----------------------------------------------------------------------
   subroutine Restart(this, bounds, ncid, flag)
@@ -333,187 +271,5 @@ contains
          interpinic_flag='interp', readvar=readvar, data=this%greffic_patch)
 
   end subroutine Restart
-
-  !-----------------------------------------------------------------------
-  subroutine InitAccBuffer (this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize accumulation buffer for all required module accumulated fields
-    ! This routine set defaults values that are then overwritten by the
-    ! restart file for restart or branch runs
-    ! Each interval and accumulation type is unique to each field processed.
-    ! Routine [initAccBuffer] defines the fields to be processed
-    ! and the type of accumulation. 
-    ! Routine [updateCNDVAccVars] does the actual accumulation for a given field.
-    ! Fields are accumulated by calls to subroutine [update_accum_field]. 
-    ! To accumulate a field, it must first be defined in subroutine [initAccVars] 
-    ! and then accumulated by calls to [updateCNDVAccVars].
-    !
-    ! This should only be called if use_cndv is true.
-    !
-    ! !USES 
-    use accumulMod       , only : init_accum_field
-    !
-    ! !ARGUMENTS:
-    class(dgvs_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-
-    !
-    ! !LOCAL VARIABLES:
-    integer, parameter :: not_used = huge(1)
-
-    !---------------------------------------------------------------------
-
-    ! The following are accumulated fields.
-    ! These types of fields are accumulated until a trigger value resets
-    ! the accumulation to zero (see subroutine update_accum_field).
-    ! Hence, [accper] is not valid.
-
-    call init_accum_field (name='AGDDTW', units='K', &
-         desc='growing degree-days base twmax', accum_type='runaccum', accum_period=not_used, &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    call init_accum_field (name='AGDD', units='K', &
-         desc='growing degree-days base 5C', accum_type='runaccum', accum_period=not_used,  &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-  end subroutine InitAccBuffer
-
-  !-----------------------------------------------------------------------
-  subroutine InitAccVars(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize module variables that are associated with
-    ! time accumulated fields. This routine is called for both an initial run
-    ! and a restart run (and must therefore must be called after the restart file 
-    ! is read in and the accumulation buffer is obtained)
-    !
-    ! This should only be called if use_cndv is true.
-    !
-    ! !USES 
-    use accumulMod       , only : extract_accum_field
-    use clm_time_manager , only : get_nstep
-    !
-    ! !ARGUMENTS:
-    class(dgvs_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer :: begp, endp
-    integer :: nstep
-    integer :: ier            ! error status
-    real(r8), pointer :: rbufslp(:)  ! temporary
-
-    !---------------------------------------------------------------------
-
-    begp = bounds%begp; endp = bounds%endp
-
-    ! Allocate needed dynamic memory for single level patch field
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)' in '
-       call endrun(msg=" allocation error for rbufslp"//&
-            errMsg(sourcefile, __LINE__))
-    endif
-
-    nstep = get_nstep()
-
-    call extract_accum_field ('AGDDTW', rbufslp, nstep) 
-    this%agddtw_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('AGDD', rbufslp, nstep) 
-    this%agdd_patch(begp:endp) = rbufslp(begp:endp)
-
-    deallocate(rbufslp)
-
-  end subroutine InitAccVars
-
-  !-----------------------------------------------------------------------
-  subroutine UpdateAccVars(this, bounds, t_a10_patch, t_ref2m_patch)
-    !
-    ! !DESCRIPTION:
-    ! Update accumulated variables. Should be called every time step.
-    !
-    ! This should only be called if use_cndv is true.
-    !
-    ! !USES:
-    use shr_const_mod    , only : SHR_CONST_CDAY, SHR_CONST_TKFRZ
-    use clm_time_manager , only : get_step_size, get_nstep, get_curr_date
-    use pftconMod        , only : ndllf_dcd_brl_tree
-    use accumulMod       , only : update_accum_field, extract_accum_field, accumResetVal
-    !
-    ! !ARGUMENTS:
-    class(dgvs_type)  , intent(inout) :: this
-    type(bounds_type) , intent(in)    :: bounds
-    ! COMPILER_BUG(wjs, 2014-11-30, pgi 14.7) These arrays get resized to 0 when running
-    ! with threading with pgi 14.7 on yellowstone. My standard workarounds weren't
-    ! working; the only thing that I can find that works is to change them to pointers
-!    real(r8)          , intent(in)    :: t_a10_patch( bounds%begp:)      ! 10-day running mean of the 2 m temperature (K)
-!    real(r8)          , intent(in)    :: t_ref2m_patch( bounds%begp:)    ! 2 m height surface air temperature (K)
-    real(r8), pointer , intent(in)    :: t_a10_patch(:)      ! 10-day running mean of the 2 m temperature (K)
-    real(r8), pointer , intent(in)    :: t_ref2m_patch(:)    ! 2 m height surface air temperature (K)
-    !
-    ! !LOCAL VARIABLES:
-    integer           :: p          ! index
-    integer           :: ier        ! error status
-    integer           :: dtime      ! timestep size [seconds]
-    integer           :: nstep      ! timestep number
-    integer           :: year       ! year (0, ...) for nstep
-    integer           :: month      ! month (1, ..., 12) for nstep
-    integer           :: day        ! day of month (1, ..., 31) for nstep
-    integer           :: secs       ! seconds into current date for nstep
-    integer           :: begp, endp
-    real(r8), pointer :: rbufslp(:) ! temporary single level - patch level
-    !-----------------------------------------------------------------------
-    
-    begp = bounds%begp; endp = bounds%endp
-
-    ! Enforce expected array sizes
-    SHR_ASSERT_ALL((ubound(t_a10_patch)   == (/endp/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(t_ref2m_patch) == (/endp/)), errMsg(sourcefile, __LINE__))
-
-    dtime = get_step_size()
-    nstep = get_nstep()
-    call get_curr_date (year, month, day, secs)
-
-    ! Allocate needed dynamic memory for single level patch field
-
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)'update_accum_hist allocation error for rbuf1dp'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-
-    ! Accumulate growing degree days based on 10-day running mean temperature.
-    ! The trigger to reset the accumulated values to zero is -99999.
-    
-    ! Accumulate and extract AGDDTW (gdd base twmax, which is 23 deg C
-    ! for boreal woody patches)
-    
-    do p = begp,endp
-       rbufslp(p) = max(0._r8, &
-            (t_a10_patch(p) - SHR_CONST_TKFRZ - dgv_ecophyscon%twmax(ndllf_dcd_brl_tree)) &
-            * dtime/SHR_CONST_CDAY)
-       if (month==1 .and. day==1 .and. secs==int(dtime)) rbufslp(p) = accumResetVal
-    end do
-    call update_accum_field  ('AGDDTW', rbufslp, nstep)
-    call extract_accum_field ('AGDDTW', this%agddtw_patch, nstep)
-
-    ! Accumulate and extract AGDD
-
-    do p = begp,endp
-       rbufslp(p) = max(0.0_r8, &
-            (t_ref2m_patch(p) - (SHR_CONST_TKFRZ + 5.0_r8)) * dtime/SHR_CONST_CDAY)
-       !
-       ! Fix (for bug 1858) from Sam Levis to reset the annual AGDD variable
-       ! 
-       if (month==1 .and. day==1 .and. secs==int(dtime)) rbufslp(p) = accumResetVal
-    end do
-    call update_accum_field  ('AGDD', rbufslp, nstep)
-    call extract_accum_field ('AGDD', this%agdd_patch, nstep)
-
-    deallocate(rbufslp)
-
-  end subroutine UpdateAccVars
 
 end module CNDVType

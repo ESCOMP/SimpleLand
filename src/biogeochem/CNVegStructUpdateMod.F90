@@ -6,7 +6,7 @@ module CNVegStructUpdateMod
   ! !USES:
   use shr_kind_mod         , only: r8 => shr_kind_r8
   use shr_const_mod        , only : SHR_CONST_PI
-  use clm_varctl           , only : iulog, use_cndv
+  use clm_varctl           , only : iulog
   use CNDVType             , only : dgv_ecophyscon    
   use WaterStateType       , only : waterstate_type
   use FrictionVelocityMod  , only : frictionvel_type
@@ -98,12 +98,6 @@ contains
          ztopmx             =>  pftcon%ztopmx                           , & ! Input:
          laimx              =>  pftcon%laimx                            , & ! Input:
          
-         allom2             =>  dgv_ecophyscon%allom2                   , & ! Input:  [real(r8) (:) ] ecophys const                                     
-         allom3             =>  dgv_ecophyscon%allom3                   , & ! Input:  [real(r8) (:) ] ecophys const                                     
-
-         nind               =>  dgvs_inst%nind_patch                    , & ! Input:  [real(r8) (:) ] number of individuals (#/m**2)                    
-         fpcgrid            =>  dgvs_inst%fpcgrid_patch                 , & ! Input:  [real(r8) (:) ] fractional area of patch (pft area/nat veg area)    
-
          snow_depth         =>  waterstate_inst%snow_depth_col          , & ! Input:  [real(r8) (:) ] snow height (m)                                   
 
          forc_hgt_u_patch   =>  frictionvel_inst%forc_hgt_u_patch       , & ! Input:  [real(r8) (:) ] observational height of wind at patch-level [m]     
@@ -189,29 +183,14 @@ contains
 
                ! trees and shrubs for now have a very simple allometry, with hard-wired
                ! stem taper (height:radius) and hard-wired stocking density (#individuals/area)
-               if (use_cndv) then
-
-                  if (fpcgrid(p) > 0._r8 .and. nind(p) > 0._r8) then
-
-                     stocking = nind(p)/fpcgrid(p) !#ind/m2 nat veg area -> #ind/m2 patch area
-                     htop(p) = allom2(ivt(p)) * ( (24._r8 * deadstemc(p) / &
-                          (SHR_CONST_PI * stocking * dwood(ivt(p)) * taper))**(1._r8/3._r8) )**allom3(ivt(p)) ! lpj's htop w/ cn's stemdiam
-
-                  else
-                     htop(p) = 0._r8
-                  end if
-
+               !correct height calculation if doing accelerated spinup
+               if (spinup_state == 2) then
+                 htop(p) = ((3._r8 * deadstemc(p) * 10._r8 * taper * taper)/ &
+                      (SHR_CONST_PI * stocking * dwood(ivt(p))))**(1._r8/3._r8)
                else
-                  !correct height calculation if doing accelerated spinup
-                  if (spinup_state == 2) then
-                    htop(p) = ((3._r8 * deadstemc(p) * 10._r8 * taper * taper)/ &
-                         (SHR_CONST_PI * stocking * dwood(ivt(p))))**(1._r8/3._r8)
-                  else
-                    htop(p) = ((3._r8 * deadstemc(p) * taper * taper)/ &
-                         (SHR_CONST_PI * stocking * dwood(ivt(p))))**(1._r8/3._r8)
-                  end if
-
-               endif
+                 htop(p) = ((3._r8 * deadstemc(p) * taper * taper)/ &
+                      (SHR_CONST_PI * stocking * dwood(ivt(p))))**(1._r8/3._r8)
+               end if
 
                ! Peter Thornton, 5/3/2004
                ! Adding test to keep htop from getting too close to forcing height for windspeed

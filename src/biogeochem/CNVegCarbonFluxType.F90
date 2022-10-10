@@ -13,7 +13,7 @@ module CNVegCarbonFluxType
   use clm_varpar                         , only : ndecomp_cascade_transitions, ndecomp_pools
   use clm_varpar                         , only : nlevdecomp_full, nlevgrnd, nlevdecomp
   use clm_varcon                         , only : spval, dzsoi_decomp
-  use clm_varctl                         , only : use_cndv, use_nitrif_denitrif, use_crop
+  use clm_varctl                         , only : use_nitrif_denitrif, use_crop
   use clm_varctl                         , only : use_grainproduct
   use clm_varctl                         , only : iulog
   use landunit_varcon                    , only : istsoil, istcrop, istdlak 
@@ -325,8 +325,6 @@ module CNVegCarbonFluxType
      real(r8), pointer :: fire_closs_col                            (:)     ! (gC/m2/s) total patch-level fire C loss 
 
      ! temporary and annual sums
-     real(r8), pointer :: tempsum_litfall_patch                     (:)     ! (gC/m2/yr) temporary annual sum of litfall (CNDV only for now)
-     real(r8), pointer :: annsum_litfall_patch                      (:)     ! (gC/m2/yr) annual sum of litfall (CNDV only for now)
      real(r8), pointer :: tempsum_npp_patch                         (:)     ! (gC/m2/yr) temporary annual sum of NPP 
      real(r8), pointer :: annsum_npp_patch                          (:)     ! (gC/m2/yr) annual sum of NPP 
      real(r8), pointer :: annsum_npp_col                            (:)     ! (gC/m2/yr) annual sum of NPP, averaged from patch-level
@@ -688,8 +686,6 @@ contains
     allocate(this%hrv_xsmrpool_to_atm_col (begc:endc)) ; this%hrv_xsmrpool_to_atm_col (:) = nan 
     allocate(this%tempsum_npp_patch       (begp:endp)) ; this%tempsum_npp_patch       (:) = nan
     allocate(this%annsum_npp_patch        (begp:endp)) ; this%annsum_npp_patch        (:) = nan
-    allocate(this%tempsum_litfall_patch   (begp:endp)) ; this%tempsum_litfall_patch   (:) = nan
-    allocate(this%annsum_litfall_patch    (begp:endp)) ; this%annsum_litfall_patch    (:) = nan
     allocate(this%annsum_npp_col          (begc:endc)) ; this%annsum_npp_col          (:) = nan
     allocate(this%lag_npp_col             (begc:endc)) ; this%lag_npp_col             (:) = spval
 
@@ -3329,14 +3325,10 @@ contains
        if (lun%ifspecial(l)) then
           this%tempsum_npp_patch(p)      = spval
           this%annsum_npp_patch(p)       = spval
-          this%tempsum_litfall_patch(p)  = spval
-          this%annsum_litfall_patch(p)   = spval
        end if
        if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
           this%tempsum_npp_patch(p)      = 0._r8
           this%annsum_npp_patch(p)       = 0._r8
-          this%tempsum_litfall_patch(p)  = 0._r8
-          this%annsum_litfall_patch(p)   = 0._r8
        end if
     end do
 
@@ -3516,16 +3508,6 @@ contains
          dim1name='column', &
          long_name='', units='', &
          interpinic_flag='interp', readvar=readvar, data=this%annsum_npp_col) 
-
-    call restartvar(ncid=ncid, flag=flag, varname='tempsum_litfall', xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%tempsum_litfall_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='annsum_litfall', xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%annsum_litfall_patch)
 
     if ( use_fun ) then
        call restartvar(ncid=ncid, flag=flag, varname='leafc_to_litter_fun', xtype=ncd_double,  &

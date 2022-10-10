@@ -7,7 +7,7 @@ module SurfaceRadiationMod
   ! !USES:
   use shr_kind_mod      , only : r8 => shr_kind_r8
   use shr_log_mod       , only : errMsg => shr_log_errMsg
-  use clm_varctl        , only : use_snicar_frc, use_fates
+  use clm_varctl        , only : use_snicar_frc
   use decompMod         , only : bounds_type
   use clm_varcon        , only : namec
   use atm2lndType       , only : atm2lnd_type

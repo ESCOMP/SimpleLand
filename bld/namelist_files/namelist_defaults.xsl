@@ -20,7 +20,7 @@
     </ul>
     <h3>Miscellaneous items include:</h3>
     <ol>
-       <li>Biogeochemistry (BGC) type (none, CN, CNDV)</li>
+       <li>Biogeochemistry (BGC) type (none, CN)</li>
        <li>Initial condition date (ymd - year month day)</li>
        <li>Initial condition time of day (tod) (sec)</li>
        <li>Maximum number of Plant Function Types (maxpft)</li>

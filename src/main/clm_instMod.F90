@@ -8,7 +8,7 @@ module clm_instMod
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use decompMod       , only : bounds_type
   use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
-  use clm_varctl      , only : use_cn, use_cndv
+  use clm_varctl      , only : use_cn
   use clm_varctl      , only : use_century_decomp, use_crop
   use clm_varcon      , only : bdsno, c13ratio, c14ratio
   use landunit_varcon , only : istice_mec, istsoil
@@ -22,7 +22,6 @@ module clm_instMod
   use UrbanParamsType                    , only : urbanparams_type   ! Constants 
   use UrbanParamsType                    , only : IsSimpleBuildTemp, IsProgBuildTemp
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
-  !use CNDVType                           , only : dgv_ecophyscon     ! Constants 
 
   !-----------------------------------------
   ! Definition of component types 
@@ -130,8 +129,6 @@ module clm_instMod
   type(dust_type)                         :: dust_inst
   !type(vocemis_type)                      :: vocemis_inst
   type(drydepvel_type)                    :: drydepvel_inst
-
-  ! FATES
 
   !
   public :: clm_instInit       ! Initialize
@@ -466,7 +463,6 @@ contains
        call soilbiogeochem_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c12', &
             totvegc_col=bgc_vegetation_inst%get_totvegc_col(bounds))
 
-       call soilbiogeochem_carbonflux_inst%restart(bounds, ncid, flag=flag)
     endif
 
  end subroutine clm_instRest

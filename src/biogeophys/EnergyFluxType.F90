@@ -266,7 +266,7 @@ contains
     ! !USES:
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
     use clm_varpar     , only : nlevsno, nlevgrnd
-    use clm_varctl     , only : use_cn, use_hydrstress
+    use clm_varctl     , only : use_cn
     use histFileMod    , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     use ncdio_pio      , only : ncd_inqvdlen
     implicit none
@@ -617,11 +617,9 @@ contains
          ptr_patch=this%tauy_patch, default='inactive')
 
     this%btran_patch(begp:endp) = spval
-    if (.not. use_hydrstress) then
-       call hist_addfld1d (fname='BTRAN', units='unitless',  &
-            avgflag='A', long_name='transpiration beta factor', &
-            ptr_patch=this%btran_patch, set_lake=spval, set_urb=spval, default='inactive')
-    end if
+    call hist_addfld1d (fname='BTRAN', units='unitless',  &
+         avgflag='A', long_name='transpiration beta factor', &
+         ptr_patch=this%btran_patch, set_lake=spval, set_urb=spval, default='inactive')
 
     this%btran_min_patch(begp:endp) = spval
     call hist_addfld1d (fname='BTRANMN', units='unitless',  &

@@ -7,7 +7,7 @@ module CNVegStateType
   use abortutils     , only : endrun
   use spmdMod        , only : masterproc
   use clm_varpar     , only : nlevsno, nlevgrnd, nlevlak, nlevsoi
-  use clm_varctl     , only : use_cn, iulog, fsurdat, use_crop, use_cndv
+  use clm_varctl     , only : use_cn, iulog, fsurdat, use_crop
   use clm_varcon     , only : spval, ispval, grlnd
   use landunit_varcon, only : istsoil, istcrop
   use LandunitType   , only : lun                

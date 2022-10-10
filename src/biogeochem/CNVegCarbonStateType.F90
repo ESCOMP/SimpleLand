@@ -11,7 +11,7 @@ module CNVegCarbonStateType
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use pftconMod	     , only : noveg, npcropmin, pftcon
   use clm_varcon     , only : spval, c3_r2, c4_r2, c14ratio
-  use clm_varctl     , only : iulog, use_cndv, use_crop
+  use clm_varctl     , only : iulog, use_crop
   use decompMod      , only : bounds_type
   use abortutils     , only : endrun
   use spmdMod        , only : masterproc 
@@ -1040,7 +1040,7 @@ contains
     ! !USES:
     use shr_infnan_mod   , only : isnan => shr_infnan_isnan, nan => shr_infnan_nan, assignment(=)
     use clm_varcon       , only : c13ratio, c14ratio
-    use clm_varctl       , only : spinup_state, use_cndv, MM_Nuptake_opt
+    use clm_varctl       , only : spinup_state, MM_Nuptake_opt
     use clm_time_manager , only : get_nstep, is_restart, get_nstep
     use landunit_varcon	 , only : istsoil, istcrop 
     use spmdMod          , only : mpicom
@@ -1227,7 +1227,7 @@ contains
           end if
        end if
 
-       if (flag == 'read' .and. spinup_state /= restart_file_spinup_state .and. .not. use_cndv) then
+       if (flag == 'read' .and. spinup_state /= restart_file_spinup_state) then
           if ( masterproc ) write(iulog, *) 'exit_spinup ',exit_spinup,' restart_file_spinup_state ',restart_file_spinup_state
           if (spinup_state <= 1 .and. restart_file_spinup_state == 2 ) then
              if ( masterproc ) write(iulog,*) ' CNRest: taking Dead wood C pools out of AD spinup mode'
@@ -1331,7 +1331,7 @@ contains
        end if
 
 
-       if (  flag == 'read' .and. (enter_spinup .or. (reseed_dead_plants .and. .not. is_restart())) .and. .not. use_cndv) then
+       if (  flag == 'read' .and. (enter_spinup .or. (reseed_dead_plants .and. .not. is_restart()))) then
              if ( masterproc ) write(iulog, *) 'Reseeding dead plants for CNVegCarbonState'
              ! If a pft is dead (indicated by totvegc = 0) then we reseed that
              ! pft according to the cold start protocol in the InitCold subroutine.

@@ -9,7 +9,7 @@ module SoilStateType
   use abortutils      , only : endrun
   use clm_varpar      , only : nlevsoi, nlevgrnd, nlevlak, nlayer, nlevsno
   use clm_varcon      , only : spval
-  use clm_varctl      , only : use_hydrstress, use_cn, use_dynroot
+  use clm_varctl      , only : use_cn, use_dynroot
   use clm_varctl      , only : iulog, hist_wrtch4diag
   use LandunitType    , only : lun                
   use ColumnType      , only : col                

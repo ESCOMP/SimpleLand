@@ -7,7 +7,7 @@ module TemperatureType
   use shr_log_mod     , only : errMsg => shr_log_errMsg
   use decompMod       , only : bounds_type
   use abortutils      , only : endrun
-  use clm_varctl      , only : use_cndv, iulog, use_luna, use_crop
+  use clm_varctl      , only : iulog, use_luna, use_crop
   use clm_varpar      , only : nlevsno, nlevgrnd, nlevlak, nlevlak, nlevurb
   use clm_varcon      , only : spval, ispval
   use GridcellType    , only : grc
@@ -277,7 +277,7 @@ contains
     !
     ! !USES:
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-    use clm_varctl     , only : use_cn, use_cndv
+    use clm_varctl     , only : use_cn
     use histFileMod    , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     !
     ! !ARGUMENTS:
@@ -410,7 +410,7 @@ contains
          avgflag='A', long_name='soil temperature in top 10cm of soil', &
          ptr_col=this%t_soi10cm_col, set_urb=spval, default='inactive')
 
-    if (use_cndv .or. use_crop) then
+    if (use_crop) then
        active = "active"
     else
        active = "active"
@@ -1141,14 +1141,6 @@ contains
 
        call init_accum_field (name='GDD10', units='K', &
             desc='growing degree-days base 10C from planting', accum_type='runaccum', accum_period=not_used,  &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    end if
-
-    if (use_cndv) then
-       ! 30-day average of 2m temperature.
-       call init_accum_field (name='TDA', units='K', &
-            desc='30-day average of 2-m temperature', accum_type='timeavg', accum_period=-30, &
             subgrid_type='pft', numlev=1, init_value=0._r8)
 
     end if

@@ -12,7 +12,7 @@ module clm_initializeMod
   use clm_varctl      , only : nsrest, nsrStartup, nsrContinue, nsrBranch
   use clm_varctl      , only : is_cold_start, is_interpolated_start
   use clm_varctl      , only : iulog
-  use clm_varctl      , only : use_cn, use_cndv
+  use clm_varctl      , only : use_cn
   use clm_instur      , only : wt_lunit, urban_valid, wt_nat_patch, wt_cft, fert_cft, wt_glc_mec, topo_glc_mec
   use perf_mod        , only : t_startf, t_stopf
   use readParamsMod   , only : readParameters
@@ -401,7 +401,7 @@ contains
     call hist_printflds()
 
     ! ------------------------------------------------------------------------
-    ! Initializate dynamic subgrid weights (for prescribed transient Patches, CNDV
+    ! Initializate dynamic subgrid weights (for prescribed transient Patches
     ! and/or dynamic landunits); note that these will be overwritten in a
     ! restart run
     ! ------------------------------------------------------------------------
@@ -551,7 +551,7 @@ contains
        call readAnnualVegetation(bounds_proc, canopystate_inst)
        if (nsrest == nsrStartup .and. finidat /= ' ') then
           ! Call interpMonthlyVeg for dry-deposition so that mlaidiff will be calculated
-          ! This needs to be done even if CN or CNDV is on!
+          ! This needs to be done even if CN is on!
           call interpMonthlyVeg(bounds_proc, canopystate_inst)
        end if
     end if

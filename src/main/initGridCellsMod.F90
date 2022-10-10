@@ -62,7 +62,6 @@ contains
     use subgridWeightsMod , only : compute_higher_order_weights
     use landunit_varcon   , only : istsoil, istwet, istdlak, istice_mec
     use landunit_varcon   , only : isturb_tbd, isturb_hd, isturb_md, istcrop
-    use clm_varctl        , only : use_fates
     use shr_const_mod     , only : SHR_CONST_PI
     !
     ! !ARGUMENTS:

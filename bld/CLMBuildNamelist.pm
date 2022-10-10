@@ -839,15 +839,13 @@ sub setup_cmdl_run_type {
   my $var = "clm_start_type";
   if (defined $opts->{$var}) {
     if ($opts->{$var} eq "default" ) {
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var, 
-                  'use_cndv'=>$nl_flags->{'use_cndv'} );
+      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var);
     } else {
       my $group = $definition->get_group_name($var);
       $nl->set_variable_value($group, $var, quote_string( $opts->{$var} ) );
     }
   } else {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var, 
-                  'use_cndv'=>$nl_flags->{'use_cndv'} );
+    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var);
   }
   $nl_flags->{'clm_start_type'} = $nl->get_value($var);
 }
@@ -945,7 +943,6 @@ sub process_namelist_commandline_use_case {
     $settings{'sim_year_range'} = $nl_flags->{'sim_year_range'};
     $settings{'phys'}           = $nl_flags->{'phys'};
     $settings{'use_cn'}      = $nl_flags->{'use_cn'};
-    $settings{'use_cndv'}    = $nl_flags->{'use_cndv'};
     $settings{'cnfireson'}   = $nl_flags->{'cnfireson'};
     # Loop over the variables specified in the use case.
     # Add each one to the namelist.
@@ -1005,7 +1002,6 @@ sub process_namelist_inline_logic {
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
   setup_logic_glacier($opts, $nl_flags, $definition, $defaults, $nl,  $envxml_ref, $physv);
   setup_logic_dynamic_plant_nitrogen_alloc($opts, $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_hydrstress($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_dynamic_roots($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_params_file($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_create_crop_landunit($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
@@ -1290,7 +1286,6 @@ sub setup_logic_demand {
   $settings{'glc_nec'}        = $nl_flags->{'glc_nec'};
   # necessary for demand to be set correctly
   $settings{'use_cn'}              = $nl_flags->{'use_cn'};
-  $settings{'use_cndv'}            = $nl_flags->{'use_cndv'};
   $settings{'use_lch4'}            = $nl_flags->{'use_lch4'};
   $settings{'use_nitrif_denitrif'} = $nl_flags->{'use_nitrif_denitrif'};
   $settings{'use_vertsoilc'}       = $nl_flags->{'use_vertsoilc'};
@@ -1346,9 +1341,6 @@ sub setup_logic_surface_dataset {
   }
   $flanduse_timeseries = $nl_flags->{'flanduse_timeseries'};
 
-  if ($flanduse_timeseries ne "null" && &value_is_true($nl_flags->{'use_cndv'}) ) {
-      $log->fatal_error( "dynamic PFT's (setting flanduse_timeseries) are incompatible with dynamic vegetation (use_cndv=.true)." );
-  }
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fsurdat',
               'hgrid'=>$nl_flags->{'res'},
               'sim_year'=>$nl_flags->{'sim_year'},
@@ -1413,7 +1405,7 @@ sub setup_logic_initial_conditions {
     } else {
        delete( $settings{'sim_year'} );
     }
-    foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn", "use_cndv", 
+    foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn",
                        "use_nitrif_denitrif", "use_vertsoilc", "use_century_decomp", 
                      ) {
        $settings{$item}    = $nl_flags->{$item};
@@ -1447,7 +1439,7 @@ sub setup_logic_initial_conditions {
              }
           } 
           add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $useinitvar,
-                     'use_cndv'=>$nl_flags->{'use_cndv'}, 'phys'=>$physv->as_string(),
+                     'phys'=>$physv->as_string(),
                      'sim_year'=>$settings{'sim_year'}, 'nofail'=>1 );
           $settings{$useinitvar} = $nl->get_value($useinitvar);
           if ( $try > 1 ) {
@@ -1457,7 +1449,7 @@ sub setup_logic_initial_conditions {
           if ( &value_is_true($nl->get_value($useinitvar) ) ) {
 
              add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, "init_interp_attributes",
-                        'sim_year'=>$settings{'sim_year'}, 'use_cndv'=>$nl_flags->{'use_cndv'}, 
+                        'sim_year'=>$settings{'sim_year'},
                         'glc_nec'=>$nl_flags->{'glc_nec'},
                         'use_cn'=>$nl_flags->{'use_cn'}, 'nofail'=>1 );
              my $attributes_string = remove_leading_and_trailing_quotes($nl->get_value("init_interp_attributes"));
@@ -1597,19 +1589,6 @@ sub setup_logic_dynamic_plant_nitrogen_alloc {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_hydrstress {
-  #
-  # Plant hydraulic stress model
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  # TODO(kwo, 2015-09) make this depend on > clm 5.0 at some point.
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_hydrstress' );
-  $nl_flags->{'use_hydrstress'} = $nl->get_value('use_hydrstress');
-}
-
-#-------------------------------------------------------------------------------
-
 sub setup_logic_dynamic_roots {
   #
   # dynamic root model
@@ -1621,9 +1600,6 @@ sub setup_logic_dynamic_roots {
   if ( &value_is_true($use_dynroot) && ($nl_flags->{'bgc_mode'} eq "sp") ) {
     $log->fatal_error("Cannot turn dynroot mode on mode bgc=sp\n" .
                 "Set the bgc mode to 'cn' or 'bgc'.");
-  }
-  if ( &value_is_true( $use_dynroot ) && &value_is_true( $nl_flags->{'use_hydrstress'} ) ) {
-     $log->fatal_error("Cannot turn use_dynroot on when use_hydrstress is on" );
   }
 }
 

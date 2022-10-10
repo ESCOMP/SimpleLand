@@ -14,7 +14,7 @@ module  PhotosynthesisMod
   use shr_log_mod         , only : errMsg => shr_log_errMsg
   use shr_infnan_mod      , only : nan => shr_infnan_nan, assignment(=)
   use abortutils          , only : endrun
-  use clm_varctl          , only : use_cn, use_cndv, use_fates, use_luna, use_hydrstress
+  use clm_varctl          , only : use_cn, use_luna
   use clm_varctl          , only : iulog
   use clm_varpar          , only : nlevcan, nvegwcs, mxpft
   use clm_varcon          , only : namep, spval
@@ -306,37 +306,34 @@ contains
          avgflag='A', long_name='leaf N concentration', &
          ptr_patch=this%lnca_patch, set_spec=spval, default='inactive')
 
-    ! Don't output photosynthesis variables when FATES is on as they aren't calculated
-    if (.not. use_fates) then
-       this%fpsn_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FPSN', units='umol/m2s',  &
-            avgflag='A', long_name='photosynthesis', &
-            ptr_patch=this%fpsn_patch, set_lake=0._r8, set_urb=0._r8, default='inactive')
+    this%fpsn_patch(begp:endp) = spval
+    call hist_addfld1d (fname='FPSN', units='umol/m2s',  &
+         avgflag='A', long_name='photosynthesis', &
+         ptr_patch=this%fpsn_patch, set_lake=0._r8, set_urb=0._r8, default='inactive')
 
-       ! Don't by default output this rate limiting step as only makes sense if you are outputing
-       ! the others each time-step
-       this%fpsn_wc_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FPSN_WC', units='umol/m2s',  &
-            avgflag='I', long_name='Rubisco-limited photosynthesis', &
-            ptr_patch=this%fpsn_wc_patch, set_lake=0._r8, set_urb=0._r8, &
-            default='inactive')
+    ! Don't by default output this rate limiting step as only makes sense if you are outputing
+    ! the others each time-step
+    this%fpsn_wc_patch(begp:endp) = spval
+    call hist_addfld1d (fname='FPSN_WC', units='umol/m2s',  &
+         avgflag='I', long_name='Rubisco-limited photosynthesis', &
+         ptr_patch=this%fpsn_wc_patch, set_lake=0._r8, set_urb=0._r8, &
+         default='inactive')
 
-       ! Don't by default output this rate limiting step as only makes sense if you are outputing
-       ! the others each time-step
-       this%fpsn_wj_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FPSN_WJ', units='umol/m2s',  &
-            avgflag='I', long_name='RuBP-limited photosynthesis', &
-            ptr_patch=this%fpsn_wj_patch, set_lake=0._r8, set_urb=0._r8, &
-            default='inactive')
+    ! Don't by default output this rate limiting step as only makes sense if you are outputing
+    ! the others each time-step
+    this%fpsn_wj_patch(begp:endp) = spval
+    call hist_addfld1d (fname='FPSN_WJ', units='umol/m2s',  &
+         avgflag='I', long_name='RuBP-limited photosynthesis', &
+         ptr_patch=this%fpsn_wj_patch, set_lake=0._r8, set_urb=0._r8, &
+         default='inactive')
 
-       ! Don't by default output this rate limiting step as only makes sense if you are outputing
-       ! the others each time-step
-       this%fpsn_wp_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FPSN_WP', units='umol/m2s',  &
-            avgflag='I', long_name='Product-limited photosynthesis', &
-            ptr_patch=this%fpsn_wp_patch, set_lake=0._r8, set_urb=0._r8, &
-            default='inactive')
-    end if
+    ! Don't by default output this rate limiting step as only makes sense if you are outputing
+    ! the others each time-step
+    this%fpsn_wp_patch(begp:endp) = spval
+    call hist_addfld1d (fname='FPSN_WP', units='umol/m2s',  &
+         avgflag='I', long_name='Product-limited photosynthesis', &
+         ptr_patch=this%fpsn_wp_patch, set_lake=0._r8, set_urb=0._r8, &
+         default='inactive')
 
     if (use_cn) then
        this%psnsun_patch(begp:endp) = spval
@@ -479,11 +476,6 @@ contains
     allocate( this%psi50       (0:mxpft,nvegwcs) )  ; this%psi50(:,:)      = nan
     allocate( this%ck          (0:mxpft,nvegwcs) )  ; this%ck(:,:)         = nan
     allocate( this%psi_soil_ref(0:mxpft) )          ; this%psi_soil_ref(:) = nan
-
-    if ( use_hydrstress .and. nvegwcs /= 4 )then
-       call endrun(msg='Error:: the Plant Hydraulics Stress methodology is for the spacA function is hardcoded for nvegwcs==4' &
-                   //errMsg(__FILE__, __LINE__))
-    end if
 
   end subroutine allocParams
 

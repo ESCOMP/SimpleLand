@@ -376,14 +376,6 @@ contains
          avgflag='A', long_name='total water storage', &
          ptr_lnd=this%tws_grc, default='inactive')
 
-    ! (rgk 02-02-2017) There is intentionally no entry  here for stored plant water
-    !                  I think that since the value is zero in all cases except
-    !                  for FATES plant hydraulics, it will be confusing for users
-    !                  when they see their plants have no water in output files.
-    !                  So it is not useful diagnostic information. The information
-    !                  can be provided through FATES specific history diagnostics
-    !                  if need be.
-
     ! Humidity
 
     this%q_ref2m_patch(begp:endp) = spval

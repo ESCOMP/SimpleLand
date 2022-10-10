@@ -192,21 +192,6 @@ module clm_varctl
   logical, public :: use_c14 = .false.                  ! true => use C-14 model
 
   !----------------------------------------------------------
-  !  FATES switches
-  !----------------------------------------------------------
-
-  logical, public :: use_fates = .false.            ! true => use fates
-
-  ! These are INTERNAL to the FATES module
-  logical, public            :: use_fates_spitfire = .false.           ! true => use spitfire model
-  logical, public            :: use_fates_logging = .false.            ! true => turn on logging module
-  logical, public            :: use_fates_planthydro = .false.         ! true => turn on fates hydro
-  logical, public            :: use_fates_ed_st3   = .false.           ! true => static stand structure
-  logical, public            :: use_fates_ed_prescribed_phys = .false. ! true => prescribed physiology
-  logical, public            :: use_fates_inventory_init = .false.     ! true => initialize fates from inventory
-  character(len=256), public :: fates_inventory_ctrl_filename = ''     ! filename for inventory control
-
-  !----------------------------------------------------------
   !  LUNA switches		
   !----------------------------------------------------------
 
@@ -234,23 +219,11 @@ module clm_varctl
   integer, public :: carbon_resp_opt = 0
 
   !----------------------------------------------------------
-  ! lai streams switch for Sat. Phenology
-  !----------------------------------------------------------
-
-  logical, public :: use_lai_streams = .false. ! true => use lai streams in SatellitePhenologyMod.F90
-
-  !----------------------------------------------------------
   ! bedrock / soil depth switch
   !----------------------------------------------------------
 
   logical,           public :: use_bedrock = .false. ! true => use spatially variable soil depth
   character(len=16), public :: soil_layerstruct = '10SL_3.5m'
-
-  !----------------------------------------------------------
-  ! plant hydraulic stress switch
-  !----------------------------------------------------------
-
-  logical, public :: use_hydrstress = .false. ! true => use plant hydraulic stress calculation
 
   !----------------------------------------------------------
   ! dynamic root switch
@@ -307,11 +280,6 @@ module clm_varctl
   logical, public :: hist_wrtch4diag = .false.         
 
   !----------------------------------------------------------
-  ! FATES
-  !----------------------------------------------------------
-  character(len=fname_len), public :: fates_paramfile  = ' '
-
-  !----------------------------------------------------------
   ! Migration of CPP variables
   !----------------------------------------------------------
 
@@ -322,7 +290,6 @@ module clm_varctl
   logical, public :: use_vichydro        = .false.
   logical, public :: use_century_decomp  = .false.
   logical, public :: use_cn              = .false.
-  logical, public :: use_cndv            = .false.
   logical, public :: use_grainproduct    = .false.
   logical, public :: use_fertilizer      = .false.
   logical, public :: use_ozone           = .false.

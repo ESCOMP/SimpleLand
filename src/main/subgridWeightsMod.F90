@@ -92,7 +92,7 @@ module subgridWeightsMod
   use shr_kind_mod , only : r8 => shr_kind_r8
   use shr_log_mod  , only : errMsg => shr_log_errMsg
   use abortutils   , only : endrun
-  use clm_varctl   , only : iulog, all_active, use_fates
+  use clm_varctl   , only : iulog, all_active
   use clm_varcon   , only : nameg, namel, namec, namep
   use decompMod    , only : bounds_type
   use GridcellType , only : grc                
@@ -194,11 +194,9 @@ contains
          avgflag='A', long_name='% of each landunit on grid cell', &
          ptr_lnd=subgrid_weights_diagnostics%pct_landunit, default='inactive')
 
-    if(.not.use_fates) then
-       call hist_addfld2d (fname='PCT_NAT_PFT', units='%', type2d='natpft', &
-             avgflag='A', long_name='% of each PFT on the natural vegetation (i.e., soil) landunit', &
-             ptr_lnd=subgrid_weights_diagnostics%pct_nat_pft, default='inactive')
-    end if
+    call hist_addfld2d (fname='PCT_NAT_PFT', units='%', type2d='natpft', &
+          avgflag='A', long_name='% of each PFT on the natural vegetation (i.e., soil) landunit', &
+          ptr_lnd=subgrid_weights_diagnostics%pct_nat_pft, default='inactive')
        
     if (cft_size > 0) then
        call hist_addfld2d (fname='PCT_CFT', units='%', type2d='cft', &
@@ -733,8 +731,6 @@ contains
     
     call set_pct_landunit_diagnostics(bounds)
 
-    ! Note: (MV, 10-17-14): The following has an use_fates if-block around it since
-    ! the pct_pft_diagnostics referens to patch%itype(p) which is not used by ED
     ! Note: (SPM, 10-20-15): If this isn't set then debug mode with intel and 
     ! yellowstone will fail when trying to write pct_nat_pft since it contains
     ! all NaN's.
@@ -845,7 +841,7 @@ contains
        g = patch%gridcell(p)
        l = patch%landunit(p)
        ptype = patch%itype(p)
-       if (lun%itype(l) == istsoil .and. (.not.use_fates) ) then
+       if (lun%itype(l) == istsoil) then
           ptype_1indexing = ptype + (1 - natpft_lb)
           subgrid_weights_diagnostics%pct_nat_pft(g, ptype_1indexing) = patch%wtlunit(p) * 100._r8
        else if (lun%itype(l) == istcrop) then

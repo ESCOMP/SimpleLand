@@ -531,7 +531,7 @@ contains
     ! !USES:
     use restUtilMod
     use ncdio_pio
-    use clm_varctl             , only : spinup_state, use_cndv
+    use clm_varctl             , only : spinup_state
     use clm_time_manager       , only : get_nstep, is_restart
     use clm_varctl             , only : MM_Nuptake_opt   
 
@@ -709,7 +709,7 @@ contains
        end if
     end if
 
-    if (flag == 'read' .and. spinup_state /= restart_file_spinup_state .and. .not. use_cndv) then
+    if (flag == 'read' .and. spinup_state /= restart_file_spinup_state) then
        if (spinup_state <= 1 .and. restart_file_spinup_state == 2 ) then
           if ( masterproc ) write(iulog,*) ' CNRest: taking Dead wood N pools out of AD spinup mode'
           exit_spinup = .true.

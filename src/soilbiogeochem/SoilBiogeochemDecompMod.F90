@@ -11,7 +11,7 @@ module SoilBiogeochemDecompMod
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
   use decompMod                          , only : bounds_type
   use clm_varpar                         , only : nlevdecomp, ndecomp_cascade_transitions, ndecomp_pools
-  use clm_varctl                         , only : use_nitrif_denitrif, use_fates
+  use clm_varctl                         , only : use_nitrif_denitrif
   use clm_varcon                         , only : dzsoi_decomp
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   use SoilBiogeochemStateType            , only : soilbiogeochem_state_type
@@ -135,108 +135,86 @@ contains
       ! column loop to calculate actual immobilization and decomp rates, following
       ! resolution of plant/heterotroph  competition for mineral N
 
-   if ( .not. use_fates) then
-      ! calculate c:n ratios of applicable pools
-      do l = 1, ndecomp_pools
-         if ( floating_cn_ratio_decomp_pools(l) ) then
-            do j = 1,nlevdecomp
-               do fc = 1,num_soilc
-                  c = filter_soilc(fc)
-                  if ( decomp_npools_vr(c,j,l) > 0._r8 ) then
-                     cn_decomp_pools(c,j,l) = decomp_cpools_vr(c,j,l) / decomp_npools_vr(c,j,l)
-                  end if
-               end do
-            end do
-         else
-            do j = 1,nlevdecomp
-               do fc = 1,num_soilc
-                  c = filter_soilc(fc)
-                  cn_decomp_pools(c,j,l) = initial_cn_ratio(l)
-               end do
-            end do
-         end if
-      end do
-
-      ! column loop to calculate actual immobilization and decomp rates, following
-      ! resolution of plant/heterotroph  competition for mineral N
-      
-      ! upon return from SoilBiogeochemCompetition, the fraction of potential immobilization
-      ! has been set (soilbiogeochem_state_inst%fpi_vr_col). now finish the decomp calculations.
-      ! Only the immobilization steps are limited by fpi_vr (pmnf > 0)
-      ! Also calculate denitrification losses as a simple proportion
-      ! of mineralization flux.
-
-      do k = 1, ndecomp_cascade_transitions
+   ! calculate c:n ratios of applicable pools
+   do l = 1, ndecomp_pools
+      if ( floating_cn_ratio_decomp_pools(l) ) then
          do j = 1,nlevdecomp
             do fc = 1,num_soilc
                c = filter_soilc(fc)
+               if ( decomp_npools_vr(c,j,l) > 0._r8 ) then
+                  cn_decomp_pools(c,j,l) = decomp_cpools_vr(c,j,l) / decomp_npools_vr(c,j,l)
+               end if
+            end do
+         end do
+      else
+         do j = 1,nlevdecomp
+            do fc = 1,num_soilc
+               c = filter_soilc(fc)
+               cn_decomp_pools(c,j,l) = initial_cn_ratio(l)
+            end do
+         end do
+      end if
+   end do
 
-               if (decomp_cpools_vr(c,j,cascade_donor_pool(k)) > 0._r8) then
-                  if ( pmnf_decomp_cascade(c,j,k) > 0._r8 ) then
-                     p_decomp_cpool_loss(c,j,k) = p_decomp_cpool_loss(c,j,k) * fpi_vr(c,j)
-                     pmnf_decomp_cascade(c,j,k) = pmnf_decomp_cascade(c,j,k) * fpi_vr(c,j)
-                     if (.not. use_nitrif_denitrif) then
-                        sminn_to_denit_decomp_cascade_vr(c,j,k) = 0._r8
-                     end if
-                  else
-                     if (.not. use_nitrif_denitrif) then
-                        sminn_to_denit_decomp_cascade_vr(c,j,k) = -params_inst%dnp * pmnf_decomp_cascade(c,j,k)
-                     end if
-                  end if
-                  decomp_cascade_hr_vr(c,j,k) = rf_decomp_cascade(c,j,k) * p_decomp_cpool_loss(c,j,k)
-                  decomp_cascade_ctransfer_vr(c,j,k) = (1._r8 - rf_decomp_cascade(c,j,k)) * p_decomp_cpool_loss(c,j,k)
-                  if (decomp_npools_vr(c,j,cascade_donor_pool(k)) > 0._r8 .and. cascade_receiver_pool(k) /= i_atm) then
-                     decomp_cascade_ntransfer_vr(c,j,k) = p_decomp_cpool_loss(c,j,k) / cn_decomp_pools(c,j,cascade_donor_pool(k))
-                  else
-                     decomp_cascade_ntransfer_vr(c,j,k) = 0._r8
-                  endif
-                  if ( cascade_receiver_pool(k) /= 0 ) then
-                     decomp_cascade_sminn_flux_vr(c,j,k) = pmnf_decomp_cascade(c,j,k)
-                  else  ! keep sign convention negative for terminal pools
-                     decomp_cascade_sminn_flux_vr(c,j,k) = - pmnf_decomp_cascade(c,j,k)
-                  endif
-                  net_nmin_vr(c,j) = net_nmin_vr(c,j) - pmnf_decomp_cascade(c,j,k)
-               else
-                  decomp_cascade_ntransfer_vr(c,j,k) = 0._r8
+   ! column loop to calculate actual immobilization and decomp rates, following
+   ! resolution of plant/heterotroph  competition for mineral N
+   
+   ! upon return from SoilBiogeochemCompetition, the fraction of potential immobilization
+   ! has been set (soilbiogeochem_state_inst%fpi_vr_col). now finish the decomp calculations.
+   ! Only the immobilization steps are limited by fpi_vr (pmnf > 0)
+   ! Also calculate denitrification losses as a simple proportion
+   ! of mineralization flux.
+
+   do k = 1, ndecomp_cascade_transitions
+      do j = 1,nlevdecomp
+         do fc = 1,num_soilc
+            c = filter_soilc(fc)
+
+            if (decomp_cpools_vr(c,j,cascade_donor_pool(k)) > 0._r8) then
+               if ( pmnf_decomp_cascade(c,j,k) > 0._r8 ) then
+                  p_decomp_cpool_loss(c,j,k) = p_decomp_cpool_loss(c,j,k) * fpi_vr(c,j)
+                  pmnf_decomp_cascade(c,j,k) = pmnf_decomp_cascade(c,j,k) * fpi_vr(c,j)
                   if (.not. use_nitrif_denitrif) then
                      sminn_to_denit_decomp_cascade_vr(c,j,k) = 0._r8
                   end if
-                  decomp_cascade_sminn_flux_vr(c,j,k) = 0._r8
+               else
+                  if (.not. use_nitrif_denitrif) then
+                     sminn_to_denit_decomp_cascade_vr(c,j,k) = -params_inst%dnp * pmnf_decomp_cascade(c,j,k)
+                  end if
                end if
-
-            end do
-         end do
-      end do
-   else
-      do k = 1, ndecomp_cascade_transitions
-         do j = 1,nlevdecomp
-            do fc = 1,num_soilc
-               c = filter_soilc(fc)
-               !
                decomp_cascade_hr_vr(c,j,k) = rf_decomp_cascade(c,j,k) * p_decomp_cpool_loss(c,j,k)
-               !
                decomp_cascade_ctransfer_vr(c,j,k) = (1._r8 - rf_decomp_cascade(c,j,k)) * p_decomp_cpool_loss(c,j,k)
-               !
-            end do
+               if (decomp_npools_vr(c,j,cascade_donor_pool(k)) > 0._r8 .and. cascade_receiver_pool(k) /= i_atm) then
+                  decomp_cascade_ntransfer_vr(c,j,k) = p_decomp_cpool_loss(c,j,k) / cn_decomp_pools(c,j,cascade_donor_pool(k))
+               else
+                  decomp_cascade_ntransfer_vr(c,j,k) = 0._r8
+               endif
+               if ( cascade_receiver_pool(k) /= 0 ) then
+                  decomp_cascade_sminn_flux_vr(c,j,k) = pmnf_decomp_cascade(c,j,k)
+               else  ! keep sign convention negative for terminal pools
+                  decomp_cascade_sminn_flux_vr(c,j,k) = - pmnf_decomp_cascade(c,j,k)
+               endif
+               net_nmin_vr(c,j) = net_nmin_vr(c,j) - pmnf_decomp_cascade(c,j,k)
+            else
+               decomp_cascade_ntransfer_vr(c,j,k) = 0._r8
+               if (.not. use_nitrif_denitrif) then
+                  sminn_to_denit_decomp_cascade_vr(c,j,k) = 0._r8
+               end if
+               decomp_cascade_sminn_flux_vr(c,j,k) = 0._r8
+            end if
+
          end do
       end do
-   end if
-
+   end do
       
-      ! vertically integrate net and gross mineralization fluxes for diagnostic output                                     
-
+     ! vertically integrate net and gross mineralization fluxes for diagnostic output                                     
      do fc = 1,num_soilc
-       c = filter_soilc(fc)
-         do j = 1,nlevdecomp
-            if(.not.use_fates)then
-              net_nmin(c) = net_nmin(c) + net_nmin_vr(c,j) * dzsoi_decomp(j)
-              gross_nmin(c) = gross_nmin(c) + gross_nmin_vr(c,j) * dzsoi_decomp(j)
-            ! else
-            !   net_nmin(c) = 0.0_r8
-            !   gross_nmin(c) = 0.0_r8
-            endif
-         end do
-      end do
+        c = filter_soilc(fc)
+        do j = 1,nlevdecomp
+           net_nmin(c) = net_nmin(c) + net_nmin_vr(c,j) * dzsoi_decomp(j)
+           gross_nmin(c) = gross_nmin(c) + gross_nmin_vr(c,j) * dzsoi_decomp(j)
+        end do
+     end do
 
     end associate
 

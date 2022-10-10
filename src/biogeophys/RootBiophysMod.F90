@@ -205,22 +205,18 @@ contains
 
     do p = bounds%begp,bounds%endp   
 
-       if (.not. patch%is_fates(p)) then
-          c = patch%column(p)
-          do lev = 1, ubj-1
-             rootfr(p,lev) = .5_r8*( &
-                    exp(-pftcon%roota_par(patch%itype(p)) * col%zi(c,lev-1))  &
-                  + exp(-pftcon%rootb_par(patch%itype(p)) * col%zi(c,lev-1))  &
-                  - exp(-pftcon%roota_par(patch%itype(p)) * col%zi(c,lev  ))  &
-                  - exp(-pftcon%rootb_par(patch%itype(p)) * col%zi(c,lev  )) )
-          end do
-          rootfr(p,ubj) = .5_r8*( &
-                 exp(-pftcon%roota_par(patch%itype(p)) * col%zi(c,ubj-1))  &
-               + exp(-pftcon%rootb_par(patch%itype(p)) * col%zi(c,ubj-1)) )
+       c = patch%column(p)
+       do lev = 1, ubj-1
+          rootfr(p,lev) = .5_r8*( &
+                 exp(-pftcon%roota_par(patch%itype(p)) * col%zi(c,lev-1))  &
+               + exp(-pftcon%rootb_par(patch%itype(p)) * col%zi(c,lev-1))  &
+               - exp(-pftcon%roota_par(patch%itype(p)) * col%zi(c,lev  ))  &
+               - exp(-pftcon%rootb_par(patch%itype(p)) * col%zi(c,lev  )) )
+       end do
+       rootfr(p,ubj) = .5_r8*( &
+              exp(-pftcon%roota_par(patch%itype(p)) * col%zi(c,ubj-1))  &
+            + exp(-pftcon%rootb_par(patch%itype(p)) * col%zi(c,ubj-1)) )
 
-       else
-          rootfr(p,1:ubj) = 0._r8
-       endif
 
     enddo
     return
@@ -264,16 +260,12 @@ contains
     rootfr(bounds%begp:bounds%endp, :)     = 0._r8
     do p = bounds%begp,bounds%endp   
        c = patch%column(p)       
-       if (.not.patch%is_fates(p)) then
-          beta = pftcon%rootprof_beta(patch%itype(p),varindx)
-          do lev = 1, ubj
-             rootfr(p,lev) = ( &
-                  beta ** (col%zi(c,lev-1)*m_to_cm) - &
-                  beta ** (col%zi(c,lev)*m_to_cm) )
-          end do
-       else
-          rootfr(p,:) = 0.
-       endif
+       beta = pftcon%rootprof_beta(patch%itype(p),varindx)
+       do lev = 1, ubj
+          rootfr(p,lev) = ( &
+               beta ** (col%zi(c,lev-1)*m_to_cm) - &
+               beta ** (col%zi(c,lev)*m_to_cm) )
+       end do
        
     enddo
     return
@@ -313,13 +305,9 @@ contains
     rootfr(bounds%begp:bounds%endp, :)     = 0._r8
     do p = bounds%begp,bounds%endp   
        c = patch%column(p)
-       if (.not.patch%is_fates(p)) then
-          do lev = 1, ubj
-             rootfr(p,lev) = exp(-rootprof_exp * col%z(c,lev)) * col%dz(c,lev)
-          end do
-       else
-          rootfr(p,1) = 0.
-       endif
+       do lev = 1, ubj
+          rootfr(p,lev) = exp(-rootprof_exp * col%z(c,lev)) * col%dz(c,lev)
+       end do
        norm = -1./rootprof_exp * (exp(-rootprof_exp * col%z(c,ubj)) - 1._r8)
        rootfr(p,:) = rootfr(p,:) / norm
 

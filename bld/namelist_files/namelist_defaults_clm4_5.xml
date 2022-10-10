@@ -54,7 +54,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <soil_layerstruct phys="clm5_0">20SL_8.5m</soil_layerstruct>
 <soil_layerstruct phys="clm4_5">10SL_3.5m</soil_layerstruct>
 
-<use_bedrock phys="clm5_0" use_fates =".true.">.false.</use_bedrock>
 <use_bedrock phys="clm5_0" vichydro ="1"      >.false.</use_bedrock>
 <use_bedrock phys="clm5_0">.true.</use_bedrock>
 <use_bedrock phys="clm4_5">.false.</use_bedrock>
@@ -224,11 +223,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <paramfile phys="clm5_0">lnd/clm2/paramdata/clm5_params.c171117.nc</paramfile>
 <paramfile phys="clm4_5">lnd/clm2/paramdata/clm_params.c170913.nc</paramfile>
 
-<!-- ================================================================== -->
-<!-- FATES default parameter file                                       -->
-<!-- ================================================================== -->
-
-<fates_paramfile>lnd/clm2/paramdata/fates_params_2troppftclones.c171018.nc</fates_paramfile>
 
 <!-- ========================================================================================  -->
 <!-- clm 5.0 BGC nitrogen model                                                                -->
@@ -239,7 +233,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 
 <!-- LUNA model: Leaf Utilization of Nitrogen for Assimilation -->
 <use_luna phys="clm5_0"  >.true.</use_luna>
-<use_luna phys="clm5_0" use_fates=".true." >.false.</use_luna>
 <use_luna phys="clm4_5"  >.false.</use_luna>
 
 <!-- Flexible CN options -->
@@ -292,7 +285,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <use_dynroot phys="clm4_5">.false.</use_dynroot>
 <use_dynroot phys="clm5_0" bgc_mode="sp">.false.</use_dynroot>
 <use_dynroot phys="clm5_0" bgc_mode="cn">.false.</use_dynroot>
-<use_dynroot phys="clm5_0" bgc_mode="fates">.false.</use_dynroot>
 <use_dynroot phys="clm5_0" bgc_mode="bgc">.false.</use_dynroot>
 
 <!-- Guardrail for ensuring leaf-Nitrogen doesn't go too small or negative on updates -->
@@ -300,10 +292,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <use_nguardrail phys="clm5_0" use_cn=".false.">.false.</use_nguardrail>
 <use_nguardrail phys="clm5_0" use_cn=".true." >.true.</use_nguardrail>
 
-<!-- Plant hydraulic stress -->
-<use_hydrstress phys="clm4_5"                 >.false.</use_hydrstress>
-<use_hydrstress phys="clm5_0" use_fates=".true." >.false.</use_hydrstress>
-<use_hydrstress phys="clm5_0" use_fates=".false.">.true.</use_hydrstress>
 <!--
 
      Initial condition files to use and or interpolate from
@@ -317,9 +305,9 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <init_interp_sim_years>1850,2000</init_interp_sim_years>
 
 <!-- Interpolate from an initial condition file at startup? -->
-<use_init_interp  use_cndv=".false." use_fates=".false." sim_year="1850">.true.</use_init_interp>
-<use_init_interp  use_cndv=".false." use_fates=".false." sim_year="2000">.true.</use_init_interp>
-<use_init_interp                                                        >.false.</use_init_interp>
+<use_init_interp sim_year="1850">.true.</use_init_interp>
+<use_init_interp sim_year="2000">.true.</use_init_interp>
+<use_init_interp                >.false.</use_init_interp>
 
 <!--
   Set attributes to find specific matching finidat files below
@@ -327,39 +315,43 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
   set up. If more finidat files are added you may need to add more of these.
   Or one specific file will be chosen over another.
 -->
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm4_5_GSWP3v1"
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_GSWP3v1"
 >hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.false. irrigate=.false. glc_nec=10
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm4_5_CRUv7"
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_CRUv7"
 >hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.false. irrigate=.false. glc_nec=10
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm4_5_cam6.0"
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_cam6.0"
 >hgrid=0.9x1.25 maxpft=79 mask=gx1v7 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_GSWP3v1"
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_GSWP3v1"
 >hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.false. use_nitrif_denitrif=.false. use_vertsoilc=.false. use_crop=.false. irrigate=.true. glc_nec=10
 </init_interp_attributes>
-
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_GSWP3v1"
+<!--
+  Which is correct? The next or the previous one?
+-->
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_GSWP3v1"
 >hgrid=0.9x1.25 maxpft=79 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_CRUv7"
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_CRUv7"
 >hgrid=0.9x1.25 maxpft=79 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
 </init_interp_attributes>
-
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_CRUv7"
+<!--
+  Which is correct? The next or the previous one?
+-->
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_CRUv7"
 >hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.false. use_nitrif_denitrif=.false. use_vertsoilc=.false. use_crop=.false. irrigate=.true. glc_nec=10
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_cam6.0"
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_cam6.0"
 >hgrid=0.9x1.25 maxpft=79 mask=gx1v7 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="2000" use_cndv=".false." use_fates=".false."
+<init_interp_attributes sim_year="2000" 
 >hgrid=1.9x2.5 maxpft=79 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.true. glc_nec=10
 </init_interp_attributes>
 
@@ -375,21 +367,21 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
                            (if it will work on an exact match, leave use_init_interp off)
 -->
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".true." 
          ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".false."
          lnd_tuning_mode="clm4_5_GSWP3v1"
 >lnd/clm2/initdata_map/clmi.I1850Clm45BgcGs.0901-01-01.0.9x1.25_gx1v6_simyr1850_c180204.nc
 </finidat>
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".true." 
          ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".false."
          lnd_tuning_mode="clm4_5_CRUv7"
 >lnd/clm2/initdata_map/clmi.I1850Clm45BgcCruGs.1101-01-01.0.9x1.25_gx1v6_simyr1850_c180204.nc
 </finidat>
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7" use_cn=".true." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7" use_cn=".true." 
          ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false."
          lnd_tuning_mode="clm4_5_cam6.0"
@@ -397,7 +389,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".false." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".false." 
          ic_ymd="18500101" use_nitrif_denitrif=".false." use_vertsoilc=".false." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".true."
          lnd_tuning_mode="clm5_0_GSWP3v1"
@@ -405,7 +397,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6" use_cn=".true." 
          ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false." use_init_interp=".true."
          lnd_tuning_mode="clm5_0_GSWP3v1"
@@ -413,7 +405,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6" use_cn=".true."
          ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false."
          lnd_tuning_mode="clm5_0_CRUv7"
@@ -421,14 +413,14 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7" use_cn=".true." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7" use_cn=".true."
          ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false."
          lnd_tuning_mode="clm5_0_cam6.0"
 >lnd/clm2/initdata_map/clmi.B1850.0161-01-01.0.9x1.25_gx1v7_simyr1850_c180130.nc
 </finidat>
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".false." use_cndv=".false." use_fates=".false."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".false."
          ic_ymd="18500101" use_nitrif_denitrif=".false." use_vertsoilc=".false." sim_year="1850"
          ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".true."
          lnd_tuning_mode="clm5_0_CRUv7"
@@ -442,25 +434,11 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 -->
 
 <!-- Present day crop spinup at 2-degree with irrigation on -->
-<finidat hgrid="1.9x2.5"    maxpft="79"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
+<finidat hgrid="1.9x2.5"    maxpft="79"  mask="gx1v6" use_cn=".true." 
          ic_ymd="20110101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="2000"
          ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".true."  use_init_interp=".true."
 >lnd/clm2/initdata_map/clmi.IGM2000GSWP3CLM50BGCCROPIRR.2011-01-01.1.9x2.5_gx1v6_gl5_simyr2000_c170419.nc
 </finidat>
-
-<!-- FATES on for 2000 (MUST be an exact match - can't interpolate files for FATES -->
-<finidat hgrid="4x5"  maxpft="17"  mask="gx3v7" use_cn=".false." use_fates=".true."
-         ic_ymd="20000101"  use_nitrif_denitrif=".false." use_vertsoilc=".true." sim_year="2000"
-         ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".true."
->lnd/clm2/initdata_map/clmi.I2000Clm45Fates.0121-01-01.4x5_mgx3v7_simyr2000_c180122.nc
-</finidat>
-
-<finidat hgrid="1x1_brazil"  maxpft="17"  mask="navy" use_cn=".false." use_fates=".true."
-         ic_ymd="20000101"  use_nitrif_denitrif=".false." use_vertsoilc=".true." sim_year="2000"
-         ic_tod="0" glc_nec="0" use_crop=".false." irrigate=".true."
->lnd/clm2/initdata_map/clmi.I2000Clm45Fates.0101-01-01.1x1_brazil_simyr2000_c180120.nc
-</finidat>
-
 
 <!-- for present day simulations - year 2000 -->
 <fsurdat hgrid="360x720cru"   sim_year="2000" use_crop=".false." irrigate=".true.">
@@ -783,15 +761,11 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <leaf_mr_vcm phys="clm4_5" >0.015d00</leaf_mr_vcm>
 
 <!-- Initial Carbon stocks for BGC -->
-<initial_Cstocks phys="clm4_5" use_cn=".true."  use_fates=".false." use_century_decomp=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>
-<initial_Cstocks phys="clm5_0" use_cn=".true."  use_fates=".false." use_century_decomp=".true." >200.0d00, 200.0d00, 200.0d00</initial_Cstocks>
-<initial_Cstocks phys="clm4_5" use_cn=".false." use_fates=".true."  use_century_decomp=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>
-<initial_Cstocks phys="clm5_0" use_cn=".false." use_fates=".true."  use_century_decomp=".true." >200.0d00, 200.0d00, 200.0d00</initial_Cstocks>
+<initial_Cstocks phys="clm4_5" use_cn=".true." use_century_decomp=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>
+<initial_Cstocks phys="clm5_0" use_cn=".true." use_century_decomp=".true." >200.0d00, 200.0d00, 200.0d00</initial_Cstocks>
 
-<initial_Cstocks_depth phys="clm5_0" use_cn=".true."   use_fates=".false." use_century_decomp=".true." >1.50d00</initial_Cstocks_depth>
-<initial_Cstocks_depth phys="clm4_5" use_cn=".true."   use_fates=".false." use_century_decomp=".true." >0.3</initial_Cstocks_depth>
-<initial_Cstocks_depth phys="clm5_0" use_cn=".false."  use_fates=".true."  use_century_decomp=".true." >1.50d00</initial_Cstocks_depth>
-<initial_Cstocks_depth phys="clm4_5" use_cn=".false."  use_fates=".true."  use_century_decomp=".true." >0.3</initial_Cstocks_depth>
+<initial_Cstocks_depth phys="clm5_0" use_cn=".true." use_century_decomp=".true." >1.50d00</initial_Cstocks_depth>
+<initial_Cstocks_depth phys="clm4_5" use_cn=".true." use_century_decomp=".true." >0.3</initial_Cstocks_depth>
 
 <initial_vegC phys="clm5_0" use_cn=".true."  mm_nuptake_opt=".true." >100.d00</initial_vegC>
 <initial_vegC phys="clm4_5" use_cn=".true."  mm_nuptake_opt=".true." >20.d00</initial_vegC>
@@ -802,12 +776,6 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <!--  ***********  Resolution independent:   ***********  -->
 <fsnowoptics >lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc</fsnowoptics>
 <fsnowaging  >lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc</fsnowaging>
-
-<!-- LAI streams namelist defaults -->
-<use_lai_streams        >.false.</use_lai_streams>
-<stream_year_first_lai  >2001</stream_year_first_lai>
-<stream_year_last_lai   >2013</stream_year_last_lai>
-<model_year_align_lai   >2001</model_year_align_lai>
 
 <stream_fldfilename_lai hgrid="360x720cru"       >lnd/clm2/lai_streams/MODISPFTLAI_0.5x0.5_c140711.nc</stream_fldfilename_lai>
 
@@ -829,8 +797,7 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <lai_mapalgo  hgrid="5x5_amazon"          >nn</lai_mapalgo>
 
 <!-- Create crop on a separate land-unit -->
-<create_crop_landunit     use_fates=".false.">.true.</create_crop_landunit>
-<create_crop_landunit     use_fates=".true." >.false.</create_crop_landunit>
+<create_crop_landunit>.true.</create_crop_landunit>
 
 
 <!-- =========================================  -->
@@ -2109,17 +2076,5 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <use_lch4            bgc_mode="bgc" >.true.</use_lch4>
 <use_nitrif_denitrif bgc_mode="bgc" >.true.</use_nitrif_denitrif>
 
-<use_vertsoilc       bgc_mode="fates"  >.true.</use_vertsoilc>
-<use_century_decomp  bgc_mode="fates"  >.true.</use_century_decomp>
-<use_lch4            bgc_mode="fates"  >.false.</use_lch4>
-<use_nitrif_denitrif bgc_mode="fates"  >.false.</use_nitrif_denitrif>
-
-<!-- ===== FATES DEFAULTS =========== -->
-<use_fates_spitfire            use_fates=".true.">.false.</use_fates_spitfire>
-<use_fates_planthydro          use_fates=".true.">.false.</use_fates_planthydro>
-<use_fates_ed_st3              use_fates=".true.">.false.</use_fates_ed_st3>
-<use_fates_ed_prescribed_phys  use_fates=".true.">.false.</use_fates_ed_prescribed_phys>
-<use_fates_logging             use_fates=".true.">.false.</use_fates_logging>
-<use_fates_inventory_init      use_fates=".true.">.false.</use_fates_inventory_init>
 
 </namelist_defaults>

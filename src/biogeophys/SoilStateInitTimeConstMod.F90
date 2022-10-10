@@ -99,7 +99,7 @@ contains
     use clm_varpar          , only : nlevsoi, nlevgrnd, nlevlak, nlevsoifl, nlayer, nlayert, nlevurb, nlevsno
     use clm_varcon          , only : zsoi, dzsoi, zisoi, spval
     use clm_varcon          , only : secspday, pc, mu, denh2o, denice, grlnd
-    use clm_varctl          , only : use_cn, use_fates
+    use clm_varctl          , only : use_cn
     use clm_varctl          , only : iulog, fsurdat, paramfile, soil_layerstruct
     use landunit_varcon     , only : istdlak, istwet, istsoil, istcrop, istice_mec
     use column_varcon       , only : icol_roof, icol_sunwall, icol_shadewall, icol_road_perv, icol_road_imperv 
@@ -209,15 +209,11 @@ contains
     end do
 
     ! Initialize root fraction 
-    ! Note that fates has its own root fraction root fraction routine and should not
-    ! use the following since it depends on patch%itype - which fates should not use
 
-    if (.not. use_fates) then
-        call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-             soilstate_inst%rootfr_patch(begp:endp,1:nlevgrnd),'water')
-        call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-             soilstate_inst%crootfr_patch(begp:endp,1:nlevgrnd),'carbon')
-     end if
+     call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
+          soilstate_inst%rootfr_patch(begp:endp,1:nlevgrnd),'water')
+     call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
+          soilstate_inst%crootfr_patch(begp:endp,1:nlevgrnd),'carbon')
 
     ! --------------------------------------------------------------------
     ! dynamic memory allocation

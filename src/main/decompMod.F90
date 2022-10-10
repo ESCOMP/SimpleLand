@@ -231,10 +231,6 @@ contains
      !------------------------------------------------------------------------------
      !    Make sure this IS being called from a threaded region
 #ifdef _OPENMP
-     ! FIX(SPM, 090314) - for debugging fates and openMP
-     !write(iulog,*) 'SPM omp debug decompMod 1 ', &
-          !OMP_GET_NUM_THREADS(),OMP_GET_MAX_THREADS(),OMP_GET_THREAD_NUM()
-
      if ( OMP_GET_NUM_THREADS() == 1 .and. OMP_GET_MAX_THREADS() > 1 )then
         call shr_sys_abort( trim(subname)//' ERROR: Calling from inside a non-threaded region)')
      end if
@@ -301,10 +297,6 @@ contains
      !------------------------------------------------------------------------------
      !    Make sure this is NOT being called from a threaded region
 #ifdef _OPENMP
-     ! FIX(SPM, 090314) - for debugging fates and openMP
-     !write(*,*) 'SPM omp debug decompMod 2 ', &
-          !OMP_GET_NUM_THREADS(),OMP_GET_MAX_THREADS(),OMP_GET_THREAD_NUM()
-
      if ( OMP_GET_NUM_THREADS() > 1 )then
         call shr_sys_abort( trim(subname)//' ERROR: Calling from inside  a threaded region')
      end if

@@ -7,7 +7,7 @@ module readParamsMod
   ! well defined functionality (eg. ED).
   !
   ! ! USES:
-  use clm_varctl , only : paramfile, iulog, use_fates, use_cn
+  use clm_varctl , only : paramfile, iulog, use_cn
   use spmdMod    , only : masterproc
   use fileutils  , only : getfil
   use ncdio_pio  , only : ncd_pio_closefile, ncd_pio_openfile
@@ -73,7 +73,7 @@ contains
     !
     ! Soil biogeochemistry...
     !
-    if (use_cn .or. use_fates) then
+    if (use_cn) then
        call readSoilBiogeochemDecompBgcParams(ncid)
        call readSoilBiogeochemDecompCnParams(ncid)
        call readSoilBiogeochemDecompParams(ncid)

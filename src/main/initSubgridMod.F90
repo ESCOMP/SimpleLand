@@ -10,7 +10,7 @@ module initSubgridMod
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use spmdMod        , only : masterproc
   use abortutils     , only : endrun
-  use clm_varctl     , only : iulog, use_fates
+  use clm_varctl     , only : iulog
   use clm_varcon     , only : namep, namec, namel
   use decompMod      , only : bounds_type
   use GridcellType   , only : grc                
@@ -455,11 +455,9 @@ contains
 
     ! TODO (MV, 10-17-14): The following must be commented out because
     ! currently patch%itype is used in CanopyTemperatureMod to calculate 
-    ! z0m(p) and displa(p) - and is still called even when fates is on
+    ! z0m(p) and displa(p)
 
-    !if (.not. use_fates) then
     patch%itype(pi) = ptype
-    !end if
 
     if (lun%itype(li) == istsoil .or. lun%itype(li) == istcrop) then
        lb_offset = 1 - natpft_lb

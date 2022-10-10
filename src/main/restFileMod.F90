@@ -17,7 +17,7 @@ module restFileMod
   use accumulMod       , only : accumulRest
   use clm_instMod      , only : clm_instRest
   use histFileMod      , only : hist_restart_ncd
-  use clm_varctl       , only : iulog, use_fates, use_hydrstress
+  use clm_varctl       , only : iulog
   use clm_varctl       , only : create_crop_landunit, irrigate
   use clm_varcon       , only : nameg, namel, namec, namep, nameCohort
   use ncdio_pio        , only : file_desc_t, ncd_pio_createfile, ncd_pio_openfile, ncd_global
@@ -523,9 +523,6 @@ contains
     call ncd_defdim(ncid , 'levtot'  , nlevsno+nlevgrnd, dimid)
     call ncd_defdim(ncid , 'numrad'  , numrad         ,  dimid)
     call ncd_defdim(ncid , 'levcan'  , nlevcan        ,  dimid)
-    if ( use_hydrstress ) then
-      call ncd_defdim(ncid , 'vegwcs'  , nvegwcs        ,  dimid)
-    end if
     call ncd_defdim(ncid , 'string_length', 64        ,  dimid)
     call ncd_defdim(ncid , 'glc_nec', maxpatch_glcmec, dimid)
 	
@@ -714,7 +711,6 @@ contains
        call check_dim(ncid, namel, numl, msg=msg)
        call check_dim(ncid, namec, numc, msg=msg)
        call check_dim(ncid, namep, nump, msg=msg)
-       if ( use_fates ) call check_dim(ncid, nameCohort  , numCohort, msg=msg)
     end if
     call check_dim(ncid, 'levsno'  , nlevsno, &
          msg = 'You can deal with this mismatch by rerunning with ' // &

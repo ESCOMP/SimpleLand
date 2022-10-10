@@ -16,7 +16,7 @@ module SoilBiogeochemPotentialMod
   use SoilBiogeochemCarbonFluxType       , only : soilbiogeochem_carbonflux_type
   use SoilBiogeochemNitrogenStateType    , only : soilbiogeochem_nitrogenstate_type
   use SoilBiogeochemNitrogenFluxType     , only : soilbiogeochem_nitrogenflux_type
-  use clm_varctl                         , only : use_fates, iulog
+  use clm_varctl                         , only : iulog
   !
   implicit none
   private
@@ -134,114 +134,99 @@ contains
          fphr                             => soilbiogeochem_carbonflux_inst%fphr_col                                 & ! Output: [real(r8) (:,:)   ]  fraction of potential SOM + LITTER heterotrophic
          )
    
-   if ( .not. use_fates ) then
-      ! set initial values for potential C and N fluxes
-      p_decomp_cpool_loss(begc:endc, :, :) = 0._r8
-      pmnf_decomp_cascade(begc:endc, :, :) = 0._r8
+   ! set initial values for potential C and N fluxes
+   p_decomp_cpool_loss(begc:endc, :, :) = 0._r8
+   pmnf_decomp_cascade(begc:endc, :, :) = 0._r8
 
-      ! column loop to calculate potential decomp rates and total immobilization demand
+   ! column loop to calculate potential decomp rates and total immobilization demand
 
-      !! calculate c:n ratios of applicable pools
-      do l = 1, ndecomp_pools
-         if ( floating_cn_ratio_decomp_pools(l) ) then
-            do j = 1,nlevdecomp
-               do fc = 1,num_soilc
-                  c = filter_soilc(fc)
-                  if ( decomp_npools_vr(c,j,l) > 0._r8 ) then
-                     cn_decomp_pools(c,j,l) = decomp_cpools_vr(c,j,l) / decomp_npools_vr(c,j,l)
-                  end if
-               end do
-            end do
-         else
-            do j = 1,nlevdecomp
-               do fc = 1,num_soilc
-                  c = filter_soilc(fc)
-                  cn_decomp_pools(c,j,l) = initial_cn_ratio(l)
-               end do
-            end do
-         end if
-      end do
-
-      ! calculate the non-nitrogen-limited fluxes
-      ! these fluxes include the  "/ dt" term to put them on a
-      ! per second basis, since the rate constants have been
-      ! calculated on a per timestep basis.
-
-      do k = 1, ndecomp_cascade_transitions
+   !! calculate c:n ratios of applicable pools
+   do l = 1, ndecomp_pools
+      if ( floating_cn_ratio_decomp_pools(l) ) then
          do j = 1,nlevdecomp
             do fc = 1,num_soilc
                c = filter_soilc(fc)
-
-               if (decomp_cpools_vr(c,j,cascade_donor_pool(k)) > 0._r8 .and. &
-                    decomp_k(c,j,cascade_donor_pool(k)) > 0._r8 ) then
-                  p_decomp_cpool_loss(c,j,k) = decomp_cpools_vr(c,j,cascade_donor_pool(k)) &
-                       * decomp_k(c,j,cascade_donor_pool(k))  * pathfrac_decomp_cascade(c,j,k)
-                  if ( .not. floating_cn_ratio_decomp_pools(cascade_receiver_pool(k)) ) then  !! not transition of cwd to litter
-
-                     if (cascade_receiver_pool(k) /= i_atm ) then  ! not 100% respiration
-                        ratio = 0._r8
-
-                        if (decomp_npools_vr(c,j,cascade_donor_pool(k)) > 0._r8) then
-                           ratio = cn_decomp_pools(c,j,cascade_receiver_pool(k))/cn_decomp_pools(c,j,cascade_donor_pool(k))
-                        endif
-
-                        pmnf_decomp_cascade(c,j,k) = (p_decomp_cpool_loss(c,j,k) * (1.0_r8 - rf_decomp_cascade(c,j,k) - ratio) &
-                             / cn_decomp_pools(c,j,cascade_receiver_pool(k)) )
-
-                     else   ! 100% respiration
-                        pmnf_decomp_cascade(c,j,k) = - p_decomp_cpool_loss(c,j,k) / cn_decomp_pools(c,j,cascade_donor_pool(k))
-                     endif
-
-                  else   ! CWD -> litter
-                     pmnf_decomp_cascade(c,j,k) = 0._r8
-                  end if
-               end if
-            end do
-
-         end do
-      end do
-
-      ! Sum up all the potential immobilization fluxes (positive pmnf flux)
-      ! and all the mineralization fluxes (negative pmnf flux)
-      do j = 1,nlevdecomp
-         do fc = 1,num_soilc
-            c = filter_soilc(fc)
-            immob(c,j) = 0._r8
-         end do
-      end do
-      do k = 1, ndecomp_cascade_transitions
-         do j = 1,nlevdecomp
-            do fc = 1,num_soilc
-               c = filter_soilc(fc)
-               if (pmnf_decomp_cascade(c,j,k) > 0._r8) then
-                  immob(c,j) = immob(c,j) + pmnf_decomp_cascade(c,j,k)
-               else
-                  gross_nmin_vr(c,j) = gross_nmin_vr(c,j) - pmnf_decomp_cascade(c,j,k)
+               if ( decomp_npools_vr(c,j,l) > 0._r8 ) then
+                  cn_decomp_pools(c,j,l) = decomp_cpools_vr(c,j,l) / decomp_npools_vr(c,j,l)
                end if
             end do
          end do
-      end do
-
-      do j = 1,nlevdecomp
-         do fc = 1,num_soilc
-            c = filter_soilc(fc)
-            potential_immob_vr(c,j) = immob(c,j)
-         end do
-      end do
-   else  ! use_fates
-      ! As a first step we are making this a C-only model, so no N downregulation of fluxes. 
-      do k = 1, ndecomp_cascade_transitions
+      else
          do j = 1,nlevdecomp
             do fc = 1,num_soilc
                c = filter_soilc(fc)
-               !
+               cn_decomp_pools(c,j,l) = initial_cn_ratio(l)
+            end do
+         end do
+      end if
+   end do
+
+   ! calculate the non-nitrogen-limited fluxes
+   ! these fluxes include the  "/ dt" term to put them on a
+   ! per second basis, since the rate constants have been
+   ! calculated on a per timestep basis.
+
+   do k = 1, ndecomp_cascade_transitions
+      do j = 1,nlevdecomp
+         do fc = 1,num_soilc
+            c = filter_soilc(fc)
+
+            if (decomp_cpools_vr(c,j,cascade_donor_pool(k)) > 0._r8 .and. &
+                 decomp_k(c,j,cascade_donor_pool(k)) > 0._r8 ) then
                p_decomp_cpool_loss(c,j,k) = decomp_cpools_vr(c,j,cascade_donor_pool(k)) &
                     * decomp_k(c,j,cascade_donor_pool(k))  * pathfrac_decomp_cascade(c,j,k)
-               !
-            end do
+               if ( .not. floating_cn_ratio_decomp_pools(cascade_receiver_pool(k)) ) then  !! not transition of cwd to litter
+
+                  if (cascade_receiver_pool(k) /= i_atm ) then  ! not 100% respiration
+                     ratio = 0._r8
+
+                     if (decomp_npools_vr(c,j,cascade_donor_pool(k)) > 0._r8) then
+                        ratio = cn_decomp_pools(c,j,cascade_receiver_pool(k))/cn_decomp_pools(c,j,cascade_donor_pool(k))
+                     endif
+
+                     pmnf_decomp_cascade(c,j,k) = (p_decomp_cpool_loss(c,j,k) * (1.0_r8 - rf_decomp_cascade(c,j,k) - ratio) &
+                          / cn_decomp_pools(c,j,cascade_receiver_pool(k)) )
+
+                  else   ! 100% respiration
+                     pmnf_decomp_cascade(c,j,k) = - p_decomp_cpool_loss(c,j,k) / cn_decomp_pools(c,j,cascade_donor_pool(k))
+                  endif
+
+               else   ! CWD -> litter
+                  pmnf_decomp_cascade(c,j,k) = 0._r8
+               end if
+            end if
+         end do
+
+      end do
+   end do
+
+   ! Sum up all the potential immobilization fluxes (positive pmnf flux)
+   ! and all the mineralization fluxes (negative pmnf flux)
+   do j = 1,nlevdecomp
+      do fc = 1,num_soilc
+         c = filter_soilc(fc)
+         immob(c,j) = 0._r8
+      end do
+   end do
+   do k = 1, ndecomp_cascade_transitions
+      do j = 1,nlevdecomp
+         do fc = 1,num_soilc
+            c = filter_soilc(fc)
+            if (pmnf_decomp_cascade(c,j,k) > 0._r8) then
+               immob(c,j) = immob(c,j) + pmnf_decomp_cascade(c,j,k)
+            else
+               gross_nmin_vr(c,j) = gross_nmin_vr(c,j) - pmnf_decomp_cascade(c,j,k)
+            end if
          end do
       end do
-   end if
+   end do
+
+   do j = 1,nlevdecomp
+      do fc = 1,num_soilc
+         c = filter_soilc(fc)
+         potential_immob_vr(c,j) = immob(c,j)
+      end do
+   end do
 
       ! Add up potential hr for methane calculations
       do j = 1,nlevdecomp
