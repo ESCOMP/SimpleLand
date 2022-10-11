@@ -55,6 +55,7 @@ module mml_mainMod
   
   ! !PRIVATE MEMBER FUNCTIONS:
   private :: nc_import
+  private :: apply_use_init_interp  ! apply the use_init_interp namelist option, if set
   
   ! mml: can I store the subroutines in other files? (just to keep this one from getting outrageously long?
   ! try it... (move nc_import, for starters... )
@@ -89,7 +90,7 @@ contains
     use spmdMod         , only : mpicom
     use clm_nlUtilsMod  , only : find_nlgroup_name
     use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest
-    use clm_varctl      , only : nrevsn, fname_len
+    use clm_varctl      , only : nrevsn, fname_len, mml_surdat, finidat_interp_source
   
     implicit none
 
@@ -98,13 +99,15 @@ contains
     ! !LOCAL VARIABLES:
     integer                     :: nu_nml           ! Unit for namelist file
     integer                     :: nml_error        ! Error code
+    logical                     :: use_init_interp  ! Turn on interpolation of initial conditions
     character(len=*), parameter :: nml_name = 'slim_data_and_initial'
     character(len=*), parameter :: subname = 'readnml_datasets'
     namelist /slim_data_and_initial/ mml_surdat, finidat, fatmlndfrc
-    namelist /slim_data_and_initial/ finidat_interp_dest, nrevsn
+    namelist /slim_data_and_initial/ finidat_interp_dest, nrevsn, use_init_interp
     !-----------------------------------------------------------------------
 
     fatmlndfrc = ' '
+    use_init_interp = .false.
     if (masterproc) then
        open( newunit=nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
        call find_nlgroup_name(nu_nml, nml_name, status=nml_error) 
@@ -123,10 +126,19 @@ contains
     call shr_mpi_bcast( finidat_interp_dest, mpicom )
     call shr_mpi_bcast( nrevsn, mpicom )
     call shr_mpi_bcast( fatmlndfrc, mpicom )
+    call shr_mpi_bcast( use_init_interp, mpicom )
+
+    if (use_init_interp) then
+       call apply_use_init_interp(finidat, finidat_interp_source)
+    end if
+
     if (masterproc) then
        write(iulog,*) 'nrevsn              = ', trim(nrevsn)
        write(iulog,*) 'finidat             = ', trim(finidat)
-       write(iulog,*) 'finidat_interp_dest = ', trim(finidat_interp_dest)
+       if ( use_init_interp )then
+          write(iulog,*) 'Interpolate initial conditions'
+          write(iulog,*) 'finidat_interp_dest = ', trim(finidat_interp_dest)
+       end if
 
        if (fatmlndfrc == ' ') then
           write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
@@ -140,7 +152,46 @@ contains
            write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
        end if
     end if
+
   end subroutine readnml_datasets
+
+  !-----------------------------------------------------------------------
+  subroutine apply_use_init_interp(finidat, finidat_interp_source)
+    !
+    ! !DESCRIPTION:
+    ! Applies the use_init_interp option, setting finidat_interp_source to
+    ! finidat
+    !
+    ! Should be called if use_init_interp is true.
+    !
+    ! Does error checking to ensure that it is valid to set use_init_interp to
+    ! true,
+    ! given the values of finidat and finidat_interp_source.
+    !
+    ! !USES:
+    !
+    ! !ARGUMENTS:
+    character(len=*), intent(inout) :: finidat
+    character(len=*), intent(inout) :: finidat_interp_source
+    !
+    ! !LOCAL VARIABLES:
+
+    character(len=*), parameter :: subname = 'apply_use_init_interp'
+    !-----------------------------------------------------------------------
+
+    if (finidat == ' ') then
+       call endrun(msg=subname//'::ERROR: Can only set use_init_interp if finidat is set')
+    end if
+
+    if (finidat_interp_source /= ' ') then
+       call endrun(msg=subname//'::ERROR: Cannot set use_init_interp if finidat_interp_source is &
+            &already set')
+    end if
+
+    finidat_interp_source = finidat
+    finidat = ' '
+
+  end subroutine apply_use_init_interp
   
   !-----------------------------------------------------------------------
   subroutine mml_main (bounds, atm2lnd_inst, lnd2atm_inst) !lnd2atm_inst
