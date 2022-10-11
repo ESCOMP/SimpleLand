@@ -288,6 +288,44 @@
   </entry>
 
   <!-- =============================================================  -->
+  <!-- Initial interpolation namelists still in place                 -->
+  <!-- =============================================================  -->
+
+  <entry id="check_finidat_pct_consistency">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>finidat_consistency_checks</group>
+     <default_value>.true.</default_value>
+     <desc>
+           If TRUE (which is the default), check consistency between pct_pft on the finidat file
+           and pct_pft read from the surface dataset.
+
+           This requires that finidat be non-blank.
+
+           This should probably be removed.
+     </desc>
+  </entry>
+
+  <entry id="init_interp_fill_missing_with_natveg">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>clm_initinterp_inparm</group>
+     <default_value>.false.</default_value>
+     <desc>
+           If FALSE (which is the default): If an output type cannot be found in the input for initInterp,
+           code aborts
+           If TRUE: If an output type cannot be found in the input, fill with closest natural veg column
+           (using bare soil for patch-level variables)
+
+           NOTE: Natural vegetation and crop landunits always behave as if this were true. e.g., if
+           we can't find a column with the same type as a given crop column in the output, then we
+           always fill with the closest natural veg patch / column, regardless of the value of this
+           flag. So interpolation from non-crop to crop cases can be done without setting this flag.
+
+           This should probably be removed.
+     </desc>
+  </entry>
+  <!-- =============================================================  -->
   <!-- Temporary clm_inparm namelist items to remove                  -->
   <!-- =============================================================  -->
 
@@ -319,6 +357,59 @@
      </values>
      <desc>
            PFT and parameter file
+     </desc>
+  </entry>
+
+
+  <entry id="use_cn" skip_default_entry="true">
+     <type>logical</type>
+     <category>slim_physics</category>
+     <group>clm_inparm</group>
+     <desc>
+           If Carbon/Nitrogen model should be used
+           Currently this is used in a couple places in SLIM, but should be removed.
+     </desc>
+  </entry>
+
+
+  <!-- =============================================================  -->
+  <!-- Namelist items currently not used that could be good to add    -->
+  <!-- back in                                                        -->
+  <!-- =============================================================  -->
+
+  <entry id="clump_pproc" skip_default_entry="true">
+     <type>integer</type>
+     <category>performance</category>
+     <group>clm_inparm</group>
+     <desc>
+           Number of processors to use per clump (when threading is implemented)
+           Currently has no effect
+           See this issue:
+                https://github.com/ESCOMP/SimpleLand/issues/29
+     </desc>
+  </entry>
+
+  <entry id="wrtdia" skip_default_entry="true">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>clm_inparm</group>
+     <desc>
+           Write diagnostics out to the log file about global statistics
+           Currently is implemented, but should be removed.
+     </desc>
+  </entry>
+
+
+  <entry id="single_column" skip_default_entry="true">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>clm_inparm</group>
+     <default_value>.false.</default_value>
+     <valid_values>.false.</valid_values>
+     <desc>
+           Run as a single column (NOT currently implemented)
+           See this issue:
+                https://github.com/ESCOMP/SimpleLand/issues/29
      </desc>
   </entry>
 
