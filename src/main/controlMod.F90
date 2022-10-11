@@ -37,7 +37,7 @@ module controlMod
   use clm_varctl                       , only: use_nitrif_denitrif, create_crop_landunit, glc_snow_persistence_max_days
   use clm_varctl                       , only: subgridflag, nfix_timeconst, use_vertsoilc
   use clm_varctl                       , only: clm_varctl_set
-  use clm_varctl                       , only: use_lch4, irrigate, create_crop_landunit, use_crop
+  use clm_varctl                       , only: irrigate, create_crop_landunit, use_crop
   use clm_varctl                       , only: use_flexiblecn, use_luna, spinup_state
   use clm_varctl                       , only: single_column
   !
@@ -192,7 +192,6 @@ contains
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ &
-               use_lch4,   &
                irrigate,   &
                create_crop_landunit,   &
                use_crop,   &
@@ -201,10 +200,8 @@ contains
                spinup_state, &
                single_column
 
-    logical :: use_fertilizer = .false.
     character(len=256) :: fsnowaging, fsnowoptics
-    namelist /clm_inparm/ use_fertilizer, &
-            fsnowaging, fsnowoptics
+    namelist /clm_inparm/ fsnowaging, fsnowoptics
 
 
     ! ----------------------------------------------------------------------
@@ -421,7 +418,6 @@ contains
     call mpi_bcast (username, len(username), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (nsrest, 1, MPI_INTEGER, 0, mpicom, ier)
 
-    call mpi_bcast (use_lch4, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_nitrif_denitrif, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_vertsoilc, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_century_decomp, 1, MPI_LOGICAL, 0, mpicom, ier)

@@ -7,7 +7,6 @@ module SurfaceRadiationMod
   ! !USES:
   use shr_kind_mod      , only : r8 => shr_kind_r8
   use shr_log_mod       , only : errMsg => shr_log_errMsg
-  use clm_varctl        , only : use_snicar_frc
   use decompMod         , only : bounds_type
   use clm_varcon        , only : namec
   use atm2lndType       , only : atm2lnd_type
@@ -158,48 +157,6 @@ contains
 
     begp = bounds%begp; endp = bounds%endp
     begc = bounds%begc; endc = bounds%endc
-
-    if (use_snicar_frc) then
-       this%sfc_frc_aer_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNOAERFRCL', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of all aerosols in snow (land) ', &
-            ptr_patch=this%sfc_frc_aer_patch, set_urb=spval, default='inactive')
-
-       this%sfc_frc_aer_sno_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNOAERFRC2L', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of all aerosols in snow, averaged only when snow is present (land)', &
-            ptr_patch=this%sfc_frc_aer_sno_patch, set_urb=spval, default='inactive')
-
-       this%sfc_frc_bc_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNOBCFRCL', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of BC in snow (land) ', &
-            ptr_patch=this%sfc_frc_bc_patch, set_urb=spval, default='inactive')
-
-       this%sfc_frc_bc_sno_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNOBCFRC2L', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of BC in snow, averaged only when snow is present (land)', &
-            ptr_patch=this%sfc_frc_bc_sno_patch, set_urb=spval, default='inactive')
-
-       this%sfc_frc_oc_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNOOCFRCL', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of OC in snow (land) ', &
-            ptr_patch=this%sfc_frc_oc_patch, set_urb=spval, default='inactive')
-
-       this%sfc_frc_oc_sno_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNOOCFRC2L', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of OC in snow, averaged only when snow is present (land)', &
-            ptr_patch=this%sfc_frc_oc_sno_patch, set_urb=spval, default='inactive')
-
-       this%sfc_frc_dst_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNODSTFRCL', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of dust in snow (land) ', &
-            ptr_patch=this%sfc_frc_dst_patch, set_urb=spval, default='inactive')
-
-       this%sfc_frc_dst_sno_patch(begp:endp) = spval
-       call hist_addfld1d (fname='SNODSTFRC2L', units='W/m^2', &
-            avgflag='A', long_name='surface forcing of dust in snow, averaged only when snow is present (land)', &
-            ptr_patch=this%sfc_frc_dst_sno_patch, set_urb=spval, default='inactive')
-    end if
 
     this%fsds_vis_d_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSDSVD', units='W/m^2',  &

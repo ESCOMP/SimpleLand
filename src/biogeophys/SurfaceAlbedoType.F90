@@ -259,7 +259,7 @@ contains
     ! Read/Write module information to/from restart file.
     !
     ! !USES:
-    use clm_varctl , only : use_snicar_frc, iulog 
+    use clm_varctl , only : iulog 
     use spmdMod    , only : masterproc
     use decompMod  , only : bounds_type
     use abortutils , only : endrun
@@ -407,90 +407,6 @@ contains
        if (masterproc) write(iulog,*) "Initialize vcmaxcintsha to 1"
        this%vcmaxcintsha_patch(begp:endp) = 1._r8
     end if
-
-    if (use_snicar_frc) then
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgrd_bc', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='ground albedo without BC (direct) (0 to 1)', units='', &
-            interpinic_flag='interp',readvar=readvar, data=this%albgrd_bc_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgrd_bc in initial file..."
-          if (masterproc) write(iulog,*) "Initialize albgrd_bc to albgrd"
-          this%albgrd_bc_col(begc:endc,:) = this%albgrd_col(begc:endc,:)
-       end if
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgri_bc', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='ground albedo without BC (diffuse) (0 to 1)', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%albgri_bc_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgri_bc in initial file..."
-          if (masterproc) write(iulog,*) "Initialize albgri_bc to albgri"
-          this%albgri_bc_col(begc:endc,:) = this%albgri_col(begc:endc,:)
-       end if
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgrd_pur', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='pure snow ground albedo (direct) (0 to 1)', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%albgrd_pur_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgrd_pur in initial file..."
-          if (masterproc) write(iulog,*) "Initialize albgrd_pur to albgrd"
-          this%albgrd_pur_col(begc:endc,:) = this%albgrd_col(begc:endc,:)
-       end if
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgri_pur', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='pure snow ground albedo (diffuse) (0 to 1)', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%albgri_pur_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgri_pur in initial file..."
-          if (masterproc) write(iulog,*) "Initialize albgri_pur to albgri"
-          this%albgri_pur_col(begc:endc,:) = this%albgri_col(begc:endc,:)
-       end if
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgrd_oc', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='ground albedo without OC (direct) (0 to 1)', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%albgrd_oc_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgrd_oc in initial file..."
-          if (masterproc) write(iulog,*) "Initialize albgrd_oc to albgrd"
-          this%albgrd_oc_col(begc:endc,:) = this%albgrd_col(begc:endc,:)
-       end if
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgri_oc', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='ground albedo without OC (diffuse) (0 to 1)', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%albgri_oc_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgri_oc in restart (or initial) file..."
-          if (masterproc) write(iulog,*) "Initialize albgri_oc to albgri"
-          this%albgri_oc_col(begc:endc,:) = this%albgri_col(begc:endc,:)
-       end if
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgrd_dst', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='ground albedo without dust (direct) (0 to 1)', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%albgrd_dst_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgrd_dst in initial file..."
-          if (masterproc) write(iulog,*) "Initialize albgrd_dst to albgrd"
-          this%albgrd_dst_col(begc:endc,:) = this%albgrd_col(begc:endc,:)
-       end if
-
-       call restartvar(ncid=ncid, flag=flag, varname='albgri_dst', xtype=ncd_double,  &
-            dim1name='column', dim2name='numrad', switchdim=.true., &
-            long_name='ground albedo without dust (diffuse) (0 to 1)', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%albgri_dst_col)
-       if (flag=='read' .and. .not. readvar) then
-          if (masterproc) write(iulog,*) "SNICAR: can't find albgri_dst in initial file..."
-          if (masterproc) write(iulog,*) "Initialize albgri_dst to albgri"
-          this%albgri_dst_col(begc:endc,:) = this%albgri_col(begc:endc,:)
-       end if
-
-    end if  ! end of if-use_snicar_frc 
 
     ! patch type physical state variable - fabd
     call restartvar(ncid=ncid, flag=flag, varname='fabd', xtype=ncd_double,  &

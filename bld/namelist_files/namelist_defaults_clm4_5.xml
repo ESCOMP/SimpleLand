@@ -259,10 +259,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <lnc_opt use_cn=".true."   >.true.</lnc_opt>
 <lnc_opt use_cn=".false."  >.false.</lnc_opt>
 
-<use_fertilizer>.false.</use_fertilizer>
-<use_fertilizer use_crop=".true." phys="clm4_5">.true.</use_fertilizer>
-<use_fertilizer use_crop=".true." phys="clm5_0">.true.</use_fertilizer>
-
 <jmaxb1 use_luna=".true." phys="clm5_0">0.093563</jmaxb1>
 
 <initial_seed_at_planting use_crop=".true." phys="clm5_0">3.d00</initial_seed_at_planting>
@@ -1958,17 +1954,14 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 
 <use_vertsoilc       bgc_mode="sp"  >.false.</use_vertsoilc>
 <use_century_decomp  bgc_mode="sp"  >.false.</use_century_decomp>
-<use_lch4            bgc_mode="sp"  >.false.</use_lch4>
 <use_nitrif_denitrif bgc_mode="sp"  >.false.</use_nitrif_denitrif>
 
 <use_vertsoilc       bgc_mode="cn"  >.false.</use_vertsoilc>
 <use_century_decomp  bgc_mode="cn"  >.false.</use_century_decomp>
-<use_lch4            bgc_mode="cn"  >.false.</use_lch4>
 <use_nitrif_denitrif bgc_mode="cn"  >.false.</use_nitrif_denitrif>
 
 <use_vertsoilc       bgc_mode="bgc" >.true.</use_vertsoilc>
 <use_century_decomp  bgc_mode="bgc" >.true.</use_century_decomp>
-<use_lch4            bgc_mode="bgc" >.true.</use_lch4>
 <use_nitrif_denitrif bgc_mode="bgc" >.true.</use_nitrif_denitrif>
 
 

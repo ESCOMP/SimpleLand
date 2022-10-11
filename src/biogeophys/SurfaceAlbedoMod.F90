@@ -13,7 +13,7 @@ module SurfaceAlbedoMod
   use landunit_varcon   , only : istsoil, istcrop
   use clm_varcon        , only : grlnd, namep
   use clm_varpar        , only : numrad, nlevcan, nlevsno, nlevcan
-  use clm_varctl        , only : fsurdat, iulog, use_snicar_frc
+  use clm_varctl        , only : fsurdat, iulog
   use pftconMod         , only : pftcon
   use ColumnType        , only : col                
   !

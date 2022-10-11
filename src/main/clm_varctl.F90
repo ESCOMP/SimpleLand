@@ -185,13 +185,6 @@ module clm_varctl
   real(r8), public :: co2_ppmv     = 355._r8            !
 
   !----------------------------------------------------------
-  ! C isotopes
-  !----------------------------------------------------------
-
-  logical, public :: use_c13 = .false.                  ! true => use C-13 model
-  logical, public :: use_c14 = .false.                  ! true => use C-14 model
-
-  !----------------------------------------------------------
   !  LUNA switches		
   !----------------------------------------------------------
 
@@ -277,15 +270,10 @@ module clm_varctl
   ! Migration of CPP variables
   !----------------------------------------------------------
 
-  logical, public :: use_lch4            = .false.
   logical, public :: use_nitrif_denitrif = .false.
   logical, public :: use_vertsoilc       = .false.
-  logical, public :: use_vichydro        = .false.
   logical, public :: use_century_decomp  = .false.
   logical, public :: use_cn              = .false.
-  logical, public :: use_fertilizer      = .false.
-  logical, public :: use_ozone           = .false.
-  logical, public :: use_snicar_frc      = .false.
   logical, public :: use_noio            = .false.
 
   !----------------------------------------------------------

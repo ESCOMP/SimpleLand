@@ -22,11 +22,9 @@ contains
   function create_and_init_ozone_type(bounds) result(ozone)
     !
     ! !DESCRIPTION:
-    ! Create and initialize an object of ozone_base_type, and return this object. The
-    ! particular type is determined based on the use_ozone namelist parameter.
+    ! Create and initialize an object of ozone_base_type, and return this object
     !
     ! !USES:
-    use clm_varctl   , only : use_ozone
     use OzoneBaseMod , only : ozone_base_type
     use OzoneOffMod  , only : ozone_off_type
     use OzoneMod     , only : ozone_type
@@ -40,11 +38,7 @@ contains
     character(len=*), parameter :: subname = 'create_and_init_ozone_type'
     !-----------------------------------------------------------------------
 
-    if (use_ozone) then
-       allocate(ozone, source = ozone_type())
-    else
-       allocate(ozone, source = ozone_off_type())
-    end if
+    allocate(ozone, source = ozone_off_type())
 
     call ozone%Init(bounds)
     
