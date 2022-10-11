@@ -296,6 +296,9 @@
      <category>datasets</category>
      <group>finidat_consistency_checks</group>
      <default_value>.true.</default_value>
+     <values>
+           <value>.true.</value>
+     </values>
      <desc>
            If TRUE (which is the default), check consistency between pct_pft on the finidat file
            and pct_pft read from the surface dataset.
@@ -311,6 +314,9 @@
      <category>datasets</category>
      <group>clm_initinterp_inparm</group>
      <default_value>.false.</default_value>
+     <values>
+           <value>.false.</value>
+     </values>
      <desc>
            If FALSE (which is the default): If an output type cannot be found in the input for initInterp,
            code aborts
