@@ -455,7 +455,7 @@ def buildnml(case, caseroot, compname):
     # Set confdir
     # -----------------------------------------------------
 
-    confdir = os.path.join(caseroot, "Buildconf", "slimconf")
+    confdir = os.path.join(caseroot, "Buildconf", compname + "conf")
     if not os.path.isdir(confdir):
         os.makedirs(confdir)
 

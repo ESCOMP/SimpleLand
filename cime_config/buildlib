@@ -3,17 +3,18 @@
 """
 build slim ibrary
 """
-import sys, os, time, filecmp, shutil, imp
+import sys, os, time, filecmp
 
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
 
-_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+_LIBDIR = os.path.join(_CIMEROOT, "CIME", "Tools")
 sys.path.append(_LIBDIR)
 
 from standard_script_setup import *
 from CIME.buildlib import parse_input
+from CIME.build import get_standard_makefile_args
 from CIME.case import Case
 from CIME.utils import run_cmd, expect
 
@@ -28,10 +29,12 @@ def _main_func():
     with Case(caseroot) as case:
 
         casetools = case.get_value("CASETOOLS")
+        makefile = os.path.join(casetools, "Makefile")
         lnd_root = case.get_value("COMP_ROOT_DIR_LND")
         gmake_j = case.get_value("GMAKE_J")
         gmake = case.get_value("GMAKE")
-        mach = case.get_value("MACH")
+        gmake_opts = get_standard_makefile_args(case)
+        driver = case.get_value("COMP_INTERFACE").lower()
         nthrds = case.get_value("LND_NTHRDS")
 
         if ( nthrds > 1 ):
@@ -40,14 +43,22 @@ def _main_func():
         #-------------------------------------------------------
         # create Filepath file
         #-------------------------------------------------------
+        compname = case.get_value("COMP_LND")
         filepath_file = os.path.join(bldroot,"Filepath")
         if not os.path.isfile(filepath_file):
             caseroot = case.get_value("CASEROOT")
-            paths = [os.path.join(caseroot,"SourceMods","src.slim"), 
+            expect( (compname == "slim"), "Unexpected COMP_LND name: %s" % (compname))
+            paths = [os.path.join(caseroot,"SourceMods","src."+compname), 
+                     os.path.join(lnd_root,"src","cpl",driver),
                      os.path.join(lnd_root,"src","main"),
                      os.path.join(lnd_root,"src","init_interp"),
                      os.path.join(lnd_root,"src","utils"),
-                     os.path.join(lnd_root,"src","cpl")]
+                     os.path.join(lnd_root,"src","cpl"),
+                     os.path.join(lnd_root,"src","cpl","utils")]
+
+            if (driver == 'nuopc'):
+                paths.append(os.path.join(lnd_root,"src","cpl","share_esmf"))
+
             # Paths needed to build the current system, but won't be long term
             paths.append( os.path.join(lnd_root,"src","biogeophys") )
             paths.append( os.path.join(lnd_root,"src","biogeochem") )
@@ -61,12 +72,12 @@ def _main_func():
         # create the library in libroot
         #-------------------------------------------------------
 
-        complib = os.path.join(libroot,"liblnd.a")
+        complib = os.path.join(libroot,"lib%s.a"%(compname))
         makefile = os.path.join(casetools, "Makefile")
         macfile  = os.path.join(caseroot, "Macros.%s" % mach)
 
-        cmd = "%s complib -j %d MODEL=slim COMPLIB=%s -f %s MACFILE=%s " \
-               % (gmake, gmake_j, complib, makefile, macfile )
+        cmd = "{} complib -j {} COMP_NAME={} COMPLIB={} -f {} {}" \
+               .format(gmake, gmake_j, compname, complib, makefile, gmake_opts )
 
         rc, out, err = run_cmd(cmd)
         logger.info("%s: \n\n output:\n %s \n\n err:\n\n%s\n"%(cmd,out,err))
@@ -75,5 +86,7 @@ def _main_func():
 ###############################################################################
 
 if __name__ == "__main__":
+    logger.warning( "WARNING: buildlib is being called as a program rather than a subroutine as " +
+                    "it is expected to be in the CESM context" )
     _main_func()
 
