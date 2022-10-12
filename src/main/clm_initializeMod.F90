@@ -50,7 +50,7 @@ contains
     use decompInitMod    , only: decompInit_lnd, decompInit_clumps, decompInit_glcp
     use domainMod        , only: domain_check, ldomain, domain_init
     use surfrdMod        , only: surfrd_get_globmask, surfrd_get_grid, surfrd_get_data 
-    use controlMod       , only: control_init, control_print, NLFilename, control_readNL_Physics
+    use controlMod       , only: control_init, control_print, NLFilename, control_readNL_Physics, control_readNL_Perf
     use ncdio_pio        , only: ncd_pio_init
     use initGridCellsMod , only: initGridCells
     use UrbanParamsType  , only: UrbanInput, IsSimpleBuildTemp
@@ -86,6 +86,7 @@ contains
 
     call control_readNL_Physics()
     call readnml_datasets( NLFilename )
+    call control_readNL_Perf()
     call control_init()
     call clm_varpar_init()
     call clm_varcon_init( IsSimpleBuildTemp() )

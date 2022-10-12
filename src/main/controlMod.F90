@@ -42,6 +42,7 @@ module controlMod
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: control_setNL          ! Set namelist filename
   public :: control_init           ! initial run control information
+  public :: control_readNL_Perf    ! read in the namelist for SLIM performance settings
   public :: control_readNL_Physics ! read in the namelist for SLIM physics settings
   public :: control_print          ! print run control information
   !
@@ -137,7 +138,7 @@ contains
 
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
-         create_crop_landunit, nsegspc, co2_ppmv, override_nsrest, &
+         create_crop_landunit, co2_ppmv, override_nsrest, &
          albice, soil_layerstruct, subgridflag, &
          all_active
 
@@ -209,7 +210,7 @@ contains
     if (masterproc) then
 
        ! ----------------------------------------------------------------------
-       ! Read namelist from standard input. 
+       ! Read namelist
        ! ----------------------------------------------------------------------
 
        if ( len_trim(NLFilename) == 0  )then
@@ -362,7 +363,7 @@ contains
   subroutine control_readNL_Physics( )
     !
     ! !DESCRIPTION:
-    ! Initialize CLM run control information
+    ! Initialize SLIM run physics information
     !
     ! !USES:
     use shr_mpi_mod     , only : shr_mpi_bcast
@@ -388,7 +389,7 @@ contains
     if (masterproc) then
 
        ! ----------------------------------------------------------------------
-       ! Read namelist from standard input. 
+       ! Read namelist
        ! ----------------------------------------------------------------------
 
        if ( len_trim(NLFilename) == 0  )then
@@ -412,6 +413,58 @@ contains
     call set_timemgr_init( dtime_in=dtime )
 
   end subroutine control_readNL_Physics
+
+  !------------------------------------------------------------------------
+  subroutine control_readNL_Perf( )
+    !
+    ! !DESCRIPTION:
+    ! Initialize SLIM run performance information
+    !
+    ! !USES:
+    use shr_mpi_mod     , only : shr_mpi_bcast
+    use clm_time_manager, only : set_timemgr_init
+    use spmdMod         , only : mpicom
+    !
+    ! !LOCAL VARIABLES:
+    integer :: i                    ! loop indices
+    integer :: ierr                 ! error code
+    integer :: unitn                ! unit for namelist file
+    character(len=*), parameter :: subname = "control_readNL_Perf"
+    character(len=*), parameter :: nmlName = "slim_perf"
+    !------------------------------------------------------------------------
+
+    ! ----------------------------------------------------------------------
+    ! Namelist Variables
+    ! ----------------------------------------------------------------------
+
+    ! Time step
+    namelist / slim_perf/ nsegspc
+
+    if (masterproc) then
+
+       ! ----------------------------------------------------------------------
+       ! Read namelist
+       ! ----------------------------------------------------------------------
+
+       if ( len_trim(NLFilename) == 0  )then
+          call endrun(msg=subname//'::ERROR: nlfilename not set'//errMsg(sourcefile, __LINE__))
+       end if
+       write(iulog,*) 'Read in '//nmlName//' namelist from: ', trim(NLFilename)
+       open( newunit=unitn, file=trim(NLFilename), status='old' )
+       call shr_nl_find_group_name(unitn, nmlName, status=ierr)
+       if (ierr == 0) then
+          read(unitn, slim_perf, iostat=ierr)
+          if (ierr /= 0) then
+             call endrun(msg=subname//'::ERROR reading '//nmlName//' namelist'//errMsg(sourcefile, __LINE__))
+          end if
+       else
+          call endrun(msg=subname//'::ERROR reading '//nmlName//' namelist'//errMsg(sourcefile, __LINE__))
+       end if
+       close(unitn)
+    end if
+    call shr_mpi_bcast( nsegspc, mpicom )
+
+  end subroutine control_readNL_Perf
 
   !------------------------------------------------------------------------
   subroutine control_spmd()
@@ -488,7 +541,6 @@ contains
     end if
 
     ! physics variables
-    call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (subgridflag , 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
@@ -605,7 +657,6 @@ contains
        write(iulog,*) '   Surface data set and reference date should not differ from initial run'
     end if
     write(iulog,*) '   maxpatch_pft         = ',maxpatch_pft
-    write(iulog,*) '   nsegspc              = ',nsegspc
 
   end subroutine control_print
 
