@@ -100,7 +100,7 @@ contains
              call endrun(msg="ERROR reading clm_initinterp_inparm namelist"//errmsg(sourcefile, __LINE__))
           end if
        else
-          write(iulog,*) "Could not find clm_initinterp_inparm namelist"
+          call endrun(msg='ERROR Could not find clm_initinterp_inparm namelist'//errmsg(sourcefile, __LINE__))
        end if
        call relavu( unitn )
     end if
