@@ -429,7 +429,7 @@ contains
              call endrun(msg="ERROR reading clm_canopy_inparm namelist"//errmsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg="ERROR finding clm_canopy_inparm namelist"//errmsg(sourcefile, __LINE__))
+          write(iulog,*) "Could not find clm_canopy_inparm namelist"
        end if
        call relavu( unitn )
 

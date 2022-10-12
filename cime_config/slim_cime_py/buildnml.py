@@ -360,6 +360,13 @@ def check_nml_data(nmlgen, case):
     if finidat_dest is not None and not interp:
         raise SystemExit("finidat_interp_dest can NOT be set if use_init_interp is not on")
 
+    # -----------------------------------------------------------------------------------------
+    # Requirements still in clm_inparm
+    # -----------------------------------------------------------------------------------------
+    fsurdat = nmlgen.get_value("fsurdat")
+    if fsurdat == "UNSET":
+        raise SystemExit("fsurdat file is NOT set and is required")
+
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 # Turn off unused-argument for inst_string, since isn't in place right now
@@ -406,10 +413,19 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # ----------------------------------------------------
     logger.info("Write namelists")
     namelist_file = os.path.join(confdir, "lnd_in")
+    # Include clm_inparm until can be removed...
     nmlgen.write_output_file(
         namelist_file,
         data_list_path,
-        groups=["slim_inparm", "slim_data_and_initial", "slim_history", "slim_perf"],
+        groups=[
+            "slim_inparm",
+            "slim_data_and_initial",
+            "slim_history",
+            "slim_perf",
+            "finidat_consistency_checks",
+            "clm_initinterp_inparm",
+            "clm_inparm",
+        ],
     )
 
 

@@ -48,6 +48,10 @@ def _main_func():
                      os.path.join(lnd_root,"src","init_interp"),
                      os.path.join(lnd_root,"src","utils"),
                      os.path.join(lnd_root,"src","cpl")]
+            # Paths needed to build the current system, but won't be long term
+            paths.append( os.path.join(lnd_root,"src","biogeophys") )
+            paths.append( os.path.join(lnd_root,"src","biogeochem") )
+            paths.append( os.path.join(lnd_root,"src","soilbiogeochem") )
 
             with open(filepath_file, "w") as filepath:
                 filepath.write("\n".join(paths))
@@ -57,7 +61,7 @@ def _main_func():
         # create the library in libroot
         #-------------------------------------------------------
 
-        complib = os.path.join(libroot,"libslim.a")
+        complib = os.path.join(libroot,"liblnd.a")
         makefile = os.path.join(casetools, "Makefile")
         macfile  = os.path.join(caseroot, "Macros.%s" % mach)
 

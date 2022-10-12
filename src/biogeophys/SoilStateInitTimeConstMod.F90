@@ -73,7 +73,7 @@ contains
              call endrun(msg="ERROR reading '//nl_name//' namelist"//errmsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg="ERROR finding '//nl_name//' namelist"//errmsg(sourcefile, __LINE__))
+          write(iulog,*) "Could not find '//nl_name//' namelist"
        end if
        call relavu( unitn )
 

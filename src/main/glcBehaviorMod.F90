@@ -617,6 +617,9 @@ contains
     glacier_region_behavior(:) = behavior_str_unset
     glacier_region_melt_behavior(:) = behavior_str_unset
     glacier_region_ice_runoff_behavior(:) = behavior_str_unset
+    glacier_region_behavior(0:3) = (/ 'single_at_atm_topo','virtual          ','virtual          ','multiple         ' /)
+    glacier_region_ice_runoff_behavior(0:3) = (/ 'melted     ','melted     ','remains_ice','remains_ice' /)
+    glacier_region_melt_behavior(0:3) = (/ 'remains_in_place','replaced_by_ice ','replaced_by_ice ','replaced_by_ice ' /)
 
     if (masterproc) then
        unitn = getavu()
@@ -629,8 +632,7 @@ contains
                   errMsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg='ERROR finding clm_glacier_behavior namelist'// &
-                      errMsg(sourcefile, __LINE__))
+          write(iulog,*) 'Could not find clm_glacier_behavior namelist'
        end if
        call relavu( unitn )
     endif

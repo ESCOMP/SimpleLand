@@ -19,39 +19,32 @@ module controlMod
   use decompMod                        , only: clump_pproc
   use clm_varcon                       , only: h2osno_max, int_snow_max, n_melt_glcmec
   use clm_varpar                       , only: maxpatch_pft, maxpatch_glcmec, numrad, nlevsno
-  use histFileMod                      , only: max_tapes, max_namlen 
-  use histFileMod                      , only: hist_empty_htapes, hist_dov2xy, hist_avgflag_pertape, hist_type1d_pertape 
-  use histFileMod                      , only: hist_nhtfrq, hist_ndens, hist_mfilt, hist_fincl1, hist_fincl2, hist_fincl3
-  use histFileMod                      , only: hist_fincl4, hist_fincl5, hist_fincl6, hist_fexcl1, hist_fexcl2, hist_fexcl3
-  use histFileMod                      , only: hist_fexcl4, hist_fexcl5, hist_fexcl6
   use initInterpMod                    , only: initInterp_readnl
   use UrbanParamsType                  , only: UrbanReadNML
   use SurfaceAlbedoMod                 , only: albice
   use CNSharedParamsMod                , only: use_fun
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
-  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
-  use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, all_active, co2_type
+  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, paramfile
+  use clm_varctl                       , only: all_active, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, use_bedrock, soil_layerstruct, nsegspc, rpntdir, rpntfil
-  use clm_varctl                       , only: use_cn, use_noio, NLFilename_in, use_century_decomp
+  use clm_varctl                       , only: use_cn, NLFilename_in, use_century_decomp
   use clm_varctl                       , only: use_nitrif_denitrif, create_crop_landunit, glc_snow_persistence_max_days
   use clm_varctl                       , only: subgridflag, use_nguardrail, nfix_timeconst, use_vertsoilc
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: use_lch4, irrigate, create_crop_landunit, use_crop, use_dynroot
   use clm_varctl                       , only: use_fates, use_flexiblecn, use_hydrstress, use_luna, spinup_state
-  use clm_varctl                       , only: single_column
+  use clm_varctl                       , only: single_column, nrevsn, finidat_interp_source
   !
   ! !PUBLIC TYPES:
   implicit none
   !
   ! !PUBLIC MEMBER FUNCTIONS:
-  public :: control_setNL ! Set namelist filename
-  public :: control_init  ! initial run control information
-  public :: control_print ! print run control information
-  !
-  !
-  ! !PRIVATE MEMBER FUNCTIONS:
-  private :: apply_use_init_interp  ! apply the use_init_interp namelist option, if set
+  public :: control_setNL          ! Set namelist filename
+  public :: control_init           ! initial run control information
+  public :: control_readNL_Perf    ! read in the namelist for SLIM performance settings
+  public :: control_readNL_Physics ! read in the namelist for SLIM physics settings
+  public :: control_print          ! print run control information
   !
   ! !PRIVATE TYPES:
   character(len=  7) :: runtyp(4)                        ! run type
@@ -105,8 +98,8 @@ contains
     ! Initialize CLM run control information
     !
     ! !USES:
-    use clm_time_manager                 , only : set_timemgr_init
     use fileutils                        , only : getavu, relavu
+    use clm_time_manager                 , only : get_step_size
     !
     ! !LOCAL VARIABLES:
     integer :: i                    ! loop indices
@@ -114,48 +107,19 @@ contains
     integer :: unitn                ! unit for namelist file
     integer :: dtime                ! Integer time-step
     integer :: override_nsrest      ! If want to override the startup type sent from driver
-    logical :: use_init_interp      ! Apply initInterp to the file given by finidat
     !------------------------------------------------------------------------
 
     ! ----------------------------------------------------------------------
     ! Namelist Variables
     ! ----------------------------------------------------------------------
 
-    ! Time step
-    namelist / clm_inparm/ &
-    dtime
-
     ! CLM namelist settings
-
-    namelist /clm_inparm / &
-         fatmlndfrc, finidat, nrevsn, &
-         finidat_interp_dest, &
-         use_init_interp
 
     ! Input datasets
 
     namelist /clm_inparm/  &
          fsurdat, &
          paramfile
-
-	! MML Input datasets for simple model
-    namelist /clm_inparm/ &
-    	 mml_surdat			
-    	 ! MML forcing file w/ albedo, roughness, etc
-    	 ! /glade/p/work/mlague/cesm_source/cesm1_5_beta05_mml_land/components/clm/bld/namelist_files/namelist_defaults.xml
-    	 ! I think I need to modify one of the namelis_defaults xml files in the above folder in order for 
-    	 ! the model to know to accept my new namelist var... 
-
-    ! History, restart options
-
-    namelist /clm_inparm/  &
-         hist_empty_htapes, hist_dov2xy, &
-         hist_avgflag_pertape, hist_type1d_pertape, &
-         hist_nhtfrq,  hist_ndens, hist_mfilt, &
-         hist_fincl1,  hist_fincl2, hist_fincl3, &
-         hist_fincl4,  hist_fincl5, hist_fincl6, &
-         hist_fexcl1,  hist_fexcl2, hist_fexcl3, &
-         hist_fexcl4,  hist_fexcl5, hist_fexcl6
 
     ! BGC info
 
@@ -174,7 +138,7 @@ contains
 
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
-         create_crop_landunit, nsegspc, co2_ppmv, override_nsrest, &
+         create_crop_landunit, co2_ppmv, override_nsrest, &
          albice, soil_layerstruct, subgridflag, &
          all_active
 
@@ -187,7 +151,7 @@ contains
 
     namelist /clm_inparm/ &
          use_vertsoilc, &
-         use_century_decomp, use_cn, use_noio, &
+         use_century_decomp, use_cn, &
          use_nguardrail, use_nitrif_denitrif
 
     ! Items not really needed, but do need to be properly set as they are used
@@ -235,15 +199,18 @@ contains
 #else
     clump_pproc = 1
 #endif
+    maxpatch_glcmec = 10
+    nlevsno = 5
+    h2osno_max = 1000.0_r8
+    int_snow_max = 1.e30_r8
+    n_melt_glcmec = 10.0_r8
 
     override_nsrest = nsrest
-
-    use_init_interp = .false.
 
     if (masterproc) then
 
        ! ----------------------------------------------------------------------
-       ! Read namelist from standard input. 
+       ! Read namelist
        ! ----------------------------------------------------------------------
 
        if ( len_trim(NLFilename) == 0  )then
@@ -259,7 +226,7 @@ contains
              call endrun(msg='ERROR reading clm_inparm namelist'//errMsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg='ERROR finding clm_inparm namelist'//errMsg(sourcefile, __LINE__))
+          write(iulog,*) 'Could not find clm_inparm namelist'
        end if
 
        call relavu( unitn )
@@ -267,8 +234,6 @@ contains
        ! ----------------------------------------------------------------------
        ! Process some namelist variables, and perform consistency checks
        ! ----------------------------------------------------------------------
-
-       call set_timemgr_init( dtime_in=dtime )
 
        ! Check for namelist variables that SLIM can NOT use
        if ( use_fates )then
@@ -283,20 +248,6 @@ contains
        if ( single_column )then
           call endrun(msg='ERROR SLIM can NOT run with single_column on'//errMsg(sourcefile, __LINE__))
        end if
-
-       if (use_init_interp) then
-          call apply_use_init_interp(finidat, finidat_interp_source)
-       end if
-
-       ! History and restart files
-
-       do i = 1, max_tapes
-          if (hist_nhtfrq(i) == 0) then
-             hist_mfilt(i) = 1
-          else if (hist_nhtfrq(i) < 0) then
-             hist_nhtfrq(i) = nint(-hist_nhtfrq(i)*SHR_CONST_CDAY/(24._r8*dtime))
-          endif
-       end do
 
        ! Override start-type (can only override to branch (3)  and only 
        ! if the driver is a startup type
@@ -409,6 +360,113 @@ contains
   end subroutine control_init
 
   !------------------------------------------------------------------------
+  subroutine control_readNL_Physics( )
+    !
+    ! !DESCRIPTION:
+    ! Initialize SLIM run physics information
+    !
+    ! !USES:
+    use shr_mpi_mod     , only : shr_mpi_bcast
+    use clm_time_manager, only : set_timemgr_init
+    use spmdMod         , only : mpicom
+    !
+    ! !LOCAL VARIABLES:
+    integer :: i                    ! loop indices
+    integer :: ierr                 ! error code
+    integer :: unitn                ! unit for namelist file
+    integer :: dtime                ! Integer time-step
+    character(len=*), parameter :: subname = "control_readNL_Physics"
+    character(len=*), parameter :: nmlName = "slim_inparm"
+    !------------------------------------------------------------------------
+
+    ! ----------------------------------------------------------------------
+    ! Namelist Variables
+    ! ----------------------------------------------------------------------
+
+    ! Time step
+    namelist / slim_inparm/ dtime
+
+    if (masterproc) then
+
+       ! ----------------------------------------------------------------------
+       ! Read namelist
+       ! ----------------------------------------------------------------------
+
+       if ( len_trim(NLFilename) == 0  )then
+          call endrun(msg=subname//'::ERROR: nlfilename not set'//errMsg(sourcefile, __LINE__))
+       end if
+       write(iulog,*) 'Read in '//nmlName//' namelist from: ', trim(NLFilename)
+       open( newunit=unitn, file=trim(NLFilename), status='old' )
+       call shr_nl_find_group_name(unitn, nmlName, status=ierr)
+       if (ierr == 0) then
+          read(unitn, slim_inparm, iostat=ierr)
+          if (ierr /= 0) then
+             call endrun(msg=subname//'::ERROR reading '//nmlName//' namelist'//errMsg(sourcefile, __LINE__))
+          end if
+       else
+          call endrun(msg=subname//'::ERROR reading '//nmlName//' namelist'//errMsg(sourcefile, __LINE__))
+       end if
+       close(unitn)
+    end if
+    call shr_mpi_bcast( dtime, mpicom )
+
+    call set_timemgr_init( dtime_in=dtime )
+
+  end subroutine control_readNL_Physics
+
+  !------------------------------------------------------------------------
+  subroutine control_readNL_Perf( )
+    !
+    ! !DESCRIPTION:
+    ! Initialize SLIM run performance information
+    !
+    ! !USES:
+    use shr_mpi_mod     , only : shr_mpi_bcast
+    use clm_time_manager, only : set_timemgr_init
+    use spmdMod         , only : mpicom
+    !
+    ! !LOCAL VARIABLES:
+    integer :: i                    ! loop indices
+    integer :: ierr                 ! error code
+    integer :: unitn                ! unit for namelist file
+    character(len=*), parameter :: subname = "control_readNL_Perf"
+    character(len=*), parameter :: nmlName = "slim_perf"
+    !------------------------------------------------------------------------
+
+    ! ----------------------------------------------------------------------
+    ! Namelist Variables
+    ! ----------------------------------------------------------------------
+
+    ! Time step
+    namelist / slim_perf/ nsegspc
+
+    if (masterproc) then
+
+       ! ----------------------------------------------------------------------
+       ! Read namelist
+       ! ----------------------------------------------------------------------
+
+       if ( len_trim(NLFilename) == 0  )then
+          call endrun(msg=subname//'::ERROR: nlfilename not set'//errMsg(sourcefile, __LINE__))
+       end if
+       write(iulog,*) 'Read in '//nmlName//' namelist from: ', trim(NLFilename)
+       open( newunit=unitn, file=trim(NLFilename), status='old' )
+       call shr_nl_find_group_name(unitn, nmlName, status=ierr)
+       if (ierr == 0) then
+          read(unitn, slim_perf, iostat=ierr)
+          if (ierr /= 0) then
+             call endrun(msg=subname//'::ERROR reading '//nmlName//' namelist'//errMsg(sourcefile, __LINE__))
+          end if
+       else
+          call endrun(msg=subname//'::ERROR reading '//nmlName//' namelist'//errMsg(sourcefile, __LINE__))
+       end if
+       close(unitn)
+    end if
+    call shr_mpi_bcast( nsegspc, mpicom )
+
+  end subroutine control_readNL_Perf
+
+  !------------------------------------------------------------------------
   subroutine control_spmd()
     !
     ! !DESCRIPTION:
@@ -442,20 +500,11 @@ contains
     call mpi_bcast (use_cn, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_nguardrail, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_crop, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_noio, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     ! initial file variables
-    call mpi_bcast (nrevsn, len(nrevsn), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (finidat, len(finidat), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (finidat_interp_source, len(finidat_interp_source), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (finidat_interp_dest, len(finidat_interp_dest), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (fsurdat, len(fsurdat), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (fatmlndfrc,len(fatmlndfrc),MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (paramfile, len(paramfile) , MPI_CHARACTER, 0, mpicom, ier)
 
-	! mml input file vars for simple model
-	call mpi_bcast (mml_surdat,  len(mml_surdat),   MPI_CHARACTER, 0, mpicom, ier)
-	
     ! Irrigation
     call mpi_bcast(irrigate, 1, MPI_LOGICAL, 0, mpicom, ier)
 
@@ -492,7 +541,6 @@ contains
     end if
 
     ! physics variables
-    call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (subgridflag , 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
@@ -509,27 +557,6 @@ contains
     ! glacier_mec variables
     call mpi_bcast (maxpatch_glcmec, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (glc_snow_persistence_max_days, 1, MPI_INTEGER, 0, mpicom, ier)
-
-    ! history file variables
-    call mpi_bcast (hist_empty_htapes, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (hist_dov2xy, size(hist_dov2xy), MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (hist_nhtfrq, size(hist_nhtfrq), MPI_INTEGER, 0, mpicom, ier)
-    call mpi_bcast (hist_mfilt, size(hist_mfilt), MPI_INTEGER, 0, mpicom, ier)
-    call mpi_bcast (hist_ndens, size(hist_ndens), MPI_INTEGER, 0, mpicom, ier)
-    call mpi_bcast (hist_avgflag_pertape, size(hist_avgflag_pertape), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_type1d_pertape, max_namlen*size(hist_type1d_pertape), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fexcl1, max_namlen*size(hist_fexcl1), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fexcl2, max_namlen*size(hist_fexcl2), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fexcl3, max_namlen*size(hist_fexcl3), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fexcl4, max_namlen*size(hist_fexcl4), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fexcl5, max_namlen*size(hist_fexcl5), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fexcl6, max_namlen*size(hist_fexcl6), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fincl1, (max_namlen+2)*size(hist_fincl1), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fincl2, (max_namlen+2)*size(hist_fincl2), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fincl3, (max_namlen+2)*size(hist_fincl3), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fincl4, (max_namlen+2)*size(hist_fincl4), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fincl5, (max_namlen+2)*size(hist_fincl5), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (hist_fincl6, (max_namlen+2)*size(hist_fincl6), MPI_CHARACTER, 0, mpicom, ier)
 
     ! restart file variables
 
@@ -567,7 +594,6 @@ contains
     write(iulog,*) '    use_vertsoilc = ', use_vertsoilc
     write(iulog,*) '    use_century_decomp = ', use_century_decomp
     write(iulog,*) '    use_cn = ', use_cn
-    write(iulog,*) '    use_noio = ', use_noio
 
     write(iulog,*) 'input data files:'
     write(iulog,*) '   PFT physiology and parameters file = ',trim(paramfile)
@@ -575,16 +601,6 @@ contains
        write(iulog,*) '   fsurdat, surface dataset not set'
     else
        write(iulog,*) '   surface data   = ',trim(fsurdat)
-    end if
-    if (fatmlndfrc == ' ') then
-       write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
-    else
-       write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
-    end if
-    if (mml_surdat == ' ') then
-       write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
-    else
-       write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
     end if
     if (use_cn) then
        if (nfix_timeconst /= 0._r8) then
@@ -641,47 +657,7 @@ contains
        write(iulog,*) '   Surface data set and reference date should not differ from initial run'
     end if
     write(iulog,*) '   maxpatch_pft         = ',maxpatch_pft
-    write(iulog,*) '   nsegspc              = ',nsegspc
 
   end subroutine control_print
-
-
-  !-----------------------------------------------------------------------
-  subroutine apply_use_init_interp(finidat, finidat_interp_source)
-    !
-    ! !DESCRIPTION:
-    ! Applies the use_init_interp option, setting finidat_interp_source to finidat
-    !
-    ! Should be called if use_init_interp is true.
-    !
-    ! Does error checking to ensure that it is valid to set use_init_interp to true,
-    ! given the values of finidat and finidat_interp_source.
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(inout) :: finidat
-    character(len=*), intent(inout) :: finidat_interp_source
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'apply_use_init_interp'
-    !-----------------------------------------------------------------------
-
-    if (finidat == ' ') then
-       call endrun(msg=' ERROR: Can only set use_init_interp if finidat is set')
-    end if
-
-    if (finidat_interp_source /= ' ') then
-       call endrun(msg=' ERROR: Cannot set use_init_interp if finidat_interp_source is &
-            &already set')
-    end if
-
-    finidat_interp_source = finidat
-    finidat = ' '
-
-  end subroutine apply_use_init_interp
-
-
 
 end module controlMod

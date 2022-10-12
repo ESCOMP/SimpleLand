@@ -287,4 +287,137 @@
       <desc>Horizontal resolutions</desc>
   </entry>
 
+  <!-- =============================================================  -->
+  <!-- Initial interpolation namelists still in place                 -->
+  <!-- =============================================================  -->
+
+  <entry id="check_finidat_pct_consistency">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>finidat_consistency_checks</group>
+     <default_value>.true.</default_value>
+     <values>
+           <value>.true.</value>
+     </values>
+     <desc>
+           If TRUE (which is the default), check consistency between pct_pft on the finidat file
+           and pct_pft read from the surface dataset.
+
+           This requires that finidat be non-blank.
+
+           This should probably be removed.
+     </desc>
+  </entry>
+
+  <entry id="init_interp_fill_missing_with_natveg">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>clm_initinterp_inparm</group>
+     <default_value>.false.</default_value>
+     <values>
+           <value>.false.</value>
+     </values>
+     <desc>
+           If FALSE (which is the default): If an output type cannot be found in the input for initInterp,
+           code aborts
+           If TRUE: If an output type cannot be found in the input, fill with closest natural veg column
+           (using bare soil for patch-level variables)
+
+           NOTE: Natural vegetation and crop landunits always behave as if this were true. e.g., if
+           we can't find a column with the same type as a given crop column in the output, then we
+           always fill with the closest natural veg patch / column, regardless of the value of this
+           flag. So interpolation from non-crop to crop cases can be done without setting this flag.
+
+           This should probably be removed.
+     </desc>
+  </entry>
+  <!-- =============================================================  -->
+  <!-- Temporary clm_inparm namelist items to remove                  -->
+  <!-- =============================================================  -->
+
+  <entry id="fsurdat">
+     <type>char</type>
+     <category>datasets</category>
+     <input_pathname>abs</input_pathname> 
+     <group>clm_inparm</group>
+     <values>
+       <value>UNSET</value>
+       <value slim_scenario="global_uniform"      lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</value>
+       <value slim_scenario="realistic_from_1850" lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</value>
+       <value slim_scenario="realistic_from_1850" lnd_grid="0.9x1.25">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_0.9x1.25_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</value>
+       <value slim_scenario="realistic_from_2000" lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</value>
+       <value slim_scenario="realistic_from_2000" lnd_grid="0.9x1.25">$DIN_LOC_ROOT/lnd/clm2/surfdata_map/surfdata_0.9x1.25_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</value>
+     </values>
+     <desc>
+           Surface dataset from CLM
+     </desc>
+  </entry>
+
+  <entry id="paramfile">
+     <type>char</type>
+     <category>datasets</category>
+     <input_pathname>abs</input_pathname> 
+     <group>clm_inparm</group>
+     <values>
+       <value>$DIN_LOC_ROOT/lnd/clm2/paramdata/clm_params.c170913.nc</value>
+     </values>
+     <desc>
+           PFT and parameter file
+     </desc>
+  </entry>
+
+
+  <entry id="use_cn" skip_default_entry="true">
+     <type>logical</type>
+     <category>slim_physics</category>
+     <group>clm_inparm</group>
+     <desc>
+           If Carbon/Nitrogen model should be used
+           Currently this is used in a couple places in SLIM, but should be removed.
+     </desc>
+  </entry>
+
+
+  <!-- =============================================================  -->
+  <!-- Namelist items currently not used that could be good to add    -->
+  <!-- back in                                                        -->
+  <!-- =============================================================  -->
+
+  <entry id="clump_pproc" skip_default_entry="true">
+     <type>integer</type>
+     <category>performance</category>
+     <group>clm_inparm</group>
+     <desc>
+           Number of processors to use per clump (when threading is implemented)
+           Currently has no effect
+           See this issue:
+                https://github.com/ESCOMP/SimpleLand/issues/29
+     </desc>
+  </entry>
+
+  <entry id="wrtdia" skip_default_entry="true">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>clm_inparm</group>
+     <desc>
+           Write diagnostics out to the log file about global statistics
+           Currently is implemented, but should be removed.
+     </desc>
+  </entry>
+
+
+  <entry id="single_column" skip_default_entry="true">
+     <type>logical</type>
+     <category>datasets</category>
+     <group>clm_inparm</group>
+     <default_value>.false.</default_value>
+     <valid_values>.false.</valid_values>
+     <desc>
+           Run as a single column (NOT currently implemented)
+           See this issue:
+                https://github.com/ESCOMP/SimpleLand/issues/29
+     </desc>
+  </entry>
+
+
 </entry_id>

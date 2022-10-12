@@ -50,10 +50,11 @@ contains
     use decompInitMod    , only: decompInit_lnd, decompInit_clumps, decompInit_glcp
     use domainMod        , only: domain_check, ldomain, domain_init
     use surfrdMod        , only: surfrd_get_globmask, surfrd_get_grid, surfrd_get_data 
-    use controlMod       , only: control_init, control_print, NLFilename
+    use controlMod       , only: control_init, control_print, NLFilename, control_readNL_Physics, control_readNL_Perf
     use ncdio_pio        , only: ncd_pio_init
     use initGridCellsMod , only: initGridCells
     use UrbanParamsType  , only: UrbanInput, IsSimpleBuildTemp
+    use mml_MainMod      , only: readnml_datasets
     !
     ! !LOCAL VARIABLES:
     integer           :: ier                     ! error status
@@ -78,11 +79,14 @@ contains
     if ( masterproc )then
        write(iulog,*) trim(version)
        write(iulog,*)
-       write(iulog,*) 'Attempting to initialize the land model .....'
+       write(iulog,*) 'Attempting to initialize the SLIM land model .....'
        write(iulog,*)
        call shr_sys_flush(iulog)
     endif
 
+    call control_readNL_Physics()
+    call readnml_datasets( NLFilename )
+    call control_readNL_Perf()
     call control_init()
     call clm_varpar_init()
     call clm_varcon_init( IsSimpleBuildTemp() )
@@ -242,6 +246,7 @@ contains
     use fileutils             , only : getfil
     use initInterpMod         , only : initInterp
     use subgridWeightsMod     , only : init_subgrid_weights_mod
+    use histFileMod           , only : hist_readNML
     use histFileMod           , only : hist_htapes_build, htapes_fieldlist, hist_printflds
     use histFileMod           , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     use restFileMod           , only : restFile_getfile, restFile_open, restFile_close
@@ -316,6 +321,9 @@ contains
        call restFile_close( ncid=ncid )
        call timemgr_restart()
     end if
+
+    ! History namelist read
+    call hist_readNML( NLFilename )
 
     ! ------------------------------------------------------------------------
     ! Initialize daylength from the previous time step (needed so prev_dayl can be set correctly)

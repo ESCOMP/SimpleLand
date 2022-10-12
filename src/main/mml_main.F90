@@ -50,9 +50,12 @@ module mml_mainMod
   
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: mml_main
+
+  public :: readnml_datasets
   
   ! !PRIVATE MEMBER FUNCTIONS:
   private :: nc_import
+  private :: apply_use_init_interp  ! apply the use_init_interp namelist option, if set
   
   ! mml: can I store the subroutines in other files? (just to keep this one from getting outrageously long?
   ! try it... (move nc_import, for starters... )
@@ -80,6 +83,115 @@ module mml_mainMod
  
 
 contains
+  
+  !-----------------------------------------------------------------------
+  subroutine readnml_datasets( NLFilename )
+    use shr_mpi_mod     , only : shr_mpi_bcast
+    use spmdMod         , only : mpicom
+    use clm_nlUtilsMod  , only : find_nlgroup_name
+    use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest
+    use clm_varctl      , only : nrevsn, fname_len, mml_surdat, finidat_interp_source
+  
+    implicit none
+
+    character(len=*), intent(IN) :: NLFilename   ! Namelist file names
+    !-----------------------------------------------------------------------
+    ! !LOCAL VARIABLES:
+    integer                     :: nu_nml           ! Unit for namelist file
+    integer                     :: nml_error        ! Error code
+    logical                     :: use_init_interp  ! Turn on interpolation of initial conditions
+    character(len=*), parameter :: nml_name = 'slim_data_and_initial'
+    character(len=*), parameter :: subname = 'readnml_datasets'
+    namelist /slim_data_and_initial/ mml_surdat, finidat, fatmlndfrc
+    namelist /slim_data_and_initial/ finidat_interp_dest, nrevsn, use_init_interp
+    !-----------------------------------------------------------------------
+
+    fatmlndfrc = ' '
+    use_init_interp = .false.
+    if (masterproc) then
+       open( newunit=nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
+       call find_nlgroup_name(nu_nml, nml_name, status=nml_error) 
+       if (nml_error == 0) then
+          read(nu_nml, nml=slim_data_and_initial,iostat=nml_error)
+          if (nml_error /= 0) then
+             call endrun(subname // ':: ERROR reading '//nml_name//' namelist')
+          end if
+       else
+          call endrun(subname // ':: ERROR could NOT find '//nml_name//' namelist')
+       end if
+       close(nu_nml)
+    end if
+    call shr_mpi_bcast( mml_surdat, mpicom )
+    call shr_mpi_bcast( finidat, mpicom )
+    call shr_mpi_bcast( finidat_interp_dest, mpicom )
+    call shr_mpi_bcast( nrevsn, mpicom )
+    call shr_mpi_bcast( fatmlndfrc, mpicom )
+    call shr_mpi_bcast( use_init_interp, mpicom )
+
+    if (use_init_interp) then
+       call apply_use_init_interp(finidat, finidat_interp_source)
+    end if
+
+    if (masterproc) then
+       write(iulog,*) 'nrevsn              = ', trim(nrevsn)
+       write(iulog,*) 'finidat             = ', trim(finidat)
+       if ( use_init_interp )then
+          write(iulog,*) 'Interpolate initial conditions'
+          write(iulog,*) 'finidat_interp_dest = ', trim(finidat_interp_dest)
+       end if
+
+       if (fatmlndfrc == ' ') then
+          write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
+       else
+          write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
+       end if
+
+       if (mml_surdat == ' ') then
+           write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
+       else
+           write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
+       end if
+    end if
+
+  end subroutine readnml_datasets
+
+  !-----------------------------------------------------------------------
+  subroutine apply_use_init_interp(finidat, finidat_interp_source)
+    !
+    ! !DESCRIPTION:
+    ! Applies the use_init_interp option, setting finidat_interp_source to
+    ! finidat
+    !
+    ! Should be called if use_init_interp is true.
+    !
+    ! Does error checking to ensure that it is valid to set use_init_interp to
+    ! true,
+    ! given the values of finidat and finidat_interp_source.
+    !
+    ! !USES:
+    !
+    ! !ARGUMENTS:
+    character(len=*), intent(inout) :: finidat
+    character(len=*), intent(inout) :: finidat_interp_source
+    !
+    ! !LOCAL VARIABLES:
+
+    character(len=*), parameter :: subname = 'apply_use_init_interp'
+    !-----------------------------------------------------------------------
+
+    if (finidat == ' ') then
+       call endrun(msg=subname//'::ERROR: Can only set use_init_interp if finidat is set')
+    end if
+
+    if (finidat_interp_source /= ' ') then
+       call endrun(msg=subname//'::ERROR: Cannot set use_init_interp if finidat_interp_source is &
+            &already set')
+    end if
+
+    finidat_interp_source = finidat
+    finidat = ' '
+
+  end subroutine apply_use_init_interp
   
   !-----------------------------------------------------------------------
   subroutine mml_main (bounds, atm2lnd_inst, lnd2atm_inst) !lnd2atm_inst

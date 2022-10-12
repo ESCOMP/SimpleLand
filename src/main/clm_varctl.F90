@@ -126,7 +126,7 @@ module clm_varctl
   logical, public :: use_crop = .false.
 
   ! true => separate crop landunit is not created by default
-  logical, public :: create_crop_landunit = .false.     
+  logical, public :: create_crop_landunit = .true.
   
   ! do not irrigate by default
   logical, public :: irrigate = .false.            

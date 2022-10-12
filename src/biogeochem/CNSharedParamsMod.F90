@@ -161,8 +161,7 @@ contains
                   errMsg(sourcefile, __LINE__))
           end if
        else
-          call endrun(msg='error in finding ' // namelist_group // ' namelist' // &
-                  errMsg(sourcefile, __LINE__))
+          write(iulog,*) 'Could not find ' // namelist_group // ' namelist'
        end if
        call relavu( unitn )
 
