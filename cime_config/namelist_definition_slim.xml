@@ -48,6 +48,7 @@
      <group>slim_data_and_initial</group> 
      <valid_values></valid_values>
      <values>
+       <value>UNSET</value>
        <value slim_start_type="cold">UNSET</value>
        <value slim_start_type="any">UNSET</value>
      </values>
@@ -118,6 +119,9 @@
     <category>slim_physics</category> 
     <group>slim_inparm</group>
     <desc>Time step (seconds)</desc>
+     <values>
+       <value>UNSET</value>
+     </values>
   </entry>
 
   <!-- =============================================================  -->
