@@ -10,7 +10,7 @@ module atm2lndType
   use shr_log_mod   , only : errMsg => shr_log_errMsg
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.  ! MML: numrad = 2, 1=vis, 2=nir
   use clm_varcon    , only : rair, grav, cpair, hfus, tfrz, spval
-  use clm_varctl    , only : iulog, use_cn, use_luna
+  use clm_varctl    , only : iulog, use_cn
   use decompMod     , only : bounds_type
   use abortutils    , only : endrun
   use PatchType     , only : patch
@@ -694,11 +694,6 @@ contains
     allocate(this%forc_po2_grc                  (begg:endg))        ; this%forc_po2_grc                  (:)   = ival
     allocate(this%forc_aer_grc                  (begg:endg,14))     ; this%forc_aer_grc                  (:,:) = ival
     allocate(this%forc_pch4_grc                 (begg:endg))        ; this%forc_pch4_grc                 (:)   = ival
-    if(use_luna)then
-     allocate(this%forc_pco2_240_patch          (begp:endp))        ; this%forc_pco2_240_patch           (:)   = ival
-     allocate(this%forc_po2_240_patch           (begp:endp))        ; this%forc_po2_240_patch            (:)   = ival
-     allocate(this%forc_pbot240_downscaled_patch(begp:endp))        ; this%forc_pbot240_downscaled_patch (:)   = ival
-    endif
 
     ! atm->lnd not downscaled
     allocate(this%forc_t_not_downscaled_grc     (begg:endg))        ; this%forc_t_not_downscaled_grc     (:)   = ival
@@ -1635,21 +1630,6 @@ contains
             ptr_patch=this%prec60_patch, default='inactive')
     end if
 
-    if(use_luna)then
-       this%forc_pco2_240_patch = spval
-       call hist_addfld1d (fname='PCO2_240', units='Pa',  &
-            avgflag='A', long_name='10 day running mean of CO2 pressure', &
-            ptr_patch=this%forc_pco2_240_patch, default='inactive')
-       this%forc_po2_240_patch = spval
-      call hist_addfld1d (fname='PO2_240', units='Pa',  &
-            avgflag='A', long_name='10 day running mean of O2 pressure', &
-            ptr_patch=this%forc_po2_240_patch, default='inactive')
-       this%forc_pbot240_downscaled_patch = spval
-       call hist_addfld1d (fname='PBOT_240', units='Pa',  &
-            avgflag='A', long_name='10 day running mean of air pressure', &
-            ptr_patch=this%forc_pbot240_downscaled_patch, default='inactive')
-    endif
-
   end subroutine InitHistory
 
 !-----------------------------------------------------------------------
@@ -1892,24 +1872,6 @@ contains
             subgrid_type='pft', numlev=1, init_value=100._r8)
     end if
 
-    if(use_luna) then
-      this%forc_po2_240_patch(bounds%begp:bounds%endp) = spval
-      call init_accum_field (name='po2_240', units='Pa',                                            &
-         desc='10-day running mean of parial O2 pressure',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=21223._r8)
-
-      this%forc_pco2_240_patch(bounds%begp:bounds%endp) = spval
-      call init_accum_field (name='pco2_240', units='Pa',                                            &
-         desc='10-day running mean of parial CO2 pressure',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=28._r8)
-
-      this%forc_pbot240_downscaled_patch(bounds%begp:bounds%endp) = spval
-      call init_accum_field (name='pbot240', units='Pa',                                            &
-         desc='10-day running mean of air pressure',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=101325._r8)
-
-    endif
-
   end subroutine InitAccBuffer
 
   !-----------------------------------------------------------------------
@@ -1981,18 +1943,6 @@ contains
        call extract_accum_field ('RH30', rbufslp, nstep)
        this%rh30_patch(begp:endp) = rbufslp(begp:endp)
     end if
-
-    if(use_luna) then
-       call extract_accum_field ('po2_240', rbufslp, nstep)
-       this%forc_po2_240_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('pco2_240', rbufslp, nstep)
-       this%forc_pco2_240_patch(begp:endp) = rbufslp(begp:endp)   
-
-       call extract_accum_field ('pbot240', rbufslp, nstep)
-       this%forc_pbot240_downscaled_patch(begp:endp) = rbufslp(begp:endp)  
- 
-    endif
 
     deallocate(rbufslp)
     deallocate(rbufslc)
@@ -2077,30 +2027,6 @@ contains
        call extract_accum_field ('PREC10', this%prec10_patch, nstep)
     end if
 
-    if(use_luna) then
-     do p = bounds%begp,bounds%endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_pco2_grc(g) 
-     enddo
-     call update_accum_field  ('pco2_240', rbufslp, nstep)
-     call extract_accum_field ('pco2_240', this%forc_pco2_240_patch, nstep)
-
-     do p = bounds%begp,bounds%endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_po2_grc(g) 
-     enddo
-     call update_accum_field  ('po2_240', rbufslp, nstep)
-     call extract_accum_field ('po2_240', this%forc_po2_240_patch, nstep)
-
-     do p = bounds%begp,bounds%endp
-       c = patch%column(p)
-       rbufslp(p) = this%forc_pbot_downscaled_col(c) 
-     enddo
-     call update_accum_field  ('pbot240', rbufslp, nstep)
-     call extract_accum_field ('pbot240', this%forc_pbot240_downscaled_patch, nstep)
-
-    endif
-
     if (use_cn) then
        do p = begp,endp
           g = patch%gridcell(p) 
@@ -2142,18 +2068,6 @@ contains
        this%forc_flood_grc = 0._r8
     endif
 
-    if(use_luna)then
-       call restartvar(ncid=ncid, flag=flag, varname='pco2_240', xtype=ncd_double,  &
-            dim1name='pft', long_name='10-day mean CO2 partial pressure', units='Pa', &
-            interpinic_flag='interp', readvar=readvar, data=this%forc_pco2_240_patch )
-       call restartvar(ncid=ncid, flag=flag, varname='po2_240', xtype=ncd_double,  &
-            dim1name='pft', long_name='10-day mean O2 partial pressure', units='Pa', &
-            interpinic_flag='interp', readvar=readvar, data=this%forc_po2_240_patch )
-       call restartvar(ncid=ncid, flag=flag, varname='pbot240', xtype=ncd_double,  &
-            dim1name='pft', long_name='10 day mean atmospheric pressure(Pa)', units='Pa', &
-            interpinic_flag='interp', readvar=readvar, data=this%forc_pbot240_downscaled_patch )
-    endif
-    
     ! -----------------------------------------------------------------------
     ! Start MML simple land model restart variables section		! MML 2016.01.15
     

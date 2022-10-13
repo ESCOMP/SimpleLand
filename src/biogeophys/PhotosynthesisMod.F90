@@ -14,7 +14,7 @@ module  PhotosynthesisMod
   use shr_log_mod         , only : errMsg => shr_log_errMsg
   use shr_infnan_mod      , only : nan => shr_infnan_nan, assignment(=)
   use abortutils          , only : endrun
-  use clm_varctl          , only : use_cn, use_luna
+  use clm_varctl          , only : use_cn
   use clm_varctl          , only : iulog
   use clm_varpar          , only : nlevcan, nvegwcs, mxpft
   use clm_varcon          , only : namep, spval
@@ -264,19 +264,6 @@ contains
     allocate(this%luvcmax25top_patch(begp:endp))           ; this%luvcmax25top_patch(:) = nan
     allocate(this%lujmax25top_patch (begp:endp))           ; this%lujmax25top_patch(:)  = nan
     allocate(this%lutpu25top_patch  (begp:endp))           ; this%lutpu25top_patch(:)   = nan
-!!
-!    allocate(this%psncanopy_patch   (begp:endp))           ; this%psncanopy_patch   (:)   = nan
-!    allocate(this%lmrcanopy_patch   (begp:endp))           ; this%lmrcanopy_patch   (:)   = nan
-    if(use_luna)then
-      ! NOTE(bja, 2015-09) because these variables are only allocated
-      ! when luna is turned on, they can not be placed into associate
-      ! statements.
-      allocate(this%vcmx25_z_patch  (begp:endp,1:nlevcan)) ; this%vcmx25_z_patch    (:,:) = 30._r8
-      allocate(this%jmx25_z_patch   (begp:endp,1:nlevcan)) ; this%jmx25_z_patch     (:,:) = 60._r8 
-      allocate(this%pnlc_z_patch    (begp:endp,1:nlevcan)) ; this%pnlc_z_patch      (:,:) = 0.01_r8
-      allocate(this%fpsn24_patch    (begp:endp))           ; this%fpsn24_patch      (:)   = nan
-      allocate(this%enzs_z_patch    (begp:endp,1:nlevcan)) ; this%enzs_z_patch      (:,:) = 1._r8
-    endif
 
   end subroutine InitAllocate
 
@@ -378,56 +365,6 @@ contains
           avgflag='A', long_name='shaded leaf stomatal conductance', &
           ptr_patch=ptr_1d, default='inactive')
 
-    endif
-
-    if(use_luna)then  
-       if(nlevcan>1)then
-         call hist_addfld2d (fname='Vcmx25Z', units='umol/m2/s', type2d='nlevcan', &
-            avgflag='A', long_name='canopy profile of vcmax25 predicted by LUNA model', &
-            ptr_patch=this%vcmx25_z_patch, default='inactive')
- 
-         call hist_addfld2d (fname='Jmx25Z', units='umol/m2/s', type2d='nlevcan', &
-            avgflag='A', long_name='canopy profile of  vcmax25 predicted by LUNA model', &
-            ptr_patch=this%jmx25_z_patch, default='inactive')
-
-         call hist_addfld2d (fname='PNLCZ', units='unitless', type2d='nlevcan', &
-            avgflag='A', long_name='Proportion of nitrogen allocated for light capture', &
-            ptr_patch=this%pnlc_z_patch,default='inactive')
-       else
-         ptr_1d => this%vcmx25_z_patch(:,1)
-         call hist_addfld1d (fname='Vcmx25Z', units='umol/m2/s',&
-            avgflag='A', long_name='canopy profile of vcmax25 predicted by LUNA model', &
-            ptr_patch=ptr_1d, default='inactive')
-         ptr_1d => this%jmx25_z_patch(:,1)
-         call hist_addfld1d (fname='Jmx25Z', units='umol/m2/s',&
-            avgflag='A', long_name='canopy profile of  vcmax25 predicted by LUNA model', &
-            ptr_patch=ptr_1d, default='inactive')
-         ptr_1d => this%pnlc_z_patch(:,1)
-         call hist_addfld1d (fname='PNLCZ', units='unitless', &
-            avgflag='A', long_name='Proportion of nitrogen allocated for light capture', &
-            ptr_patch=ptr_1d,default='inactive')
-
-         this%luvcmax25top_patch(begp:endp) = spval
-         call hist_addfld1d (fname='VCMX25T', units='umol/m2/s',  &
-            avgflag='M', long_name='canopy profile of vcmax25', &
-            ptr_patch=this%luvcmax25top_patch, set_lake=spval, set_urb=spval, default='inactive')
-
-         this%lujmax25top_patch(begp:endp) = spval
-         call hist_addfld1d (fname='JMX25T', units='umol/m2/s',  &
-            avgflag='M', long_name='canopy profile of jmax', &
-            ptr_patch=this%lujmax25top_patch, set_lake=spval, set_urb=spval, default='inactive')
-
-            this%lutpu25top_patch(begp:endp) = spval
-            call hist_addfld1d (fname='TPU25T', units='umol/m2/s',  &
-            avgflag='M', long_name='canopy profile of tpu', &
-            ptr_patch=this%lutpu25top_patch, set_lake=spval, set_urb=spval, default='inactive')
-
-       endif
-       this%fpsn24_patch = spval 
-       call hist_addfld1d (fname='FPSN24', units='umol CO2/m**2 ground/day',&
-           avgflag='A', long_name='24 hour accumulative patch photosynthesis starting from mid-night', &
-           ptr_patch=this%fpsn24_patch, default='inactive')
-   
     endif
 
   end subroutine InitHistory
@@ -563,27 +500,6 @@ contains
        dim1name='pft', long_name='leaf N concentration', units='gN leaf/m^2', &
        interpinic_flag='interp', readvar=readvar, data=this%lnca_patch)
 
-    if(use_luna) then
-      call restartvar(ncid=ncid, flag=flag, varname='vcmx25_z', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='Maximum carboxylation rate at 25 celcius for canopy layers', units='umol CO2/m**2/s', &
-         interpinic_flag='interp', readvar=readvar, data=this%vcmx25_z_patch)
-      call restartvar(ncid=ncid, flag=flag, varname='jmx25_z', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='Maximum carboxylation rate at 25 celcius for canopy layers', units='umol CO2/m**2/s', &
-         interpinic_flag='interp', readvar=readvar, data=this%jmx25_z_patch)
-      call restartvar(ncid=ncid, flag=flag, varname='pnlc_z', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='proportion of leaf nitrogen allocated for light capture', units='unitless', &
-         interpinic_flag='interp', readvar=readvar, data=this%pnlc_z_patch )
-      call restartvar(ncid=ncid, flag=flag, varname='enzs_z', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='enzyme decay status during stress: 1.0-fully active; 0.0-all decayed', units='unitless', &
-         interpinic_flag='interp', readvar=readvar, data=this%enzs_z_patch )
-      call restartvar(ncid=ncid, flag=flag, varname='gpp24', xtype=ncd_double,  &
-            dim1name='pft', long_name='accumulative gross primary production', units='umol CO2/m**2 ground/day', &
-            interpinic_flag='interp', readvar=readvar, data=this%fpsn24_patch)    
-   endif
    call restartvar(ncid=ncid, flag=flag, varname='vcmx25t', xtype=ncd_double,  &
          dim1name='pft', long_name='canopy profile of vcmax25', &
          units='umol/m2/s', &

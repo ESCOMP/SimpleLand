@@ -185,12 +185,6 @@ module clm_varctl
   real(r8), public :: co2_ppmv     = 355._r8            !
 
   !----------------------------------------------------------
-  !  LUNA switches		
-  !----------------------------------------------------------
-
-  logical, public :: use_luna = .false.            ! true => use  LUNA
-
-  !----------------------------------------------------------
   !  flexibleCN
   !----------------------------------------------------------
   !  TODO(bja, 2015-08) some of these need to be moved into the

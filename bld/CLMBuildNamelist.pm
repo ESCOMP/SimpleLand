@@ -1055,11 +1055,6 @@ sub process_namelist_inline_logic {
   #############################################
   setup_logic_canopyhydrology($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
-  #####################################
-  # namelist group: clm_canopy_inparm #
-  #####################################
-  setup_logic_canopy($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
   #######################################################################
   # namelist groups: clm_hydrology1_inparm and clm_soilhydrology_inparm #
   #######################################################################
@@ -1583,17 +1578,6 @@ sub setup_logic_dynamic_plant_nitrogen_alloc {
         $log->fatal_error("use_flexibleCN can ONLY be set if CN is on");
      }
   }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_canopy {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-  #
-  # Canopy state
-  #
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults,
-              $nl, 'leaf_mr_vcm', 'phys'=>$nl_flags->{'phys'} )
 }
 
 #-------------------------------------------------------------------------------

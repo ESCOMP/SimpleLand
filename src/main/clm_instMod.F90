@@ -132,26 +132,10 @@ module clm_instMod
 
   !
   public :: clm_instInit       ! Initialize
-  public :: clm_instReadNML    ! Read in namelist
   public :: clm_instRest       ! Setup restart
   !-----------------------------------------------------------------------
 
 contains
-
-  !-----------------------------------------------------------------------
-  subroutine clm_instReadNML( NLFilename )
-    !
-    ! !ARGUMENTS    
-    implicit none
-    character(len=*), intent(IN) :: NLFilename ! Namelist filename
-    ! Read in any namelists that must be read for any clm object instances that need it
-    call canopystate_inst%ReadNML( NLFilename )
-    !call photosyns_inst%ReadNML(   NLFilename )
-    !if (use_cn) then
-       !call crop_inst%ReadNML(     NLFilename )
-    !end if
-
-  end subroutine clm_instReadNML
 
   !-----------------------------------------------------------------------
   subroutine clm_instInit(bounds)

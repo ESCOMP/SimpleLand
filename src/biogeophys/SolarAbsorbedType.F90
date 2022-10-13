@@ -6,7 +6,6 @@ module SolarAbsorbedType
   use shr_log_mod  , only: errMsg => shr_log_errMsg
   use decompMod    , only : bounds_type
   use clm_varcon   , only : spval
-  use clm_varctl   , only : use_luna
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -112,12 +111,6 @@ contains
     allocate(this%fsa_r_patch            (begp:endp))              ; this%fsa_r_patch            (:)   = nan
     allocate(this%parsun_z_patch         (begp:endp,1:nlevcan))    ; this%parsun_z_patch         (:,:) = nan
     allocate(this%parsha_z_patch         (begp:endp,1:nlevcan))    ; this%parsha_z_patch         (:,:) = nan 
-    if(use_luna)then
-        allocate(this%par240d_z_patch    (begp:endp,1:nlevcan))    ; this%par240d_z_patch        (:,:) = spval
-        allocate(this%par240x_z_patch    (begp:endp,1:nlevcan))    ; this%par240x_z_patch        (:,:) = spval 
-        allocate(this%par24d_z_patch     (begp:endp,1:nlevcan))    ; this%par24d_z_patch         (:,:) = spval
-        allocate(this%par24x_z_patch     (begp:endp,1:nlevcan))    ; this%par24x_z_patch         (:,:) = spval
-    endif    
     allocate(this%sabv_patch             (begp:endp))              ; this%sabv_patch             (:)   = nan
     allocate(this%sabg_patch             (begp:endp))              ; this%sabg_patch             (:)   = nan
     allocate(this%sabg_lyr_patch         (begp:endp,-nlevsno+1:1)) ; this%sabg_lyr_patch         (:,:) = nan
@@ -268,18 +261,6 @@ contains
          avgflag='A', long_name='Fraction of incoming solar absorbed by lower snow layers', &
          ptr_patch=this%sub_surf_abs_SW_patch, set_lake=spval, set_urb=spval, default='inactive')
 
-    if(use_luna)then
-       ptr_1d => this%par240d_z_patch(:,1)
-       call hist_addfld1d (fname='PAR240DZ', units='W/m^2', &
-         avgflag='A', long_name='10-day running mean of daytime patch absorbed PAR for leaves for top canopy layer', &
-         ptr_patch=ptr_1d, default='inactive')
-       ptr_1d => this%par240x_z_patch(:,1)
-       call hist_addfld1d (fname='PAR240XZ', units='W/m^2', &
-         avgflag='A', long_name='10-day running mean of maximum patch absorbed PAR for leaves for top canopy layer', &
-         ptr_patch=ptr_1d, default='inactive')
-
-    endif
-
   end subroutine InitHistory
 
   !------------------------------------------------------------------------
@@ -386,36 +367,6 @@ contains
          dim2name='numrad', switchdim=.true.,                                                                         &
          long_name='diffuse solar absorbed by pervious road per unit ground area per unit incident flux', units='',   &
          interpinic_flag='interp', readvar=readvar, data=this%sabs_perroad_dif_lun)
-
-   if(use_luna)then
-      call restartvar(ncid=ncid, flag=flag, varname='par240d', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='10-day running mean of daytime absorbed PAR for leaves in canopy layer', units='W/m**2 leaf', &
-         interpinic_flag='interp', readvar=readvar, data=this%par240d_z_patch )
-      call restartvar(ncid=ncid, flag=flag, varname='par24d', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='Accumulative daytime absorbed PAR for leaves in canopy layer for 24 hours', units='J/m**2 leaf', &
-         interpinic_flag='interp', readvar=readvar, data=this%par24d_z_patch )
-
-      call restartvar(ncid=ncid, flag=flag, varname='par240x', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='10-day running mean of maximum absorbed PAR for leaves in canopy layers', units='W/m**2 leaf', &
-         interpinic_flag='interp', readvar=readvar, data=this%par240x_z_patch )
-      call restartvar(ncid=ncid, flag=flag, varname='par24x', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='Maximum absorbed PAR for leaves in canopy layer in 24 hours', units='J/m**2 leaf', &
-         interpinic_flag='interp', readvar=readvar, data=this%par24x_z_patch )
-
-      call restartvar(ncid=ncid, flag=flag, varname='parsun', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='Instaneous absorbed PAR for sunlit leaves in canopy layer', units='W/m**2 leaf', &
-         interpinic_flag='interp', readvar=readvar, data=this%parsun_z_patch )
-      call restartvar(ncid=ncid, flag=flag, varname='parsha', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='Instaneous absorbed PAR for shaded leaves in canopy layer', units='W/m**2 leaf', &
-         interpinic_flag='interp', readvar=readvar, data=this%parsha_z_patch )
-
-   endif
 
   end subroutine Restart
 

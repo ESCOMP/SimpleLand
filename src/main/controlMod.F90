@@ -38,7 +38,7 @@ module controlMod
   use clm_varctl                       , only: subgridflag, nfix_timeconst, use_vertsoilc
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: irrigate, create_crop_landunit, use_crop
-  use clm_varctl                       , only: use_flexiblecn, use_luna, spinup_state
+  use clm_varctl                       , only: use_flexiblecn, spinup_state
   use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
@@ -196,7 +196,6 @@ contains
                create_crop_landunit,   &
                use_crop,   &
                use_flexiblecn,   &
-               use_luna,   &
                spinup_state, &
                single_column
 
@@ -458,8 +457,6 @@ contains
 
     ! flexibleCN nitrogen model
     call mpi_bcast (use_flexibleCN, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_luna, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     call mpi_bcast (use_bedrock, 1, MPI_LOGICAL, 0, mpicom, ier)
 

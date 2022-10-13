@@ -300,7 +300,6 @@ contains
     ! Read in parameters files
     ! ------------------------------------------------------------------------
 
-    call clm_instReadNML( NLFilename )
     call readParameters(photosyns_inst)
 
     ! ------------------------------------------------------------------------

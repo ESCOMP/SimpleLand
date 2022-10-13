@@ -12,7 +12,7 @@ module FrictionVelocityMod
   use shr_log_mod  , only : errMsg => shr_log_errMsg
   use decompMod    , only : bounds_type
   use clm_varcon   , only : spval
-  use clm_varctl   , only : use_cn, use_luna
+  use clm_varctl   , only : use_cn
   use LandunitType , only : lun                
   use ColumnType   , only : col
   use PatchType    , only : patch                
@@ -228,12 +228,6 @@ contains
             ptr_patch=this%z0qv_patch, default='inactive')
     end if
 
-    if (use_luna) then
-       call hist_addfld1d (fname='RB10', units='s/m', &
-            avgflag='A', long_name='10 day running mean boundary layer resistance', &
-            ptr_patch=this%rb10_patch, default='inactive')
-    end if
-
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------
@@ -297,12 +291,6 @@ contains
          dim1name='column', &
          long_name='ground momentum roughness length', units='m', &
          interpinic_flag='interp', readvar=readvar, data=this%z0mg_col)
-
-    if(use_luna)then
-       call restartvar(ncid=ncid, flag=flag, varname='rb10', xtype=ncd_double,  &
-            dim1name='pft', long_name='10-day mean boundary layer resistance at the pacth', units='s/m', &
-            interpinic_flag='interp', readvar=readvar, data=this%rb10_patch)
-    endif
 
   end subroutine Restart
 

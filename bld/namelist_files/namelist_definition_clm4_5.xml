@@ -394,16 +394,6 @@ small values of h2osno_max should have glc_snow_persistence_max_days > 0.
 Visible and Near-infrared albedo's for glacier ice
 </entry>
 
-<entry id="leaf_mr_vcm" type="real" category="clm_physics"
-       group="clm_canopy_inparm" >
-Scalar of leaf respiration to vcmax
-</entry>
-
-<entry id="Jmaxb1" type="real" category="clm_physics"
-       group="luna" >
-baseline proportion of nitrogen allocated for electron transport (J)
-</entry>
-
 <entry id="dtime" type="real"  category="clm_physics" 
        group="clm_inparm" valid_values="">
 Time step (seconds)
@@ -413,13 +403,6 @@ Time step (seconds)
        group="clm_inparm" valid_values="3">
 Override the start type from the driver: it can only be
 set to 3 meaning branch.
-</entry>
-
-<entry id="use_luna" type="logical" category="physics"
-        group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on the LUNA model, to effect Photosynthesis by leaf Nitrogen
-LUNA operates on C3 and non-crop vegetation (see vcmax_opt for how other veg is handled)
-LUNA: Leaf Utilization of Nitrogen for Assimilation
 </entry>
 
 <entry id="lnc_opt" type="logical" category="clm_nitrogen"

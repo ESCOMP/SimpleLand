@@ -10,7 +10,7 @@ module WaterstateType
   use shr_kind_mod   , only : r8 => shr_kind_r8
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use decompMod      , only : bounds_type
-  use clm_varctl     , only : use_cn, iulog, use_luna
+  use clm_varctl     , only : use_cn, iulog
   use clm_varpar     , only : nlevgrnd, nlevurb, nlevsno   
   use clm_varcon     , only : spval
   use LandunitType   , only : lun                
@@ -402,12 +402,6 @@ contains
     call hist_addfld1d (fname='RHAF', units='fraction', &
          avgflag='A', long_name='fractional humidity of canopy air', &
          ptr_patch=this%rh_af_patch, set_spec=spval, default='inactive')
-
-    if(use_luna)then
-       call hist_addfld1d (fname='RHAF10', units='fraction', &
-        avgflag='A', long_name='10 day running mean of fractional humidity of canopy air', &
-        ptr_patch=this%rh10_af_patch, set_spec=spval, default='inactive')
-    endif
 
     ! Fractions
 
@@ -928,12 +922,6 @@ contains
          dim1name=nameg, &
          long_name='Total Water Storage', units='mm', &
          interpinic_flag='interp', readvar=readvar, data=this%tws_grc)
-
-    if(use_luna)then
-       call restartvar(ncid=ncid, flag=flag, varname='rh10', xtype=ncd_double,  &
-            dim1name='pft', long_name='10-day mean boundary layer relatie humidity', units='unitless', &
-            interpinic_flag='interp', readvar=readvar, data=this%rh10_af_patch)
-    endif
 
     ! Determine volumetric soil water (for read only)
     if (flag == 'read' ) then
