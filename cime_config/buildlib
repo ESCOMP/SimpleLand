@@ -74,7 +74,6 @@ def _main_func():
 
         complib = os.path.join(libroot,"lib%s.a"%(compname))
         makefile = os.path.join(casetools, "Makefile")
-        macfile  = os.path.join(caseroot, "Macros.%s" % mach)
 
         cmd = "{} complib -j {} COMP_NAME={} COMPLIB={} -f {} {}" \
                .format(gmake, gmake_j, compname, complib, makefile, gmake_opts )
