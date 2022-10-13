@@ -72,7 +72,7 @@ def _main_func():
         # create the library in libroot
         #-------------------------------------------------------
 
-        complib = os.path.join(libroot,"lib%s.a"%(compname))
+        complib = os.path.join(libroot,"liblnd.a")
         makefile = os.path.join(casetools, "Makefile")
 
         cmd = "{} complib -j {} COMP_NAME={} COMPLIB={} -f {} {}" \
