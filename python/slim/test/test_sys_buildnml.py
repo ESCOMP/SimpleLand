@@ -32,7 +32,8 @@ def getVariableFromNML(nmlfile, variable):
     """Get a variable from the namelist file"""
     with open(nmlfile, "r") as nfile:
         for line in nfile:
-            if variable in line:
+            match = re.search(r"\s*" + variable + r"\s*=", line)
+            if match is not None:
                 print("lnd_in:" + line)
                 match = re.search('= ["]*([ a-zA-Z0-9._//-]+)["]*', line)
                 if match is not None:
