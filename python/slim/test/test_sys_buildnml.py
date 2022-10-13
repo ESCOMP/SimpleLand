@@ -12,12 +12,12 @@ import logging
 
 from pathlib import Path
 
-from CIME.BuildTools.configure import FakeCase
-from CIME.utils import expect
-
 # pylint: disable=wrong-import-order,unused-import
 from slim import add_slim_cime_py_to_path
 from slim import unit_testing
+
+from CIME.BuildTools.configure import configure, FakeCase
+from CIME.utils import expect
 
 from slim_cime_py.buildnml import buildnml
 
@@ -70,7 +70,7 @@ class TestBuildNML(unittest.TestCase):
                 os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, os.pardir
             )
         )
-        self.case = FakeCase(compiler=None, mpilib=None, debug=None)
+        self.case = FakeCase(compiler=None, comp_interface="nuopc", mpilib=None, debug=None)
         self.case.set_value("CASEROOT", self._testdir)
         self.case.set_value("RUN_TYPE", "any")
         self.case.set_value("RUN_STARTDATE", "2000-01-01")

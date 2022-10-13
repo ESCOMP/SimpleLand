@@ -57,7 +57,7 @@ class TestPathUtils(unittest.TestCase):
 
         setup_logging(logging.DEBUG)
         os.chdir(self._testdir)
-        self.case = FakeCase(compiler=None, mpilib=None, debug=None)
+        self.case = FakeCase(compiler=None, comp_interface="nuopc", mpilib=None, debug=None)
         self.case.set_value("RUNDIR", self._testdir)
         self.case.set_value("RUN_TYPE", "startup")
         self.case.set_value("RUN_STARTDATE", "2000-01-01")
