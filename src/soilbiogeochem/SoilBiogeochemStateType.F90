@@ -119,7 +119,6 @@ contains
     ! !USES:
     use shr_infnan_mod    , only : nan => shr_infnan_nan, assignment(=)
     use histFileMod       , only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp, no_snow_normal
-    use CNSharedParamsMod , only : use_fun
     !
     ! !ARGUMENTS:
     class(soilbiogeochem_state_type) :: this
@@ -183,12 +182,10 @@ contains
             ptr_col=this%fpi_col, default='inactive')
     endif
    
-    if (.not. use_fun) then
-       this%fpg_col(begc:endc) = spval
-       call hist_addfld1d (fname='FPG', units='proportion', &
-            avgflag='A', long_name='fraction of potential gpp', &
-            ptr_col=this%fpg_col, default='inactive')
-    end if
+    this%fpg_col(begc:endc) = spval
+    call hist_addfld1d (fname='FPG', units='proportion', &
+         avgflag='A', long_name='fraction of potential gpp', &
+         ptr_col=this%fpg_col, default='inactive')
 
     if (nlevdecomp > 1) then
        vr_suffix = "_vr"

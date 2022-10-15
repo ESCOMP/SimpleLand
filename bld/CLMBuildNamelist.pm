@@ -677,15 +677,6 @@ sub setup_cmdl_bgc {
        $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
      }
   }
-  my $var = "use_fun";
-  if ( ! defined($nl->get_value($var)) ) {
-     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var,
-                 'phys'=>$nl_flags->{'phys'}, 'use_cn'=>$nl_flags->{'use_cn'},
-                 'use_nitrif_denitrif'=>$nl_flags->{'use_nitrif_denitrif'} );
-  }
-  if ( (! &value_is_true($nl_flags->{'use_nitrif_denitrif'}) ) && &value_is_true($nl->get_value('use_fun')) ) {
-     $log->fatal_error("When FUN is on, use_nitrif_denitrif MUST also be on!");
-  }
 } # end bgc
 
 
@@ -1568,10 +1559,7 @@ sub setup_logic_dynamic_plant_nitrogen_alloc {
       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'CN_evergreen_phenology_opt',
                   'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'carbon_resp_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'}, 'use_fun'=>$nl->get_value('use_fun') );
-      if ( $nl->get_value('carbon_resp_opt') == 1 && &value_is_true($nl->get_value('use_fun')) ) {
-        $log->fatal_error("carbon_resp_opt should NOT be set to 1 when FUN is also on");
-      }
+                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
     }
   } elsif ( ! &value_is_true($nl_flags->{'use_cn'}) ) {
      if ( &value_is_true($nl->get_value('use_flexibleCN')) ) {

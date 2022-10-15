@@ -8,7 +8,6 @@ module SoilBiogeochemNitrogenFluxType
   use clm_varcon                         , only : spval, ispval, dzsoi_decomp
   use decompMod                          , only : bounds_type
   use clm_varctl                         , only : use_nitrif_denitrif, use_vertsoilc, use_crop
-  use CNSharedParamsMod                  , only : use_fun
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   use abortutils                         , only : endrun
   use LandunitType                       , only : lun                
@@ -822,9 +821,7 @@ contains
        call hist_addfld1d (fname='FERT_TO_SMINN', units='gN/m^2/s', &
             avgflag='A', long_name='fertilizer to soil mineral N', &
             ptr_col=this%fert_to_sminn_col, default='inactive')
-    end if
 
-    if (use_crop .and. .not. use_fun) then
        this%soyfixn_to_sminn_col(begc:endc) = spval
        call hist_addfld1d (fname='SOYFIXN_TO_SMINN', units='gN/m^2/s', &
             avgflag='A', long_name='Soybean fixation to soil mineral N', &

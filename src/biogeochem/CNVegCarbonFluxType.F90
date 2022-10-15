@@ -737,7 +737,6 @@ contains
     ! !USES:
     use clm_varpar , only : nlevdecomp, nlevdecomp_full, nlevgrnd
     use clm_varctl , only : hist_wrtch4diag
-    use CNSharedParamsMod, only: use_fun
     use histFileMod, only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp 
     !
     ! !ARGUMENTS:
@@ -1178,13 +1177,6 @@ contains
             avgflag='A', long_name='leaf C litterfall', &
             ptr_patch=this%leafc_to_litter_patch, default='inactive')
 
-       if ( use_fun ) then
-          this%leafc_to_litter_fun_patch(begp:endp) = spval
-          call hist_addfld1d (fname='LEAFC_TO_LITTER_FUN', units='gC/m^2/s', &
-               avgflag='A', long_name='leaf C litterfall used by FUN', &
-               ptr_patch=this%leafc_to_litter_fun_patch, default='inactive')
-       end if
-
        this%frootc_to_litter_patch(begp:endp) = spval
        call hist_addfld1d (fname='FROOTC_TO_LITTER', units='gC/m^2/s', &
             avgflag='A', long_name='fine root C litterfall', &
@@ -1533,110 +1525,6 @@ contains
         call hist_addfld1d (fname='PFT_FIRE_CLOSS', units='gC/m^2/s', &
              avgflag='A', long_name='total patch-level fire C loss for non-peat fires outside land-type converted region', &
              ptr_patch=this%fire_closs_patch, default='inactive')
-
-        if ( use_fun ) then
-          this%npp_Nactive_patch(begp:endp)  = spval
-          call hist_addfld1d (fname='NPP_NACTIVE', units='gC/m^2/s',     &
-               avgflag='A', long_name='Mycorrhizal N uptake used C',     &
-               ptr_patch=this%npp_Nactive_patch, default='inactive')
-
-          ! BUG(wjs, 2016-04-13, bugz 2292) This field has a threading bug. Making it
-          ! inactive for now.
-          this%npp_burnedoff_patch(begp:endp)  = spval
-          call hist_addfld1d (fname='NPP_BURNEDOFF', units='gC/m^2/s',     &
-               avgflag='A', long_name='C that cannot be used for N uptake',     &
-               ptr_patch=this%npp_burnedoff_patch, default='inactive')
-  
-          this%npp_Nnonmyc_patch(begp:endp)  = spval
-          call hist_addfld1d (fname='NPP_NNONMYC', units='gC/m^2/s',     &
-               avgflag='A', long_name='Non-mycorrhizal N uptake used C', &
-               ptr_patch=this%npp_Nnonmyc_patch, default='inactive')
-
-          this%npp_Nam_patch(begp:endp)      = spval
-          call hist_addfld1d (fname='NPP_NAM', units='gC/m^2/s',         &
-               avgflag='A', long_name='AM-associated N uptake used C',   &
-               ptr_patch=this%npp_Nam_patch, default='inactive')
-
-          this%npp_Necm_patch(begp:endp)     = spval
-          call hist_addfld1d (fname='NPP_NECM', units='gC/m^2/s',        &
-               avgflag='A', long_name='ECM-associated N uptake used C',  &
-               ptr_patch=this%npp_Necm_patch, default='inactive')
-
-          if (use_nitrif_denitrif) then
-             this%npp_Nactive_no3_patch(begp:endp)  = spval
-             call hist_addfld1d (fname='NPP_NACTIVE_NO3', units='gC/m^2/s', &
-                  avgflag='A', long_name='Mycorrhizal N uptake used C',     &
-                  ptr_patch=this%npp_Nactive_no3_patch, default='inactive')
-
-             this%npp_Nactive_nh4_patch(begp:endp)  = spval
-             call hist_addfld1d (fname='NPP_NACTIVE_NH4', units='gC/m^2/s', &
-                  avgflag='A', long_name='Mycorrhizal N uptake use C',      &
-                  ptr_patch=this%npp_Nactive_nh4_patch, default='inactive')
-
-             this%npp_Nnonmyc_no3_patch(begp:endp)  = spval
-             call hist_addfld1d (fname='NPP_NNONMYC_NO3', units='gC/m^2/s', &
-                  avgflag='A', long_name='Non-mycorrhizal N uptake use C',  &
-                  ptr_patch=this%npp_Nnonmyc_no3_patch, default='inactive')
-
-             this%npp_Nnonmyc_nh4_patch(begp:endp)  = spval
-             call hist_addfld1d (fname='NPP_NNONMYC_NH4', units='gC/m^2/s', &
-                  avgflag='A', long_name='Non-mycorrhizal N uptake use C',  &
-                  ptr_patch=this%npp_Nnonmyc_nh4_patch, default='inactive')
-
-             this%npp_Nam_no3_patch(begp:endp)      = spval
-             call hist_addfld1d (fname='NPP_NAM_NO3', units='gC/m^2/s',     &
-                  avgflag='A', long_name='AM-associated N uptake use C',    &
-                  ptr_patch=this%npp_Nam_no3_patch, default='inactive')
-
-             this%npp_Nam_nh4_patch(begp:endp)      = spval
-             call hist_addfld1d (fname='NPP_NAM_NH4', units='gC/m^2/s',     &
-                  avgflag='A', long_name='AM-associated N uptake use C',    &
-                  ptr_patch=this%npp_Nam_nh4_patch, default='inactive')
-
-             this%npp_Necm_no3_patch(begp:endp)     = spval
-             call hist_addfld1d (fname='NPP_NECM_NO3', units='gC/m^2/s',    &
-                  avgflag='A', long_name='ECM-associated N uptake used C',  &
-                  ptr_patch=this%npp_Necm_no3_patch, default='inactive')
-
-             this%npp_Necm_nh4_patch(begp:endp)     = spval
-             call hist_addfld1d (fname='NPP_NECM_NH4', units='gC/m^2/s',     &
-                  avgflag='A', long_name='ECM-associated N uptake use C',    &
-                  ptr_patch=this%npp_Necm_nh4_patch, default='inactive')
-          end if
-
-          this%npp_Nfix_patch(begp:endp)     = spval
-          call hist_addfld1d (fname='NPP_NFIX', units='gC/m^2/s',         &
-               avgflag='A', long_name='Symbiotic BNF uptake used C',      &
-               ptr_patch=this%npp_Nfix_patch, default='inactive')
-
-          this%npp_Nretrans_patch(begp:endp) = spval
-          call hist_addfld1d (fname='NPP_NRETRANS', units='gC/m^2/s',     &
-              avgflag='A', long_name='Retranslocated N uptake flux',      &
-              ptr_patch=this%npp_Nretrans_patch, default='inactive')
-
-          this%npp_Nuptake_patch(begp:endp) = spval
-          call hist_addfld1d (fname='NPP_NUPTAKE', units='gC/m^2/s',      &
-               avgflag='A', long_name='Total C used by N uptake in FUN',  &
-               ptr_patch=this%npp_Nuptake_patch, default='inactive')
-
-    this%npp_growth_patch(begp:endp) = spval
-          call hist_addfld1d (fname='NPP_GROWTH', units='gC/m^2/s',      &
-               avgflag='A', long_name='Total C used for growth in FUN',  &
-               ptr_patch=this%npp_growth_patch, default='inactive')
-
-
-
-          this%leafc_change_patch(begp:endp) = spval
-          call hist_addfld1d (fname='LEAFC_CHANGE', units='gC/m^2/s',     &
-               avgflag='A', long_name='C change in leaf',                 &
-               ptr_patch=this%leafc_change_patch, default='inactive')
-
-          this%soilc_change_patch(begp:endp) = spval
-          call hist_addfld1d (fname='SOILC_CHANGE', units='gC/m^2/s',     &
-               avgflag='A', long_name='C change in soil',                 &
-               ptr_patch=this%soilc_change_patch, default='inactive')
-      end if
-! FUN Ends 
 
     end if  ! end of if-c12
 
@@ -3389,7 +3277,6 @@ contains
     use shr_infnan_mod   , only : isnan => shr_infnan_isnan, nan => shr_infnan_nan, assignment(=)
     use clm_time_manager , only : is_restart
     use clm_varcon       , only : c13ratio, c14ratio
-    use CNSharedParamsMod, only : use_fun
     use restUtilMod
     use ncdio_pio
     !
@@ -3507,13 +3394,6 @@ contains
          dim1name='column', &
          long_name='', units='', &
          interpinic_flag='interp', readvar=readvar, data=this%annsum_npp_col) 
-
-    if ( use_fun ) then
-       call restartvar(ncid=ncid, flag=flag, varname='leafc_to_litter_fun', xtype=ncd_double,  &
-            dim1name='pft', &
-            long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%leafc_to_litter_fun_patch)
-    end if
 
   end subroutine RestartBulkOnly
 

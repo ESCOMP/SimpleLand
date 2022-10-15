@@ -65,7 +65,6 @@ contains
     ! !USES:
     use clm_varctl , only : iulog, use_nitrif_denitrif, use_cn
     use clm_varpar , only : nlevdecomp
-    use CNSharedParamsMod, only: use_fun
     !
     ! !ARGUMENTS:
     integer                                 , intent(in)    :: num_soilc       ! number of soil columns in filter
@@ -140,7 +139,6 @@ contains
 
       end do   ! end of column loop
 
-     if(.not.use_fun)then
       if (use_nitrif_denitrif) then
          ! remove small negative perturbations for stability purposes, if any should arise.
         
@@ -164,7 +162,6 @@ contains
             end do
          end do
       endif
-     endif
 
     end associate
 

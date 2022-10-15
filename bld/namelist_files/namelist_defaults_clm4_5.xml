@@ -246,9 +246,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <CN_residual_opt            use_flexibleCN=".true." >1</CN_residual_opt>
 <CN_partition_opt           use_flexibleCN=".true." >1</CN_partition_opt>
 <CN_evergreen_phenology_opt use_flexibleCN=".true." >1</CN_evergreen_phenology_opt>
-<carbon_resp_opt            use_flexibleCN=".true." use_fun=".false.">1</carbon_resp_opt>
-<carbon_resp_opt            use_flexibleCN=".true." use_fun=".true." >0</carbon_resp_opt>
-
 
 <initial_seed_at_planting use_crop=".true." phys="clm5_0">3.d00</initial_seed_at_planting>
 <initial_seed_at_planting use_crop=".true." phys="clm4_5">1.d00</initial_seed_at_planting>
@@ -717,10 +714,6 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
  use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne30np4"       rcp="2.6" sim_year_range="1850-2100"
  use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-
-<!-- Fixation and Uptake of Nitrogen Model (FUN2.0) -->
-<use_fun phys="clm5_0" use_cn=".true." use_nitrif_denitrif=".true.">.true.</use_fun>
-<use_fun                                                           >.false.</use_fun>
 
 <!-- Initial Carbon stocks for BGC -->
 <initial_Cstocks phys="clm4_5" use_cn=".true." use_century_decomp=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>

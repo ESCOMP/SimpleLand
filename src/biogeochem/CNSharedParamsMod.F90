@@ -25,7 +25,6 @@ module CNSharedParamsMod
   type(CNParamsShareType), protected :: CNParamsShareInst
 
   logical, public :: anoxia_wtsat = .false.
-  logical, public :: use_fun      = .false.             ! Use the FUN2.0 model
   integer, public :: nlev_soildecomp_standard = 5
 
   character(len=*), parameter, private :: sourcefile = &

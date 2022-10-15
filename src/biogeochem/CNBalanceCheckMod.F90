@@ -20,7 +20,6 @@ module CNBalanceCheckMod
   use SoilBiogeochemCarbonfluxType    , only : soilbiogeochem_carbonflux_type
   use ColumnType                      , only : col                
   use GridcellType                    , only : grc
-  use CNSharedParamsMod               , only : use_fun
 
   !
   implicit none
@@ -286,10 +285,6 @@ contains
          ! calculate total column-level inputs
          col_ninputs(c) = ndep_to_sminn(c) + nfix_to_sminn(c) + supplement_to_sminn(c)
          
-         if(use_fun)then
-            col_ninputs(c) = col_ninputs(c) + ffix_to_sminn(c) ! for FUN, free living fixation is a seprate flux. RF. 
-         endif
-     
          if (use_crop) then
             col_ninputs(c) = col_ninputs(c) + fert_to_sminn(c) + soyfixn_to_sminn(c)
          end if

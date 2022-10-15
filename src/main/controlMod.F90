@@ -27,7 +27,6 @@ module controlMod
   use initInterpMod                    , only: initInterp_readnl
   use UrbanParamsType                  , only: UrbanReadNML
   use SurfaceAlbedoMod                 , only: albice
-  use CNSharedParamsMod                , only: use_fun
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
@@ -161,8 +160,6 @@ contains
 
     namelist /clm_inparm / &
          co2_type
-
-    namelist /clm_inparm / use_fun
 
     ! Glacier_mec info
     namelist /clm_inparm/ &    
@@ -459,10 +456,6 @@ contains
     call mpi_bcast (use_flexibleCN, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     call mpi_bcast (use_bedrock, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    if (use_cn) then
-       call mpi_bcast (use_fun,            1, MPI_LOGICAL, 0, mpicom, ier)
-    end if
 
     ! physics variables
     call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)

@@ -348,8 +348,6 @@ contains
 
     call temperature_inst%InitAccBuffer(bounds)
     
-    call waterflux_inst%InitAccBuffer(bounds)
-
     call energyflux_inst%InitAccBuffer(bounds)
 
     call canopystate_inst%InitAccBuffer(bounds)

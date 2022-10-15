@@ -59,7 +59,6 @@ contains
     ! directly into the canopy and mineral N entering the soil pool.
     !
     ! !USES:
-    use CNSharedParamsMod    , only: use_fun
     ! !ARGUMENTS:
     type(bounds_type)        , intent(in)    :: bounds  
     type(atm2lnd_type)       , intent(in)    :: atm2lnd_inst
@@ -137,7 +136,6 @@ contains
     use clm_time_manager , only : get_days_per_year, get_step_size
     use shr_sys_mod      , only : shr_sys_flush
     use clm_varcon       , only : secspday, spval
-    use CNSharedParamsMod    , only: use_fun
     !
     ! !ARGUMENTS:
     integer                                , intent(in)    :: num_soilc       ! number of soil columns in filter
@@ -183,9 +181,6 @@ contains
             nfix_to_sminn(c) = max(0._r8,t)
          end do
       endif
-      if(use_fun)then
-        nfix_to_sminn(c) = 0.0_r8
-      end if
 
     end associate
 

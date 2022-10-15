@@ -12,7 +12,6 @@ module CNVegNitrogenStateType
   use clm_varctl                         , only : use_nitrif_denitrif, use_vertsoilc, use_century_decomp
   use clm_varctl                         , only : iulog, override_bgc_restart_mismatch_dump
   use clm_varctl                         , only : use_crop
-  use CNSharedParamsMod                  , only : use_fun
   use decompMod                          , only : bounds_type
   use pftconMod                          , only : npcropmin, noveg, pftcon
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
@@ -221,18 +220,6 @@ contains
     call hist_addfld1d (fname='LEAFN_XFER', units='gN/m^2', &
          avgflag='A', long_name='leaf N transfer', &
          ptr_patch=this%leafn_xfer_patch, default='inactive')     
-
-    if ( use_fun ) then
-       this%leafn_storage_xfer_acc_patch(begp:endp) = spval
-       call hist_addfld1d (fname='LEAFN_STORAGE_XFER_ACC', units='gN/m^2', &
-            avgflag='A', long_name='Accmulated leaf N transfer', &
-            ptr_patch=this%leafn_storage_xfer_acc_patch, default='inactive')
-
-       this%storage_ndemand_patch(begp:endp)        = spval
-       call hist_addfld1d (fname='STORAGE_NDEMAND', units='gN/m^2', &
-            avgflag='A', long_name='N demand during the offset period', &
-            ptr_patch=this%storage_ndemand_patch, default='inactive')
-    end if
 
     this%frootn_patch(begp:endp) = spval
     call hist_addfld1d (fname='FROOTN', units='gN/m^2', &
@@ -578,17 +565,6 @@ contains
     call restartvar(ncid=ncid, flag=flag, varname='leafn_xfer', xtype=ncd_double,  &
          dim1name='pft', long_name='', units='', &
          interpinic_flag='interp', readvar=readvar, data=this%leafn_xfer_patch) 
-
-     if ( use_fun ) then
-        call restartvar(ncid=ncid, flag=flag, varname='leafn_storage_xfer_acc', xtype=ncd_double,  &
-             dim1name='pft', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%leafn_storage_xfer_acc_patch)
-    
-        call restartvar(ncid=ncid, flag=flag, varname='storage_ndemand', xtype=ncd_double,  &
-             dim1name='pft', long_name='', units='', &
-             interpinic_flag='interp', readvar=readvar, data=this%storage_ndemand_patch)
-     end if
-
 
     call restartvar(ncid=ncid, flag=flag, varname='frootn', xtype=ncd_double,  &
          dim1name='pft', long_name='', units='', &

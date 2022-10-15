@@ -12,7 +12,6 @@ module WaterfluxType
   use LandunitType   , only : lun                
   use ColumnType     , only : col                
   use PatchType      , only : patch   
-  use CNSharedParamsMod           , only : use_fun             
   !
   implicit none
   private
@@ -115,7 +114,6 @@ module WaterfluxType
      procedure, private :: InitAllocate 
      procedure, private :: InitHistory  
      procedure, private :: InitCold     
-     procedure, public  :: InitAccBuffer
      procedure, public  :: InitAccVars
      procedure, public  :: UpdateAccVars
 
@@ -514,34 +512,6 @@ contains
   end subroutine InitHistory
   
   
-  
-   !-----------------------------------------------------------------------
-    subroutine InitAccBuffer (this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize accumulation buffer for all required module accumulated fields
-    ! This routine set defaults values that are then overwritten by the
-    ! restart file for restart or branch runs
-    !
-    ! !USES 
-    use clm_varcon  , only : spval
-    use accumulMod  , only : init_accum_field
-    !
-    ! !ARGUMENTS:
-    class(waterflux_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !---------------------------------------------------------------------
-
-    if (use_fun) then
-   
-       call init_accum_field (name='AnnET', units='MM H2O/S', &
-            desc='365-day running mean of total ET', accum_type='runmean', accum_period=-365, &
-            subgrid_type='column', numlev=1, init_value=0._r8)
-
-    end if
-
-  end subroutine InitAccBuffer
-
   !-----------------------------------------------------------------------
     !
      subroutine InitAccVars (this, bounds)
@@ -572,11 +542,6 @@ contains
 
     ! Determine time step
     nstep = get_nstep()
-
-    if (use_fun) then
-       call extract_accum_field ('AnnET', rbufslp, nstep)
-       this%qflx_evap_tot_col(begc:endc) = rbufslp(begc:endc)
-    end if
 
     deallocate(rbufslp)
 
@@ -614,12 +579,6 @@ contains
     do c = begc,endc
        rbufslp(c) = this%qflx_evap_tot_col(c)
     end do
-    if (use_fun) then
-       ! Accumulate and extract AnnET (accumulates total ET as 365-day running mean)
-       call update_accum_field  ('AnnET', rbufslp, nstep)
-       call extract_accum_field ('AnnET', this%AnnET, nstep)
-    
-    end if
 
     deallocate(rbufslp)
     
