@@ -11,7 +11,7 @@ module SoilBiogeochemNitrogenStateType
   use clm_varpar                         , only : ndecomp_cascade_transitions, ndecomp_pools, nlevcan
   use clm_varpar                         , only : nlevdecomp_full, nlevdecomp, nlevsoi
   use clm_varcon                         , only : spval, dzsoi_decomp, zisoi
-  use clm_varctl                         , only : use_nitrif_denitrif, use_vertsoilc, use_century_decomp
+  use clm_varctl                         , only : use_vertsoilc, use_century_decomp
   use clm_varctl                         , only : iulog, override_bgc_restart_mismatch_dump, spinup_state
   use landunit_varcon                    , only : istcrop, istsoil 
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
@@ -220,41 +220,11 @@ contains
        vr_suffix = ""
     endif
 
-    if (use_nitrif_denitrif) then
-       if ( nlevdecomp_full > 1 ) then
-          data2dptr => this%smin_no3_vr_col(begc:endc,1:nlevsoi)
-          call hist_addfld_decomp (fname='SMIN_NO3'//trim(vr_suffix), units='gN/m^3',  type2d='levsoi', &
-               avgflag='A', long_name='soil mineral NO3 (vert. res.)', &
-               ptr_col=data2dptr, default='inactive')
-
-          data2dptr => this%smin_nh4_vr_col(begc:endc,1:nlevsoi)
-          call hist_addfld_decomp (fname='SMIN_NH4'//trim(vr_suffix), units='gN/m^3',  type2d='levsoi', &
-               avgflag='A', long_name='soil mineral NH4 (vert. res.)', &
-               ptr_col=data2dptr, default='inactive')
-
-          data2dptr => this%sminn_vr_col(begc:endc,1:nlevsoi)
-          call hist_addfld_decomp (fname='SMINN'//trim(vr_suffix), units='gN/m^3',  type2d='levsoi', &
-               avgflag='A', long_name='soil mineral N', &
-               ptr_col=data2dptr, default='inactive')
-
-          this%smin_no3_col(begc:endc) = spval
-          call hist_addfld1d (fname='SMIN_NO3', units='gN/m^2', &
-               avgflag='A', long_name='soil mineral NO3', &
-               ptr_col=this%smin_no3_col, default='inactive')
-
-          this%smin_nh4_col(begc:endc) = spval
-          call hist_addfld1d (fname='SMIN_NH4', units='gN/m^2', &
-               avgflag='A', long_name='soil mineral NH4', &
-               ptr_col=this%smin_nh4_col, default='inactive')
-       endif
-    else
-       if ( nlevdecomp_full > 1 ) then
-          data2dptr => this%sminn_vr_col(begc:endc,1:nlevsoi) 
-          call hist_addfld_decomp (fname='SMINN'//trim(vr_suffix), units='gN/m^3', type2d='levsoi', &
-               avgflag='A', long_name='soil mineral N', &
-               ptr_col=data2dptr, default='inactive')
-       end if
-
+    if ( nlevdecomp_full > 1 ) then
+       data2dptr => this%sminn_vr_col(begc:endc,1:nlevsoi) 
+       call hist_addfld_decomp (fname='SMINN'//trim(vr_suffix), units='gN/m^3', type2d='levsoi', &
+            avgflag='A', long_name='soil mineral N', &
+            ptr_col=data2dptr, default='inactive')
     end if
 
     this%totlitn_col(begc:endc) = spval
@@ -274,19 +244,6 @@ contains
          &only makes sense at the column level: should not be averaged to gridcell', &
          ptr_col=this%dyn_nbal_adjustments_col, default='inactive')
 
-    if (use_nitrif_denitrif) then
-       call hist_addfld1d (fname='DYN_COL_SOIL_ADJUSTMENTS_NO3', units='gN/m^2', &
-            avgflag='SUM', &
-            long_name='Adjustments in soil NO3 due to dynamic column areas; &
-            &only makes sense at the column level: should not be averaged to gridcell', &
-            ptr_col=this%dyn_no3bal_adjustments_col, default='inactive')
-
-       call hist_addfld1d (fname='DYN_COL_SOIL_ADJUSTMENTS_NH4', units='gN/m^2', &
-            avgflag='SUM', &
-            long_name='Adjustments in soil NH4 due to dynamic column areas; &
-            &only makes sense at the column level: should not be averaged to gridcell', &
-            ptr_col=this%dyn_nh4bal_adjustments_col, default='inactive')
-    end if
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------
@@ -344,14 +301,6 @@ contains
              this%decomp_npools_1m_col(c,k) = decomp_cpools_1m_col(c,k) / decomp_cascade_con%initial_cn_ratio(k)
           end do
 
-          if (use_nitrif_denitrif) then
-             do j = 1, nlevdecomp_full
-                this%smin_nh4_vr_col(c,j) = 0._r8
-                this%smin_no3_vr_col(c,j) = 0._r8
-             end do
-             this%smin_nh4_col(c) = 0._r8
-             this%smin_no3_col(c) = 0._r8
-          end if
           this%totlitn_col(c)    = 0._r8
           this%totsomn_col(c)    = 0._r8
           this%totlitn_1m_col(c) = 0._r8
@@ -469,46 +418,6 @@ contains
             interpinic_flag='interp' , readvar=readvar, data=ptr1d)
     end if
 
-    if (use_nitrif_denitrif) then
-       ! smin_no3_vr
-       if (use_vertsoilc) then
-          ptr2d => this%smin_no3_vr_col(:,:)
-          call restartvar(ncid=ncid, flag=flag, varname='smin_no3_vr', xtype=ncd_double, &
-               dim1name='column', dim2name='levgrnd', switchdim=.true., &
-               long_name='', units='', &
-               interpinic_flag='interp', readvar=readvar, data=ptr2d)
-       else
-          ptr1d => this%smin_no3_vr_col(:,1)
-          call restartvar(ncid=ncid, flag=flag, varname='smin_no3', xtype=ncd_double, &
-               dim1name='column', &
-               long_name='', units='', &
-               interpinic_flag='interp', readvar=readvar, data=ptr1d)
-       end if
-       if (flag=='read' .and. .not. readvar) then
-          call endrun(msg= 'ERROR:: smin_no3_vr'//' is required on an initialization dataset' )
-       end if
-    end if
-
-    if (use_nitrif_denitrif) then
-       ! smin_nh4
-       if (use_vertsoilc) then
-          ptr2d => this%smin_nh4_vr_col(:,:)
-          call restartvar(ncid=ncid, flag=flag, varname='smin_nh4_vr', xtype=ncd_double, &
-               dim1name='column', dim2name='levgrnd', switchdim=.true., &
-               long_name='', units='', &
-               interpinic_flag='interp', readvar=readvar, data=ptr2d) 
-       else
-          ptr1d => this%smin_nh4_vr_col(:,1)
-          call restartvar(ncid=ncid, flag=flag, varname='smin_nh4', xtype=ncd_double, &
-               dim1name='column', &
-               long_name='', units='', &
-               interpinic_flag='interp', readvar=readvar, data=ptr1d)
-       end if
-       if (flag=='read' .and. .not. readvar) then
-          call endrun(msg= 'ERROR:: smin_nh4_vr'//' is required on an initialization dataset' )
-       end if
-    end if
-
     ! decomp_cascade_state - the purpose of this is to check to make sure the bgc used 
     ! matches what the restart file was generated with.  
     ! add info about the SOM decomposition cascade
@@ -519,9 +428,6 @@ contains
        decomp_cascade_state = 0
     end if
     ! add info about the nitrification / denitrification state
-    if (use_nitrif_denitrif) then
-       decomp_cascade_state = decomp_cascade_state + 10
-    end if
     if (flag == 'write') itemp = decomp_cascade_state    
     call restartvar(ncid=ncid, flag=flag, varname='decomp_cascade_state', xtype=ncd_int,  &
          long_name='BGC of the model that wrote this restart file:' &
@@ -671,10 +577,6 @@ contains
        this%sminn_col(i)       = value_column
        this%ntrunc_col(i)      = value_column
        this%cwdn_col(i)        = value_column
-       if (use_nitrif_denitrif) then
-          this%smin_no3_col(i) = value_column
-          this%smin_nh4_col(i) = value_column
-       end if
        this%totlitn_col(i)     = value_column
        this%totsomn_col(i)     = value_column
        this%totsomn_1m_col(i)  = value_column
@@ -686,10 +588,6 @@ contains
           i = filter_column(fi)
           this%sminn_vr_col(i,j)       = value_column
           this%ntrunc_vr_col(i,j)      = value_column
-          if (use_nitrif_denitrif) then
-             this%smin_no3_vr_col(i,j) = value_column
-             this%smin_nh4_vr_col(i,j) = value_column
-          end if
        end do
     end do
 

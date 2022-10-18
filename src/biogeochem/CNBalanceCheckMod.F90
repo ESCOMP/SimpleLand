@@ -10,7 +10,7 @@ module CNBalanceCheckMod
   use shr_log_mod                     , only : errMsg => shr_log_errMsg
   use decompMod                       , only : bounds_type
   use abortutils                      , only : endrun
-  use clm_varctl                      , only : iulog, use_nitrif_denitrif
+  use clm_varctl                      , only : iulog
   use clm_time_manager                , only : get_step_size
   use CNVegNitrogenFluxType           , only : cnveg_nitrogenflux_type
   use CNVegNitrogenStateType          , only : cnveg_nitrogenstate_type
@@ -300,15 +300,7 @@ contains
          col_noutputs(c) = col_noutputs(c) + &
               wood_harvestn(c) + &
               grainn_to_cropprodn(c)
-
-         if (.not. use_nitrif_denitrif) then
-            col_noutputs(c) = col_noutputs(c) + sminn_leached(c)
-         else
-            col_noutputs(c) = col_noutputs(c) + f_n2o_nit(c)
-
-            col_noutputs(c) = col_noutputs(c) + smin_no3_leached(c) + smin_no3_runoff(c)
-         end if
-
+         col_noutputs(c) = col_noutputs(c) + sminn_leached(c)
          col_noutputs(c) = col_noutputs(c) - som_n_leached(c)
 
          ! calculate the total column-level nitrogen balance error for this time step

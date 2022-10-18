@@ -33,7 +33,7 @@ module controlMod
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, all_active, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, use_bedrock, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_cn, use_noio, NLFilename_in, use_century_decomp
-  use clm_varctl                       , only: use_nitrif_denitrif, create_crop_landunit, glc_snow_persistence_max_days
+  use clm_varctl                       , only: create_crop_landunit, glc_snow_persistence_max_days
   use clm_varctl                       , only: subgridflag, nfix_timeconst, use_vertsoilc
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: irrigate, create_crop_landunit, use_crop
@@ -184,8 +184,7 @@ contains
 
     namelist /clm_inparm/ &
          use_vertsoilc, &
-         use_century_decomp, use_cn, use_noio, &
-         use_nitrif_denitrif
+         use_century_decomp, use_cn, use_noio
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ &
@@ -298,11 +297,7 @@ contains
        ! user specified it in the namelist, we leave it alone.
 
        if (nfix_timeconst == -1.2345_r8) then
-          if (use_nitrif_denitrif) then
-             nfix_timeconst = 10._r8
-          else
-             nfix_timeconst = 0._r8
-          end if
+          nfix_timeconst = 0._r8
        end if
 
        ! If nlevsno, h2osno_max, int_snow_max or n_melt_glcmec are equal to their junk
@@ -414,7 +409,6 @@ contains
     call mpi_bcast (username, len(username), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (nsrest, 1, MPI_INTEGER, 0, mpicom, ier)
 
-    call mpi_bcast (use_nitrif_denitrif, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_vertsoilc, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_century_decomp, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_cn, 1, MPI_LOGICAL, 0, mpicom, ier)
@@ -529,7 +523,6 @@ contains
     write(iulog,*) '   username              = ',trim(username)
     write(iulog,*) '   hostname              = ',trim(hostname)
     write(iulog,*) 'process control parameters:'
-    write(iulog,*) '    use_nitrif_denitrif = ', use_nitrif_denitrif
     write(iulog,*) '    use_vertsoilc = ', use_vertsoilc
     write(iulog,*) '    use_century_decomp = ', use_century_decomp
     write(iulog,*) '    use_cn = ', use_cn

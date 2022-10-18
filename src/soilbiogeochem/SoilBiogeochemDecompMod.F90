@@ -11,7 +11,6 @@ module SoilBiogeochemDecompMod
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
   use decompMod                          , only : bounds_type
   use clm_varpar                         , only : nlevdecomp, ndecomp_cascade_transitions, ndecomp_pools
-  use clm_varctl                         , only : use_nitrif_denitrif
   use clm_varcon                         , only : dzsoi_decomp
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   use SoilBiogeochemStateType            , only : soilbiogeochem_state_type
@@ -174,13 +173,9 @@ contains
                if ( pmnf_decomp_cascade(c,j,k) > 0._r8 ) then
                   p_decomp_cpool_loss(c,j,k) = p_decomp_cpool_loss(c,j,k) * fpi_vr(c,j)
                   pmnf_decomp_cascade(c,j,k) = pmnf_decomp_cascade(c,j,k) * fpi_vr(c,j)
-                  if (.not. use_nitrif_denitrif) then
-                     sminn_to_denit_decomp_cascade_vr(c,j,k) = 0._r8
-                  end if
+                  sminn_to_denit_decomp_cascade_vr(c,j,k) = 0._r8
                else
-                  if (.not. use_nitrif_denitrif) then
-                     sminn_to_denit_decomp_cascade_vr(c,j,k) = -params_inst%dnp * pmnf_decomp_cascade(c,j,k)
-                  end if
+                  sminn_to_denit_decomp_cascade_vr(c,j,k) = -params_inst%dnp * pmnf_decomp_cascade(c,j,k)
                end if
                decomp_cascade_hr_vr(c,j,k) = rf_decomp_cascade(c,j,k) * p_decomp_cpool_loss(c,j,k)
                decomp_cascade_ctransfer_vr(c,j,k) = (1._r8 - rf_decomp_cascade(c,j,k)) * p_decomp_cpool_loss(c,j,k)
@@ -197,9 +192,7 @@ contains
                net_nmin_vr(c,j) = net_nmin_vr(c,j) - pmnf_decomp_cascade(c,j,k)
             else
                decomp_cascade_ntransfer_vr(c,j,k) = 0._r8
-               if (.not. use_nitrif_denitrif) then
-                  sminn_to_denit_decomp_cascade_vr(c,j,k) = 0._r8
-               end if
+               sminn_to_denit_decomp_cascade_vr(c,j,k) = 0._r8
                decomp_cascade_sminn_flux_vr(c,j,k) = 0._r8
             end if
 

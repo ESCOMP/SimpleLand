@@ -601,13 +601,6 @@ CLM Biogeochemistry mode : Carbon Nitrogen model (CN)
 (or CLM45BGC if phys=clm4_5, vsoilc_centbgc='on', and clm4me='on')
 </entry>
 
-<entry id="use_nitrif_denitrif" type="logical" category="bgc"
-       group="clm_inparm" valid_values="" value=".false.">
-Nitrification/denitrification splits the prognostic mineral N pool into two 
-   mineral N pools: NO3 and NH4, and includes the transformations between them.
-Requires CN to work.
-</entry>
-
 <entry id="use_vertsoilc" type="logical" category="bgc"
        group="clm_inparm" valid_values="" value=".false.">
 Turn on vertical soil carbon.
