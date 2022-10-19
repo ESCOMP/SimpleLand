@@ -12,7 +12,7 @@ module histFileMod
   use shr_sys_mod    , only : shr_sys_flush
   use spmdMod        , only : masterproc
   use abortutils     , only : endrun
-  use clm_varctl     , only : iulog, use_vertsoilc
+  use clm_varctl     , only : iulog
   use clm_varcon     , only : spval, ispval, dzsoi_decomp 
   use clm_varcon     , only : grlnd, nameg, namel, namec, namep, nameCohort
   use decompMod      , only : get_proc_bounds, get_proc_global, bounds_type
@@ -2531,12 +2531,8 @@ contains
           if ( masterproc ) write(iulog, *) ' zsoi:',zsoi
           call ncd_io(varname='levgrnd', data=zsoi, ncid=nfid(t), flag='write')
           call ncd_io(varname='levlak' , data=zlak, ncid=nfid(t), flag='write')
-          if (use_vertsoilc) then
-             call ncd_io(varname='levdcmp', data=zsoi, ncid=nfid(t), flag='write')
-          else
-             zsoi_1d(1) = 1._r8
-             call ncd_io(varname='levdcmp', data=zsoi_1d, ncid=nfid(t), flag='write')
-          end if
+          zsoi_1d(1) = 1._r8
+          call ncd_io(varname='levdcmp', data=zsoi_1d, ncid=nfid(t), flag='write')
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')
           

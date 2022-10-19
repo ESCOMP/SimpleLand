@@ -11,7 +11,7 @@ module SoilBiogeochemNitrogenStateType
   use clm_varpar                         , only : ndecomp_cascade_transitions, ndecomp_pools, nlevcan
   use clm_varpar                         , only : nlevdecomp_full, nlevdecomp, nlevsoi
   use clm_varcon                         , only : spval, dzsoi_decomp, zisoi
-  use clm_varctl                         , only : use_vertsoilc, use_century_decomp
+  use clm_varctl                         , only : use_century_decomp
   use clm_varctl                         , only : iulog, override_bgc_restart_mismatch_dump, spinup_state
   use landunit_varcon                    , only : istcrop, istsoil 
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
@@ -364,19 +364,11 @@ contains
     !------------------------------------------------------------------------
 
     ! sminn
-    if (use_vertsoilc) then
-       ptr2d => this%sminn_vr_col
-       call restartvar(ncid=ncid, flag=flag, varname="sminn_vr", xtype=ncd_double,  &
-            dim1name='column', dim2name='levgrnd', switchdim=.true., &
-            long_name='',  units='', fill_value=spval, &
-            interpinic_flag='interp', readvar=readvar, data=ptr2d)
-    else
-       ptr1d => this%sminn_vr_col(:,1)
-       call restartvar(ncid=ncid, flag=flag, varname="sminn", xtype=ncd_double,  &
-            dim1name='column', &
-            long_name='',  units='', fill_value=spval, &
-            interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-    end if
+    ptr1d => this%sminn_vr_col(:,1)
+    call restartvar(ncid=ncid, flag=flag, varname="sminn", xtype=ncd_double,  &
+         dim1name='column', &
+         long_name='',  units='', fill_value=spval, &
+         interpinic_flag='interp' , readvar=readvar, data=ptr1d)
     if (flag=='read' .and. .not. readvar) then
        call endrun(msg='ERROR::'//trim(varname)//' is required on an initialization dataset'//&
             errMsg(sourcefile, __LINE__))
@@ -385,38 +377,22 @@ contains
     ! decomposing N pools
     do k = 1, ndecomp_pools
        varname=trim(decomp_cascade_con%decomp_pool_name_restart(k))//'n'
-       if (use_vertsoilc) then
-          ptr2d => this%decomp_npools_vr_col(:,:,k)
-          call restartvar(ncid=ncid, flag=flag, varname=trim(varname)//"_vr", xtype=ncd_double, &
-               dim1name='column', dim2name='levgrnd', switchdim=.true., &
-               long_name='', units='', &
-               interpinic_flag='interp', readvar=readvar, data=ptr2d) 
-       else
-          ptr1d => this%decomp_npools_vr_col(:,1,k)
-          call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
-               dim1name='column', &
-               long_name='',  units='', fill_value=spval, &
-               interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-       end if
+       ptr1d => this%decomp_npools_vr_col(:,1,k)
+       call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
+            dim1name='column', &
+            long_name='',  units='', fill_value=spval, &
+            interpinic_flag='interp' , readvar=readvar, data=ptr1d)
        if (flag=='read' .and. .not. readvar) then
           call endrun(msg='ERROR:: '//trim(varname)//' is required on an initialization dataset'//&
                errMsg(sourcefile, __LINE__))
        end if
     end do
 
-    if (use_vertsoilc) then
-       ptr2d => this%ntrunc_vr_col
-       call restartvar(ncid=ncid, flag=flag, varname="col_ntrunc_vr", xtype=ncd_double,  &
-            dim1name='column', dim2name='levgrnd', switchdim=.true., &
-            long_name='',  units='', fill_value=spval, &
-            interpinic_flag='interp', readvar=readvar, data=ptr2d)
-    else
-       ptr1d => this%ntrunc_vr_col(:,1)
-       call restartvar(ncid=ncid, flag=flag, varname="col_ntrunc", xtype=ncd_double,  &
-            dim1name='column', &
-            long_name='',  units='', fill_value=spval, &
-            interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-    end if
+    ptr1d => this%ntrunc_vr_col(:,1)
+    call restartvar(ncid=ncid, flag=flag, varname="col_ntrunc", xtype=ncd_double,  &
+         dim1name='column', &
+         long_name='',  units='', fill_value=spval, &
+         interpinic_flag='interp' , readvar=readvar, data=ptr1d)
 
     ! decomp_cascade_state - the purpose of this is to check to make sure the bgc used 
     ! matches what the restart file was generated with.  

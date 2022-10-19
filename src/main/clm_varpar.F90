@@ -7,7 +7,6 @@ module clm_varpar
   ! !USES:
   use shr_kind_mod , only: r8 => shr_kind_r8
   use spmdMod      , only: masterproc
-  use clm_varctl   , only: use_vertsoilc
   use clm_varctl   , only: use_century_decomp
   use clm_varctl   , only: iulog, use_crop, create_crop_landunit, irrigate
   use clm_varctl   , only: soil_layerstruct
@@ -161,14 +160,8 @@ contains
 
     ! here is a switch to set the number of soil levels for the biogeochemistry calculations.
     ! currently it works on either a single level or on nlevsoi and nlevgrnd levels
-    if (use_vertsoilc) then
-       nlevdecomp      = nlevsoi
-       nlevdecomp_full = nlevgrnd
-    else
-       nlevdecomp      = 1
-       nlevdecomp_full = 1
-    end if
-
+    nlevdecomp      = 1
+    nlevdecomp_full = 1
     nlevlak     =  10     ! number of lake layers
 
     if ( masterproc )then

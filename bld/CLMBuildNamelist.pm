@@ -88,7 +88,7 @@ OPTIONS
                                 bgc   = Carbon Nitrogen with methane, nitrification, vertical soil C,
                                         CENTURY decomposition
                                     This toggles on the namelist variables:
-                                          use_cn, use_vertsoilc, use_century_decomp
+                                          use_cn, use_century_decomp
      -[no-]chk_res            Also check [do NOT check] to make sure the resolution and
                               land-mask is valid.
      -clm_demand "list"       List of variables to require on clm namelist besides the usuals.
@@ -640,7 +640,7 @@ sub setup_cmdl_bgc {
 
   {
 	# If the variable has already been set use it, if not set to the value defined by the bgc_mode
-	my @list  = (  "use_vertsoilc", "use_century_decomp" );
+	my @list  = (  "use_century_decomp" );
 	my $ndiff = 0;
         my %settings = ( 'bgc_mode'=>$nl_flags->{'bgc_mode'} );
 	foreach my $var ( @list ) {
@@ -1271,7 +1271,6 @@ sub setup_logic_demand {
   $settings{'glc_nec'}        = $nl_flags->{'glc_nec'};
   # necessary for demand to be set correctly
   $settings{'use_cn'}              = $nl_flags->{'use_cn'};
-  $settings{'use_vertsoilc'}       = $nl_flags->{'use_vertsoilc'};
   $settings{'use_century_decomp'}  = $nl_flags->{'use_century_decomp'};
 
   my $demand = $nl->get_value('clm_demand');
@@ -1388,8 +1387,7 @@ sub setup_logic_initial_conditions {
     } else {
        delete( $settings{'sim_year'} );
     }
-    foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn",
-                       "use_vertsoilc", "use_century_decomp", 
+    foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn", "use_century_decomp", 
                      ) {
        $settings{$item}    = $nl_flags->{$item};
     }

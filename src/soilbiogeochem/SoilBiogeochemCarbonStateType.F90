@@ -7,7 +7,7 @@ module SoilBiogeochemCarbonStateType
   use clm_varpar                         , only : ndecomp_cascade_transitions, ndecomp_pools, nlevcan
   use clm_varpar                         , only : nlevdecomp_full, nlevdecomp, nlevsoi
   use clm_varcon                         , only : spval, ispval, dzsoi_decomp, zisoi, zsoi, c3_r2
-  use clm_varctl                         , only : iulog, use_vertsoilc, spinup_state
+  use clm_varctl                         , only : iulog, spinup_state
   use landunit_varcon                    , only : istcrop, istsoil
   use abortutils                         , only : endrun
   use spmdMod                            , only : masterproc 
@@ -489,36 +489,20 @@ contains
 
        do k = 1, ndecomp_pools
           varname=trim(decomp_cascade_con%decomp_pool_name_restart(k))//'c'
-          if (use_vertsoilc) then
-             ptr2d => this%decomp_cpools_vr_col(:,:,k)
-             call restartvar(ncid=ncid, flag=flag, varname=trim(varname)//"_vr", xtype=ncd_double,  &
-                  dim1name='column', dim2name='levgrnd', switchdim=.true., &
-                  long_name='',  units='', fill_value=spval, &
-                  interpinic_flag='interp', readvar=readvar, data=ptr2d)
-          else
-             ptr1d => this%decomp_cpools_vr_col(:,1,k) ! nlevdecomp = 1; so treat as 1D variable
-             call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
-                  dim1name='column', long_name='',  units='', fill_value=spval, &
-                  interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-          end if
+          ptr1d => this%decomp_cpools_vr_col(:,1,k) ! nlevdecomp = 1; so treat as 1D variable
+          call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
+               dim1name='column', long_name='',  units='', fill_value=spval, &
+               interpinic_flag='interp' , readvar=readvar, data=ptr1d)
           if (flag=='read' .and. .not. readvar) then
              call endrun(msg='ERROR:: '//trim(varname)//' is required on an initialization dataset'//&
                   errMsg(sourcefile, __LINE__))
           end if
        end do
 
-       if (use_vertsoilc) then
-          ptr2d => this%ctrunc_vr_col
-          call restartvar(ncid=ncid, flag=flag, varname='col_ctrunc_vr', xtype=ncd_double,  &
-               dim1name='column', dim2name='levgrnd', switchdim=.true., &
-               long_name='',  units='', fill_value=spval, &
-               interpinic_flag='interp', readvar=readvar, data=ptr2d)
-       else
-          ptr1d => this%ctrunc_vr_col(:,1) ! nlevdecomp = 1; so treat as 1D variable
-          call restartvar(ncid=ncid, flag=flag, varname='col_ctrunc', xtype=ncd_double,  &
-               dim1name='column', long_name='',  units='', fill_value=spval, &
-               interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-       end if
+       ptr1d => this%ctrunc_vr_col(:,1) ! nlevdecomp = 1; so treat as 1D variable
+       call restartvar(ncid=ncid, flag=flag, varname='col_ctrunc', xtype=ncd_double,  &
+            dim1name='column', long_name='',  units='', fill_value=spval, &
+            interpinic_flag='interp' , readvar=readvar, data=ptr1d)
        if (flag=='read' .and. .not. readvar) then
           call endrun(msg='ERROR:: '//trim(varname)//' is required on an initialization dataset'//&
                errMsg(sourcefile, __LINE__))
@@ -534,18 +518,10 @@ contains
 
        do k = 1, ndecomp_pools
           varname = trim(decomp_cascade_con%decomp_pool_name_restart(k))//'c_13'
-          if (use_vertsoilc) then
-             ptr2d => this%decomp_cpools_vr_col(:,:,k)
-             call restartvar(ncid=ncid, flag=flag, varname=trim(varname)//"_vr", xtype=ncd_double,  &
-                  dim1name='column', dim2name='levgrnd', switchdim=.true., &
-                  long_name='',  units='', fill_value=spval, &
-                  interpinic_flag='interp', readvar=readvar, data=ptr2d)
-          else
-             ptr1d => this%decomp_cpools_vr_col(:,1,k) ! nlevdecomp = 1; so treat as 1D variable
-             call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
-                  dim1name='column', long_name='',  units='', fill_value=spval, &
-                  interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-          end if
+          ptr1d => this%decomp_cpools_vr_col(:,1,k) ! nlevdecomp = 1; so treat as 1D variable
+          call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
+               dim1name='column', long_name='',  units='', fill_value=spval, &
+               interpinic_flag='interp' , readvar=readvar, data=ptr1d)
           if (flag=='read' .and. .not. readvar) then
              write(iulog,*) 'initializing soilbiogeochem_carbonstate_inst%decomp_cpools_vr_col' &
                   // ' with atmospheric c13 value for: '//trim(varname)
@@ -559,18 +535,10 @@ contains
           end if
        end do
 
-       if (use_vertsoilc) then
-          ptr2d => this%ctrunc_vr_col
-          call restartvar(ncid=ncid, flag=flag, varname="col_ctrunc_c13_vr", xtype=ncd_double,  &
-               dim1name='column', dim2name='levgrnd', switchdim=.true., &
-               long_name='',  units='', fill_value=spval, &
-               interpinic_flag='interp', readvar=readvar, data=ptr2d)
-       else
-          ptr1d => this%ctrunc_vr_col(:,1)
-          call restartvar(ncid=ncid, flag=flag, varname="col_ctrunc_c13", xtype=ncd_double,  &
-               dim1name='column', long_name='',  units='', fill_value=spval, &
-               interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-       end if
+       ptr1d => this%ctrunc_vr_col(:,1)
+       call restartvar(ncid=ncid, flag=flag, varname="col_ctrunc_c13", xtype=ncd_double,  &
+            dim1name='column', long_name='',  units='', fill_value=spval, &
+            interpinic_flag='interp' , readvar=readvar, data=ptr1d)
     end if
 
     !--------------------------------
@@ -581,19 +549,11 @@ contains
 
        do k = 1, ndecomp_pools
           varname = trim(decomp_cascade_con%decomp_pool_name_restart(k))//'c_14'
-          if (use_vertsoilc) then
-             ptr2d => this%decomp_cpools_vr_col(:,:,k)
-             call restartvar(ncid=ncid, flag=flag, varname=trim(varname)//"_vr", xtype=ncd_double,  &
-                  dim1name='column', dim2name='levgrnd', switchdim=.true., &
-                  long_name='',  units='', fill_value=spval, &
-                  interpinic_flag='interp', readvar=readvar, data=ptr2d)
-          else
-             ptr1d => this%decomp_cpools_vr_col(:,1,k) ! nlevdecomp = 1; so treat as 1D variable
-             call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
-                  dim1name='column', &
-                  long_name='',  units='', fill_value=spval, &
-                  interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-          end if
+          ptr1d => this%decomp_cpools_vr_col(:,1,k) ! nlevdecomp = 1; so treat as 1D variable
+          call restartvar(ncid=ncid, flag=flag, varname=varname, xtype=ncd_double,  &
+               dim1name='column', &
+               long_name='',  units='', fill_value=spval, &
+               interpinic_flag='interp' , readvar=readvar, data=ptr1d)
           if (flag=='read' .and. .not. readvar) then
              write(iulog,*) 'initializing soilbiogeochem_carbonstate_inst%decomp_cpools_vr_col with atmospheric c14 value for: '//&
                   trim(varname)
@@ -607,18 +567,10 @@ contains
           end if
        end do
 
-       if (use_vertsoilc) then 
-          ptr2d => this%ctrunc_vr_col
-          call restartvar(ncid=ncid, flag=flag, varname="col_ctrunc_c14_vr", xtype=ncd_double,  &
-               dim1name='column', dim2name='levgrnd', switchdim=.true., &
-               long_name='',  units='', fill_value=spval, &
-               interpinic_flag='interp', readvar=readvar, data=ptr2d)
-       else
-          ptr1d => this%ctrunc_vr_col(:,1)
-          call restartvar(ncid=ncid, flag=flag, varname="col_ctrunc_c14", xtype=ncd_double,  &
-               dim1name='column', long_name='',  units='', fill_value=spval, &
-               interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-       end if
+       ptr1d => this%ctrunc_vr_col(:,1)
+       call restartvar(ncid=ncid, flag=flag, varname="col_ctrunc_c14", xtype=ncd_double,  &
+            dim1name='column', long_name='',  units='', fill_value=spval, &
+            interpinic_flag='interp' , readvar=readvar, data=ptr1d)
 
     end if
 

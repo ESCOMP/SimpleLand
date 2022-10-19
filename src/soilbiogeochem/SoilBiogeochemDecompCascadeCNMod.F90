@@ -11,7 +11,7 @@ module SoilBiogeochemDecompCascadeCNMod
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
   use clm_varpar                         , only : nlevsoi, nlevgrnd, nlevdecomp, ndecomp_cascade_transitions, ndecomp_pools
   use clm_varpar                         , only : i_met_lit, i_cel_lit, i_lig_lit, i_cwd
-  use clm_varctl                         , only : iulog, spinup_state, anoxia, use_vertsoilc
+  use clm_varctl                         , only : iulog, spinup_state, anoxia
   use clm_varcon                         , only : zsoi
   use decompMod                          , only : bounds_type
   use abortutils                         , only : endrun
@@ -649,11 +649,6 @@ contains
        ! set "froz_q10" parameter
        froz_q10  = CNParamsShareInst%froz_q10
 
-       if (use_vertsoilc) then
-          ! Set "decomp_depth_efolding" parameter
-          decomp_depth_efolding = CNParamsShareInst%decomp_depth_efolding
-       end if
-
        ! The following code implements the acceleration part of the AD spinup
        ! algorithm, by multiplying all of the SOM decomposition base rates by 10.0.
 
@@ -799,62 +794,27 @@ contains
 
        o_scalar(bounds%begc:bounds%endc,1:nlevdecomp) = 1._r8
 
-       if (use_vertsoilc) then
-          ! add a term to reduce decomposition rate at depth
-          ! for now used a fixed e-folding depth
-          do j = 1, nlevdecomp
-             do fc = 1,num_soilc
-                c = filter_soilc(fc)
-                depth_scalar(c,j) = exp(-zsoi(j)/decomp_depth_efolding)
-             end do
-          end do
-       end if
-
       ! calculate rate constants for all litter and som pools
-       if (use_vertsoilc) then
-          do j = 1,nlevdecomp
-             do fc = 1,num_soilc
-                c = filter_soilc(fc)
-                decomp_k(c,j,i_litr1) = k_l1 * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_litr2) = k_l2 * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_litr3) = k_l3 * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil1) = k_s1 * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil2) = k_s2 * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil3) = k_s3 * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil4) = k_s4 * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-             end do
+       do j = 1,nlevdecomp
+          do fc = 1,num_soilc
+             c = filter_soilc(fc)
+             decomp_k(c,j,i_litr1) = k_l1 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
+             decomp_k(c,j,i_litr2) = k_l2 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
+             decomp_k(c,j,i_litr3) = k_l3 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
+             decomp_k(c,j,i_soil1) = k_s1 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
+             decomp_k(c,j,i_soil2) = k_s2 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
+             decomp_k(c,j,i_soil3) = k_s3 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
+             decomp_k(c,j,i_soil4) = k_s4 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
           end do
-       else
-          do j = 1,nlevdecomp
-             do fc = 1,num_soilc
-                c = filter_soilc(fc)
-                decomp_k(c,j,i_litr1) = k_l1 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_litr2) = k_l2 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_litr3) = k_l3 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil1) = k_s1 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil2) = k_s2 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil3) = k_s3 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-                decomp_k(c,j,i_soil4) = k_s4 * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-             end do
-          end do
-       end if
+       end do
 
       ! do the same for cwd
-       if (use_vertsoilc) then
-          do j = 1,nlevdecomp
-             do fc = 1,num_soilc
-                c = filter_soilc(fc)
-                decomp_k(c,j,i_cwd) = k_frag * t_scalar(c,j) * w_scalar(c,j) * depth_scalar(c,j) * o_scalar(c,j) / dt
-             end do
+       do j = 1,nlevdecomp
+          do fc = 1,num_soilc
+             c = filter_soilc(fc)
+             decomp_k(c,j,i_cwd) = k_frag * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
           end do
-       else
-          do j = 1,nlevdecomp
-             do fc = 1,num_soilc
-                c = filter_soilc(fc)
-                decomp_k(c,j,i_cwd) = k_frag * t_scalar(c,j) * w_scalar(c,j) * o_scalar(c,j) / dt
-             end do
-          end do
-       end if
+       end do
 
      end associate
 

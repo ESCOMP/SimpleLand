@@ -34,7 +34,7 @@ module controlMod
   use clm_varctl                       , only: wrtdia, co2_ppmv, use_bedrock, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_cn, use_noio, NLFilename_in, use_century_decomp
   use clm_varctl                       , only: create_crop_landunit, glc_snow_persistence_max_days
-  use clm_varctl                       , only: subgridflag, nfix_timeconst, use_vertsoilc
+  use clm_varctl                       , only: subgridflag, nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: irrigate, create_crop_landunit, use_crop
   use clm_varctl                       , only: use_flexiblecn, spinup_state
@@ -182,9 +182,7 @@ contains
     ! max number of plant functional types in naturally vegetated landunit
     namelist /clm_inparm/ maxpatch_pft
 
-    namelist /clm_inparm/ &
-         use_vertsoilc, &
-         use_century_decomp, use_cn, use_noio
+    namelist /clm_inparm/ use_century_decomp, use_cn, use_noio
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ &
@@ -409,7 +407,6 @@ contains
     call mpi_bcast (username, len(username), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (nsrest, 1, MPI_INTEGER, 0, mpicom, ier)
 
-    call mpi_bcast (use_vertsoilc, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_century_decomp, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_cn, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_crop, 1, MPI_LOGICAL, 0, mpicom, ier)
@@ -523,7 +520,6 @@ contains
     write(iulog,*) '   username              = ',trim(username)
     write(iulog,*) '   hostname              = ',trim(hostname)
     write(iulog,*) 'process control parameters:'
-    write(iulog,*) '    use_vertsoilc = ', use_vertsoilc
     write(iulog,*) '    use_century_decomp = ', use_century_decomp
     write(iulog,*) '    use_cn = ', use_cn
     write(iulog,*) '    use_noio = ', use_noio

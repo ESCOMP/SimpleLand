@@ -9,7 +9,6 @@ module SoilBiogeochemNLeachingMod
   use shr_kind_mod                    , only : r8 => shr_kind_r8
   use decompMod                       , only : bounds_type
   use clm_varcon                      , only : dzsoi_decomp, zisoi
-  use clm_varctl                      , only : use_vertsoilc
   use SoilBiogeochemNitrogenStateType , only : soilbiogeochem_nitrogenstate_type
   use SoilBiogeochemNitrogenFluxType  , only : soilbiogeochem_nitrogenflux_type
   use WaterStateType                  , only : waterstate_type
@@ -166,30 +165,16 @@ contains
          do fc = 1,num_soilc
             c = filter_soilc(fc)
 
-            if (.not. use_vertsoilc) then
-               ! calculate the dissolved mineral N concentration (gN/kg water)
-               ! assumes that 10% of mineral nitrogen is soluble
-               disn_conc = 0._r8
-               if (tot_water(c) > 0._r8) then
-                  disn_conc = (sf * sminn_vr(c,j) ) / tot_water(c)
-               end if
-
-               ! calculate the N leaching flux as a function of the dissolved
-               ! concentration and the sub-surface drainage flux
-               sminn_leached_vr(c,j) = disn_conc * drain_tot(c)
-            else
-               ! calculate the dissolved mineral N concentration (gN/kg water)
-               ! assumes that 10% of mineral nitrogen is soluble
-               disn_conc = 0._r8
-               if (h2osoi_liq(c,j) > 0._r8) then
-                  disn_conc = (sf * sminn_vr(c,j) * col%dz(c,j) )/(h2osoi_liq(c,j) )
-               end if
-
-               ! calculate the N leaching flux as a function of the dissolved
-               ! concentration and the sub-surface drainage flux
-               sminn_leached_vr(c,j) = disn_conc * drain_tot(c) * h2osoi_liq(c,j) / ( tot_water(c) * col%dz(c,j) )
-
+            ! calculate the dissolved mineral N concentration (gN/kg water)
+            ! assumes that 10% of mineral nitrogen is soluble
+            disn_conc = 0._r8
+            if (tot_water(c) > 0._r8) then
+               disn_conc = (sf * sminn_vr(c,j) ) / tot_water(c)
             end if
+
+            ! calculate the N leaching flux as a function of the dissolved
+            ! concentration and the sub-surface drainage flux
+            sminn_leached_vr(c,j) = disn_conc * drain_tot(c)
 
             ! limit the flux based on current sminn state
             ! only let at most the assumed soluble fraction

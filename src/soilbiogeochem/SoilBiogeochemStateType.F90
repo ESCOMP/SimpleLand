@@ -11,7 +11,7 @@ module SoilBiogeochemStateType
   use clm_varcon     , only : spval, ispval, c14ratio, grlnd
   use landunit_varcon, only : istsoil, istcrop
   use clm_varpar     , only : nlevsno, nlevgrnd, nlevlak
-  use clm_varctl     , only : use_vertsoilc, use_cn 
+  use clm_varctl     , only : use_cn 
   use clm_varctl     , only : iulog
   use LandunitType   , only : lun                
   use ColumnType     , only : col                
@@ -273,35 +273,11 @@ contains
     real(r8), pointer :: ptr1d(:)   ! temp. pointers for slicing larger arrays
     !-----------------------------------------------------------------------
   
-    if (use_vertsoilc) then
-       ptr2d => this%fpi_vr_col
-       call restartvar(ncid=ncid, flag=flag, varname='fpi_vr', xtype=ncd_double,  &
-            dim1name='column',dim2name='levgrnd', switchdim=.true., &
-            long_name='fraction of potential immobilization',  units='unitless', &
-            interpinic_flag='interp', readvar=readvar, data=ptr2d)
-    else
-       ptr1d => this%fpi_vr_col(:,1) ! nlevdecomp = 1; so treat as 1D variable
-       call restartvar(ncid=ncid, flag=flag, varname='fpi', xtype=ncd_double,  &
-            dim1name='column', &
-            long_name='fraction of potential immobilization',  units='unitless', &
-            interpinic_flag='interp' , readvar=readvar, data=ptr1d)
-    end if
-
-    if (use_vertsoilc) then
-       ptr2d => this%som_adv_coef_col
-       call restartvar(ncid=ncid, flag=flag, varname='som_adv_coef_vr', xtype=ncd_double,  &
-            dim1name='column',dim2name='levgrnd', switchdim=.true., &
-            long_name='SOM advective flux', units='m/s', fill_value=spval, &
-            interpinic_flag='interp', readvar=readvar, data=ptr2d)
-    end if
-    
-    if (use_vertsoilc) then
-       ptr2d => this%som_diffus_coef_col
-       call restartvar(ncid=ncid, flag=flag, varname='som_diffus_coef_vr', xtype=ncd_double,  &
-            dim1name='column',dim2name='levgrnd', switchdim=.true., &
-            long_name='SOM diffusivity due to bio/cryo-turbation',  units='m^2/s', fill_value=spval, &
-            interpinic_flag='interp', readvar=readvar, data=ptr2d)
-    end if
+    ptr1d => this%fpi_vr_col(:,1) ! nlevdecomp = 1; so treat as 1D variable
+    call restartvar(ncid=ncid, flag=flag, varname='fpi', xtype=ncd_double,  &
+         dim1name='column', &
+         long_name='fraction of potential immobilization',  units='unitless', &
+         interpinic_flag='interp' , readvar=readvar, data=ptr1d)
 
     call restartvar(ncid=ncid, flag=flag, varname='fpg', xtype=ncd_double,  &
          dim1name='column', &
