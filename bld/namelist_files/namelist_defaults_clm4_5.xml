@@ -716,11 +716,11 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
  use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <!-- Initial Carbon stocks for BGC -->
-<initial_Cstocks phys="clm4_5" use_cn=".true." use_century_decomp=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>
-<initial_Cstocks phys="clm5_0" use_cn=".true." use_century_decomp=".true." >200.0d00, 200.0d00, 200.0d00</initial_Cstocks>
+<initial_Cstocks phys="clm4_5" use_cn=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>
+<initial_Cstocks phys="clm5_0" use_cn=".true." >200.0d00, 200.0d00, 200.0d00</initial_Cstocks>
 
-<initial_Cstocks_depth phys="clm5_0" use_cn=".true." use_century_decomp=".true." >1.50d00</initial_Cstocks_depth>
-<initial_Cstocks_depth phys="clm4_5" use_cn=".true." use_century_decomp=".true." >0.3</initial_Cstocks_depth>
+<initial_Cstocks_depth phys="clm5_0" use_cn=".true." >1.50d00</initial_Cstocks_depth>
+<initial_Cstocks_depth phys="clm4_5" use_cn=".true." >0.3</initial_Cstocks_depth>
 
 <initial_vegC phys="clm5_0" use_cn=".true."  mm_nuptake_opt=".true." >100.d00</initial_vegC>
 <initial_vegC phys="clm4_5" use_cn=".true."  mm_nuptake_opt=".true." >20.d00</initial_vegC>
@@ -1925,14 +1925,5 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 
 <diri>.</diri>
 <diro>.</diro>
-
-<!-- =========================================  -->
-<!-- Defaults for different BGC modes           -->
-<!-- =========================================  -->
-
-<use_century_decomp  bgc_mode="sp"  >.false.</use_century_decomp>
-<use_century_decomp  bgc_mode="cn"  >.false.</use_century_decomp>
-<use_century_decomp  bgc_mode="bgc" >.true.</use_century_decomp>
-
 
 </namelist_defaults>

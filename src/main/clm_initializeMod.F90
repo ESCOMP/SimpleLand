@@ -232,7 +232,7 @@ contains
     use clm_varpar            , only : nlevsno
     use clm_varcon            , only : spval
     use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat, mml_surdat
-    use clm_varctl            , only : use_century_decomp, single_column, scmlat, scmlon, use_cn
+    use clm_varctl            , only : single_column, scmlat, scmlon, use_cn
     use clm_varorb            , only : eccen, mvelpp, lambm0, obliqr
     use clm_time_manager      , only : get_step_size, get_curr_calday
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 

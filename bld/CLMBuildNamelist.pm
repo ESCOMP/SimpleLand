@@ -88,7 +88,7 @@ OPTIONS
                                 bgc   = Carbon Nitrogen with methane, nitrification, vertical soil C,
                                         CENTURY decomposition
                                     This toggles on the namelist variables:
-                                          use_cn, use_century_decomp
+                                          use_cn
      -[no-]chk_res            Also check [do NOT check] to make sure the resolution and
                               land-mask is valid.
      -clm_demand "list"       List of variables to require on clm namelist besides the usuals.
@@ -636,35 +636,6 @@ sub setup_cmdl_bgc {
   }
   if ( defined($nl->get_value("use_cn")) && ($nl_flags->{'use_cn'} ne $nl->get_value("use_cn")) ) {
     $log->fatal_error("The namelist variable use_cn is inconsistent with the -bgc option");
-  }
-
-  {
-	# If the variable has already been set use it, if not set to the value defined by the bgc_mode
-	my @list  = (  "use_century_decomp" );
-	my $ndiff = 0;
-        my %settings = ( 'bgc_mode'=>$nl_flags->{'bgc_mode'} );
-	foreach my $var ( @list ) {
-            my $default_setting = $defaults->get_value($var, \%settings );
-	    if ( ! defined($nl->get_value($var))  ) {
-		$nl_flags->{$var} = $default_setting;
-	    } else {
-		if ( $nl->get_value($var) ne $default_setting ) {
-		    $ndiff += 1;
-		}
-		$nl_flags->{$var} = $nl->get_value($var);
-	    }
-	    $val = $nl_flags->{$var};
-	    my $group = $definition->get_group_name($var);
-	    $nl->set_variable_value($group, $var, $val);
-	    if (  ! $definition->is_valid_value( $var, $val ) ) {
-		my @valid_values   = $definition->get_valid_values( $var );
-		$log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
-	    }
-	}
-	# If all the variables are different report it as an error
-	if ( $ndiff == ($#list + 1) ) {
-	    $log->fatal_error("You are contradicting the -bgc setting with the namelist variables: @list" );
-	}
   }
 
   # Now set use_cn
@@ -1271,7 +1242,6 @@ sub setup_logic_demand {
   $settings{'glc_nec'}        = $nl_flags->{'glc_nec'};
   # necessary for demand to be set correctly
   $settings{'use_cn'}              = $nl_flags->{'use_cn'};
-  $settings{'use_century_decomp'}  = $nl_flags->{'use_century_decomp'};
 
   my $demand = $nl->get_value('clm_demand');
   if (defined($demand)) {
@@ -1387,8 +1357,7 @@ sub setup_logic_initial_conditions {
     } else {
        delete( $settings{'sim_year'} );
     }
-    foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn", "use_century_decomp", 
-                     ) {
+    foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn" ) {
        $settings{$item}    = $nl_flags->{$item};
     }
     if ($opts->{'ignore_ic_year'}) {

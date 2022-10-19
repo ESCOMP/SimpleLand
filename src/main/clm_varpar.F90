@@ -7,7 +7,6 @@ module clm_varpar
   ! !USES:
   use shr_kind_mod , only: r8 => shr_kind_r8
   use spmdMod      , only: masterproc
-  use clm_varctl   , only: use_century_decomp
   use clm_varctl   , only: iulog, use_crop, create_crop_landunit, irrigate
   use clm_varctl   , only: soil_layerstruct
 
@@ -175,13 +174,8 @@ contains
     end if
 
     i_cwd = 4
-    if (use_century_decomp) then
-       ndecomp_pools = 7
-       ndecomp_cascade_transitions = 10
-    else
-       ndecomp_pools = 8
-       ndecomp_cascade_transitions = 9
-    end if
+    ndecomp_pools = 8
+    ndecomp_cascade_transitions = 9
 
   end subroutine clm_varpar_init
 

@@ -9,7 +9,7 @@ module clm_instMod
   use decompMod       , only : bounds_type
   use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
   use clm_varctl      , only : use_cn
-  use clm_varctl      , only : use_century_decomp, use_crop
+  use clm_varctl      , only : use_crop
   use clm_varcon      , only : bdsno, c13ratio, c14ratio
   use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
@@ -294,12 +294,7 @@ contains
        ! soilbiogeochem_state_inst to be initialized
 
        call init_decomp_cascade_constants()
-       if (use_century_decomp) then
-          call init_decompcascade_bgc(bounds, soilbiogeochem_state_inst, &
-                                      soilstate_inst )
-       else 
-          call init_decompcascade_cn(bounds, soilbiogeochem_state_inst)
-       end if
+       call init_decompcascade_cn(bounds, soilbiogeochem_state_inst)
 
        ! Initalize soilbiogeochem carbon types
 

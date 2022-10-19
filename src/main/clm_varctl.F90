@@ -263,8 +263,6 @@ module clm_varctl
   !----------------------------------------------------------
   ! Migration of CPP variables
   !----------------------------------------------------------
-
-  logical, public :: use_century_decomp  = .false.
   logical, public :: use_cn              = .false.
   logical, public :: use_noio            = .false.
 
