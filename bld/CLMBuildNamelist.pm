@@ -963,7 +963,6 @@ sub process_namelist_inline_logic {
   setup_logic_delta_time($opts, $nl_flags, $definition, $defaults, $nl);
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
   setup_logic_glacier($opts, $nl_flags, $definition, $defaults, $nl,  $envxml_ref, $physv);
-  setup_logic_dynamic_plant_nitrogen_alloc($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_params_file($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_create_crop_landunit($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_soilstate($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
@@ -1481,20 +1480,6 @@ sub setup_logic_hydrology_switches {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_dynamic_plant_nitrogen_alloc {
-  #
-  # dynamic plant nitrogen allocation model, bgc=bgc
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ( &value_is_true($nl_flags->{'use_cn'}) ) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'phys'=>$physv->as_string(), 'use_cn'=>$nl_flags->{'use_cn'} );
-
-  }
-}
-
-#-------------------------------------------------------------------------------
-
 sub setup_logic_soilwater_movement {
   # soilwater_movement require clm4_5/clm5_0
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
@@ -1520,7 +1505,7 @@ sub setup_logic_cnvegcarbonstate {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
   if ( &value_is_true($nl->get_value('use_cn')) ) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'initial_vegC', 'use_cn' => $nl->get_value('use_cn'));
+    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_cn' => $nl->get_value('use_cn'));
   }
 }
 
