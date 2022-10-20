@@ -110,8 +110,6 @@ Otherwise use the fraction straight up              (the default for CLM5.0)
        group="clm_inparm" valid_values="10SL_3.5m,23SL_3.5m,49SL_10m,20SL_8.5m" >
 10SL_3.5m    = standard CLM4 and CLM4.5 version
 23SL_3.5m    = more vertical layers for permafrost simulations 
-49SL_10m     = 49 layer soil column, 10m of soil, 5 bedrock layers
-20SL_8.5m    = 20 layer soil column, 8m of soil, 5 bedrock layers
 </entry>
 
 <entry id="rooting_profile_method_water" type="integer" category="clm_physics"
@@ -1241,51 +1239,6 @@ If TRUE use additional stress deciduous onset trigger
 <!-- ========================================================================================  -->
 <!-- namelist elements associated with the clm 5.0 BGC flexible CN Model                       -->
 <!-- ========================================================================================  -->
-
-<entry id="initial_vegC" type="real" category="clm_nitrogen"
-       group="cnvegcarbonstate" >
-How much Carbon to initialize vegetation pools (leafc/frootc and storage) to when -- Michaelis Menten nitrogen uptake kinetics is on
-</entry>
-
-<entry id="reduce_dayl_factor" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".false.">
-   Reduce day length factor
-(NOT implemented)
-</entry>
-
-<entry id="vcmax_opt" type="integer" category="clm_nitrogen"
-       group="clm_nitrogen" valid_values="0,3,4">
-Vcmax calculation for Photosynthesis
-    vcmax_opt = 4 As for vcmax_opt=0, but using leafN, and exponential if tree  (EXPERIMENTAL NOT TESTED!)
-    vcmax_opt = 3 Based on leafN and VCAD (used with Luna for crop and C4 vegetation)
-    vcmax_opt = 0 Based on canopy top and foilage Nitrogen limitation factor from params file (clm4.5)
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="CN_residual_opt" type="integer" category="clm_nitrogen"
-       group="clm_nitrogen" valid_values="0,1">
-Residual option for flexible-CN
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="CN_partition_opt" type="integer" category="clm_nitrogen"
-       group="clm_nitrogen" valid_values="0,1">
-Partition option for flexible-CN
-   CN_partition_opt = 1
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="CN_evergreen_phenology_opt" type="integer" category="clm_nitrogen"
-       group="clm_nitrogen" valid_values="0,1">
-Evergreen phenology option for CNPhenology
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="carbon_resp_opt" type="integer" category="clm_nitrogen"
-       group="clm_nitrogen" valid_values="0,1">
-Carbon respiration option to burn off carbon when CN ratio is too high (do NOT use when FUN is on)
-(EXPERIMENTAL and NOT tested)
-</entry>
 
 <!-- ========================================================================================  -->
 <!-- namelist elements associated with the Hydrology1Mod                                       -->

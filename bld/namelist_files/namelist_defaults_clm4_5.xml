@@ -677,11 +677,6 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <initial_Cstocks_depth phys="clm5_0" use_cn=".true." >1.50d00</initial_Cstocks_depth>
 <initial_Cstocks_depth phys="clm4_5" use_cn=".true." >0.3</initial_Cstocks_depth>
 
-<initial_vegC phys="clm5_0" use_cn=".true."  >100.d00</initial_vegC>
-<initial_vegC phys="clm4_5" use_cn=".true."  >20.d00</initial_vegC>
-<initial_vegC phys="clm5_0" use_cn=".true."  >1.d00</initial_vegC>
-<initial_vegC phys="clm4_5" use_cn=".true."  >1.d00</initial_vegC>
-
 <!-- SNICAR (SNow, ICe, and Aerosol Radiative model) datasets -->
 <!--  ***********  Resolution independent:   ***********  -->
 <fsnowoptics >lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc</fsnowoptics>
