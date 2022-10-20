@@ -358,7 +358,6 @@ contains
     ! !DESCRIPTION:
     ! Initializes time varying variables used only in coupled carbon-nitrogen mode (CN):
     !
-    use clm_varctl     , only : MM_Nuptake_opt   
     ! !ARGUMENTS:
     class(cnveg_nitrogenstate_type) :: this
     type(bounds_type) , intent(in) :: bounds  
@@ -416,17 +415,9 @@ contains
           if (patch%itype(p) == noveg) then
              this%leafn_patch(p) = 0._r8
              this%leafn_storage_patch(p) = 0._r8
-             if (MM_Nuptake_opt .eqv. .true.) then   
-                this%frootn_patch(p) = 0._r8            
-                this%frootn_storage_patch(p) = 0._r8    
-             end if 
           else
              this%leafn_patch(p)         = leafc_patch(p)         / pftcon%leafcn(patch%itype(p))
              this%leafn_storage_patch(p) = leafc_storage_patch(p) / pftcon%leafcn(patch%itype(p))
-             if (MM_Nuptake_opt .eqv. .true.) then  
-                this%frootn_patch(p) = frootc_patch(p) / pftcon%frootcn(patch%itype(p))           
-                this%frootn_storage_patch(p) = frootc_storage_patch(p) / pftcon%frootcn(patch%itype(p))   
-             end if 
           end if
 
           this%leafn_xfer_patch(p)        = 0._r8
@@ -440,10 +431,8 @@ contains
              this%grainn_xfer_patch(p)    = 0._r8
              this%cropseedn_deficit_patch(p)  = 0._r8
           end if
-          if (MM_Nuptake_opt .eqv. .false.) then  ! if not running in floating CN ratio option 
-             this%frootn_patch(p)            = 0._r8
-             this%frootn_storage_patch(p)    = 0._r8
-          end if 
+          this%frootn_patch(p)            = 0._r8
+          this%frootn_storage_patch(p)    = 0._r8
           this%frootn_xfer_patch(p)       = 0._r8
           this%livestemn_patch(p)         = 0._r8
           this%livestemn_storage_patch(p) = 0._r8
@@ -519,7 +508,6 @@ contains
     use ncdio_pio
     use clm_varctl             , only : spinup_state
     use clm_time_manager       , only : get_nstep, is_restart
-    use clm_varctl             , only : MM_Nuptake_opt   
 
     !
     ! !ARGUMENTS:
@@ -715,17 +703,9 @@ contains
              if (patch%itype(p) == noveg) then
                 this%leafn_patch(p) = 0._r8
                 this%leafn_storage_patch(p) = 0._r8
-                if (MM_Nuptake_opt .eqv. .true.) then   
-                   this%frootn_patch(p) = 0._r8            
-                   this%frootn_storage_patch(p) = 0._r8    
-                end if 
              else
                 this%leafn_patch(p)         = leafc_patch(p)         / pftcon%leafcn(patch%itype(p))
                 this%leafn_storage_patch(p) = leafc_storage_patch(p) / pftcon%leafcn(patch%itype(p))
-                if (MM_Nuptake_opt .eqv. .true.) then  
-                   this%frootn_patch(p) = frootc_patch(p) / pftcon%frootcn(patch%itype(p))           
-                   this%frootn_storage_patch(p) = frootc_storage_patch(p) / pftcon%frootcn(patch%itype(p))   
-                end if 
              end if
    
              this%leafn_xfer_patch(p)        = 0._r8
@@ -739,10 +719,8 @@ contains
                 this%grainn_xfer_patch(p)    = 0._r8
                 this%cropseedn_deficit_patch(p)  = 0._r8
              end if
-             if (MM_Nuptake_opt .eqv. .false.) then  ! if not running in floating CN ratio option 
-                this%frootn_patch(p)            = 0._r8
-                this%frootn_storage_patch(p)    = 0._r8
-             end if 
+             this%frootn_patch(p)            = 0._r8
+             this%frootn_storage_patch(p)    = 0._r8
              this%frootn_xfer_patch(p)       = 0._r8
              this%livestemn_patch(p)         = 0._r8
              this%livestemn_storage_patch(p) = 0._r8

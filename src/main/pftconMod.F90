@@ -472,7 +472,7 @@ contains
     use fileutils   , only : getfil
     use ncdio_pio   , only : ncd_io, ncd_pio_closefile, ncd_pio_openfile, file_desc_t
     use ncdio_pio   , only : ncd_inqdid, ncd_inqdlen
-    use clm_varctl  , only : paramfile, use_flexibleCN
+    use clm_varctl  , only : paramfile
     use spmdMod     , only : masterproc
     !
     ! !ARGUMENTS:
@@ -975,19 +975,6 @@ contains
     !
     ! clm 5 nitrogen variables
     !
-    if (use_flexibleCN) then
-       call ncd_io('i_vcad', this%i_vcad, 'read', ncid, readvar=readv) 
-       if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__)) 
-       
-       call ncd_io('s_vcad', this%s_vcad, 'read', ncid, readvar=readv) 
-       if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__)) 
-       
-       call ncd_io('i_flnr', this%i_flnr, 'read', ncid, readvar=readv) 
-       if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__)) 
-       
-       call ncd_io('s_flnr', this%s_flnr, 'read', ncid, readvar=readv) 
-       if ( .not. readv ) call endrun(msg=' ERROR: error in reading in pft data'//errMsg(sourcefile, __LINE__)) 
-    end if
 
     call ncd_pio_closefile(ncid)
 

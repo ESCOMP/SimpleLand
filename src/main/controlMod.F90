@@ -31,13 +31,13 @@ module controlMod
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, all_active, co2_type
-  use clm_varctl                       , only: wrtdia, co2_ppmv, use_bedrock, soil_layerstruct, nsegspc, rpntdir, rpntfil
+  use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_cn, use_noio, NLFilename_in
   use clm_varctl                       , only: create_crop_landunit, glc_snow_persistence_max_days
   use clm_varctl                       , only: subgridflag, nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: irrigate, create_crop_landunit, use_crop
-  use clm_varctl                       , only: use_flexiblecn, spinup_state
+  use clm_varctl                       , only: spinup_state
   use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
@@ -175,8 +175,6 @@ contains
          albice, soil_layerstruct, subgridflag, &
          all_active
 
-    namelist /clm_inparm/ use_bedrock
-
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
 
     ! max number of plant functional types in naturally vegetated landunit
@@ -189,7 +187,6 @@ contains
                irrigate,   &
                create_crop_landunit,   &
                use_crop,   &
-               use_flexiblecn,   &
                spinup_state, &
                single_column
 
@@ -441,11 +438,6 @@ contains
        call mpi_bcast (nfix_timeconst, 1, MPI_REAL8, 0, mpicom, ier)
        call mpi_bcast (spinup_state, 1, MPI_INTEGER, 0, mpicom, ier)
     end if
-
-    ! flexibleCN nitrogen model
-    call mpi_bcast (use_flexibleCN, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_bedrock, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     ! physics variables
     call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)

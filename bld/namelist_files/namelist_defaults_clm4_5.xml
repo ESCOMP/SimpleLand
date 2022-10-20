@@ -54,10 +54,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <soil_layerstruct phys="clm5_0">20SL_8.5m</soil_layerstruct>
 <soil_layerstruct phys="clm4_5">10SL_3.5m</soil_layerstruct>
 
-<use_bedrock phys="clm5_0" vichydro ="1"      >.false.</use_bedrock>
-<use_bedrock phys="clm5_0">.true.</use_bedrock>
-<use_bedrock phys="clm4_5">.false.</use_bedrock>
-
 
 <!-- Rooting profile namelist defaults -->
 <rooting_profile_method_water  phys="clm5_0">1</rooting_profile_method_water>
@@ -119,9 +115,8 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <upper_boundary_condition phys="clm5_0" >1</upper_boundary_condition>
 
 <lower_boundary_condition soilwater_movement_method="0"                       >4</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" use_bedrock=".true."  >2</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" use_bedrock=".false." >2</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" use_bedrock=".false." vichydro="1" >3</lower_boundary_condition>
+<lower_boundary_condition soilwater_movement_method="1" >2</lower_boundary_condition>
+<lower_boundary_condition soilwater_movement_method="1" vichydro="1" >3</lower_boundary_condition>
 
 <dtmin>60.</dtmin>      
 <verySmall>1.e-8</verySmall>
@@ -227,25 +222,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- ========================================================================================  -->
 <!-- clm 5.0 BGC nitrogen model                                                                -->
 <!-- ========================================================================================  -->
-<use_flexibleCN phys="clm5_0" use_cn=".true.">.true.</use_flexibleCN>
-<use_flexibleCN phys="clm5_0"                >.false.</use_flexibleCN>
-<use_flexibleCN phys="clm4_5"                >.false.</use_flexibleCN>
-
-<!-- LUNA model: Leaf Utilization of Nitrogen for Assimilation -->
-
-<!-- Flexible CN options -->
-<MM_Nuptake_opt             use_flexibleCN=".true." >.true.</MM_Nuptake_opt>
-<downreg_opt                use_flexibleCN=".true." >.false.</downreg_opt>
-<plant_ndemand_opt          use_flexibleCN=".true." >3</plant_ndemand_opt>
-<substrate_term_opt         use_flexibleCN=".true." >.true.</substrate_term_opt>
-<nscalar_opt                use_flexibleCN=".true." >.true.</nscalar_opt>
-<temp_scalar_opt            use_flexibleCN=".true." >.true.</temp_scalar_opt>
-<CNratio_floating           use_flexibleCN=".true." >.true.</CNratio_floating>
-<reduce_dayl_factor         use_flexibleCN=".true." >.false.</reduce_dayl_factor>
-<vcmax_opt                  use_flexibleCN=".true." >3</vcmax_opt>
-<CN_residual_opt            use_flexibleCN=".true." >1</CN_residual_opt>
-<CN_partition_opt           use_flexibleCN=".true." >1</CN_partition_opt>
-<CN_evergreen_phenology_opt use_flexibleCN=".true." >1</CN_evergreen_phenology_opt>
 
 <initial_seed_at_planting use_crop=".true." phys="clm5_0">3.d00</initial_seed_at_planting>
 <initial_seed_at_planting use_crop=".true." phys="clm4_5">1.d00</initial_seed_at_planting>
@@ -722,10 +698,10 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <initial_Cstocks_depth phys="clm5_0" use_cn=".true." >1.50d00</initial_Cstocks_depth>
 <initial_Cstocks_depth phys="clm4_5" use_cn=".true." >0.3</initial_Cstocks_depth>
 
-<initial_vegC phys="clm5_0" use_cn=".true."  mm_nuptake_opt=".true." >100.d00</initial_vegC>
-<initial_vegC phys="clm4_5" use_cn=".true."  mm_nuptake_opt=".true." >20.d00</initial_vegC>
-<initial_vegC phys="clm5_0" use_cn=".true."  mm_nuptake_opt=".false.">1.d00</initial_vegC>
-<initial_vegC phys="clm4_5" use_cn=".true."  mm_nuptake_opt=".false.">1.d00</initial_vegC>
+<initial_vegC phys="clm5_0" use_cn=".true."  >100.d00</initial_vegC>
+<initial_vegC phys="clm4_5" use_cn=".true."  >20.d00</initial_vegC>
+<initial_vegC phys="clm5_0" use_cn=".true."  >1.d00</initial_vegC>
+<initial_vegC phys="clm4_5" use_cn=".true."  >1.d00</initial_vegC>
 
 <!-- SNICAR (SNow, ICe, and Aerosol Radiative model) datasets -->
 <!--  ***********  Resolution independent:   ***********  -->

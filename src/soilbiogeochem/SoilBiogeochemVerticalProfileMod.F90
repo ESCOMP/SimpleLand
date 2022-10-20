@@ -47,7 +47,7 @@ contains
     use abortutils              , only : endrun
     use clm_varcon              , only : zsoi, dzsoi, zisoi, dzsoi_decomp, zmin_bedrock
     use clm_varpar              , only : nlevdecomp, nlevgrnd, nlevdecomp_full, maxpatch_pft
-    use clm_varctl              , only : iulog, use_bedrock
+    use clm_varctl              , only : iulog
     use pftconMod               , only : noveg, pftcon
     use SoilBiogeochemStateType , only : soilbiogeochem_state_type
     use CanopyStateType         , only : canopystate_type

@@ -581,7 +581,6 @@ contains
     use clm_varcon      , only : denice, denh2o, spval, sb, bdsno 
     use clm_varcon      , only : zlnd, tfrz, spval, pc
     use clm_varctl      , only : fsurdat, iulog
-    use clm_varctl        , only : use_bedrock
     use spmdMod         , only : masterproc
     use abortutils      , only : endrun
     use fileutils       , only : getfil
@@ -713,11 +712,7 @@ contains
             if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
                nlevs = nlevgrnd
                do j = 1, nlevs
-                  if (use_bedrock) then
-                     nbedrock = col%nbedrock(c)
-                  else
-                     nbedrock = nlevsoi
-                  endif
+                  nbedrock = nlevsoi
                   if (j > nbedrock) then
                      this%h2osoi_vol_col(c,j) = 0.0_r8
                   else

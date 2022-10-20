@@ -73,7 +73,7 @@ contains
     use fileutils       , only : getavu, relavu
     use spmdMod         , only : mpicom, masterproc
     use shr_mpi_mod     , only : shr_mpi_bcast
-    use clm_varctl      , only : iulog, use_bedrock
+    use clm_varctl      , only : iulog
     use controlMod      , only : NLFilename
     use clm_nlUtilsMod  , only : find_nlgroup_name
 
@@ -134,9 +134,6 @@ contains
             (lower_boundary_condition /= bc_aquifer)) then
           call endrun(subname // ':: ERROR inconsistent soilwater_movement namelist: ZD09 must use bc_aquifer lbc')
        endif
-       if((use_bedrock) .and. (lower_boundary_condition /= bc_zero_flux)) then
-          call endrun(subname // ':: ERROR inconsistent soilwater_movement namelist: use_bedrock requires bc_zero_flux lbc')
-       endif
     endif
 
     call shr_mpi_bcast(soilwater_movement_method, mpicom)
@@ -159,7 +156,6 @@ contains
        write(iulog,*) '  upper_boundary_condition   = ',upper_boundary_condition
        write(iulog,*) '  lower_boundary_condition   = ',lower_boundary_condition
 
-       write(iulog,*) '  use_bedrock                = ',use_bedrock
        write(iulog,*) '  dtmin                      = ',dtmin
        write(iulog,*) '  verySmall                  = ',verySmall
        write(iulog,*) '  xTolerUpper                = ',xTolerUpper

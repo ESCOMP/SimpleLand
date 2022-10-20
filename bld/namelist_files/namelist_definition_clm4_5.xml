@@ -114,15 +114,6 @@ Otherwise use the fraction straight up              (the default for CLM5.0)
 20SL_8.5m    = 20 layer soil column, 8m of soil, 5 bedrock layers
 </entry>
 
-<entry id="use_bedrock" type="logical" category="clm_physics"
-       group="clm_inparm" valid_values="" >
-If TRUE, use variable soil depth.
-
-If present on surface dataset, use depth to bedrock information to
-specify spatially variable soil thickness. If not present, use bottom
-of soil column (nlevsoi).
-</entry>
-
 <entry id="rooting_profile_method_water" type="integer" category="clm_physics"
        group="rooting_profile_inparm" valid_values="0,1,2" >
 Index of rooting profile for water
@@ -1250,55 +1241,10 @@ If TRUE use additional stress deciduous onset trigger
 <!-- ========================================================================================  -->
 <!-- namelist elements associated with the clm 5.0 BGC flexible CN Model                       -->
 <!-- ========================================================================================  -->
-<entry id="use_flexibleCN" type="logical" category="clm_nitrogen"
-       group="clm_inparm" value=".false.">
-Allow the CN ratio to flexibly change with the simulation, rather than being fixed
-</entry>
-
-<entry id="MM_Nuptake_opt" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".false.">
-   Michaelis Menten nitrogen uptake kinetics
-</entry>
 
 <entry id="initial_vegC" type="real" category="clm_nitrogen"
        group="cnvegcarbonstate" >
 How much Carbon to initialize vegetation pools (leafc/frootc and storage) to when -- Michaelis Menten nitrogen uptake kinetics is on
-</entry>
-
-<entry id="downreg_opt" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".false.">
-   GPP downregulation for use_flexibleCN option
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="plant_ndemand_opt" type="integer" category="clm_nitrogen"
-       group="clm_nitrogen" valid_values="0,1,2,3">
-   Plant nitrogen demand for use_flexibleCN option
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="substrate_term_opt" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".true.">
-   Michaelis Menten substrate limitation for use_flexibleCN option
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="nscalar_opt" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".true.">
-   Michaelis Menten nitrogen limitation for use_flexibleCN option
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="temp_scalar_opt" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".true.">
-   Michaelis Menten temperature limitation for use_flexibleCN option
-(EXPERIMENTAL and NOT tested)
-</entry>
-
-<entry id="CNratio_floating" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".false.">
-   Flexible CN ratio used for Phenology
-(EXPERIMENTAL and NOT tested)
 </entry>
 
 <entry id="reduce_dayl_factor" type="logical" category="clm_nitrogen"

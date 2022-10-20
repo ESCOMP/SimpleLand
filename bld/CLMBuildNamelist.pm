@@ -1179,8 +1179,7 @@ sub setup_logic_params_file {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'paramfile', 
-              'phys'=>$nl_flags->{'phys'},
-              'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
+              'phys'=>$nl_flags->{'phys'});
 }
 
 #-------------------------------------------------------------------------------
@@ -1222,7 +1221,6 @@ sub setup_logic_soilstate {
 
  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'organic_frac_squared' );
  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'soil_layerstruct' );
- add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_bedrock' );
 }
 
 #-------------------------------------------------------------------------------
@@ -1469,16 +1467,12 @@ sub setup_logic_hydrology_switches {
   }
   # Test bad configurations
   my $lower   = $nl->get_value( 'lower_boundary_condition'  );
-  my $use_bed = $nl->get_value( 'use_bedrock'               );
   my $soilmtd = $nl->get_value( 'soilwater_movement_method' );
   if ( defined($soilmtd) && defined($lower) && $soilmtd == 0 && $lower != 4 ) {
       $log->fatal_error( "If soil water movement method is zeng-decker -- lower_boundary_condition can only be aquifer" );
   }
   if ( defined($soilmtd) && defined($lower) && $soilmtd == 1 && $lower == 4 ) {
       $log->fatal_error( "If soil water movement method is adaptive -- lower_boundary_condition can NOT be aquifer" );
-  }
-  if ( defined($use_bed) && defined($lower) && (&value_is_true($use_bed)) && $lower != 2 ) {
-     $log->fatal_error( "If use_bedrock is on -- lower_boundary_condition can only be flux" );
   }
   if ( defined($h2osfcflag) && defined($lower) && $h2osfcflag == 0 && $lower != 4 ) {
      $log->fatal_error( "If h2osfcflag is 0 lower_boundary_condition can only be aquifer" );
@@ -1494,43 +1488,8 @@ sub setup_logic_dynamic_plant_nitrogen_alloc {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
   if ( &value_is_true($nl_flags->{'use_cn'}) ) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_flexibleCN',
-                'phys'=>$physv->as_string(), 'use_cn'=>$nl_flags->{'use_cn'} );
-    $nl_flags->{'use_flexibleCN'} = $nl->get_value('use_flexibleCN');
+    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'phys'=>$physv->as_string(), 'use_cn'=>$nl_flags->{'use_cn'} );
 
-    if ( &value_is_true($nl_flags->{'use_flexibleCN'}) ) {
-      # TODO(bja, 2015-04) make this depend on > clm 5.0 and bgc mode at some point.
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'MM_Nuptake_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'downreg_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'plant_ndemand_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'substrate_term_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'nscalar_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'temp_scalar_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'CNratio_floating',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'reduce_dayl_factor',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'vcmax_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'CN_residual_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'CN_partition_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'CN_evergreen_phenology_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'carbon_resp_opt',
-                  'use_flexibleCN'=>$nl_flags->{'use_flexibleCN'} );
-    }
-  } elsif ( ! &value_is_true($nl_flags->{'use_cn'}) ) {
-     if ( &value_is_true($nl->get_value('use_flexibleCN')) ) {
-        $log->fatal_error("use_flexibleCN can ONLY be set if CN is on");
-     }
   }
 }
 
@@ -1544,11 +1503,8 @@ sub setup_logic_soilwater_movement {
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'upper_boundary_condition' );
 
   my $soilmtd = $nl->get_value("soilwater_movement_method");
-  my $use_bed = $nl->get_value('use_bedrock'              );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 
-  'lower_boundary_condition', 
-  'soilwater_movement_method'=>$soilmtd, 'use_bedrock'=>$use_bed
- );
+  'lower_boundary_condition' );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'dtmin' );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'verySmall' );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'xTolerUpper' );
@@ -1564,10 +1520,7 @@ sub setup_logic_cnvegcarbonstate {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
   if ( &value_is_true($nl->get_value('use_cn')) ) {
-    my $mmnuptake = $nl->get_value('mm_nuptake_opt');
-    if ( ! defined($mmnuptake) ) { $mmnuptake = ".false."; }
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'initial_vegC', 
-                'use_cn' => $nl->get_value('use_cn'), 'mm_nuptake_opt' => $mmnuptake );
+    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'initial_vegC', 'use_cn' => $nl->get_value('use_cn'));
   }
 }
 

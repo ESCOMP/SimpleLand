@@ -106,7 +106,6 @@ contains
     use clm_varcon       , only : zsoi, dzsoi_decomp, zisoi
     use TridiagonalMod   , only : Tridiagonal
     use ColumnType       , only : col
-    use clm_varctl       , only : use_bedrock
 
     !
     ! !ARGUMENTS:

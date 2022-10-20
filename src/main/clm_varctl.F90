@@ -185,31 +185,9 @@ module clm_varctl
   real(r8), public :: co2_ppmv     = 355._r8            !
 
   !----------------------------------------------------------
-  !  flexibleCN
-  !----------------------------------------------------------
-  !  TODO(bja, 2015-08) some of these need to be moved into the
-  !  appropriate module.
-  logical, public :: use_flexibleCN = .false.
-  logical, public :: MM_Nuptake_opt = .false.
-  logical, public :: downreg_opt = .true.
-  integer, public :: plant_ndemand_opt = 0
-  logical, public :: substrate_term_opt = .true.
-  logical, public :: nscalar_opt = .true.
-  logical, public :: temp_scalar_opt = .true.
-  logical, public :: CNratio_floating = .false.
-  logical, public :: lnc_opt = .false.
-  logical, public :: reduce_dayl_factor = .false.
-  integer, public :: vcmax_opt = 0
-  integer, public :: CN_residual_opt = 0
-  integer, public :: CN_partition_opt = 0
-  integer, public :: CN_evergreen_phenology_opt = 0
-  integer, public :: carbon_resp_opt = 0
-
-  !----------------------------------------------------------
   ! bedrock / soil depth switch
   !----------------------------------------------------------
 
-  logical,           public :: use_bedrock = .false. ! true => use spatially variable soil depth
   character(len=16), public :: soil_layerstruct = '10SL_3.5m'
 
   !----------------------------------------------------------

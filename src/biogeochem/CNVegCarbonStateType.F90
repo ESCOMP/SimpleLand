@@ -842,7 +842,6 @@ contains
     ! !USES, default='inactive':
     use landunit_varcon	 , only : istsoil, istcrop 
     use clm_time_manager , only : is_restart, get_nstep
-    use clm_varctl, only : MM_Nuptake_opt    
     !
     ! !ARGUMENTS:
     class(cnveg_carbonstate_type)                       :: this 
@@ -927,10 +926,8 @@ contains
           this%leafc_storage_xfer_acc_patch(p)  = 0._r8
           this%storage_cdemand_patch(p)         = 0._r8
 
-          if (MM_Nuptake_opt .eqv. .false.) then  ! if not running in floating CN ratio option 
-             this%frootc_patch(p)            = 0._r8 
-             this%frootc_storage_patch(p)    = 0._r8 
-          end if     
+          this%frootc_patch(p)            = 0._r8 
+          this%frootc_storage_patch(p)    = 0._r8 
           this%frootc_xfer_patch(p)       = 0._r8 
 
           this%livestemc_patch(p)         = 0._r8 
@@ -1040,7 +1037,7 @@ contains
     ! !USES:
     use shr_infnan_mod   , only : isnan => shr_infnan_isnan, nan => shr_infnan_nan, assignment(=)
     use clm_varcon       , only : c13ratio, c14ratio
-    use clm_varctl       , only : spinup_state, MM_Nuptake_opt
+    use clm_varctl       , only : spinup_state
     use clm_time_manager , only : get_nstep, is_restart, get_nstep
     use landunit_varcon	 , only : istsoil, istcrop 
     use spmdMod          , only : mpicom
@@ -1374,10 +1371,8 @@ contains
                       this%leafc_storage_xfer_acc_patch(i)  = 0._r8
                       this%storage_cdemand_patch(i)         = 0._r8
 
-                      if (MM_Nuptake_opt .eqv. .false.) then  ! if not running in floating CN ratio option 
-                         this%frootc_patch(i)            = 0._r8 
-                         this%frootc_storage_patch(i)    = 0._r8 
-                      end if     
+                      this%frootc_patch(i)            = 0._r8 
+                      this%frootc_storage_patch(i)    = 0._r8 
                       this%frootc_xfer_patch(i)       = 0._r8 
 
                       this%livestemc_patch(i)         = 0._r8 
