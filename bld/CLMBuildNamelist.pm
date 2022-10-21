@@ -1176,9 +1176,8 @@ sub setup_logic_params_file {
   # pft-physiology was used but now now includes CN and BGC century
   # parameters.
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
+  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'paramfile', 'phys'=>$nl_flags->{'phys'});
 
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'paramfile', 
-              'phys'=>$nl_flags->{'phys'});
 }
 
 #-------------------------------------------------------------------------------

@@ -288,7 +288,6 @@ contains
     !
     ! !USES:
     use decompMod       , only : BOUNDS_LEVEL_CLUMP
-    use pftconMod       , only : npcropmin
     use landunit_varcon , only : istsoil, istcrop, istice_mec
     !
     ! !ARGUMENTS:
@@ -413,15 +412,10 @@ contains
     fnl = 0
     do p = bounds%begp,bounds%endp
        if (patch%active(p) .or. include_inactive) then
-          if (patch%itype(p) >= npcropmin) then !skips 2 generic crop types
-             fl = fl + 1
-             this_filter(nc)%pcropp(fl) = p
-          else
-             l =patch%landunit(p)
-             if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
-                fnl = fnl + 1
-                this_filter(nc)%soilnopcropp(fnl) = p
-             end if
+          l =patch%landunit(p)
+          if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
+             fnl = fnl + 1
+             this_filter(nc)%soilnopcropp(fnl) = p
           end if
        end if
     end do

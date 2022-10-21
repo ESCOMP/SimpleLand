@@ -9,7 +9,7 @@ module CNVegCarbonStateType
   use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
   use shr_const_mod  , only : SHR_CONST_PDB
   use shr_log_mod    , only : errMsg => shr_log_errMsg
-  use pftconMod	     , only : noveg, npcropmin, pftcon
+  use pftconMod	     , only : noveg, pftcon
   use clm_varcon     , only : spval, c3_r2, c4_r2, c14ratio
   use clm_varctl     , only : iulog, use_crop
   use decompMod      , only : bounds_type
@@ -909,11 +909,6 @@ contains
                 this%leafc_patch(p)          = cnvegcstate_const%initial_vegC * ratio     
                 this%leafc_storage_patch(p)  = 0._r8
                 this%frootc_patch(p)         = cnvegcstate_const%initial_vegC * ratio           
-                this%frootc_storage_patch(p) = 0._r8    
-             else if (patch%itype(p) >= npcropmin) then ! prognostic crop types
-                this%leafc_patch(p)          = 0._r8
-                this%leafc_storage_patch(p)  = 0._r8
-                this%frootc_patch(p)         = 0._r8            
                 this%frootc_storage_patch(p) = 0._r8    
              else
                 this%leafc_patch(p)          = 0._r8

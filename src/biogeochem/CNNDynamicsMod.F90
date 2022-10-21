@@ -232,8 +232,6 @@ contains
     ! nitrogen in the soil root zone.
     !
     ! !USES:
-    use pftconMod, only : ntmp_soybean, nirrig_tmp_soybean
-    use pftconMod, only : ntrp_soybean, nirrig_trp_soybean
     !
     ! !ARGUMENTS:
     type(bounds_type)                       , intent(in)    :: bounds  
@@ -285,78 +283,7 @@ contains
 
       do fp = 1,num_soilp
          p = filter_soilp(fp)
-         c = patch%column(p)
-
-         ! if soybean currently growing then calculate fixation
-
-         if (croplive(p) .and. &
-              (patch%itype(p) == ntmp_soybean .or. &
-               patch%itype(p) == nirrig_tmp_soybean .or. &
-               patch%itype(p) == ntrp_soybean .or. &
-               patch%itype(p) == nirrig_trp_soybean) ) then
-
-            ! difference between supply and demand
-
-            if (fpg(c) < 1._r8) then
-               soy_ndemand = 0._r8
-               soy_ndemand = plant_ndemand(p) - plant_ndemand(p)*fpg(c)
-
-               ! fixation depends on nitrogen, soil water, and growth stage
-
-               ! soil water factor
-
-               fxw = 0._r8
-               fxw = wf(c)/0.85_r8
-
-               ! soil nitrogen factor (Beth says: CHECK UNITS)
-
-               if (sminn(c) > sminnthreshold1) then
-                  fxn = 0._r8
-               else if (sminn(c) > sminnthreshold2 .and. sminn(c) <= sminnthreshold1) then
-                  fxn = 1.5_r8 - .005_r8 * (sminn(c) * 10._r8)
-               else if (sminn(c) <= sminnthreshold2) then
-                  fxn = 1._r8
-               end if
-
-               ! growth stage factor
-               ! slevis: to replace GDDfrac, assume...
-               ! Beth's crit_offset_gdd_def is similar to my gddmaturity
-               ! Beth's ac_gdd (base 5C) similar to my hui=gddplant (base 10
-               ! for soy) 
-               ! Ranges below are not firm. Are they lit. based or tuning based?
-
-               GDDfrac = hui(p) / gddmaturity(p)
-
-               if (GDDfrac <= GDDfracthreshold1) then
-                  fxg = 0._r8
-               else if (GDDfrac > GDDfracthreshold1 .and. GDDfrac <= GDDfracthreshold2) then
-                  fxg = 6.67_r8 * GDDfrac - 1._r8
-               else if (GDDfrac > GDDfracthreshold2 .and. GDDfrac <= GDDfracthreshold3) then
-                  fxg = 1._r8
-               else if (GDDfrac > GDDfracthreshold3 .and. GDDfrac <= GDDfracthreshold4) then
-                  fxg = 3.75_r8 - 5._r8 * GDDfrac
-               else  ! GDDfrac > GDDfracthreshold4
-                  fxg = 0._r8
-               end if
-
-               ! calculate the nitrogen fixed by the soybean
-
-               fxr = min(1._r8, fxw, fxn) * fxg 
-               fxr = max(0._r8, fxr)
-               soyfixn(p) =  fxr * soy_ndemand
-               soyfixn(p) = min(soyfixn(p), soy_ndemand)
-
-            else ! if nitrogen demand met, no fixation
-
-               soyfixn(p) = 0._r8
-
-            end if
-
-         else ! if not live soybean, no fixation
-
-            soyfixn(p) = 0._r8
-
-         end if
+         soyfixn(p) = 0._r8
       end do
 
       call p2c(bounds, num_soilc, filter_soilc, &

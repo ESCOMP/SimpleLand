@@ -7,7 +7,7 @@ module clm_varpar
   ! !USES:
   use shr_kind_mod , only: r8 => shr_kind_r8
   use spmdMod      , only: masterproc
-  use clm_varctl   , only: iulog, use_crop, create_crop_landunit, irrigate
+  use clm_varctl   , only: iulog, use_crop, create_crop_landunit
   use clm_varctl   , only: soil_layerstruct
 
   !

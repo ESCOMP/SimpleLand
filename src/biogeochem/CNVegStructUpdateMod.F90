@@ -37,10 +37,6 @@ contains
     !
     ! !USES:
     use pftconMod        , only : noveg, nc3crop, nc3irrig, nbrdlf_evr_shrub, nbrdlf_dcd_brl_shrub
-    use pftconMod        , only : npcropmin 
-    use pftconMod        , only : ntmp_corn, nirrig_tmp_corn
-    use pftconMod        , only : ntrp_corn, nirrig_trp_corn
-    use pftconMod        , only : nsugarcane, nirrig_sugarcane
     use pftconMod        , only : pftcon
     use clm_varctl       , only : spinup_state
     use clm_time_manager , only : get_rad_step_size
@@ -204,32 +200,6 @@ contains
                htop(p) = max(htop(p), 0.01_r8)
 
                hbot(p) = max(0._r8, min(3._r8, htop(p)-1._r8))
-
-            else if (ivt(p) >= npcropmin) then ! prognostic crops
-
-               if (tlai(p) >= laimx(ivt(p))) peaklai(p) = 1 ! used in CNAllocation
-
-               if (ivt(p) == ntmp_corn .or. ivt(p) == nirrig_tmp_corn .or. &
-                   ivt(p) == ntrp_corn .or. ivt(p) == nirrig_trp_corn .or. &
-                   ivt(p) == nsugarcane .or. ivt(p) == nirrig_sugarcane) then
-                  tsai(p) = 0.1_r8 * tlai(p)
-               else
-                  tsai(p) = 0.2_r8 * tlai(p)
-               end if
-
-               ! "stubble" after harvest
-               if (harvdate(p) < 999 .and. tlai(p) == 0._r8) then
-                  tsai(p) = 0.25_r8*(1._r8-farea_burned(c)*0.90_r8)    !changed by F. Li and S. Levis
-                  htmx(p) = 0._r8
-                  peaklai(p) = 0
-               end if
-               !if (harvdate(p) < 999 .and. tlai(p) > 0._r8) write(iulog,*) 'CNVegStructUpdate: tlai>0 after harvest!' ! remove after initial debugging?
-
-               ! canopy top and bottom heights
-               htop(p) = ztopmx(ivt(p)) * (min(tlai(p)/(laimx(ivt(p))-1._r8),1._r8))**2
-               htmx(p) = max(htmx(p), htop(p))
-               htop(p) = max(0.05_r8, max(htmx(p),htop(p)))
-               hbot(p) = 0.02_r8
 
             else ! generic crops and ...
 

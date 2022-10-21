@@ -47,7 +47,6 @@ module CropType
      procedure, public  :: Init               ! Initialize the crop type
      procedure, public  :: InitAccBuffer
      procedure, public  :: InitAccVars
-     procedure, public  :: Restart
      ! NOTE(wjs, 2014-09-29) need to rename this from UpdateAccVars to CropUpdateAccVars
      ! to prevent cryptic error messages with pgi (v. 13.9 on yellowstone)
      ! This is probably related to this bug
@@ -315,128 +314,6 @@ contains
   end subroutine InitAccVars
 
   !-----------------------------------------------------------------------
-  subroutine Restart(this, bounds, ncid, flag)
-    !
-    ! !USES:
-    use restUtilMod
-    use ncdio_pio
-    use PatchType, only : patch
-    use pftconMod, only : npcropmin, npcropmax
-    !
-    ! !ARGUMENTS:
-    class(crop_type), intent(inout)  :: this
-    type(bounds_type), intent(in)    :: bounds 
-    type(file_desc_t), intent(inout) :: ncid   
-    character(len=*) , intent(in)    :: flag   
-    !
-    ! !LOCAL VARIABLES:
-    integer, pointer :: temp1d(:) ! temporary
-    integer :: restyear
-    integer :: p
-    logical :: readvar   ! determine if variable is on initial file
-
-    character(len=*), parameter :: subname = 'Restart'
-    !-----------------------------------------------------------------------
-
-    if (use_crop) then
-       call restartvar(ncid=ncid, flag=flag, varname='nyrs_crop_active', xtype=ncd_int, &
-            dim1name='pft', &
-            long_name='Number of years this crop patch has been active (0 for non-crop patches)', &
-            units='years', &
-            interpinic_flag='interp', readvar=readvar, data=this%nyrs_crop_active_patch)
-       if (flag == 'read' .and. .not. readvar) then
-          ! BACKWARDS_COMPATIBILITY(wjs, 2017-02-17) Old restart files did not have this
-          ! patch-level variable. Instead, they had a single scalar tracking the number
-          ! of years the crop model ran. Copy this scalar onto all *active* crop patches.
-
-          ! Some arguments in the following restartvar call are irrelevant, because we
-          ! only call this for 'read'. I'm simply maintaining the old restartvar call.
-          call restartvar(ncid=ncid, flag=flag,  varname='restyear', xtype=ncd_int,  &
-               long_name='Number of years prognostic crop ran', units="years", &
-               interpinic_flag='copy', readvar=readvar, data=restyear)
-          if (readvar) then
-             do p = bounds%begp, bounds%endp
-                if (patch%itype(p) >= npcropmin .and. patch%itype(p) <= npcropmax .and. &
-                     patch%active(p)) then
-                   this%nyrs_crop_active_patch(p) = restyear
-                end if
-             end do
-          end if
-       end if
-
-       allocate(temp1d(bounds%begp:bounds%endp))
-       if (flag == 'write') then 
-          do p= bounds%begp,bounds%endp
-             if (this%croplive_patch(p)) then
-                temp1d(p) = 1
-             else
-                temp1d(p) = 0
-             end if
-          end do
-       end if
-       call restartvar(ncid=ncid, flag=flag,  varname='croplive', xtype=ncd_log,  &
-            dim1name='pft', &
-            long_name='Flag that crop is alive, but not harvested', &
-            interpinic_flag='interp', readvar=readvar, data=temp1d)
-       if (flag == 'read') then 
-          do p= bounds%begp,bounds%endp
-             if (temp1d(p) == 1) then
-                this%croplive_patch(p) = .true.
-             else
-                this%croplive_patch(p) = .false.
-             end if
-          end do
-       end if
-       deallocate(temp1d)
-
-       allocate(temp1d(bounds%begp:bounds%endp))
-       if (flag == 'write') then 
-          do p= bounds%begp,bounds%endp
-             if (this%cropplant_patch(p)) then
-                temp1d(p) = 1
-             else
-                temp1d(p) = 0
-             end if
-          end do
-       end if
-       call restartvar(ncid=ncid, flag=flag,  varname='cropplant', xtype=ncd_log,  &
-            dim1name='pft', &
-            long_name='Flag that crop is planted, but not harvested' , &
-            interpinic_flag='interp', readvar=readvar, data=temp1d)
-       if (flag == 'read') then 
-          do p= bounds%begp,bounds%endp
-             if (temp1d(p) == 1) then
-                this%cropplant_patch(p) = .true.
-             else
-                this%cropplant_patch(p) = .false.
-             end if
-          end do
-       end if
-       deallocate(temp1d)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='harvdate', xtype=ncd_int,  &
-            dim1name='pft', long_name='harvest date', units='jday', nvalid_range=(/1,366/), & 
-            interpinic_flag='interp', readvar=readvar, data=this%harvdate_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='vf', xtype=ncd_double,  &
-            dim1name='pft', long_name='vernalization factor', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%vf_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='cphase',xtype=ncd_double, &
-            dim1name='pft', long_name='crop phenology phase', &
-            units='0-not planted, 1-planted, 2-leaf emerge, 3-grain fill, 4-harvest', &
-            interpinic_flag='interp', readvar=readvar, data=this%cphase_patch)
-       if (flag=='read' )then
-          call this%checkDates( )  ! Check that restart date is same calendar date (even if year is different)
-                                   ! This is so that it properly goes through
-                                   ! the crop phases
-       end if
-    end if
-
-  end subroutine Restart
-
-
-  !-----------------------------------------------------------------------
   subroutine CropUpdateAccVars(this, bounds, t_ref2m_patch, t_soisno_col)
     !
     ! !DESCRIPTION:
@@ -448,9 +325,7 @@ contains
     use shr_const_mod    , only : SHR_CONST_CDAY, SHR_CONST_TKFRZ
     use clm_time_manager , only : get_step_size, get_nstep
     use clm_varpar       , only : nlevsno, nlevgrnd
-    use pftconMod        , only : nswheat, nirrig_swheat, pftcon
-    use pftconMod        , only : nwwheat, nirrig_wwheat
-    use pftconMod        , only : nsugarcane, nirrig_sugarcane
+    use pftconMod        , only : pftcon
     use ColumnType       , only : col
     use PatchType        , only : patch
     !
@@ -501,20 +376,9 @@ contains
     do p = begp,endp
        if (this%croplive_patch(p)) then ! relative to planting date
           ivt = patch%itype(p)
-          if ( (trim(this%baset_mapping) == baset_map_latvary) .and. &
-             ((ivt == nswheat) .or. (ivt == nirrig_swheat) .or. &
-              (ivt == nsugarcane) .or. (ivt == nirrig_sugarcane)) ) then
-             rbufslp(p) = max(0._r8, min(pftcon%mxtmp(ivt), &
-             t_ref2m_patch(p)-(SHR_CONST_TKFRZ + this%latbaset_patch(p)))) &
-             * dtime/SHR_CONST_CDAY
-          else
-             rbufslp(p) = max(0._r8, min(pftcon%mxtmp(ivt), &
-             t_ref2m_patch(p)-(SHR_CONST_TKFRZ + pftcon%baset(ivt)))) &
-             * dtime/SHR_CONST_CDAY
-          end if
-          if (ivt == nwwheat .or. ivt == nirrig_wwheat) then
-             rbufslp(p) = rbufslp(p) * this%vf_patch(p)
-          end if
+          rbufslp(p) = max(0._r8, min(pftcon%mxtmp(ivt), &
+          t_ref2m_patch(p)-(SHR_CONST_TKFRZ + pftcon%baset(ivt)))) &
+          * dtime/SHR_CONST_CDAY
        else
           rbufslp(p) = accumResetVal
        end if
@@ -534,9 +398,6 @@ contains
                ((t_soisno_col(c,1)*col%dz(c,1) + &
                t_soisno_col(c,2)*col%dz(c,2))/(col%dz(c,1)+col%dz(c,2))) - &
                (SHR_CONST_TKFRZ + pftcon%baset(ivt)))) * dtime/SHR_CONST_CDAY
-          if (ivt == nwwheat .or. ivt == nwwheat) then
-             rbufslp(p) = rbufslp(p) * this%vf_patch(p)
-          end if
        else
           rbufslp(p) = accumResetVal
        end if

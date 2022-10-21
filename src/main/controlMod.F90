@@ -36,7 +36,7 @@ module controlMod
   use clm_varctl                       , only: create_crop_landunit, glc_snow_persistence_max_days
   use clm_varctl                       , only: subgridflag, nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
-  use clm_varctl                       , only: irrigate, create_crop_landunit, use_crop
+  use clm_varctl                       , only: create_crop_landunit, use_crop
   use clm_varctl                       , only: spinup_state
   use clm_varctl                       , only: single_column
   !
@@ -184,7 +184,6 @@ contains
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ &
-               irrigate,   &
                create_crop_landunit,   &
                use_crop,   &
                spinup_state, &
@@ -420,9 +419,6 @@ contains
 	! mml input file vars for simple model
 	call mpi_bcast (mml_surdat,  len(mml_surdat),   MPI_CHARACTER, 0, mpicom, ier)
 	
-    ! Irrigation
-    call mpi_bcast(irrigate, 1, MPI_LOGICAL, 0, mpicom, ier)
-
     ! Landunit generation
     call mpi_bcast(create_crop_landunit, 1, MPI_LOGICAL, 0, mpicom, ier)
 

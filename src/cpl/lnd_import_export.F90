@@ -389,9 +389,6 @@ contains
        ! ice  sent individually to coupler
        l2x(index_l2x_Flrl_rofi,i) = lnd2atm_inst%qflx_rofice_grc(g)
 
-       ! irrigation flux to be removed from main channel storage (negative)
-       l2x(index_l2x_Flrl_irrig,i) = - lnd2atm_inst%qirrig_grc(g)
-
        ! glc coupling
        ! We could avoid setting these fields if glc_present is .false., if that would
        ! help with performance. (The downside would be that we wouldn't have these fields

@@ -430,7 +430,6 @@ contains
        call soilbiogeochem_nitrogenstate_inst%restart(bounds, ncid, flag=flag, &
             totvegc_col=bgc_vegetation_inst%get_totvegc_col(bounds))
 
-       call crop_inst%restart(bounds, ncid, flag=flag)
     end if
 
     if (use_cn ) then

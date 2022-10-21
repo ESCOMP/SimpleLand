@@ -148,9 +148,7 @@ contains
     ! Should only be called if using prognostic crops - otherwise, wt_cft is meaningless
     !
     ! !USES:
-    use clm_varctl , only : irrigate
     use clm_varpar , only : cft_lb, cft_ub, cft_size
-    use pftconMod  , only : nc3crop, nc3irrig, npcropmax, pftcon
     !
     ! !ARGUMENTS:
 
@@ -169,9 +167,6 @@ contains
     ! !LOCAL VARIABLES:
     integer :: g
     integer :: m
-    real(r8) :: wt_cft_to
-    real(r8) :: wt_cft_from
-    real(r8) :: wt_cft_merge
 
     character(len=*), parameter :: subname = 'collapse_crop_types'
     !-----------------------------------------------------------------------
@@ -182,60 +177,6 @@ contains
        call endrun(msg = subname//' can only be called if cft_size > 0' // &
             errMsg(sourcefile, __LINE__))
     end if
-
-    ! ------------------------------------------------------------------------
-    ! If not using irrigation, merge irrigated CFTs into rainfed CFTs
-    ! ------------------------------------------------------------------------
-
-    if (.not. irrigate) then
-       if (verbose .and. masterproc) then
-          write(iulog,*) trim(subname)//' crop=.T. and irrigate=.F., so merging irrigated pfts with rainfed'
-       end if
-
-       do g = begg, endg
-          ! Left Hand Side: merged rainfed+irrigated crop pfts from nc3crop to
-          !                 npcropmax-1, stride 2
-          ! Right Hand Side: rainfed crop pfts from nc3crop to npcropmax-1,
-          !                  stride 2
-          ! plus             irrigated crop pfts from nc3irrig to npcropmax,
-          !                  stride 2
-          ! where stride 2 means "every other"
-          wt_cft(g, nc3crop:npcropmax-1:2) = &
-               wt_cft(g, nc3crop:npcropmax-1:2) + wt_cft(g, nc3irrig:npcropmax:2)
-          wt_cft(g, nc3irrig:npcropmax:2)  = 0._r8
-       end do
-
-       call check_sums_equal_1(wt_cft, begg, 'wt_cft', subname//': irrigation')
-    end if
-
-    ! ------------------------------------------------------------------------
-    ! Merge CFTs into the list of crops that CLM knows how to model
-    ! ------------------------------------------------------------------------
-
-    if (verbose .and. masterproc) then
-       write(iulog, *) trim(subname) // ' merging wheat, barley, and rye into temperate cereals'
-       write(iulog, *) trim(subname) // ' clm knows how to model corn, temperate cereals, and soybean'
-       write(iulog, *) trim(subname) // ' all other crops are lumped with the generic crop pft'
-    end if
-
-    do g = begg, endg
-       do m = 1, npcropmax
-          if (m /= pftcon%mergetoclmpft(m)) then
-             wt_cft_to = wt_cft(g, pftcon%mergetoclmpft(m))
-             wt_cft_from = wt_cft(g, m)
-             wt_cft_merge = wt_cft_to + wt_cft_from
-             wt_cft(g, pftcon%mergetoclmpft(m)) = wt_cft_merge
-             wt_cft(g, m) = 0._r8
-             if (wt_cft_merge > 0._r8) then
-                fert_cft(g,pftcon%mergetoclmpft(m)) = (wt_cft_to * fert_cft(g,pftcon%mergetoclmpft(m)) + &
-                                                      wt_cft_from * fert_cft(g,m)) / wt_cft_merge
-             end if
-          end if
-       end do
-
-    end do
-
-    call check_sums_equal_1(wt_cft, begg, 'wt_cft', subname//': mergetoclmpft')
 
   end subroutine collapse_crop_types
 

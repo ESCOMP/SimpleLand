@@ -198,7 +198,7 @@ CONTAINS
     use pftconMod      , only : nbrdlf_evr_shrub, nbrdlf_dcd_tmp_shrub
     use pftconMod      , only : nbrdlf_dcd_brl_shrub,nc3_arctic_grass
     use pftconMod      , only : nc3_nonarctic_grass, nc4_grass, nc3crop
-    use pftconMod      , only : nc3irrig, npcropmin, npcropmax
+    use pftconMod      , only : nc3irrig
     use clm_varcon     , only : spval
 
     !
@@ -342,7 +342,6 @@ CONTAINS
             if (clmveg == nc4_grass                           ) wesveg = 3 
             if (clmveg == nc3crop                             ) wesveg = 2 
             if (clmveg == nc3irrig                            ) wesveg = 2 
-            if (clmveg >= npcropmin .and. clmveg <= npcropmax ) wesveg = 2 
             if (wesveg == wveg_unset )then
                write(iulog,*) 'clmveg = ', clmveg, 'lun%itype = ', lun%itype(l)
                call endrun(decomp_index=pi, clmlevel=namep, &

@@ -13,7 +13,7 @@ module CNMRespMod
   use decompMod              , only : bounds_type
   use abortutils             , only : endrun
   use shr_log_mod            , only : errMsg => shr_log_errMsg
-  use pftconMod              , only : npcropmin, pftcon
+  use pftconMod              , only : pftcon
   use SoilStateType          , only : soilstate_type
   use CanopyStateType        , only : canopystate_type
   use TemperatureType        , only : temperature_type
@@ -201,9 +201,6 @@ contains
          if (woody(ivt(p)) == 1) then
             livestem_mr(p) = livestemn(p)*br*tc
             livecroot_mr(p) = livecrootn(p)*br_root*tc
-         else if (ivt(p) >= npcropmin) then
-            livestem_mr(p) = livestemn(p)*br*tc
-            grain_mr(p) = grainn(p)*br*tc
          end if
       end do
 

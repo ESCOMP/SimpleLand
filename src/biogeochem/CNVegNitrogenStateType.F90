@@ -12,7 +12,7 @@ module CNVegNitrogenStateType
   use clm_varctl                         , only : iulog, override_bgc_restart_mismatch_dump
   use clm_varctl                         , only : use_crop
   use decompMod                          , only : bounds_type
-  use pftconMod                          , only : npcropmin, noveg, pftcon
+  use pftconMod                          , only : noveg, pftcon
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   use abortutils                         , only : endrun
   use spmdMod                            , only : masterproc 
