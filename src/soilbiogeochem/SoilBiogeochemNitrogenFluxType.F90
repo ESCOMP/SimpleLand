@@ -7,7 +7,6 @@ module SoilBiogeochemNitrogenFluxType
   use clm_varpar                         , only : nlevdecomp_full, nlevdecomp
   use clm_varcon                         , only : spval, ispval, dzsoi_decomp
   use decompMod                          , only : bounds_type
-  use clm_varctl                         , only : use_crop
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
   use abortutils                         , only : endrun
   use LandunitType                       , only : lun                
@@ -513,18 +512,6 @@ contains
     call hist_addfld1d (fname='NET_NMIN', units='gN/m^2/s', &
          avgflag='A', long_name='net rate of N mineralization', &
          ptr_col=this%net_nmin_col, default='inactive')
-
-    if (use_crop) then
-       this%fert_to_sminn_col(begc:endc) = spval
-       call hist_addfld1d (fname='FERT_TO_SMINN', units='gN/m^2/s', &
-            avgflag='A', long_name='fertilizer to soil mineral N', &
-            ptr_col=this%fert_to_sminn_col, default='inactive')
-
-       this%soyfixn_to_sminn_col(begc:endc) = spval
-       call hist_addfld1d (fname='SOYFIXN_TO_SMINN', units='gN/m^2/s', &
-            avgflag='A', long_name='Soybean fixation to soil mineral N', &
-            ptr_col=this%soyfixn_to_sminn_col, default='inactive')
-    end if
 
   end subroutine InitHistory
 

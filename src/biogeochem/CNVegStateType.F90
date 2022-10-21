@@ -7,7 +7,7 @@ module CNVegStateType
   use abortutils     , only : endrun
   use spmdMod        , only : masterproc
   use clm_varpar     , only : nlevsno, nlevgrnd, nlevlak, nlevsoi
-  use clm_varctl     , only : use_cn, iulog, fsurdat, use_crop
+  use clm_varctl     , only : use_cn, iulog, fsurdat
   use clm_varcon     , only : spval, ispval, grlnd
   use landunit_varcon, only : istsoil, istcrop
   use LandunitType   , only : lun                
@@ -251,13 +251,6 @@ contains
 
     begp = bounds%begp; endp= bounds%endp
     begc = bounds%begc; endc= bounds%endc
-
-    if ( use_crop) then
-       this%gddmaturity_patch(begp:endp) = spval
-       call hist_addfld1d (fname='GDDHARV', units='ddays', &
-            avgflag='A', long_name='Growing degree days (gdd) needed to harvest', &
-            ptr_patch=this%gddmaturity_patch, default='inactive')
-    end if
 
     this%lfc2_col(begc:endc) = spval
     call hist_addfld1d (fname='LFC2', units='per sec', &
@@ -808,62 +801,6 @@ contains
          long_name='', units='', &
          interpinic_flag='interp', readvar=readvar, data=this%annavg_t2m_col) 
 
-    if (use_crop) then
-
-       call restartvar(ncid=ncid, flag=flag,  varname='htmx', xtype=ncd_double,  &
-            dim1name='pft', long_name='max height attained by a crop during year', units='m', &
-            interpinic_flag='interp', readvar=readvar, data=this%htmx_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='peaklai', xtype=ncd_int,  &
-            dim1name='pft', long_name='Flag if at max allowed LAI or not', &
-            flag_values=(/0,1/), nvalid_range=(/0,1/), &
-            flag_meanings=(/'NOT-at-peak', 'AT_peak-LAI' /) , &
-            interpinic_flag='interp', readvar=readvar, data=this%peaklai_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='idop', xtype=ncd_int,  &
-            dim1name='pft', long_name='Date of planting', units='jday', nvalid_range=(/1,366/), & 
-            interpinic_flag='interp', readvar=readvar, data=this%idop_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='aleaf', xtype=ncd_double,  &
-            dim1name='pft', long_name='leaf allocation coefficient', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%aleaf_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='aleafi', xtype=ncd_double,  &
-            dim1name='pft', long_name='Saved leaf allocation coefficient from phase 2', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%aleafi_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='astem', xtype=ncd_double,  &
-            dim1name='pft', long_name='stem allocation coefficient', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%astem_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='astemi', xtype=ncd_double,  &
-            dim1name='pft', long_name='Saved stem allocation coefficient from phase 2', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%astemi_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='hdidx', xtype=ncd_double,  &
-            dim1name='pft', long_name='cold hardening index', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%hdidx_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='cumvd', xtype=ncd_double,  &
-            dim1name='pft', long_name='cumulative vernalization d', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%cumvd_patch)
-
-      call restartvar(ncid=ncid, flag=flag,  varname='gddmaturity', xtype=ncd_double,  &
-            dim1name='pft', long_name='Growing degree days needed to harvest', units='ddays', &
-            interpinic_flag='interp', readvar=readvar, data=this%gddmaturity_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='huileaf', xtype=ncd_double,  &
-            dim1name='pft', long_name='heat unit index needed from planting to leaf emergence', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%huileaf_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='huigrain', xtype=ncd_double,  &
-            dim1name='pft', long_name='heat unit index needed to reach vegetative maturity', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%huigrain_patch)
-
-       call restartvar(ncid=ncid, flag=flag, varname='grain_flag', xtype=ncd_double,  &
-            dim1name='pft', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%grain_flag_patch)
-    end if
     if ( flag == 'read' .and. num_reseed_patch > 0 )then
        if ( masterproc ) write(iulog, *) 'Reseed dead plants for CNVegState'
        do i = 1, num_reseed_patch

@@ -185,7 +185,6 @@ contains
     !
     ! !USES:
     use clm_time_manager, only: get_step_size
-    use clm_varctl      , only: use_crop
     use clm_varcon      , only: secspday
     !
     ! !ARGUMENTS:
@@ -234,12 +233,6 @@ contains
     ! set the global parameter for livewood turnover rate
     ! define as an annual fraction (0.7), and convert to fraction per second
     lwtop=params_inst%lwtop/31536000.0_r8 !annual fraction converted to per second
-
-    ! -----------------------------------------
-    ! Call any subroutine specific initialization routines
-    ! -----------------------------------------
-
-    !if ( use_crop ) call CropPhenologyInit(bounds)
 
   end subroutine CNPhenologyInit
 

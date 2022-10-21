@@ -484,7 +484,7 @@ contains
     use clm_varctl           , only : caseid, ctitle, version, username, hostname, fsurdat
     use clm_varctl           , only : conventions, source
     use clm_varpar           , only : numrad, nlevlak, nlevsno, nlevgrnd, nlevurb, nlevcan
-    use clm_varpar           , only : maxpatch_glcmec, nvegwcs
+    use clm_varpar           , only : maxpatch_glcmec
     use decompMod            , only : get_proc_global
     !
     ! !ARGUMENTS:

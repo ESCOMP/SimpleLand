@@ -10,7 +10,6 @@ module CNVegNitrogenStateType
   use clm_varcon                         , only : spval, ispval, dzsoi_decomp, zisoi
   use landunit_varcon                    , only : istcrop, istsoil 
   use clm_varctl                         , only : iulog, override_bgc_restart_mismatch_dump
-  use clm_varctl                         , only : use_crop
   use decompMod                          , only : bounds_type
   use pftconMod                          , only : noveg, pftcon
   use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
@@ -195,16 +194,6 @@ contains
     ! patch state variables 
     !-------------------------------
     
-    if (use_crop) then
-       this%grainn_patch(begp:endp) = spval
-       call hist_addfld1d (fname='GRAINN', units='gN/m^2', &
-            avgflag='A', long_name='grain N', &
-            ptr_patch=this%grainn_patch, default='inactive')
-       call hist_addfld1d (fname='CROPSEEDN_DEFICIT', units='gN/m^2', &
-            avgflag='A', long_name='N used for crop seed that needs to be repaid', &
-            ptr_patch=this%cropseedn_deficit_patch, default='inactive')
-    end if
-
     this%leafn_patch(begp:endp) = spval
     call hist_addfld1d (fname='LEAFN', units='gN/m^2', &
          avgflag='A', long_name='leaf N', &
@@ -425,12 +414,6 @@ contains
           this%leafn_storage_xfer_acc_patch(p)        = 0._r8
           this%storage_ndemand_patch(p)   = 0._r8
 
-          if ( use_crop )then
-             this%grainn_patch(p)         = 0._r8
-             this%grainn_storage_patch(p) = 0._r8
-             this%grainn_xfer_patch(p)    = 0._r8
-             this%cropseedn_deficit_patch(p)  = 0._r8
-          end if
           this%frootn_patch(p)            = 0._r8
           this%frootn_storage_patch(p)    = 0._r8
           this%frootn_xfer_patch(p)       = 0._r8
@@ -625,24 +608,6 @@ contains
          dim1name='pft', long_name='', units='', &
          interpinic_flag='interp', readvar=readvar, data=this%ntrunc_patch) 
 
-    if (use_crop) then
-       call restartvar(ncid=ncid, flag=flag,  varname='grainn', xtype=ncd_double,  &
-            dim1name='pft',    long_name='grain N', units='gN/m2', &
-            interpinic_flag='interp', readvar=readvar, data=this%grainn_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='grainn_storage', xtype=ncd_double,  &
-            dim1name='pft',    long_name='grain N storage', units='gN/m2', &
-            interpinic_flag='interp', readvar=readvar, data=this%grainn_storage_patch)
-
-       call restartvar(ncid=ncid, flag=flag,  varname='grainn_xfer', xtype=ncd_double,  &
-            dim1name='pft',    long_name='grain N transfer', units='gN/m2', &
-            interpinic_flag='interp', readvar=readvar, data=this%grainn_xfer_patch)
-
-       call restartvar(ncid=ncid, flag=flag, varname='cropseedn_deficit', xtype=ncd_double,  &
-            dim1name='pft', long_name='pool for seeding new crop growth', units='gN/m2', &
-            interpinic_flag='interp', readvar=readvar, data=this%cropseedn_deficit_patch)
-    end if
-
     !--------------------------------
     ! gridcell nitrogen state variables
     !--------------------------------
@@ -713,12 +678,6 @@ contains
              this%leafn_storage_xfer_acc_patch(p)        = 0._r8
              this%storage_ndemand_patch(p)   = 0._r8
    
-             if ( use_crop )then
-                this%grainn_patch(p)         = 0._r8
-                this%grainn_storage_patch(p) = 0._r8
-                this%grainn_xfer_patch(p)    = 0._r8
-                this%cropseedn_deficit_patch(p)  = 0._r8
-             end if
              this%frootn_patch(p)            = 0._r8
              this%frootn_storage_patch(p)    = 0._r8
              this%frootn_xfer_patch(p)       = 0._r8
@@ -775,13 +734,6 @@ contains
                            this%deadcrootn_xfer_patch(p)    + &
                            this%npool_patch(p)
 
-             if ( use_crop )then
-                 this%totvegn_patch(p) =         &
-                              this%totvegn_patch(p)    + &
-                              this%grainn_patch(p)         + &
-                              this%grainn_storage_patch(p) + &
-                              this%grainn_xfer_patch(p)
-             end if
        end do
      end if
 
@@ -839,16 +791,6 @@ contains
        this%totvegn_patch(i)            = value_patch
        this%totn_patch(i)               = value_patch
     end do
-
-    if ( use_crop )then
-       do fi = 1,num_patch
-          i = filter_patch(fi)
-          this%grainn_patch(i)          = value_patch
-          this%grainn_storage_patch(i)  = value_patch
-          this%grainn_xfer_patch(i)     = value_patch   
-          this%cropseedn_deficit_patch(i)  = value_patch
-       end do
-    end if
 
     do fi = 1,num_column
        i = filter_column(fi)

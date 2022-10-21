@@ -16,7 +16,7 @@ module CropType
   use abortutils          , only : endrun
   use decompMod           , only : bounds_type
   use clm_varcon          , only : spval
-  use clm_varctl          , only : iulog, use_crop
+  use clm_varctl          , only : iulog
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -45,20 +45,10 @@ module CropType
    contains
      ! Public routines
      procedure, public  :: Init               ! Initialize the crop type
-     procedure, public  :: InitAccBuffer
      procedure, public  :: InitAccVars
-     ! NOTE(wjs, 2014-09-29) need to rename this from UpdateAccVars to CropUpdateAccVars
-     ! to prevent cryptic error messages with pgi (v. 13.9 on yellowstone)
-     ! This is probably related to this bug
-     ! <http://www.pgroup.com/userforum/viewtopic.php?t=4285>, which was fixed in pgi 14.7.
-     procedure, public  :: CropUpdateAccVars
-
-     procedure, public  :: CropIncrementYear
 
      ! Private routines
      procedure, private :: InitAllocate 
-     procedure, private :: InitHistory
-     procedure, private :: InitCold
      procedure, private, nopass :: checkDates
 
   end type crop_type
@@ -85,11 +75,6 @@ contains
     !-----------------------------------------------------------------------
     
     call this%InitAllocate(bounds)
-
-    if (use_crop) then
-       call this%InitHistory(bounds)
-       call this%InitCold(bounds)
-    end if
 
   end subroutine Init
 
@@ -121,149 +106,6 @@ contains
     allocate(this%latbaset_patch (begp:endp)) ; this%latbaset_patch (:) = spval
 
   end subroutine InitAllocate
-
-  !-----------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !USES:
-    use histFileMod    , only : hist_addfld1d
-    !
-    ! !ARGUMENTS:
-    class(crop_type),  intent(inout) :: this
-    type(bounds_type), intent(in) :: bounds
-    !
-    ! !LOCAL VARIABLES:
-    integer :: begp, endp
-    
-    character(len=*), parameter :: subname = 'InitHistory'
-    !-----------------------------------------------------------------------
-    
-    begp = bounds%begp; endp = bounds%endp
-
-    this%fertnitro_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FERTNITRO', units='gN/m2/yr', &
-         avgflag='A', long_name='Nitrogen fertilizer for each crop', &
-         ptr_patch=this%fertnitro_patch, default='inactive')
-
-    this%gddplant_patch(begp:endp) = spval
-    call hist_addfld1d (fname='GDDPLANT', units='ddays', &
-         avgflag='A', long_name='Accumulated growing degree days past planting date for crop', &
-         ptr_patch=this%gddplant_patch, default='inactive')
-
-    this%gddtsoi_patch(begp:endp) = spval
-    call hist_addfld1d (fname='GDDTSOI', units='ddays', &
-         avgflag='A', long_name='Growing degree-days from planting (top two soil layers)', &
-         ptr_patch=this%gddtsoi_patch, default='inactive')
-
-    this%cphase_patch(begp:endp) = spval
-    call hist_addfld1d (fname='CPHASE', units='0-not planted, 1-planted, 2-leaf emerge, 3-grain fill, 4-harvest', &
-         avgflag='A', long_name='crop phenology phase', &
-         ptr_patch=this%cphase_patch, default='inactive')
-
-    if ( (trim(this%baset_mapping) == baset_map_latvary) )then
-       this%latbaset_patch(begp:endp) = spval
-       call hist_addfld1d (fname='LATBASET', units='degree C', &
-            avgflag='A', long_name='latitude vary base temperature for gddplant', &
-            ptr_patch=this%latbaset_patch, default='inactive')
-    end if
-
-  end subroutine InitHistory
-
-  subroutine InitCold(this, bounds)
-    ! !USES:
-    use LandunitType, only : lun                
-    use landunit_varcon, only : istcrop
-    use PatchType, only : patch
-    use clm_instur, only : fert_cft
-    use pftconMod        , only : pftcon 
-    use GridcellType     , only : grc
-    use shr_infnan_mod   , only : nan => shr_infnan_nan, assignment(=)
-    ! !ARGUMENTS:
-    class(crop_type),  intent(inout) :: this
-    type(bounds_type), intent(in) :: bounds
-    !
-    ! !LOCAL VARIABLES:
-    integer :: c, l, g, p, m, ivt ! indices
-
-    character(len=*), parameter :: subname = 'InitCold'
-    !-----------------------------------------------------------------------
-
-!DLL - added wheat & sugarcane restrictions to base T vary by lat
-    do p= bounds%begp,bounds%endp
-       g   = patch%gridcell(p)
-       ivt = patch%itype(p)
-
-       this%nyrs_crop_active_patch(p) = 0
-
-       if ( grc%latdeg(g) >= 0.0_r8 .and. grc%latdeg(g) <= 30.0_r8) then
-          this%latbaset_patch(p)=pftcon%baset(ivt)+12._r8-0.4_r8*grc%latdeg(g)
-       else if (grc%latdeg(g) < 0.0_r8 .and. grc%latdeg(g) >= -30.0_r8) then
-          this%latbaset_patch(p)=pftcon%baset(ivt)+12._r8+0.4_r8*grc%latdeg(g)
-       else
-          this%latbaset_patch(p)=pftcon%baset(ivt)
-       end if
-       if ( trim(this%baset_mapping) == baset_map_constant ) then
-          this%latbaset_patch(p) = nan
-       end if
-    end do
-!DLL -- end of mods
-
-    if (use_crop) then
-       do p= bounds%begp,bounds%endp
-          g = patch%gridcell(p)
-          l = patch%landunit(p)
-          c = patch%column(p)
-
-          if (lun%itype(l) == istcrop) then
-             m = patch%itype(p)
-             this%fertnitro_patch(p) = fert_cft(g,m)
-          end if
-       end do
-    end if
-
-  end subroutine InitCold
-
-  !-----------------------------------------------------------------------
-
-    !-----------------------------------------------------------------------
-  subroutine InitAccBuffer (this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize accumulation buffer for all required module accumulated fields
-    ! This routine set defaults values that are then overwritten by the
-    ! restart file for restart or branch runs
-    ! Each interval and accumulation type is unique to each field processed.
-    ! Routine [initAccBuffer] defines the fields to be processed
-    ! and the type of accumulation. 
-    ! Routine [updateAccVars] does the actual accumulation for a given field.
-    ! Fields are accumulated by calls to subroutine [update_accum_field]. 
-    ! To accumulate a field, it must first be defined in subroutine [initAccVars] 
-    ! and then accumulated by calls to [updateAccVars].
-    !
-    ! Should only be called if use_crop is true
-    !
-    ! !USES 
-    use accumulMod       , only : init_accum_field
-    !
-    ! !ARGUMENTS:
-    class(crop_type) , intent(in) :: this
-    type(bounds_type), intent(in) :: bounds  
-
-    !
-    ! !LOCAL VARIABLES:
-    integer, parameter :: not_used = huge(1)
-
-    !---------------------------------------------------------------------
-
-    call init_accum_field (name='GDDPLANT', units='K', &
-         desc='growing degree-days from planting', accum_type='runaccum', accum_period=not_used,  &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    call init_accum_field (name='GDDTSOI', units='K', &
-         desc='growing degree-days from planting (top two soil layers)', accum_type='runaccum', accum_period=not_used,  &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-  end subroutine InitAccBuffer
 
   !-----------------------------------------------------------------------
   subroutine InitAccVars(this, bounds)
@@ -312,140 +154,6 @@ contains
     deallocate(rbufslp)
 
   end subroutine InitAccVars
-
-  !-----------------------------------------------------------------------
-  subroutine CropUpdateAccVars(this, bounds, t_ref2m_patch, t_soisno_col)
-    !
-    ! !DESCRIPTION:
-    ! Update accumulated variables. Should be called every time step.
-    ! Should only be called if use_crop is true.
-    !
-    ! !USES:
-    use accumulMod       , only : update_accum_field, extract_accum_field, accumResetVal
-    use shr_const_mod    , only : SHR_CONST_CDAY, SHR_CONST_TKFRZ
-    use clm_time_manager , only : get_step_size, get_nstep
-    use clm_varpar       , only : nlevsno, nlevgrnd
-    use pftconMod        , only : pftcon
-    use ColumnType       , only : col
-    use PatchType        , only : patch
-    !
-    ! !ARGUMENTS:
-    implicit none
-    class(crop_type)       , intent(inout) :: this
-    type(bounds_type)      , intent(in)    :: bounds
-    real(r8)               , intent(in)    :: t_ref2m_patch( bounds%begp:)
-    real(r8)               , intent(inout) :: t_soisno_col(bounds%begc:, -nlevsno+1:)
-    !
-    ! !LOCAL VARIABLES:
-    integer :: p,c,g ! indices
-    integer :: ivt   ! vegetation type
-    integer :: dtime ! timestep size [seconds]
-    integer :: nstep ! timestep number
-    integer :: ier   ! error status
-    integer :: begp, endp
-    integer :: begc, endc
-    real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
-    character(len=*), parameter :: subname = 'CropUpdateAccVars'
-    !-----------------------------------------------------------------------
-    
-    begp = bounds%begp; endp = bounds%endp
-    begc = bounds%begc; endc = bounds%endc
-
-    ! Enforce expected array sizes
-    SHR_ASSERT_ALL((ubound(t_ref2m_patch)  == (/endp/))          , errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(t_soisno_col)   == (/endc,nlevgrnd/)) , errMsg(sourcefile, __LINE__))
-
-    dtime = get_step_size()
-    nstep = get_nstep()
-
-    ! Allocate needed dynamic memory for single level patch field
-
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)'update_accum_hist allocation error for rbuf1dp'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-
-    ! Accumulate and extract GDDPLANT
-    
-    call extract_accum_field ('GDDPLANT', rbufslp, nstep)
-    do p = begp,endp
-      rbufslp(p) = max(0.,this%gddplant_patch(p)-rbufslp(p))
-    end do
-    call update_accum_field  ('GDDPLANT', rbufslp, nstep)
-    do p = begp,endp
-       if (this%croplive_patch(p)) then ! relative to planting date
-          ivt = patch%itype(p)
-          rbufslp(p) = max(0._r8, min(pftcon%mxtmp(ivt), &
-          t_ref2m_patch(p)-(SHR_CONST_TKFRZ + pftcon%baset(ivt)))) &
-          * dtime/SHR_CONST_CDAY
-       else
-          rbufslp(p) = accumResetVal
-       end if
-    end do
-    call update_accum_field  ('GDDPLANT', rbufslp, nstep)
-    call extract_accum_field ('GDDPLANT', this%gddplant_patch, nstep)
-
-    ! Accumulate and extract GDDTSOI
-    ! In agroibis this variable is calculated
-    ! to 0.05 m, so here we use the top two soil layers
-
-    do p = begp,endp
-       if (this%croplive_patch(p)) then ! relative to planting date
-          ivt = patch%itype(p)
-          c   = patch%column(p)
-          rbufslp(p) = max(0._r8, min(pftcon%mxtmp(ivt), &
-               ((t_soisno_col(c,1)*col%dz(c,1) + &
-               t_soisno_col(c,2)*col%dz(c,2))/(col%dz(c,1)+col%dz(c,2))) - &
-               (SHR_CONST_TKFRZ + pftcon%baset(ivt)))) * dtime/SHR_CONST_CDAY
-       else
-          rbufslp(p) = accumResetVal
-       end if
-    end do
-    call update_accum_field  ('GDDTSOI', rbufslp, nstep)
-    call extract_accum_field ('GDDTSOI', this%gddtsoi_patch, nstep)
-
-    deallocate(rbufslp)
-
-  end subroutine CropUpdateAccVars
-
-  !-----------------------------------------------------------------------
-  subroutine CropIncrementYear (this, num_pcropp, filter_pcropp)
-    !
-    ! !DESCRIPTION: 
-    ! Increment the crop year, if appropriate
-    !
-    ! This routine should be called every time step
-    !
-    ! !USES:
-    use clm_time_manager , only : get_curr_date, is_first_step
-    !
-    ! !ARGUMENTS:
-    class(crop_type) :: this
-    integer , intent(in) :: num_pcropp       ! number of prog. crop patches in filter
-    integer , intent(in) :: filter_pcropp(:) ! filter for prognostic crop patches
-    !
-    ! !LOCAL VARIABLES:
-    integer kyr   ! current year
-    integer kmo   ! month of year  (1, ..., 12)
-    integer kda   ! day of month   (1, ..., 31)
-    integer mcsec ! seconds of day (0, ..., seconds/day)
-    integer :: fp, p
-    !-----------------------------------------------------------------------
-
-    call get_curr_date (   kyr, kmo, kda, mcsec)
-    ! Update nyrs when it's the end of the year (unless it's the very start of the
-    ! run). This assumes that, if this patch is active at the end of the year, then it was
-    ! active for the whole year.
-    if ((kmo == 1 .and. kda == 1 .and. mcsec == 0) .and. .not. is_first_step()) then
-       do fp = 1, num_pcropp
-          p = filter_pcropp(fp)
-
-          this%nyrs_crop_active_patch(p) = this%nyrs_crop_active_patch(p) + 1
-       end do
-    end if
-
-  end subroutine CropIncrementYear
 
   !-----------------------------------------------------------------------
   subroutine checkDates( )

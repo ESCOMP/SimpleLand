@@ -228,7 +228,6 @@ contains
     ! Perform nitrogen mass conservation check
     !
     ! !USES:
-    use clm_varctl, only : use_crop
     !
     ! !ARGUMENTS:
     class(cn_balance_type)                  , intent(inout) :: this
@@ -285,10 +284,6 @@ contains
          ! calculate total column-level inputs
          col_ninputs(c) = ndep_to_sminn(c) + nfix_to_sminn(c) + supplement_to_sminn(c)
          
-         if (use_crop) then
-            col_ninputs(c) = col_ninputs(c) + fert_to_sminn(c) + soyfixn_to_sminn(c)
-         end if
-
          ! calculate total column-level outputs
          col_noutputs(c) = denit(c) + col_fire_nloss(c)
 

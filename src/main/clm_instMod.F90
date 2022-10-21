@@ -9,7 +9,6 @@ module clm_instMod
   use decompMod       , only : bounds_type
   use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
   use clm_varctl      , only : use_cn
-  use clm_varctl      , only : use_crop
   use clm_varcon      , only : bdsno, c13ratio, c14ratio
   use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
@@ -348,10 +347,6 @@ contains
     call canopystate_inst%InitAccBuffer(bounds)
 
     call bgc_vegetation_inst%InitAccBuffer(bounds)
-
-    if (use_crop) then
-       call crop_inst%InitAccBuffer(bounds)
-    end if
 
     call print_accum_fields()
 
