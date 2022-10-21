@@ -133,9 +133,6 @@
         <xsl:if test="string-length(@crop)>0">
         crop=<xsl:value-of select="@crop"/>
         </xsl:if>
-        <xsl:if test="string-length(@irrig)>0">
-        irrig=<xsl:value-of select="@irrig"/>
-        </xsl:if>
         <xsl:if test="string-length(@spinup)>0">
         spinup=<xsl:value-of select="@spinup"/>
         </xsl:if>
