@@ -7,7 +7,7 @@ module clm_varpar
   ! !USES:
   use shr_kind_mod , only: r8 => shr_kind_r8
   use spmdMod      , only: masterproc
-  use clm_varctl   , only: iulog, use_crop, create_crop_landunit
+  use clm_varctl   , only: iulog, create_crop_landunit
   use clm_varctl   , only: soil_layerstruct
 
   !
@@ -105,13 +105,8 @@ contains
 
     ! Crop settings and consistency checks
 
-    if (use_crop) then
-       numpft      = mxpft   ! actual # of patches (without bare)
-       numcft      =  64     ! actual # of crops
-    else
-       numpft      = numveg  ! actual # of patches (without bare)
-       numcft      =   2     ! actual # of crops
-    end if
+    numpft      = numveg  ! actual # of patches (without bare)
+    numcft      =   2     ! actual # of crops
 
     ! For arrays containing all Patches (natural veg & crop), determine lower and upper bounds
     ! for (1) Patches on the natural vegetation landunit (includes bare ground, and includes
@@ -131,11 +126,6 @@ contains
     cft_lb = natpft_ub + 1
     cft_ub = cft_lb + cft_size - 1
 
-    ! TODO(wjs, 2015-10-04, bugz 2227) Using numcft in this 'max' gives a significant
-    ! overestimate of max_patch_per_col when use_crop is true. This should be reworked -
-    ! or, better, removed from the code entirely (because it is a maintenance problem, and
-    ! I can't imagine that looping idioms that use it help performance that much, and
-    ! likely they hurt performance.)
     max_patch_per_col= max(numpft+1, numcft, maxpatch_urb)
 
     nlevsoifl   =  10

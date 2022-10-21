@@ -531,17 +531,6 @@ CLM Biogeochemistry mode : Carbon Nitrogen model (CN)
 (or CLM45BGC if phys=clm4_5, vsoilc_centbgc='on', and clm4me='on')
 </entry>
 
-<entry id="use_crop" type="logical" category="physics"
-       group="clm_inparm" valid_values="" value=".false.">
-Toggle to turn on the prognostic crop model
-</entry>
-
-<entry id="initial_seed_at_planting" type="real" category="physics"
-       group="cnphenology" valid_values="" value="1.0d00">
-Initial seed Carbon to use at planting
-(only used when CN is on as well as crop)
-</entry>
-
 <entry id="use_noio" type="logical" category="default_settings"
        group="clm_inparm" valid_values="" value=".false." >
 Toggle to turn all history output completely OFF (possibly used for testing)

@@ -122,9 +122,6 @@ module clm_varctl
   ! Crop & Irrigation logic
   !----------------------------------------------------------
 
-  ! If prognostic crops are turned on
-  logical, public :: use_crop = .false.
-
   ! true => separate crop landunit is not created by default
   logical, public :: create_crop_landunit = .false.     
   
