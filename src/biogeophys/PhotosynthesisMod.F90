@@ -28,7 +28,6 @@ module  PhotosynthesisMod
   use TemperatureType     , only : temperature_type
   use SolarAbsorbedType   , only : solarabs_type
   use SurfaceAlbedoType   , only : surfalb_type
-  use OzoneBaseMod        , only : ozone_base_type
   use LandunitType        , only : lun
   use PatchType           , only : patch
   use GridcellType        , only : grc

@@ -41,8 +41,6 @@ module clm_instMod
   use FrictionVelocityMod             , only : frictionvel_type
   use GlacierSurfaceMassBalanceMod    , only : glacier_smb_type
   use LakeStateType                   , only : lakestate_type
-  use OzoneBaseMod                    , only : ozone_base_type
-  use OzoneFactoryMod                 , only : create_and_init_ozone_type
   use PhotosynthesisMod               , only : photosyns_type
   use SoilHydrologyType               , only : soilhydrology_type  
   use SoilStateType                   , only : soilstate_type
@@ -85,7 +83,6 @@ module clm_instMod
   type(frictionvel_type)                  :: frictionvel_inst
   type(glacier_smb_type)                  :: glacier_smb_inst
   type(lakestate_type)                    :: lakestate_inst
-  class(ozone_base_type), allocatable     :: ozone_inst
   type(photosyns_type)                    :: photosyns_inst
   type(soilstate_type)                    :: soilstate_inst
   type(soilhydrology_type)                :: soilhydrology_inst
@@ -253,8 +250,6 @@ contains
     call lakestate_inst%Init(bounds)
     call LakeConInit()
 
-    allocate(ozone_inst, source = create_and_init_ozone_type(bounds))
-
     call photosyns_inst%Init(bounds)
 
     call soilhydrology_inst%Init(bounds, nlfilename)
@@ -377,8 +372,6 @@ contains
     call frictionvel_inst% restart (bounds, ncid, flag=flag)
 
     call lakestate_inst%restart (bounds, ncid, flag=flag)
-
-    call ozone_inst%restart (bounds, ncid, flag=flag)
 
     call photosyns_inst%restart (bounds, ncid, flag=flag)
 
