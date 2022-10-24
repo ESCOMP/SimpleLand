@@ -183,27 +183,6 @@ contains
          avgflag='A', long_name='fractional area with water table at surface', &
          ptr_col=this%fsat_col, l2g_scale_type='veg', default='inactive')
 
-    this%num_substeps_col(begc:endc) = spval
-    call hist_addfld1d (fname='NSUBSTEPS',  units='unitless',  &
-         avgflag='A', long_name='number of adaptive timesteps in CLM timestep', &
-         ptr_col=this%num_substeps_col, l2g_scale_type='veg', &
-         default='inactive')
-
-    this%frost_table_col(begc:endc) = spval
-    call hist_addfld1d (fname='FROST_TABLE',  units='m',  &
-         avgflag='A', long_name='frost table depth (vegetated landunits only)', &
-         ptr_col=this%frost_table_col, l2g_scale_type='veg', default='inactive')
-
-    this%zwt_col(begc:endc) = spval
-    call hist_addfld1d (fname='ZWT',  units='m',  &
-         avgflag='A', long_name='water table depth (vegetated landunits only)', &
-         ptr_col=this%zwt_col, l2g_scale_type='veg', default='inactive')
-
-    this%zwt_perched_col(begc:endc) = spval
-    call hist_addfld1d (fname='ZWT_PERCH',  units='m',  &
-         avgflag='A', long_name='perched water table depth (vegetated landunits only)', &
-         ptr_col=this%zwt_perched_col, l2g_scale_type='veg', default='inactive')
-
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------

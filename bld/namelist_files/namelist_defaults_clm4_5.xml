@@ -114,14 +114,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <upper_boundary_condition phys="clm4_5" >1</upper_boundary_condition>
 <upper_boundary_condition phys="clm5_0" >1</upper_boundary_condition>
 
-<lower_boundary_condition soilwater_movement_method="0"                       >4</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" >2</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" vichydro="1" >3</lower_boundary_condition>
-
-<dtmin>60.</dtmin>      
-<verySmall>1.e-8</verySmall>
-<xTolerUpper>1.e-1</xTolerUpper> 
-<xTolerLower>1.e-2</xTolerLower> 
+<lower_boundary_condition>4</lower_boundary_condition>
 <expensive>42</expensive>
 <inexpensive>1</inexpensive>
 <flux_calculation>1</flux_calculation>

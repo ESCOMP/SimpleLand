@@ -1463,18 +1463,6 @@ sub setup_logic_hydrology_switches {
         }
      }
   }
-  # Test bad configurations
-  my $lower   = $nl->get_value( 'lower_boundary_condition'  );
-  my $soilmtd = $nl->get_value( 'soilwater_movement_method' );
-  if ( defined($soilmtd) && defined($lower) && $soilmtd == 0 && $lower != 4 ) {
-      $log->fatal_error( "If soil water movement method is zeng-decker -- lower_boundary_condition can only be aquifer" );
-  }
-  if ( defined($soilmtd) && defined($lower) && $soilmtd == 1 && $lower == 4 ) {
-      $log->fatal_error( "If soil water movement method is adaptive -- lower_boundary_condition can NOT be aquifer" );
-  }
-  if ( defined($h2osfcflag) && defined($lower) && $h2osfcflag == 0 && $lower != 4 ) {
-     $log->fatal_error( "If h2osfcflag is 0 lower_boundary_condition can only be aquifer" );
-  }
 }
 
 #-------------------------------------------------------------------------------
@@ -1489,10 +1477,6 @@ sub setup_logic_soilwater_movement {
   my $soilmtd = $nl->get_value("soilwater_movement_method");
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 
   'lower_boundary_condition' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'dtmin' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'verySmall' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'xTolerUpper' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'xTolerLower' );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'expensive' );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'inexpensive' );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'flux_calculation' );

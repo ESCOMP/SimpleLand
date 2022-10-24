@@ -194,13 +194,7 @@ Maximum fraction of leaf that may be wet prior to drip occuring
        group="soilwater_movement_inparm" valid_values="0,1" >
 Index of solution method of Richards equation.
 
-Change method for richards equation solution and boundary
-conditions.
-
 CLM 4.5 - soilwater_movement_method = 0 (Zeng and Decker, 2009, method). 
-CLM 5.0 - soilwater_movement_method = 1 (adaptive time stepping moisture form from Martyn Clark).
-
-1 (adaptive time stepping moisture form
 </entry>
 
 <entry id="upper_boundary_condition" type="integer" category="clm_physics"
@@ -212,30 +206,9 @@ Index of upper boundary condition for Richards equation.
        group="soilwater_movement_inparm" valid_values="1,2,3,4" >
 Index of lower boundary condition for Richards equation.
 
-lower_boundary_condition = 1 : flux lower boundary condition                                     (use with soilwater_movement_method=adaptive time stepping)
-lower_boundary_condition = 2 : zero-flux lower boundary condition                                (use with soilwater_movement_method=adaptive time stepping)
-lower_boundary_condition = 3 : water table head-based lower boundary condition w/ aquifer layer. (use with soilwater_movement_method=adaptive time stepping)
 lower_boundary_condition = 4 : 11-layer solution w/ aquifer layer                                (only used with soilwater_movement_method=Zeng&Decker 2009)
-
-TODO(bja, 2015-09) these should be strings so they have meaningful names instead of ints. 
 </entry>
 
-<entry id="dtmin" type="real" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="" >
-minimum time step length (seconds) for adaptive time stepping in richards equation
-</entry>
-<entry id="verySmall" type="real" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="" >
-a very small number: used to check for sub step completion for adaptive time stepping in richards equation
-</entry>
-<entry id="xTolerUpper" type="real" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="" >
-tolerance to halve length of substep for adaptive time stepping in richards equation
-</entry>
-<entry id="xTolerLower" type="real" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="" >
-tolerance to double length of substep for adaptive time stepping in richards equation
-</entry>
 <entry id="expensive" type="integer" category="clm_physics"
        group="soilwater_movement_inparm" valid_values="" >
 
