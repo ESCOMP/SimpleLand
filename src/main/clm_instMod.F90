@@ -36,7 +36,6 @@ module clm_instMod
   use SoilBiogeochemNitrogenFluxType  , only : soilbiogeochem_nitrogenflux_type
   use SoilBiogeochemNitrogenStateType , only : soilbiogeochem_nitrogenstate_type
   use CropType                        , only : crop_type
-  use DryDepVelocity                  , only : drydepvel_type
   use DUSTMod                         , only : dust_type
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
@@ -54,7 +53,6 @@ module clm_instMod
   use WaterFluxType                   , only : waterflux_type
   use WaterStateType                  , only : waterstate_type
   use UrbanParamsType                 , only : urbanparams_type
-  use VOCEmissionMod                  , only : vocemis_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
   use lnd2glcMod                      , only : lnd2glc_type 
@@ -126,8 +124,6 @@ module clm_instMod
   type(ch4_type)                          :: ch4_inst
   type(crop_type)                         :: crop_inst
   type(dust_type)                         :: dust_inst
-  !type(vocemis_type)                      :: vocemis_inst
-  type(drydepvel_type)                    :: drydepvel_inst
 
   !
   public :: clm_instInit       ! Initialize
@@ -274,13 +270,6 @@ contains
     call dust_inst%Init(bounds)
 
     call topo_inst%Init(bounds)
-
-    ! Note - always initialize the memory for ch4_inst
-    !call ch4_inst%Init(bounds, soilstate_inst%cellorg_col(begc:endc, 1:), fsurdat, nlfilename)
-
-    !call vocemis_inst%Init(bounds)
-
-    !call drydepvel_inst%Init(bounds)
 
     if (use_cn ) then
 
