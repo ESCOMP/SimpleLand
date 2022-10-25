@@ -26,8 +26,6 @@ module CNSpeciesMod
   private
 
   integer, parameter, public :: CN_SPECIES_C12 = 1
-  integer, parameter, public :: CN_SPECIES_C13 = 2
-  integer, parameter, public :: CN_SPECIES_C14 = 3
   integer, parameter, public :: CN_SPECIES_N   = 4
 
   public :: species_from_string  ! convert a string representation to one of the constants defined here
@@ -54,10 +52,6 @@ contains
     select case (species_string)
     case ('c12')
        species = CN_SPECIES_C12
-    case ('c13')
-       species = CN_SPECIES_C13
-    case ('c14')
-       species = CN_SPECIES_C14
     case ('n')
        species = CN_SPECIES_N
     end select

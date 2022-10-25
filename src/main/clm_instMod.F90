@@ -9,7 +9,7 @@ module clm_instMod
   use decompMod       , only : bounds_type
   use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
   use clm_varctl      , only : use_cn
-  use clm_varcon      , only : bdsno, c13ratio, c14ratio
+  use clm_varcon      , only : bdsno
   use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
   use controlMod      , only : NLFilename
@@ -67,7 +67,6 @@ module clm_instMod
   use SoilHydrologyInitTimeConstMod   , only : SoilHydrologyInitTimeConst
   use SurfaceAlbedoMod                , only : SurfaceAlbedoInitTimeConst 
   use LakeCon                         , only : LakeConInit 
-  use SoilBiogeochemPrecisionControlMod, only: SoilBiogeochemPrecisionControlInit
   !
   implicit none
   public   ! By default everything is public 
@@ -112,8 +111,6 @@ module clm_instMod
   type(soilbiogeochem_carbonstate_type)   :: c13_soilbiogeochem_carbonstate_inst
   type(soilbiogeochem_carbonstate_type)   :: c14_soilbiogeochem_carbonstate_inst
   type(soilbiogeochem_carbonflux_type)    :: soilbiogeochem_carbonflux_inst
-  type(soilbiogeochem_carbonflux_type)    :: c13_soilbiogeochem_carbonflux_inst
-  type(soilbiogeochem_carbonflux_type)    :: c14_soilbiogeochem_carbonflux_inst
   type(soilbiogeochem_nitrogenstate_type) :: soilbiogeochem_nitrogenstate_inst
   type(soilbiogeochem_nitrogenflux_type)  :: soilbiogeochem_nitrogenflux_inst
 
@@ -296,10 +293,6 @@ contains
 
        call soilbiogeochem_nitrogenflux_inst%Init(bounds) 
 
-       ! Initialize precision control for soil biogeochemistry
-       call SoilBiogeochemPrecisionControlInit( soilbiogeochem_carbonstate_inst, c13_soilbiogeochem_carbonstate_inst, &
-                                                c14_soilbiogeochem_carbonstate_inst, soilbiogeochem_nitrogenstate_inst)
-
     end if ! end of if use_cn 
 
     ! Note - always call Init for bgc_vegetation_inst: some pieces need to be initialized always
@@ -370,8 +363,6 @@ contains
          is_simple_buildtemp=IsSimpleBuildTemp(), is_prog_buildtemp=IsProgBuildTemp())
 
     call frictionvel_inst% restart (bounds, ncid, flag=flag)
-
-    call lakestate_inst%restart (bounds, ncid, flag=flag)
 
     call photosyns_inst%restart (bounds, ncid, flag=flag)
 

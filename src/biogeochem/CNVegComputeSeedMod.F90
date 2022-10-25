@@ -10,11 +10,11 @@ module CNVegComputeSeedMod
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use decompMod      , only : bounds_type
   use pftconMod      , only : pftcon, noveg
-  use clm_varcon     , only : c3_r2, c4_r2, c14ratio
+  use clm_varcon     , only : c3_r2, c4_r2
   use clm_varctl     , only : iulog
   use PatchType      , only : patch
   use abortutils     , only : endrun
-  use CNSpeciesMod   , only : CN_SPECIES_C12, CN_SPECIES_C13, CN_SPECIES_C14, CN_SPECIES_N
+  use CNSpeciesMod   , only : CN_SPECIES_C12, CN_SPECIES_N
   !
   ! !PUBLIC ROUTINES:
   implicit none
@@ -174,17 +174,6 @@ contains
     select case (species)
     case (CN_SPECIES_C12)
        multiplier = 1._r8
-
-    case (CN_SPECIES_C13)
-       if (pftcon%c3psn(pft_type) == 1._r8) then
-          multiplier = c3_r2
-       else
-          multiplier = c4_r2
-       end if
-
-    case (CN_SPECIES_C14)
-       ! 14c state is initialized assuming initial "modern" 14C of 1.e-12
-       multiplier = c14ratio
 
     case (CN_SPECIES_N)
        select case (component)

@@ -90,26 +90,6 @@ module CNVegetationFacade
      ! Control variables
      logical, private :: reseed_dead_plants    ! Flag to indicate if should reseed dead plants when starting up the model
 
-     ! TODO(wjs, 2016-02-19) Evaluate whether some other variables should be moved in
-     ! here. Whether they should be moved in depends on how tightly they are tied in with
-     ! the other CN Vegetation stuff. A question to ask is: Is this module used when
-     ! running with SP or ED? If so, then it should probably remain outside of CNVeg.
-     !
-     ! From the clm_instMod section on "CN vegetation types":
-     ! - nutrient_competition_method
-     !   - I'm pretty sure this should be moved into here; it's just a little messy to do
-     !     so, because of how it's initialized (specifically, the call to readParameters
-     !     in clm_initializeMod).
-     !
-     ! From the clm_instMod section on "general biogeochem types":
-     ! - ch4_inst
-     !   - probably not: really seems to belong in soilbiogeochem
-     ! - crop_inst
-     ! - dust_inst
-     ! - vocemis_inst
-     ! - fireemis_inst
-     ! - drydepvel_inst
-     
    contains
      procedure, public :: Init
      procedure, public :: InitAccBuffer
@@ -117,7 +97,6 @@ module CNVegetationFacade
      procedure, public :: Restart
 
      procedure, public :: Init2                         ! Do initialization in initialize phase, after subgrid weights are determined
-     procedure, public :: WriteHistory                  ! Do any history writes that are specific to veg dynamics
 
      procedure, public :: get_totvegc_col               ! Get column-level total vegetation carbon array
 
@@ -138,7 +117,6 @@ contains
     ! Should be called regardless of whether use_cn is true
     !
     ! !USES:
-    use clm_varcon       , only : c13ratio, c14ratio
     !
     ! !ARGUMENTS:
     class(cn_vegetation_type), intent(inout) :: this
@@ -290,7 +268,7 @@ contains
     !
     ! !USES:
     use ncdio_pio, only : file_desc_t
-    use clm_varcon, only : c3_r2, c14ratio
+    use clm_varcon, only : c3_r2
     !
     ! !ARGUMENTS:
     class(cn_vegetation_type), intent(inout) :: this
@@ -362,34 +340,6 @@ contains
     call CNDriverInit(bounds, NLFilename )
 
   end subroutine Init2
-
-
-  !-----------------------------------------------------------------------
-  subroutine WriteHistory(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Do any history writes that are specific to vegetation dynamics
-    !
-    ! NOTE(wjs, 2016-02-23) This could probably be combined with
-    ! EndOfTimeStepVegDynamics, except for the fact that (currently) history writes are
-    ! done with proc bounds rather than clump bounds. If that were changed, then the body
-    ! of this could be moved into EndOfTimeStepVegDynamics, inside a "if (.not.
-    ! use_noio)" conditional.
-    !
-    ! Should only be called if use_cn is true
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    class(cn_vegetation_type), intent(in) :: this
-    type(bounds_type)  , intent(in) :: bounds                  
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'WriteHistory'
-    !-----------------------------------------------------------------------
-
-  end subroutine WriteHistory
 
   !-----------------------------------------------------------------------
   function get_totvegc_col(this, bounds) result(totvegc_col)

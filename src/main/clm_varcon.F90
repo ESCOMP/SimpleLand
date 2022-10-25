@@ -130,7 +130,6 @@ module clm_varcon
   !!! C13
   real(r8), parameter :: preind_atm_del13c = -6.0   ! preindustrial value for atmospheric del13C
   real(r8), parameter :: preind_atm_ratio = SHR_CONST_PDB + (preind_atm_del13c * SHR_CONST_PDB)/1000.0  ! 13C/12C
-  real(r8) :: c13ratio = preind_atm_ratio/(1.0+preind_atm_ratio) ! 13C/(12+13)C preind atmosphere
 
    ! typical del13C for C3 photosynthesis (permil, relative to PDB)
   real(r8), parameter :: c3_del13c = -28._r8
@@ -149,10 +148,6 @@ module clm_varcon
 
   ! isotope ratio (13c/[12c+13c]) for C4 photosynthesis
   real(r8), parameter :: c4_r2 = c4_r1/(1._r8 + c4_r1)
-
-  !!! C14
-  real(r8) :: c14ratio = 1.e-12_r8
-  ! real(r8) :: c14ratio = 1._r8  ! debug lets set to 1 to try to avoid numerical errors
 
   !------------------------------------------------------------------
   ! Urban building temperature constants

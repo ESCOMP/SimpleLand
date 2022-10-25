@@ -10,7 +10,7 @@ module SoilStateType
   use clm_varpar      , only : nlevsoi, nlevgrnd, nlevlak, nlayer, nlevsno
   use clm_varcon      , only : spval
   use clm_varctl      , only : use_cn
-  use clm_varctl      , only : iulog, hist_wrtch4diag
+  use clm_varctl      , only : iulog
   use LandunitType    , only : lun                
   use ColumnType      , only : col                
   use PatchType       , only : patch                

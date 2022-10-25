@@ -279,7 +279,6 @@ module CNVegCarbonFluxType
      real(r8), pointer :: prev_frootc_to_litter_patch               (:)     ! (gC/m2/s) previous timestep froot C litterfall flux 
      real(r8), pointer :: availc_patch                              (:)     ! (gC/m2/s) C flux available for allocation 
      real(r8), pointer :: xsmrpool_recover_patch                    (:)     ! (gC/m2/s) C flux assigned to recovery of negative cpool
-     real(r8), pointer :: xsmrpool_c13ratio_patch                   (:)     ! C13/C(12+13) ratio for xsmrpool (proportion)
 
      real(r8), pointer :: cwdc_hr_col                               (:)     ! (gC/m2/s) col-level coarse woody debris C heterotrophic respiration
      real(r8), pointer :: cwdc_loss_col                             (:)     ! (gC/m2/s) col-level coarse woody debris C loss
@@ -573,7 +572,6 @@ contains
     allocate(this%gpp_before_downreg_patch                  (begp:endp)) ; this%gpp_before_downreg_patch                  (:) = nan
     allocate(this%availc_patch                              (begp:endp)) ; this%availc_patch                              (:) = nan
     allocate(this%xsmrpool_recover_patch                    (begp:endp)) ; this%xsmrpool_recover_patch                    (:) = nan
-    allocate(this%xsmrpool_c13ratio_patch                   (begp:endp)) ; this%xsmrpool_c13ratio_patch                   (:) = nan
 
     allocate(this%cpool_to_grainc_patch                     (begp:endp)) ; this%cpool_to_grainc_patch                     (:) = nan
     allocate(this%cpool_to_grainc_storage_patch             (begp:endp)) ; this%cpool_to_grainc_storage_patch             (:) = nan
@@ -724,7 +722,6 @@ contains
     !
     ! !USES:
     use clm_varpar , only : nlevdecomp, nlevdecomp_full, nlevgrnd
-    use clm_varctl , only : hist_wrtch4diag
     use histFileMod, only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp 
     !
     ! !ARGUMENTS:

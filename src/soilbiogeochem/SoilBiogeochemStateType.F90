@@ -6,12 +6,9 @@ module SoilBiogeochemStateType
   use decompMod      , only : bounds_type
   use abortutils     , only : endrun
   use spmdMod        , only : masterproc
-  use clm_varpar     , only : nlevsno, nlevgrnd, nlevlak, nlevsoifl, nlevsoi
   use clm_varpar     , only : ndecomp_cascade_transitions, nlevdecomp, nlevdecomp_full
-  use clm_varcon     , only : spval, ispval, c14ratio, grlnd
+  use clm_varcon     , only : spval
   use landunit_varcon, only : istsoil, istcrop
-  use clm_varpar     , only : nlevsno, nlevgrnd, nlevlak
-  use clm_varctl     , only : use_cn 
   use clm_varctl     , only : iulog
   use LandunitType   , only : lun                
   use ColumnType     , only : col                
@@ -46,7 +43,6 @@ module SoilBiogeochemStateType
      procedure, public  :: Init         
      procedure, public  :: Restart      
      procedure, private :: InitAllocate 
-     procedure, private :: InitHistory  
      procedure, private :: InitCold     
 
   end type soilbiogeochem_state_type
@@ -61,9 +57,6 @@ contains
     type(bounds_type), intent(in) :: bounds  
 
     call this%InitAllocate ( bounds )
-    if (use_cn) then
-       call this%InitHistory ( bounds )
-    end if
     call this%InitCold ( bounds ) 
 
   end subroutine Init
@@ -111,95 +104,6 @@ contains
   end subroutine InitAllocate
 
   !------------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize module data structure
-    !
-    ! !USES:
-    use shr_infnan_mod    , only : nan => shr_infnan_nan, assignment(=)
-    use histFileMod       , only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp, no_snow_normal
-    !
-    ! !ARGUMENTS:
-    class(soilbiogeochem_state_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer           :: begp, endp
-    integer           :: begc, endc
-    character(8)      :: vr_suffix
-    character(10)     :: active
-    real(r8), pointer :: data2dptr(:,:), data1dptr(:) ! temp. pointers for slicing larger arrays
-    !------------------------------------------------------------------------
-
-    begp = bounds%begp; endp= bounds%endp
-    begc = bounds%begc; endc= bounds%endc
-
-    this%croot_prof_patch(begp:endp,:) = spval
-    call hist_addfld_decomp (fname='CROOT_PROF', units='1/m',  type2d='levdcmp', &
-         avgflag='A', long_name='profile for litter C and N inputs from coarse roots', &
-         ptr_patch=this%croot_prof_patch, default='inactive')
-
-    this%froot_prof_patch(begp:endp,:) = spval
-    call hist_addfld_decomp (fname='FROOT_PROF', units='1/m',  type2d='levdcmp', &
-         avgflag='A', long_name='profile for litter C and N inputs from fine roots', &
-         ptr_patch=this%froot_prof_patch, default='inactive')
-
-    this%leaf_prof_patch(begp:endp,:) = spval
-    call hist_addfld_decomp (fname='LEAF_PROF', units='1/m',  type2d='levdcmp', &
-         avgflag='A', long_name='profile for litter C and N inputs from leaves', &
-         ptr_patch=this%leaf_prof_patch, default='inactive')
-
-    this%stem_prof_patch(begp:endp,:) = spval
-    call hist_addfld_decomp (fname='STEM_PROF', units='1/m',  type2d='levdcmp', &
-         avgflag='A', long_name='profile for litter C and N inputs from stems', &
-         ptr_patch=this%stem_prof_patch, default='inactive')
-
-    this%nfixation_prof_col(begc:endc,:) = spval
-    call hist_addfld_decomp (fname='NFIXATION_PROF', units='1/m',  type2d='levdcmp', &
-         avgflag='A', long_name='profile for biological N fixation', &
-         ptr_col=this%nfixation_prof_col, default='inactive')
-
-    this%ndep_prof_col(begc:endc,:) = spval
-    call hist_addfld_decomp (fname='NDEP_PROF', units='1/m',  type2d='levdcmp', &
-         avgflag='A', long_name='profile for atmospheric N  deposition', &
-         ptr_col=this%ndep_prof_col, default='inactive')
-
-    this%som_adv_coef_col(begc:endc,:) = spval
-    call hist_addfld_decomp (fname='SOM_ADV_COEF', units='m/s',  type2d='levdcmp', &
-         avgflag='A', long_name='advection term for vertical SOM translocation', &
-         ptr_col=this%som_adv_coef_col, default='inactive')
-
-    this%som_diffus_coef_col(begc:endc,:) = spval
-    call hist_addfld_decomp (fname='SOM_DIFFUS_COEF', units='m^2/s',  type2d='levdcmp', &
-         avgflag='A', long_name='diffusion coefficient for vertical SOM translocation', &
-         ptr_col=this%som_diffus_coef_col, default='inactive')
-
-    if ( nlevdecomp_full > 1 ) then
-       this%fpi_col(begc:endc) = spval
-       call hist_addfld1d (fname='FPI', units='proportion', &
-            avgflag='A', long_name='fraction of potential immobilization', &
-            ptr_col=this%fpi_col, default='inactive')
-    endif
-   
-    this%fpg_col(begc:endc) = spval
-    call hist_addfld1d (fname='FPG', units='proportion', &
-         avgflag='A', long_name='fraction of potential gpp', &
-         ptr_col=this%fpg_col, default='inactive')
-
-    if (nlevdecomp > 1) then
-       vr_suffix = "_vr"
-    else 
-       vr_suffix = ""
-    endif
-    this%fpi_vr_col(begc:endc,:) = spval
-    call hist_addfld_decomp (fname='FPI'//trim(vr_suffix), units='proportion', type2d='levdcmp', & 
-         avgflag='A', long_name='fraction of potential immobilization', &
-         ptr_col=this%fpi_vr_col, default='inactive')
-
-  end subroutine InitHistory
-
-  !-----------------------------------------------------------------------
   subroutine initCold(this, bounds)
     !
     ! !USES:

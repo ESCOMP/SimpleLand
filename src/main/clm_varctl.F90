@@ -228,10 +228,6 @@ module clm_varctl
   ! file name for local restart pointer file
   character(len=256), public :: rpntfil = 'rpointer.lnd' 
 
-  ! moved hist_wrtch4diag from histFileMod.F90 to here - caused compiler error with intel
-  ! namelist: write CH4 extra diagnostic output
-  logical, public :: hist_wrtch4diag = .false.         
-
   !----------------------------------------------------------
   ! Migration of CPP variables
   !----------------------------------------------------------

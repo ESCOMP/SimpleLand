@@ -196,12 +196,6 @@ contains
                source            => soilbiogeochem_nitrogenflux_inst%decomp_npools_sourcesink_col
                trcr_tendency_ptr => soilbiogeochem_nitrogenflux_inst%decomp_npools_transport_tendency_col
             endif
-         case (3)
-            write(iulog,*) 'error.  ncase = 4, but c13 and c14 not both enabled.'
-            call endrun(msg=errMsg(sourcefile, __LINE__))
-         case (4)
-            write(iulog,*) 'error.  ncase = 4, but c13 and c14 not both enabled.'
-            call endrun(msg=errMsg(sourcefile, __LINE__))
          end select
 
          !! for single level case, no transport; just update the fluxes calculated in the StateUpdate1 subroutines

@@ -249,7 +249,6 @@ contains
     ! !USES:
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
     use clm_varctl     , only : use_cn
-    use clm_varctl     , only : hist_wrtch4diag
     use clm_varpar     , only : nlevsno, nlevsoi
     use histFileMod    , only : hist_addfld1d, hist_addfld2d, no_snow_normal, no_snow_zero
     !
@@ -910,13 +909,6 @@ contains
          dim1name='pft', &
          long_name='Canopy snow unloading', units='kg/m2', &
          interpinic_flag='interp', readvar=readvar, data=this%snounload_patch)
-
-    ! TWS is needed when methane is on and the TWS_inversion is used to get exact
-    ! restart.
-    call restartvar(ncid=ncid, flag=flag, varname='TWS', xtype=ncd_double,  &
-         dim1name=nameg, &
-         long_name='Total Water Storage', units='mm', &
-         interpinic_flag='interp', readvar=readvar, data=this%tws_grc)
 
     ! Determine volumetric soil water (for read only)
     if (flag == 'read' ) then

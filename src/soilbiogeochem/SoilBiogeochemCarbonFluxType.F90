@@ -136,7 +136,6 @@ contains
      ! !USES:
      use clm_varpar , only : ndecomp_cascade_transitions, ndecomp_pools
      use clm_varpar , only : nlevdecomp, nlevdecomp_full
-     use clm_varctl , only : hist_wrtch4diag
      use histFileMod, only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp 
      !
      ! !ARGUMENTS:
@@ -187,13 +186,6 @@ contains
         call hist_addfld1d (fname='SOILC_HR', units='gC/m^2/s', &
              avgflag='A', long_name='soil C heterotrophic respiration', &
              ptr_col=this%somhr_col, default='inactive')
-
-        if (hist_wrtch4diag) then
-           this%fphr_col(begc:endc,1:nlevgrnd) = spval
-           call hist_addfld_decomp (fname='FPHR'//trim(vr_suffix), units='unitless', type2d='levdcmp', &
-                avgflag='A', long_name='fraction of potential HR due to N limitation', &
-                ptr_col=this%fphr_col, default='inactive')
-        end if
 
         this%somc_fire_col(begc:endc) = spval
         call hist_addfld1d (fname='SOMC_FIRE', units='gC/m^2/s', &
@@ -347,149 +339,6 @@ contains
                 avgflag='A', long_name='total vertically resolved heterotrophic respiration', &
                 ptr_col=data2dptr, default='inactive')
         endif
-
-     end if
-
-     !-------------------------------
-     ! C13 flux variables - native to column 
-     !-------------------------------
-
-     if ( carbon_type == 'c13' ) then
-
-        this%hr_col(begc:endc) = spval
-        call hist_addfld1d (fname='C13_HR', units='gC13/m^2/s', &
-             avgflag='A', long_name='C13 total heterotrophic respiration', &
-             ptr_col=this%hr_col, default='inactive')
-
-        this%lithr_col(begc:endc) = spval
-        call hist_addfld1d (fname='C13_LITTERC_HR', units='gC13/m^2/s', &
-             avgflag='A', long_name='C13 fine root C litterfall to litter 3 C', &
-             ptr_col=this%lithr_col, default='inactive')
-
-        this%somhr_col(begc:endc) = spval
-        call hist_addfld1d (fname='C13_SOILC_HR', units='gC13/m^2/s', &
-             avgflag='A', long_name='C13 soil organic matter heterotrophic respiration', &
-             ptr_col=this%somhr_col, default='inactive')
-
-
-        this%decomp_cascade_hr_col(begc:endc,:)             = spval
-        this%decomp_cascade_hr_vr_col(begc:endc,:,:)        = spval
-        this%decomp_cascade_ctransfer_col(begc:endc,:)      = spval
-        this%decomp_cascade_ctransfer_vr_col(begc:endc,:,:) = spval
-        do l = 1, ndecomp_cascade_transitions
-           !-- HR fluxes (none from CWD)
-           if ( .not. decomp_cascade_con%is_cwd(decomp_cascade_con%cascade_donor_pool(l)) ) then
-              data2dptr => this%decomp_cascade_hr_vr_col(:,:,l)
-              ! check to see if there are multiple pathways that include respiration, and if so, note that in the history file
-              ii = 0
-              do jj = 1, ndecomp_cascade_transitions
-                 if ( decomp_cascade_con%cascade_donor_pool(jj) == decomp_cascade_con%cascade_donor_pool(l) ) ii = ii+1
-              end do
-              if ( ii == 1 ) then
-                 fieldname = 'C13_'//trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_donor_pool(l)))&
-                      //'_HR'//trim(vr_suffix)
-              else
-                 fieldname = 'C13_'//trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_donor_pool(l)))&
-                      //'_HR_'//&
-                      trim(decomp_cascade_con%decomp_pool_name_short(decomp_cascade_con%cascade_receiver_pool(l)))//&
-                      trim(vr_suffix)
-              endif
-              longname =  'C13 Het. Resp. from '&
-                   //trim(decomp_cascade_con%decomp_pool_name_long(decomp_cascade_con%cascade_donor_pool(l)))
-              call hist_addfld_decomp (fname=fieldname, units='gC13/m^3',  type2d='levdcmp', &
-                   avgflag='A', long_name=longname, &
-                   ptr_col=data2dptr, default='inactive')
-           endif
-           !-- transfer fluxes (none from terminal pool, if present)
-           if ( decomp_cascade_con%cascade_receiver_pool(l) /= 0 ) then
-              data2dptr => this%decomp_cascade_ctransfer_vr_col(:,:,l)
-              fieldname = 'C13_'//&
-                   trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_donor_pool(l)))&
-                   //'C_TO_'//&
-                   trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_receiver_pool(l)))&
-                   //'C'//trim(vr_suffix)
-              longname =  'C13 decomp. of '&
-                   //trim(decomp_cascade_con%decomp_pool_name_long(decomp_cascade_con%cascade_donor_pool(l)))&
-                   //' C to '//&
-                   trim(decomp_cascade_con%decomp_pool_name_long(decomp_cascade_con%cascade_receiver_pool(l)))//' C'
-              call hist_addfld_decomp (fname=fieldname, units='gC13/m^3',  type2d='levdcmp', &
-                   avgflag='A', long_name=longname, &
-                   ptr_col=data2dptr, default='inactive')
-           endif
-        end do
-
-     end if
-
-     !-------------------------------
-     ! C14 flux variables - native to column 
-     !-------------------------------
-
-     if (carbon_type == 'c14') then
-
-        this%hr_col(begc:endc) = spval
-        call hist_addfld1d (fname='C14_HR', units='gC14/m^2/s', &
-             avgflag='A', long_name='C14 total heterotrophic respiration', &
-             ptr_col=this%hr_col, default='inactive')
-
-        this%lithr_col(begc:endc) = spval
-        call hist_addfld1d (fname='C14_LITTERC_HR', units='gC14/m^2/s', &
-             avgflag='A', long_name='C14 litter carbon heterotrophic respiration', &
-             ptr_col=this%lithr_col, default='inactive')
-
-        this%somhr_col(begc:endc) = spval
-        call hist_addfld1d (fname='C14_SOILC_HR', units='gC14/m^2/s', &
-             avgflag='A', long_name='C14 soil organic matter heterotrophic respiration', &
-             ptr_col=this%somhr_col, default='inactive')
-
-        this%decomp_cascade_hr_col(begc:endc,:)             = spval
-        this%decomp_cascade_hr_vr_col(begc:endc,:,:)        = spval
-        this%decomp_cascade_ctransfer_col(begc:endc,:)      = spval
-        this%decomp_cascade_ctransfer_vr_col(begc:endc,:,:) = spval
-
-        do l = 1, ndecomp_cascade_transitions
-           !-- HR fluxes (none from CWD)
-           if ( .not. decomp_cascade_con%is_cwd(decomp_cascade_con%cascade_donor_pool(l)) ) then
-              data2dptr => this%decomp_cascade_hr_vr_col(:,:,l)
-
-              ! check to see if there are multiple pathways that include respiration, and if so, note that in the history file
-              ii = 0
-              do jj = 1, ndecomp_cascade_transitions
-                 if ( decomp_cascade_con%cascade_donor_pool(jj) == decomp_cascade_con%cascade_donor_pool(l) ) ii = ii+1
-              end do
-              if ( ii == 1 ) then
-                 fieldname = 'C14_'//trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_donor_pool(l)))&
-                      //'_HR'//trim(vr_suffix)
-              else
-                 fieldname = 'C14_'//&
-                      trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_donor_pool(l)))&
-                      //'_HR_'//&
-                      trim(decomp_cascade_con%decomp_pool_name_short(decomp_cascade_con%cascade_receiver_pool(l)))&
-                      //trim(vr_suffix)
-              endif
-              longname =  'C14 Het. Resp. from '&
-                   //trim(decomp_cascade_con%decomp_pool_name_long(decomp_cascade_con%cascade_donor_pool(l)))
-              call hist_addfld_decomp (fname=fieldname, units='gC14/m^3',  type2d='levdcmp', &
-                   avgflag='A', long_name=longname, &
-                   ptr_col=data2dptr, default='inactive')
-           endif
-
-           !-- transfer fluxes (none from terminal pool, if present)
-           if ( decomp_cascade_con%cascade_receiver_pool(l) /= 0 ) then
-              data2dptr => this%decomp_cascade_ctransfer_vr_col(:,:,l)
-
-              fieldname = 'C14_'//&
-                   trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_donor_pool(l)))&
-                   //'C_TO_'//&
-                   trim(decomp_cascade_con%decomp_pool_name_history(decomp_cascade_con%cascade_receiver_pool(l)))&
-                   //'C'//trim(vr_suffix)
-              longname =  'C14 decomp. of '&
-                   //trim(decomp_cascade_con%decomp_pool_name_long(decomp_cascade_con%cascade_donor_pool(l)))//&
-                   ' C to '//trim(decomp_cascade_con%decomp_pool_name_long(decomp_cascade_con%cascade_receiver_pool(l)))//' C'
-              call hist_addfld_decomp (fname=fieldname, units='gC14/m^3',  type2d='levdcmp', &
-                   avgflag='A', long_name=longname, &
-                   ptr_col=data2dptr, default='inactive')
-           endif
-        end do
 
      end if
 

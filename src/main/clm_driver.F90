@@ -199,10 +199,6 @@ contains
 
        call t_stopf('clm_drv_io_htapes')
 
-       if (use_cn) then
-          call bgc_vegetation_inst%WriteHistory(bounds_proc)
-       end if
-
        ! Write restart/initial files if appropriate
        if (rstwr) then
           !write(iulog,*)'MML: write restart file'

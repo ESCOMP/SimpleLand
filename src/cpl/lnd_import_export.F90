@@ -25,7 +25,7 @@ contains
     use seq_flds_mod    , only: seq_flds_x2l_fields
     use clm_varctl      , only: co2_type, co2_ppmv, iulog
     use clm_varctl      , only: ndep_from_cpl 
-    use clm_varcon      , only: rair, o2_molar_const, c13ratio
+    use clm_varcon      , only: rair, o2_molar_const
     use shr_const_mod   , only: SHR_CONST_TKFRZ
     use shr_string_mod  , only: shr_string_listGetName
     use domainMod       , only: ldomain

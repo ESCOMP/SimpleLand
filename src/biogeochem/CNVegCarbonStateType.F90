@@ -10,7 +10,7 @@ module CNVegCarbonStateType
   use shr_const_mod  , only : SHR_CONST_PDB
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use pftconMod	     , only : noveg, pftcon
-  use clm_varcon     , only : spval, c3_r2, c4_r2, c14ratio
+  use clm_varcon     , only : spval, c3_r2, c4_r2
   use clm_varctl     , only : iulog
   use decompMod      , only : bounds_type
   use abortutils     , only : endrun
@@ -296,8 +296,6 @@ contains
     ! C12 state variables
     !-------------------------------
 
-    if (carbon_type == 'c12') then
-
        this%woodc_patch(begp:endp) = spval
        call hist_addfld1d (fname='WOODC', units='gC/m^2', &
             avgflag='A', long_name='wood C', &
@@ -467,8 +465,6 @@ contains
        call hist_addfld1d (fname='TOTECOSYSC', units='gC/m^2', &
             avgflag='A', long_name='total ecosystem carbon, incl veg but excl cpool and product pools', &
             ptr_col=this%totecosysc_col, default='inactive')
-
-    end if
 
   end subroutine InitHistory
 
@@ -707,7 +703,6 @@ contains
     ! patch carbon state variables (c12)
     !--------------------------------
 
-    if (carbon_type == 'c12') then
        call restartvar(ncid=ncid, flag=flag, varname='leafc', xtype=ncd_double,  &
             dim1name='pft', long_name='', units='', &
             interpinic_flag='interp', readvar=readvar, data=this%leafc_patch) 
@@ -852,12 +847,11 @@ contains
                 end do
              end if
           end if
-       end if
+
        !--------------------------------
        ! C12 carbon state variables
        !--------------------------------
 
-       if (carbon_type == 'c12') then
           call restartvar(ncid=ncid, flag=flag, varname='totvegc', xtype=ncd_double,  &
                dim1name='pft', long_name='', units='', &
                interpinic_flag='interp', readvar=readvar, data=this%totvegc_patch) 
@@ -865,7 +859,6 @@ contains
           call restartvar(ncid=ncid, flag=flag, varname='totvegc_col', xtype=ncd_double,  &
                dim1name='column', long_name='', units='', &
                interpinic_flag='interp', readvar=readvar, data=this%totvegc_col)
-       end if
 
 
        if (  flag == 'read' .and. (enter_spinup .or. (reseed_dead_plants .and. .not. is_restart()))) then
@@ -1006,18 +999,6 @@ contains
              end if
        end if
 
-    end if
-
-    !--------------------------------
-    ! gridcell carbon state variables
-    !--------------------------------
-
-    if (carbon_type == 'c12') then
-       ! BACKWARDS_COMPATIBILITY(wjs, 2017-01-12) Naming this with a _g suffix in order
-       ! to distinguish it from the old column-level seedc restart variable
-       call restartvar(ncid=ncid, flag=flag, varname='seedc_g', xtype=ncd_double,  &
-            dim1name='gridcell', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%seedc_grc) 
     end if
 
   end subroutine Restart

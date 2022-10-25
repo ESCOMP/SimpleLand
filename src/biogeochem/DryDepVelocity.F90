@@ -60,10 +60,6 @@ Module DryDepVelocity
   use clm_time_manager     , only : get_nstep, get_curr_date, get_curr_time 
   use spmdMod              , only : masterproc
   use seq_drydep_mod       , only : n_drydep, drydep_list 
-  use seq_drydep_mod       , only : drydep_method, DD_XLND
-  use seq_drydep_mod       , only : index_o3=>o3_ndx, index_o3a=>o3a_ndx, index_so2=>so2_ndx, index_h2=>h2_ndx
-  use seq_drydep_mod       , only : index_co=>co_ndx, index_ch4=>ch4_ndx, index_pan=>pan_ndx
-  use seq_drydep_mod       , only : index_xpan=>xpan_ndx
   use decompMod            , only : bounds_type
   use clm_varcon           , only : namep
   use atm2lndType          , only : atm2lnd_type
@@ -81,8 +77,6 @@ Module DryDepVelocity
   type, public :: drydepvel_type
 
      real(r8), pointer, public  :: velocity_patch (:,:) ! Dry Deposition Velocity
-     real(r8), pointer, private :: rs_drydep_patch (:)  ! Stomatal resistance associated with dry deposition velocity for Ozone
-
    contains
 
      procedure , public  :: Init 
@@ -126,7 +120,6 @@ CONTAINS
     ! Dry Deposition Velocity 
     if ( n_drydep > 0 .and. drydep_method == DD_XLND )then
        allocate(this%velocity_patch(begp:endp, n_drydep));  this%velocity_patch(:,:) = nan 
-       allocate(this%rs_drydep_patch(begp:endp))         ;  this%rs_drydep_patch(:)  = nan 
     end if
 
   end subroutine InitAllocate
