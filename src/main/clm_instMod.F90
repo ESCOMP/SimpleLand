@@ -133,8 +133,6 @@ contains
     use clm_varpar                         , only : nlevsno, numpft
     use controlMod                         , only : nlfilename, fsurdat
     use domainMod                          , only : ldomain
-    use SoilBiogeochemDecompCascadeBGCMod  , only : init_decompcascade_bgc
-    use SoilBiogeochemDecompCascadeCNMod   , only : init_decompcascade_cn
     use SoilBiogeochemDecompCascadeContype , only : init_decomp_cascade_constants
     use initVerticalMod                    , only : initVertical
     use accumulMod                         , only : print_accum_fields 
@@ -270,11 +268,8 @@ contains
        call soilbiogeochem_state_inst%Init(bounds)
 
        ! Initialize decompcascade constants
-       ! Note that init_decompcascade_bgc and init_decompcascade_cn need 
-       ! soilbiogeochem_state_inst to be initialized
 
        call init_decomp_cascade_constants()
-       call init_decompcascade_cn(bounds, soilbiogeochem_state_inst)
 
        ! Initalize soilbiogeochem carbon types
 

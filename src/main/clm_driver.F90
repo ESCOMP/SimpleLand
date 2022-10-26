@@ -10,7 +10,7 @@ module clm_driver
   ! !USES:
   use shr_kind_mod           , only : r8 => shr_kind_r8
   use clm_varctl             , only : wrtdia, iulog
-  use clm_varctl             , only : use_cn, use_noio
+  use clm_varctl             , only : use_noio
   use clm_time_manager       , only : get_nstep
   use spmdMod                , only : masterproc, mpicom
   use decompMod              , only : get_proc_clumps, get_clump_bounds, get_proc_bounds, bounds_type
@@ -115,14 +115,6 @@ contains
        call t_startf("decomp_vert")
        call alt_calc(filter_inactive_and_active(nc)%num_soilc, filter_inactive_and_active(nc)%soilc, &
             temperature_inst, canopystate_inst) 
-
-       if (use_cn) then
-          call SoilBiogeochemVerticalProfile(bounds_clump                                       , &
-               filter_inactive_and_active(nc)%num_soilc, filter_inactive_and_active(nc)%soilc   , &
-               filter_inactive_and_active(nc)%num_soilp, filter_inactive_and_active(nc)%soilp   , &
-               canopystate_inst, soilstate_inst, soilbiogeochem_state_inst)
-       end if
-
        call t_stopf("decomp_vert")
     end do
     !$OMP END PARALLEL DO

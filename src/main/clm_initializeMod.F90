@@ -12,10 +12,8 @@ module clm_initializeMod
   use clm_varctl      , only : nsrest, nsrStartup, nsrContinue, nsrBranch
   use clm_varctl      , only : is_cold_start, is_interpolated_start
   use clm_varctl      , only : iulog
-  use clm_varctl      , only : use_cn
   use clm_instur      , only : wt_lunit, urban_valid, wt_nat_patch, wt_cft, fert_cft, wt_glc_mec, topo_glc_mec
   use perf_mod        , only : t_startf, t_stopf
-  use readParamsMod   , only : readParameters
   use ncdio_pio       , only : file_desc_t
   use GridcellType    , only : grc           ! instance     
   use LandunitType    , only : lun           ! instance          
@@ -225,16 +223,11 @@ contains
     ! CLM initialization - second phase
     !
     ! !USES:
-    use shr_orb_mod           , only : shr_orb_decl
     use shr_scam_mod          , only : shr_scam_getCloseLatLon
-    use seq_drydep_mod        , only : n_drydep, drydep_method, DD_XLND
-    use accumulMod            , only : print_accum_fields 
     use clm_varpar            , only : nlevsno
     use clm_varcon            , only : spval
     use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat, mml_surdat
-    use clm_varctl            , only : single_column, scmlat, scmlon, use_cn
-    use clm_varorb            , only : eccen, mvelpp, lambm0, obliqr
-    use clm_time_manager      , only : get_step_size, get_curr_calday
+    use clm_varctl            , only : single_column, scmlat, scmlon
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 
     use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart
     !use DaylengthMod          , only : InitDaylength, daylength
@@ -267,19 +260,12 @@ contains
     character(len=256)    :: pnamer       ! full pathname of netcdf restart file
     character(len=256)    :: locfn        ! local file name
     type(file_desc_t)     :: ncid         ! netcdf id
-    real(r8)              :: dtime        ! time step increment (sec)
     integer               :: nstep        ! model time step
-    real(r8)              :: calday       ! calendar day for nstep
-    real(r8)              :: caldaym1     ! calendar day for nstep-1
-    real(r8)              :: declin       ! solar declination angle in radians for nstep
-    real(r8)              :: declinm1     ! solar declination angle in radians for nstep-1
-    real(r8)              :: eccf         ! earth orbit eccentricity factor
     type(bounds_type)     :: bounds_proc  ! processor bounds
     type(bounds_type)     :: bounds_clump ! clump bounds
     logical               :: lexist
     integer               :: closelatidx,closelonidx
     real(r8)              :: closelat,closelon
-    real(r8)              :: max_decl      ! temporary, for calculation of max_dayl
     integer               :: begp, endp
     integer               :: begc, endc
     integer               :: begl, endl
@@ -297,12 +283,6 @@ contains
     nclumps = get_proc_clumps()
 
     ! ------------------------------------------------------------------------
-    ! Read in parameters files
-    ! ------------------------------------------------------------------------
-
-    call readParameters(photosyns_inst)
-
-    ! ------------------------------------------------------------------------
     ! Initialize time manager
     ! ------------------------------------------------------------------------
 
@@ -314,44 +294,6 @@ contains
        call timemgr_restart_io( ncid=ncid, flag='read' )
        call restFile_close( ncid=ncid )
        call timemgr_restart()
-    end if
-
-    ! ------------------------------------------------------------------------
-    ! Initialize daylength from the previous time step (needed so prev_dayl can be set correctly)
-    ! ------------------------------------------------------------------------
-
-    call t_startf('init_orbd')
-
-    calday = get_curr_calday()
-    call shr_orb_decl( calday, eccen, mvelpp, lambm0, obliqr, declin, eccf )
-
-    dtime = get_step_size()
-    caldaym1 = get_curr_calday(offset=-int(dtime))
-    call shr_orb_decl( caldaym1, eccen, mvelpp, lambm0, obliqr, declinm1, eccf )
-
-    call t_stopf('init_orbd')
-    
-    !call InitDaylength(bounds_proc, declin=declin, declinm1=declinm1)
-             
-    ! Initialize maximum daylength, based on latitude and maximum declination
-    ! given by the obliquity use negative value for S. Hem
-
-    do g = bounds_proc%begg,bounds_proc%endg
-       max_decl = obliqr
-       if (grc%lat(g) < 0._r8) max_decl = -max_decl
-       !grc%max_dayl(g) = daylength(grc%lat(g), max_decl)
-    end do
-
-    ! History file variables
-
-    if (use_cn) then
-       !call hist_addfld1d (fname='DAYL',  units='s', &
-            !avgflag='A', long_name='daylength', &
-            !ptr_gcell=grc%dayl, default='inactive')
-
-       !call hist_addfld1d (fname='PREV_DAYL', units='s', &
-            !avgflag='A', long_name='daylength from previous timestep', &
-            !ptr_gcell=grc%prev_dayl, default='inactive')
     end if
 
     ! ------------------------------------------------------------------------
@@ -413,24 +355,7 @@ contains
     ! Initialize modules (after time-manager initialization in most cases)
     ! ------------------------------------------------------------------------
 
-    if (use_cn) then
-       call bgc_vegetation_inst%Init2(bounds_proc, NLFilename)
-
-       ! NOTE(wjs, 2016-02-23) Maybe the rest of the body of this conditional should also
-       ! be moved into bgc_vegetation_inst%Init2
-
-       if (n_drydep > 0 .and. drydep_method == DD_XLND) then
-          ! Must do this also when drydeposition is used so that estimates of monthly 
-          ! differences in LAI can be computed
-          call SatellitePhenologyInit(bounds_proc)
-       end if
-
-    else
-       call SatellitePhenologyInit(bounds_proc)
-    end if
-
-
-    
+    call SatellitePhenologyInit(bounds_proc)
 
     ! ------------------------------------------------------------------------
     ! On restart only - process the history namelist. 
@@ -538,22 +463,6 @@ contains
     call canopystate_inst%initAccVars(bounds_proc)
 
     call bgc_vegetation_inst%initAccVars(bounds_proc)
-
-    !------------------------------------------------------------       
-    ! Read monthly vegetation
-    !------------------------------------------------------------       
-
-    ! Even if CN is on, and dry-deposition is active, read CLMSP annual vegetation 
-    ! to get estimates of monthly LAI
-
-    if ( n_drydep > 0 .and. drydep_method == DD_XLND )then
-       call readAnnualVegetation(bounds_proc, canopystate_inst)
-       if (nsrest == nsrStartup .and. finidat /= ' ') then
-          ! Call interpMonthlyVeg for dry-deposition so that mlaidiff will be calculated
-          ! This needs to be done even if CN is on!
-          call interpMonthlyVeg(bounds_proc, canopystate_inst)
-       end if
-    end if
 
     !------------------------------------------------------------       
     ! Determine gridcell averaged properties to send to atm
