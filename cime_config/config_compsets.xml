@@ -57,12 +57,6 @@
     <lname>2000_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   
-  <!-- CAM5 with CLM45 BGC -->
-  <compset>
-    <alias>H_MML_2000_CAM5_BGC</alias>
-    <lname>2000_CAM50_CLM45%BGC_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
-  </compset>
-
   <compset>
     <alias>FHistCam5SlimRsGs</alias>
     <lname>HIST_CAM50_CLM45%SP_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
@@ -89,22 +83,17 @@
   <!-- Historical MML offline compsets, Historical Period-->
   <compset>
     <alias>K_HIST_MMLOFFLINE_GSWP3</alias>
-    <lname>HIST_DATM%GSWP3v1_CLM45%BGC_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>HIST_DATM%GSWP3v1_CLM45%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>  
   <compset>
     <alias>K_HIST_MMLOFFLINE_QIA</alias>
-    <lname>HIST_DATM%QIA_CLM50%BGC_SICE_SOCN_SROF_SGLC_SWAV</lname>
+    <lname>HIST_DATM%QIA_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>  
   
   <!-- Primarily for testing; uses Qian atmospheric forcing simply to give
        faster datm throughput, which is particularly relevant for single-point
        cases (where datm dominates the runtime) -->
-  <compset>
-    <alias>IHistClm45BgcQianGs</alias>
-    <lname>HIST_DATM%QIA_CLM45%BGC_SICE_SOCN_RTM_SGLC_SWAV</lname>
-  </compset>
 
-  <!-- This is here to validate that the SP and BGC cases are identical as well as with CLM4.5 or CLM5.0 physics -->
   <compset>
     <alias>IHistSlim50QianGs</alias>
     <lname>HIST_DATM%QIA_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
@@ -113,10 +102,9 @@
   <!-- Stub glacier needed for regional / single-point -->
 
   <compset>
-    <alias>I1850Clm45BgcGs</alias>
-    <lname>1850_DATM%GSWP3v1_CLM45%BGC_SICE_SOCN_RTM_SGLC_SWAV</lname>
+    <alias>I1850Slim50RsGs</alias>
+    <lname>1850_DATM%GSWP3v1_CLM50%SP_SICE_SOCN_SROF_SGLC_SWAV</lname>
   </compset>
-
 
   <compset>
     <alias>I2000SlimRsGs</alias>
