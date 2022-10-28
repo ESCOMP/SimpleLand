@@ -37,7 +37,7 @@ module mml_mainMod
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use shr_infnan_mod  , only : isnan => shr_infnan_isnan
   
-  use QSatMod		  , only : QSat
+  use QSatMod		  , only : QSatOld
   use perf_mod			! for t_startf and t_stopf
    
   ! For using month-dependent values from forcing files
@@ -78,7 +78,7 @@ module mml_mainMod
  ! private	:: satvap		! calculate saturation vapour pressure and deriv at given Ts
  			! oops, this was an old polynomial (just have looked at Gordon's old LSM code to figure out fortran polynomials,
  			! then used those coeffs instead of the more recent one!) Instead, I'm using the equivalent, but newer, clm 
- 			! function QSat, and doing the lhflx calculations with specific humidity rather than saturation vapour pressure
+ 			! function QSatOld, and doing the lhflx calculations with specific humidity rather than saturation vapour pressure
   
  
 
@@ -970,23 +970,23 @@ contains
      	
      	! I'm after surface values here, so use tsrf, and psrf (assume psrf ~ pbot ? that
      	! looks like that CanopyTemperatureMod is doing - check with Gordon)
-     	call QSat (tsrf(g), pref(g), esrf(g), desrf(g), qsrf(g), dqsrf(g))
+     	call QSatOld (tsrf(g), pref(g), esrf(g), desrf(g), qsrf(g), dqsrf(g))
      	
      	! Okay, this is giving an updated qsrf - so should I call it before MO section? 
      	! otherwise MO uses the qsrf from the last time step, which is fine I guess, since this is
      	! using the tsrf from the last time step to get qsrf anyhow... think about this.
      	!
      	! ... also, I probably shouldn't have a variable called qsat if I'm also calling a function
-     	! called QSat (is fortran case-sensitive?)... for now, go rename qsat to qsrf 
+     	! called QSatOld (is fortran case-sensitive?)... for now, go rename qsat to qsrf 
      	
-     	! call QSat (T, p, es, esdT, qs, qsdT) ! in: T,p ; out: es, esdT, qs, qsdT
+     	! call QSatOld (T, p, es, esdT, qs, qsdT) ! in: T,p ; out: es, esdT, qs, qsdT
      	! T = temperature (K)
     	! p = surface atmospheric pressure (pa)
     	! In CanopyFluxesMod:
-    	! call QSat(t_ref2m(p), forc_pbot(c), e_ref2m, de2mdT, qsat_ref2m, dqsat2mdT)
+    	! call QSatOld(t_ref2m(p), forc_pbot(c), e_ref2m, de2mdT, qsat_ref2m, dqsat2mdT)
     	! 
     	! In CanopyTemperatureMod:
-    	! call QSat(t_grnd(c), forc_pbot(c), eg, degdT, qsatg, qsatgdT)
+    	! call QSatOld(t_grnd(c), forc_pbot(c), eg, degdT, qsatg, qsatgdT)
     	! where eg = ! water vapor pressure at temperature T [pa]
      	
     	!evap(g) = esat(g) ! lets see if satvap is our culprit...
@@ -1050,7 +1050,7 @@ contains
 		! this entire routine (see my comment below about satvap). See also the CLM4.5
 		! technote, equations 5.157, 5.158
 		!
-		! MML: plan - use qsat instead of esat, by calling CLM function QSat. Modify these
+		! MML: plan - use qsat instead of esat, by calling CLM function QSatOld. Modify these
 		! equations accordingly (and check units!!!!) 
 	
 	! Initialize beta = 1.0 (no extra bucket resistance) everywhere. Overwrite with smaller values where appropriate.
@@ -1673,21 +1673,21 @@ end do
      ! Update qs (surface specific humidity - need it for next round's MO calculations)
      ! -------------------------------------------------------------
      
-     ! instead of direct calculation, re-evaluate QSat on the new surface temperature to get qsrf
+     ! instead of direct calculation, re-evaluate QSatOld on the new surface temperature to get qsrf
      qsrf(:) = qref + evap*dt * res / (dt * rhoair)
      ! Gordon says leave it with the above equation (the below is the inversion to calculate it...)
      !do g = begg, endg
-     !	call QSat (tsrf(g), pref(g), esrf(g), desrf(g), qsrf(g), dqsrf(g))
+     !	call QSatOld (tsrf(g), pref(g), esrf(g), desrf(g), qsrf(g), dqsrf(g))
      !end do
      ! updates qsrf for next time step using current tsrf
      
      
      ! do I need to do this if I'm using qsrf for my lhflx now? probably... or move the call
-     ! to QSat to before the MO calculation... that sounds better... except I still want to
+     ! to QSatOld to before the MO calculation... that sounds better... except I still want to
      ! print out qsrf to the h0 file. Hmm. Well, they SHOULD be consistent, right? Actually no,
      ! because I calculate the first pass at qsrf using tsrf from last time step, and I want to
      ! get the updated version to pass up to the atm. 
-     ! Go through after implementing the call to QSat instead of satvap and make sure I'm
+     ! Go through after implementing the call to QSatOld instead of satvap and make sure I'm
      ! being self-consistent within the module re: qsrf that I'm using / passing out / using on next time step.
      
      ! Trying to follow CLM 4.5 tech note, but there they're using uatm - us (u surface? not u star?) AND

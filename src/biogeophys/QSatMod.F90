@@ -11,6 +11,7 @@ module QSatMod
   private 
   !
   ! !PUBLIC MEMBER FUNCTIONS:
+  public :: QSatOld
   public :: QSat
   public :: rhoSat
   !-----------------------------------------------------------------------
@@ -57,10 +58,8 @@ module QSatMod
     real(r8), parameter :: d8 =  0.498070196e-16_r8  
 contains
 
-
-
   !-----------------------------------------------------------------------
-  subroutine QSat (T, p, es, esdT, qs, qsdT)
+  subroutine QSatOld (T, p, es, esdT, qs, qsdT)
     !
     ! !DESCRIPTION:
     ! Computes saturation mixing ratio and the change in saturation
@@ -123,8 +122,75 @@ contains
 
   end subroutine QSat
 
+  !-----------------------------------------------------------------------
+  subroutine QSat (T, p, qs, es, qsdT, esdT)
+    !
+    ! !DESCRIPTION:
+    ! Computes saturation mixing ratio and (optionally) the change in saturation mixing
+    ! ratio with respect to temperature. Mixing ratio and specific humidity are
+    ! approximately equal and can be treated as the same.
+    ! Reference:  Polynomial approximations from:
+    !             Piotr J. Flatau, et al.,1992:  Polynomial fits to saturation
+    !             vapor pressure.  Journal of Applied Meteorology, 31, 1507-1513.
+    !
+    ! !USES:
+    use shr_kind_mod , only: r8 => shr_kind_r8
+    use shr_const_mod, only: SHR_CONST_TKFRZ
+    !
+    ! !ARGUMENTS:
+    implicit none
+    real(r8), intent(in)  :: T        ! temperature (K)
+    real(r8), intent(in)  :: p        ! surface atmospheric pressure (pa)
+    real(r8), intent(out) :: qs       ! humidity (kg/kg)
+    real(r8), intent(out), optional :: es       ! vapor pressure (pa)
+    real(r8), intent(out), optional :: qsdT     ! d(qs)/d(T)
+    real(r8), intent(out), optional :: esdT     ! d(es)/d(T)
+    !
+    ! !LOCAL VARIABLES:
+    real(r8) :: es_local    ! local version of es (in case es is not present)
+    real(r8) :: esdT_local  ! local version of esdT (in case esdT is not present)
+    real(r8) :: td,vp,vp1,vp2
+    !-----------------------------------------------------------------------
 
-  
+    td = min(100.0_r8, max(-75.0_r8, T - SHR_CONST_TKFRZ))
+
+    if (td >= 0.0_r8) then
+       es_local = a0 + td*(a1 + td*(a2 + td*(a3 + td*(a4 &
+            + td*(a5 + td*(a6 + td*(a7 + td*a8)))))))
+    else
+       es_local = c0 + td*(c1 + td*(c2 + td*(c3 + td*(c4 &
+            + td*(c5 + td*(c6 + td*(c7 + td*c8)))))))
+    endif
+
+    es_local = es_local * 100._r8            ! pa
+    vp    = 1.0_r8   / (p - 0.378_r8*es_local)
+    vp1   = 0.622_r8 * vp
+    qs    = es_local * vp1             ! kg/kg
+    if (present(es)) then
+       es = es_local
+    end if
+
+    if (present(qsdT) .or. present(esdT)) then
+       if (td >= 0.0_r8) then
+          esdT_local = b0 + td*(b1 + td*(b2 + td*(b3 + td*(b4 &
+               + td*(b5 + td*(b6 + td*(b7 + td*b8)))))))
+       else
+          esdT_local = d0 + td*(d1 + td*(d2 + td*(d3 + td*(d4 &
+               + td*(d5 + td*(d6 + td*(d7 + td*d8)))))))
+       end if
+
+       esdT_local = esdT_local * 100._r8            ! pa/K
+       vp2 = vp1 * vp
+       if (present(qsdT)) then
+          qsdT = esdT_local * vp2 * p         ! 1 / K
+       end if
+       if (present(esdT)) then
+          esdT = esdT_local
+       end if
+    end if
+
+  end subroutine QSat
+
 !-------------------------------------------------------------------------------
   subroutine rhoSat(T, rho, rhodT)
   ! compute the saturated vapor pressure density and its derivative against the temperature
