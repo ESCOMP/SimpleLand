@@ -321,7 +321,7 @@ contains
 
   !===============================================================================
   subroutine import_fields( gcomp, bounds, &
-       atm2lnd_inst, wateratm2lndbulk_inst, rc)
+       atm2lnd_inst, rc)
 
     !---------------------------------------------------------------------------
     ! Convert the input data from the mediator to the land model
@@ -329,7 +329,6 @@ contains
 
     use clm_varcon              , only: rair, o2_molar_const, c13ratio
     use shr_const_mod           , only: SHR_CONST_TKFRZ
-    use Wateratm2lndBulkType    , only: wateratm2lndbulk_type
     use QSatMod                 , only: QSat
     use lnd_import_export_utils , only: derive_quantities, check_for_errors
 
@@ -337,7 +336,6 @@ contains
     type(ESMF_GridComp)                         :: gcomp
     type(bounds_type)           , intent(in)    :: bounds         ! bounds
     type(atm2lnd_type)          , intent(inout) :: atm2lnd_inst   ! clm internal input data type
-    type(Wateratm2lndbulk_type) , intent(inout) :: wateratm2lndbulk_inst
     integer                     , intent(out)   :: rc
 
     ! local variables
@@ -391,7 +389,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getimport_1d(importState, Sa_v      , atm2lnd_inst%forc_v_grc(begg:), rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getimport_1d(importState, Sa_shum   , wateratm2lndbulk_inst%forc_q_not_downscaled_grc(begg:), rc=rc)
+    call state_getimport_1d(importState, Sa_shum   , atm2lnd_inst%forc_q_not_downscaled_grc(begg:), rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getimport_1d(importState, Sa_ptem   , atm2lnd_inst%forc_th_not_downscaled_grc(begg:), rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -423,16 +421,14 @@ contains
     ! and corresponding error checks
     !--------------------------
 
-    call derive_quantities(bounds, atm2lnd_inst, wateratm2lndbulk_inst, &
-       forc_rainc, forc_rainl, forc_snowc, forc_snowl)
+    call derive_quantities(bounds, atm2lnd_inst, forc_rainc, forc_rainl, forc_snowc, forc_snowl)
 
-    call check_for_errors(bounds, atm2lnd_inst, wateratm2lndbulk_inst)
+    call check_for_errors(bounds, atm2lnd_inst )
 
   end subroutine import_fields
 
   !===============================================================================
-  subroutine export_fields( gcomp, bounds, &
-       waterlnd2atmbulk_inst, lnd2atm_inst, rc)
+  subroutine export_fields( gcomp, bounds, lnd2atm_inst, rc)
 
     !-------------------------------
     ! Pack the export state
@@ -440,12 +436,10 @@ contains
     ! i.e. water sent from land to rof is positive
     !-------------------------------
 
-    use Waterlnd2atmBulkType , only: waterlnd2atmbulk_type
 
     ! input/output variables
     type(ESMF_GridComp)                         :: gcomp
     type(bounds_type)           , intent(in)    :: bounds
-    type(waterlnd2atmbulk_type) , intent(inout) :: waterlnd2atmbulk_inst
     type(lnd2atm_type)          , intent(inout) :: lnd2atm_inst ! land to atmosphere exchange data type
     integer                     , intent(out)   :: rc
 
@@ -485,7 +479,7 @@ contains
        call state_setexport_1d(exportState, Sl_t      , lnd2atm_inst%t_rad_grc(begg:), &
             init_spval=.true., rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_setexport_1d(exportState, Sl_snowh  , waterlnd2atmbulk_inst%h2osno_grc(begg:), &
+       call state_setexport_1d(exportState, Sl_snowh  , lnd2atm_inst%h2osno_grc(begg:), &
             init_spval=.false., rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_setexport_1d(exportState, Sl_avsdr  , lnd2atm_inst%albd_grc(begg:,1), &
@@ -503,7 +497,7 @@ contains
        call state_setexport_1d(exportState, Sl_tref   , lnd2atm_inst%t_ref2m_grc(begg:), &
             init_spval=.true., rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_setexport_1d(exportState, Sl_qref   , waterlnd2atmbulk_inst%q_ref2m_grc(begg:), &
+       call state_setexport_1d(exportState, Sl_qref   , lnd2atm_inst%q_ref2m_grc(begg:), &
             init_spval=.true., rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_setexport_1d(exportState, Fall_taux , lnd2atm_inst%taux_grc(begg:), &
@@ -521,7 +515,7 @@ contains
        call state_setexport_1d(exportState, Fall_lwup , lnd2atm_inst%eflx_lwrad_out_grc(begg:), &
             init_spval=.true., minus=.true., rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_setexport_1d(exportState, Fall_evap , waterlnd2atmbulk_inst%qflx_evap_tot_grc(begg:), &
+       call state_setexport_1d(exportState, Fall_evap , lnd2atm_inst%qflx_evap_tot_grc(begg:), &
             init_spval=.true., minus=.true., rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_setexport_1d(exportState, Fall_swnet, lnd2atm_inst%fsa_grc(begg:), &
@@ -542,7 +536,7 @@ contains
             init_spval=.true., rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (fldchk(exportState, Sl_soilw)) then
-          call state_setexport_1d(exportState, Sl_soilw, waterlnd2atmbulk_inst%h2osoi_vol_grc(begg:,1), &
+          call state_setexport_1d(exportState, Sl_soilw, lnd2atm_inst%h2osoi_vol_grc(begg:,1), &
                init_spval=.true., rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if

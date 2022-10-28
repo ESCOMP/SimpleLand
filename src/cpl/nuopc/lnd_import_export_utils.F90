@@ -6,7 +6,6 @@ module lnd_import_export_utils
   use clm_varctl            , only : iulog
   use decompmod             , only : bounds_type
   use atm2lndType           , only : atm2lnd_type
-  use Wateratm2lndBulkType  , only : wateratm2lndbulk_type
 
   implicit none
   private ! except
@@ -21,8 +20,7 @@ contains
 
   !===========================================================================
 
-  subroutine derive_quantities( bounds, atm2lnd_inst, wateratm2lndbulk_inst, &
-    forc_rainc, forc_rainl, forc_snowc, forc_snowl )
+  subroutine derive_quantities( bounds, atm2lnd_inst, forc_rainc, forc_rainl, forc_snowc, forc_snowl )
 
     !-------------------------------------------------------------------------
     ! Convert the input data from the mediator to the land model
@@ -34,7 +32,6 @@ contains
     ! input/output variabes
     type(bounds_type), intent(in) :: bounds  ! bounds
     type(atm2lnd_type), intent(inout) :: atm2lnd_inst ! SLIM internal input data type
-    type(wateratm2lndbulk_type), intent(inout) :: wateratm2lndbulk_inst
     real(r8), intent(in) :: forc_rainc(bounds%begg:bounds%endg)  ! convective rain (mm/s)
     real(r8), intent(in) :: forc_rainl(bounds%begg:bounds%endg)  ! large scale rain (mm/s)
     real(r8), intent(in) :: forc_snowc(bounds%begg:bounds%endg)  ! convective snow (mm/s)
@@ -60,7 +57,7 @@ contains
 
     do g = begg, endg
        forc_t    = atm2lnd_inst%forc_t_not_downscaled_grc(g)
-       forc_q    = wateratm2lndbulk_inst%forc_q_not_downscaled_grc(g)
+       forc_q    = atm2lnd_inst%forc_q_not_downscaled_grc(g)
        forc_pbot = atm2lnd_inst%forc_pbot_not_downscaled_grc(g)
 
        atm2lnd_inst%forc_hgt_u_grc(g) = atm2lnd_inst%forc_hgt_grc(g)  !observational height of wind [m]
@@ -79,24 +76,23 @@ contains
        atm2lnd_inst%forc_solar_grc(g) = atm2lnd_inst%forc_solad_grc(g,1) + atm2lnd_inst%forc_solai_grc(g,1) + &
                                         atm2lnd_inst%forc_solad_grc(g,2) + atm2lnd_inst%forc_solai_grc(g,2)
 
-       wateratm2lndbulk_inst%forc_rain_not_downscaled_grc(g)  = forc_rainc(g) + forc_rainl(g)
-       wateratm2lndbulk_inst%forc_snow_not_downscaled_grc(g)  = forc_snowc(g) + forc_snowl(g)
+       atm2lnd_inst%forc_rain_not_downscaled_grc(g)  = forc_rainc(g) + forc_rainl(g)
+       atm2lnd_inst%forc_snow_not_downscaled_grc(g)  = forc_snowc(g) + forc_snowl(g)
 
        call QSat(forc_t, forc_pbot, qsat_kg_kg)
 
-       wateratm2lndbulk_inst%forc_rh_grc(g) = 100.0_r8*(forc_q / qsat_kg_kg)
+       atm2lnd_inst%forc_rh_grc(g) = 100.0_r8*(forc_q / qsat_kg_kg)
     end do
 
   end subroutine derive_quantities
 
   !===========================================================================
 
-  subroutine check_for_errors( bounds, atm2lnd_inst, wateratm2lndbulk_inst )
+  subroutine check_for_errors( bounds, atm2lnd_inst )
 
     ! input/output variabes
     type(bounds_type), intent(in) :: bounds  ! bounds
     type(atm2lnd_type), intent(inout) :: atm2lnd_inst ! SLIM internal input data type
-    type(wateratm2lndbulk_type), intent(inout) :: wateratm2lndbulk_inst
 
     ! local variables
     integer :: g  ! indices
@@ -126,7 +122,7 @@ contains
                ' ERROR: One of the solar fields (indirect/diffuse, vis or near-IR)'// &
                ' from the atmosphere model is negative or zero' )
        end if
-       if ( wateratm2lndbulk_inst%forc_q_not_downscaled_grc(g) < 0.0_r8 )then
+       if ( atm2lnd_inst%forc_q_not_downscaled_grc(g) < 0.0_r8 )then
           call shr_sys_abort( subname//&
                ' ERROR: Bottom layer specific humidty sent from the atmosphere model is less than zero' )
        end if
