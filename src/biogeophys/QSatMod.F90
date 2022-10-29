@@ -120,7 +120,7 @@ contains
     qsdT  = esdT  * vp2 * p         ! 1 / K
 
 
-  end subroutine QSat
+  end subroutine QSatOld
 
   !-----------------------------------------------------------------------
   subroutine QSat (T, p, qs, es, qsdT, esdT)
