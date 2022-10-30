@@ -259,8 +259,6 @@ contains
 
     if (masterproc) then
        write(iulog,'(a   )')' atm component                 = '//trim(atm_model)
-       write(iulog,'(a   )')' rof component                 = '//trim(rof_model)
-       write(iulog,'(a   )')' glc component                 = '//trim(glc_model)
        write(iulog,'(a,L2)')' atm_prognostic                = ',atm_prognostic
        write(iulog,'(a   )')' flds_scalar_name              = '//trim(flds_scalar_name)
        write(iulog,'(a,i8)')' flds_scalar_num               = ',flds_scalar_num
@@ -291,7 +289,7 @@ contains
 
     ! Realize the list of fields that will be exchanged
     use ESMF                      , only : ESMF_VM, ESMF_VMGet
-    use clm_instMod               , only : lnd2atm_inst, lnd2glc_inst, water_inst
+    use clm_instMod               , only : lnd2atm_inst
     use domainMod                 , only : ldomain
     use decompMod                 , only : bounds_type, get_proc_bounds
     use lnd_set_decomp_and_domain , only : lnd_set_decomp_and_domain_from_readmesh
@@ -569,7 +567,7 @@ contains
          hostname_in=hostname, &
          username_in=username)
 
-    call initialize1(dtime=dtime_sync)
+    call initialize1( )
 
     ! ---------------------
     ! Create SLIM decomp and domain info
@@ -584,7 +582,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call lnd_set_decomp_and_domain_from_readmesh(driver='cmeps', vm=vm, &
+       call lnd_set_decomp_and_domain_from_readmesh(vm=vm, &
             meshfile_lnd=model_meshfile, meshfile_mask=meshfile_mask, mesh_slim=mesh, ni=ni, nj=nj, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
@@ -598,14 +596,13 @@ contains
     ! ---------------------
     ! Finish initializing SLIM
     ! ---------------------
-    call initialize2(ni, nj)
+    call initialize2( )
 
     !--------------------------------
     ! Create land export state
     !--------------------------------
     call get_proc_bounds(bounds)
-    call export_fields(gcomp, bounds, &
-         water_inst%waterlnd2atmbulk_inst, lnd2atm_inst, lnd2glc_inst, rc)
+    call export_fields(gcomp, bounds, lnd2atm_inst, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Set scalars in export state
@@ -649,7 +646,7 @@ contains
     !------------------------
 
     use ESMF        , only : ESMF_VM, ESMF_VMGet
-    use clm_instMod , only : water_inst, atm2lnd_inst, glc2lnd_inst, lnd2atm_inst, lnd2glc_inst
+    use clm_instMod , only : atm2lnd_inst, lnd2atm_inst
     use decompMod   , only : bounds_type, get_proc_bounds
     use clm_driver  , only : clm_drv
 
@@ -687,6 +684,10 @@ contains
     integer                :: g,i            ! counters
     type(bounds_type)      :: bounds         ! bounds
     character(len=32)      :: rdate          ! date char string for restart file names
+    logical                :: doalb
+    real(r8)               :: nextsw_cday
+    real(r8)               :: declinp1
+    real(r8)               :: declin
     integer                :: shrlogunit ! original log unit
     character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
@@ -731,8 +732,7 @@ contains
     !--------------------------------
 
     call t_startf ('lc_lnd_import')
-    call import_fields( gcomp, bounds, &
-         atm2lnd_inst, glc2lnd_inst, water_inst%wateratm2lndbulk_inst, rc )
+    call import_fields( gcomp, bounds, atm2lnd_inst, rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call t_stopf ('lc_lnd_import')
 
@@ -806,8 +806,7 @@ contains
        !--------------------------------
 
        call t_startf ('lc_lnd_export')
-       call export_fields(gcomp, bounds, &
-            water_inst%waterlnd2atmbulk_inst, lnd2atm_inst, lnd2glc_inst, rc)
+       call export_fields(gcomp, bounds, lnd2atm_inst, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call t_stopf ('lc_lnd_export')
 

@@ -119,6 +119,7 @@ contains
   subroutine advertise_fields(gcomp, flds_scalar_name, atm_prognostic, rc)
 
     use shr_carma_mod     , only : shr_carma_readnl
+    use shr_fire_emis_mod , only : shr_fire_emis_readnl
     use controlMod        , only : NLFilename
 
     ! input/output variables

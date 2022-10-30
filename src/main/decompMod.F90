@@ -118,6 +118,9 @@ module decompMod
   public decomp_type
   type(decomp_type),public,target :: ldecomp
 
+  integer, public, pointer :: gindex_global(:)   => null() ! includes ocean points
+  integer, public, pointer :: gindex_grc(:)      => null() ! does not include ocean points
+
   type(mct_gsMap)  ,public,target :: gsMap_lnd_gdc2glo
   type(mct_gsMap)  ,public,target :: gsMap_gce_gdc2glo
   type(mct_gsMap)  ,public,target :: gsMap_lun_gdc2glo
