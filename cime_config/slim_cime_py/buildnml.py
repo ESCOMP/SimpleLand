@@ -332,6 +332,12 @@ def check_nml_data(nmlgen, case):
 
     mml_surdat = nmlgen.get_value("mml_surdat")
     if mml_surdat == "UNSET":
+        slim_scenario = case.get_value("SLIM_SCENARIO")
+        if slim_scenario == "user_defined":
+            raise SystemExit(
+                "When SLIM_SCENARIO is set to user_defined, you must provide the mml_surdat "
+                + "file by adding it to the user_nl_slim file to add it to the namelist"
+            )
         raise SystemExit("mml_surdat file is NOT set and is required")
 
     #
