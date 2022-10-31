@@ -17,6 +17,7 @@
      <group>slim_data_and_initial</group>
      <values>
        <value>UNSET</value>
+       <value slim_scenario="user_defined"                          >UNSET</value>
        <value slim_scenario="global_uniform"      lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/slim/surdat/globalconst_alpha0.2_soilcv2e6_hc0.1_rs100.0_glc_hc0.01_f19_cdf5_20211105.nc</value>
        <value slim_scenario="realistic_from_1850" lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/slim/surdat/slim_realistic_fromCLM5_alb1850_hc1850_rs1850_f19_20190110.nc</value>
        <value slim_scenario="realistic_from_2000" lnd_grid="1.9x2.5">$DIN_LOC_ROOT/lnd/slim/surdat/slim2deg_fromCMIP6-AMIP-1deg_ensemble001-010_1991to2010clim_max-ctrl-bucket_rs150_c20210401.nc</value>

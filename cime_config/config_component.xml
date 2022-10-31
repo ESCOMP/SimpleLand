@@ -29,7 +29,7 @@
   <entry id="SLIM_SCENARIO">
     <type>char</type>
     <default_value>global_uniform</default_value>
-    <valid_values>global_uniform,realistic_from_1850,realistic_from_2000</valid_values>
+    <valid_values>global_uniform,realistic_from_1850,realistic_from_2000,user_defined</valid_values>
     <values>
       <value compset="2000.*"   >realistic_from_2000</value>
       <value compset="1850.*_"  >realistic_from_1850</value>
@@ -40,6 +40,10 @@
     <desc>SLIM namelist use_case scenario.
       Determines the use-case scenario that will be used in the SLIM buildnml utility.
       This is normally set by the component set.
+        'global_uniform' is for surface conditions are globally constant
+        'realistic_from_1850' are surface conditions taken from a 1850 control simulation with CTSM
+        'realistic_from_2000' are surface conditions taken from a 2000 control simulation with CTSM
+        'user_defined' means the user will provide their own surface condition file (mml_surdat)
     </desc>
   </entry>
 
