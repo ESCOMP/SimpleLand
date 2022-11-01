@@ -462,8 +462,6 @@ contains
     call energyflux_inst%initAccVars(bounds_proc)
     call canopystate_inst%initAccVars(bounds_proc)
 
-    call bgc_vegetation_inst%initAccVars(bounds_proc)
-
     !------------------------------------------------------------       
     ! Determine gridcell averaged properties to send to atm
     !------------------------------------------------------------       

@@ -29,7 +29,6 @@ module clm_instMod
   use AerosolMod                      , only : aerosol_type
   use CanopyStateType                 , only : canopystate_type
   use ch4Mod                          , only : ch4_type
-  use CNVegetationFacade              , only : cn_vegetation_type
   use SoilBiogeochemStateType         , only : soilbiogeochem_state_type
   use SoilBiogeochemCarbonFluxType    , only : soilbiogeochem_carbonflux_type
   use SoilBiogeochemCarbonStateType   , only : soilbiogeochem_carbonstate_type
@@ -101,9 +100,6 @@ module clm_instMod
   class(soil_water_retention_curve_type) , allocatable :: soil_water_retention_curve
 
   ! CN vegetation types
-  ! Eventually bgc_vegetation_inst will be an allocatable instance of an abstract
-  ! interface
-  type(cn_vegetation_type)                :: bgc_vegetation_inst
 
   ! Soil biogeochem types 
   type(soilbiogeochem_state_type)         :: soilbiogeochem_state_inst
@@ -290,9 +286,6 @@ contains
 
     end if ! end of if use_cn 
 
-    ! Note - always call Init for bgc_vegetation_inst: some pieces need to be initialized always
-    call bgc_vegetation_inst%Init(bounds, nlfilename)
-
     if (use_cn ) then
        call crop_inst%Init(bounds)
     end if
@@ -317,10 +310,6 @@ contains
     call energyflux_inst%InitAccBuffer(bounds)
 
     call canopystate_inst%InitAccBuffer(bounds)
-
-    call bgc_vegetation_inst%InitAccBuffer(bounds)
-
-    call print_accum_fields()
 
     call t_stopf('init_accflds')
 
@@ -384,24 +373,6 @@ contains
          tsai_patch=canopystate_inst%tsai_patch(bounds%begp:bounds%endp))
 
     call topo_inst%restart (bounds, ncid, flag=flag)
-
-    if ( use_cn ) then
-       ! Need to do vegetation restart before soil bgc restart to get totvegc_col for purpose
-       ! of resetting soil carbon at exit spinup when no vegetation is growing.
-       call bgc_vegetation_inst%restart(bounds, ncid, flag=flag)
-
-       call soilbiogeochem_nitrogenstate_inst%restart(bounds, ncid, flag=flag, &
-            totvegc_col=bgc_vegetation_inst%get_totvegc_col(bounds))
-
-    end if
-
-    if (use_cn ) then
-
-       call soilbiogeochem_state_inst%restart(bounds, ncid, flag=flag)
-       call soilbiogeochem_carbonstate_inst%restart(bounds, ncid, flag=flag, carbon_type='c12', &
-            totvegc_col=bgc_vegetation_inst%get_totvegc_col(bounds))
-
-    endif
 
  end subroutine clm_instRest
 

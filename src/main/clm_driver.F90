@@ -26,7 +26,6 @@ module clm_driver
   !
   use clm_instMod            , only : temperature_inst, canopystate_inst
   use clm_instMod            , only : soilstate_inst, soilbiogeochem_state_inst
-  use clm_instMod            , only : bgc_vegetation_inst
   use clm_instMod            , only : atm2lnd_inst, lnd2atm_inst
   use clm_instMod            , only : soilstate_inst
 
