@@ -7,7 +7,7 @@ module CNVegStateType
   use abortutils     , only : endrun
   use spmdMod        , only : masterproc
   use clm_varpar     , only : nlevsno, nlevgrnd, nlevlak, nlevsoi
-  use clm_varctl     , only : use_cn, iulog, fsurdat
+  use clm_varctl     , only : iulog, fsurdat
   use clm_varcon     , only : spval, ispval, grlnd
   use landunit_varcon, only : istsoil, istcrop
   use LandunitType   , only : lun                
@@ -105,7 +105,6 @@ module CNVegStateType
      procedure, public  :: Init         
      procedure, public  :: Restart      
      procedure, private :: InitAllocate 
-     procedure, private :: InitHistory  
      procedure, private :: InitCold     
 
   end type cnveg_state_type
@@ -123,9 +122,6 @@ contains
     type(bounds_type), intent(in) :: bounds  
 
     call this%InitAllocate ( bounds )
-    if (use_cn) then
-       call this%InitHistory ( bounds )
-    end if
     call this%InitCold ( bounds ) 
 
   end subroutine Init
@@ -228,197 +224,6 @@ contains
   end subroutine InitAllocate
 
   !------------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize module data structure
-    !
-    ! !USES:
-    use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-    use histFileMod    , only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp, no_snow_normal
-    !
-    ! !ARGUMENTS:
-    class(cnveg_state_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer           :: begp, endp
-    integer           :: begc, endc
-    character(8)      :: vr_suffix
-    character(10)     :: active
-    real(r8), pointer :: data2dptr(:,:), data1dptr(:) ! temp. pointers for slicing larger arrays
-    !------------------------------------------------------------------------
-
-    begp = bounds%begp; endp= bounds%endp
-    begc = bounds%begc; endc= bounds%endc
-
-    this%lfc2_col(begc:endc) = spval
-    call hist_addfld1d (fname='LFC2', units='per sec', &
-         avgflag='A', long_name='conversion area fraction of BET and BDT that burned', &
-         ptr_col=this%lfc2_col, default='inactive')
-
-    this%annsum_counter_col(begc:endc) = spval
-    call hist_addfld1d (fname='ANNSUM_COUNTER', units='s', &
-         avgflag='A', long_name='seconds since last annual accumulator turnover', &
-         ptr_col=this%annsum_counter_col, default='inactive')
-
-    this%annavg_t2m_col(begc:endc) = spval
-    call hist_addfld1d (fname='CANNAVG_T2M', units='K', &
-         avgflag='A', long_name='annual average of 2m air temperature', &
-         ptr_col=this%annavg_t2m_col, default='inactive')
-
-    this%nfire_col(begc:endc) = spval
-    call hist_addfld1d (fname='NFIRE',  units='counts/km2/sec', &
-         avgflag='A', long_name='fire counts valid only in Reg.C', &
-         ptr_col=this%nfire_col, default='inactive')
-
-    this%farea_burned_col(begc:endc) = spval
-    call hist_addfld1d (fname='FAREA_BURNED',  units='proportion/sec', &
-         avgflag='A', long_name='timestep fractional area burned', &
-         ptr_col=this%farea_burned_col, default='inactive')
-
-    this%baf_crop_col(begc:endc) = spval
-    call hist_addfld1d (fname='BAF_CROP',  units='proportion/sec', &
-         avgflag='A', long_name='fractional area burned for crop', &
-         ptr_col=this%baf_crop_col, default='inactive')
-
-    this%baf_peatf_col(begc:endc) = spval
-    call hist_addfld1d (fname='BAF_PEATF',  units='proportion/sec', &
-         avgflag='A', long_name='fractional area burned in peatland', &
-         ptr_col=this%baf_peatf_col, default='inactive')
- 
-    this%annavg_t2m_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ANNAVG_T2M', units='K', &
-         avgflag='A', long_name='annual average 2m air temperature', &
-         ptr_patch=this%annavg_t2m_patch, default='inactive')
-
-    this%tempavg_t2m_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TEMPAVG_T2M', units='K', &
-         avgflag='A', long_name='temporary average 2m air temperature', &
-         ptr_patch=this%tempavg_t2m_patch, default='inactive')
-
-    this%dormant_flag_patch(begp:endp) = spval
-    call hist_addfld1d (fname='DORMANT_FLAG', units='none', &
-         avgflag='A', long_name='dormancy flag', &
-         ptr_patch=this%dormant_flag_patch, default='inactive')
-
-    this%days_active_patch(begp:endp) = spval
-    call hist_addfld1d (fname='DAYS_ACTIVE', units='days', &
-         avgflag='A', long_name='number of days since last dormancy', &
-         ptr_patch=this%days_active_patch, default='inactive')
-
-    this%onset_flag_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ONSET_FLAG', units='none', &
-         avgflag='A', long_name='onset flag', &
-         ptr_patch=this%onset_flag_patch, default='inactive')
-
-    this%onset_counter_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ONSET_COUNTER', units='days', &
-         avgflag='A', long_name='onset days counter', &
-         ptr_patch=this%onset_counter_patch, default='inactive')
-
-    this%onset_gddflag_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ONSET_GDDFLAG', units='none', &
-         avgflag='A', long_name='onset flag for growing degree day sum', &
-         ptr_patch=this%onset_gddflag_patch, default='inactive')
-
-    this%onset_fdd_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ONSET_FDD', units='C degree-days', &
-         avgflag='A', long_name='onset freezing degree days counter', &
-         ptr_patch=this%onset_fdd_patch, default='inactive')
-
-    this%onset_gdd_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ONSET_GDD', units='C degree-days', &
-         avgflag='A', long_name='onset growing degree days', &
-         ptr_patch=this%onset_gdd_patch, default='inactive')
-
-    this%onset_swi_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ONSET_SWI', units='none', &
-         avgflag='A', long_name='onset soil water index', &
-         ptr_patch=this%onset_swi_patch, default='inactive')
-
-    this%offset_flag_patch(begp:endp) = spval
-    call hist_addfld1d (fname='OFFSET_FLAG', units='none', &
-         avgflag='A', long_name='offset flag', &
-         ptr_patch=this%offset_flag_patch, default='inactive')
-
-    this%offset_counter_patch(begp:endp) = spval
-    call hist_addfld1d (fname='OFFSET_COUNTER', units='days', &
-         avgflag='A', long_name='offset days counter', &
-         ptr_patch=this%offset_counter_patch, default='inactive')
-
-    this%offset_fdd_patch(begp:endp) = spval
-    call hist_addfld1d (fname='OFFSET_FDD', units='C degree-days', &
-         avgflag='A', long_name='offset freezing degree days counter', &
-         ptr_patch=this%offset_fdd_patch, default='inactive')
-
-    this%offset_swi_patch(begp:endp) = spval
-    call hist_addfld1d (fname='OFFSET_SWI', units='none', &
-         avgflag='A', long_name='offset soil water index', &
-         ptr_patch=this%offset_swi_patch, default='inactive')
-
-    this%lgsf_patch(begp:endp) = spval
-    call hist_addfld1d (fname='LGSF', units='proportion', &
-         avgflag='A', long_name='long growing season factor', &
-         ptr_patch=this%lgsf_patch, default='inactive')
-
-    this%bglfr_patch(begp:endp) = spval
-    call hist_addfld1d (fname='BGLFR', units='1/s', &
-         avgflag='A', long_name='background litterfall rate', &
-         ptr_patch=this%bglfr_patch, default='inactive')
-
-    this%bgtr_patch(begp:endp) = spval
-    call hist_addfld1d (fname='BGTR', units='1/s', &
-         avgflag='A', long_name='background transfer growth rate', &
-         ptr_patch=this%bgtr_patch, default='inactive')
-
-    this%c_allometry_patch(begp:endp) = spval
-    call hist_addfld1d (fname='C_ALLOMETRY', units='none', &
-         avgflag='A', long_name='C allocation index', &
-         ptr_patch=this%c_allometry_patch, default='inactive')
-
-    this%n_allometry_patch(begp:endp) = spval
-    call hist_addfld1d (fname='N_ALLOMETRY', units='none', &
-         avgflag='A', long_name='N allocation index', &
-         ptr_patch=this%n_allometry_patch, default='inactive')
-
-    this%tempsum_potential_gpp_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TEMPSUM_POTENTIAL_GPP', units='gC/m^2/yr', &
-         avgflag='A', long_name='temporary annual sum of potential GPP', &
-         ptr_patch=this%tempsum_potential_gpp_patch, default='inactive')
-
-    this%annsum_potential_gpp_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ANNSUM_POTENTIAL_GPP', units='gN/m^2/yr', &
-         avgflag='A', long_name='annual sum of potential GPP', &
-         ptr_patch=this%annsum_potential_gpp_patch, default='inactive')
-
-    this%tempmax_retransn_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TEMPMAX_RETRANSN', units='gN/m^2', &
-         avgflag='A', long_name='temporary annual max of retranslocated N pool', &
-         ptr_patch=this%tempmax_retransn_patch, default='inactive')
-
-    this%annmax_retransn_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ANNMAX_RETRANSN', units='gN/m^2', &
-         avgflag='A', long_name='annual max of retranslocated N pool', &
-         ptr_patch=this%annmax_retransn_patch, default='inactive')
-
-    this%downreg_patch(begp:endp) = spval
-    call hist_addfld1d (fname='DOWNREG', units='proportion', &
-         avgflag='A', long_name='fractional reduction in GPP due to N limitation', &
-         ptr_patch=this%downreg_patch, default='inactive')
-
-    this%leafcn_offset_patch(begp:endp) = spval
-    call hist_addfld1d (fname='LEAFCN_OFFSET', units='unitless', &
-         avgflag='A', long_name='Leaf C:N used by FUN', &
-         ptr_patch=this%leafcn_offset_patch, default='inactive')
-
-    this%plantCN_patch(begp:endp)       = spval
-    call hist_addfld1d (fname='PLANTCN', units='unitless', &
-         avgflag='A', long_name='Plant C:N used by FUN', &
-         ptr_patch=this%plantCN_patch, default='inactive')
-  end subroutine InitHistory
-
-  !-----------------------------------------------------------------------
   subroutine initCold(this, bounds)
     !
     ! !USES:

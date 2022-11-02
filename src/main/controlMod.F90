@@ -32,7 +32,7 @@ module controlMod
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, all_active, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
-  use clm_varctl                       , only: use_cn, use_noio, NLFilename_in
+  use clm_varctl                       , only: use_noio, NLFilename_in
   use clm_varctl                       , only: create_crop_landunit, glc_snow_persistence_max_days
   use clm_varctl                       , only: subgridflag, nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
@@ -180,7 +180,7 @@ contains
     ! max number of plant functional types in naturally vegetated landunit
     namelist /clm_inparm/ maxpatch_pft
 
-    namelist /clm_inparm/ use_cn, use_noio
+    namelist /clm_inparm/ use_noio
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ &
@@ -402,7 +402,6 @@ contains
     call mpi_bcast (username, len(username), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (nsrest, 1, MPI_INTEGER, 0, mpicom, ier)
 
-    call mpi_bcast (use_cn, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_noio, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     ! initial file variables
@@ -426,12 +425,7 @@ contains
     ! max number of plant functional types in naturally vegetated landunit
     call mpi_bcast(maxpatch_pft, 1, MPI_LOGICAL, 0, mpicom, ier)
 
-    ! BGC
     call mpi_bcast (co2_type, len(co2_type), MPI_CHARACTER, 0, mpicom, ier)
-    if (use_cn) then
-       call mpi_bcast (nfix_timeconst, 1, MPI_REAL8, 0, mpicom, ier)
-       call mpi_bcast (spinup_state, 1, MPI_INTEGER, 0, mpicom, ier)
-    end if
 
     ! physics variables
     call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)
@@ -505,7 +499,6 @@ contains
     write(iulog,*) '   username              = ',trim(username)
     write(iulog,*) '   hostname              = ',trim(hostname)
     write(iulog,*) 'process control parameters:'
-    write(iulog,*) '    use_cn = ', use_cn
     write(iulog,*) '    use_noio = ', use_noio
 
     write(iulog,*) 'input data files:'
@@ -525,15 +518,6 @@ contains
     else
        write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
     end if
-    if (use_cn) then
-       if (nfix_timeconst /= 0._r8) then
-          write(iulog,*) '   nfix_timeconst, timescale for smoothing npp in N fixation term: ', nfix_timeconst
-       else
-          write(iulog,*) '   nfix_timeconst == zero, use standard N fixation scheme. '
-       end if
-       
-    end if
-
     write(iulog,*) '   Number of snow layers =', nlevsno
     write(iulog,*) '   Max snow depth (mm) =', h2osno_max
     write(iulog,*) '   Limit applied to integrated snowfall when determining changes in'

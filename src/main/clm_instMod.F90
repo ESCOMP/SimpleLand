@@ -8,7 +8,6 @@ module clm_instMod
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use decompMod       , only : bounds_type
   use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
-  use clm_varctl      , only : use_cn
   use clm_varcon      , only : bdsno
   use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
@@ -257,40 +256,6 @@ contains
 
     call topo_inst%Init(bounds)
 
-    if (use_cn ) then
-
-       ! Initialize soilbiogeochem_state_inst
-
-       call soilbiogeochem_state_inst%Init(bounds)
-
-       ! Initialize decompcascade constants
-
-       call init_decomp_cascade_constants()
-
-       ! Initalize soilbiogeochem carbon types
-
-       call soilbiogeochem_carbonstate_inst%Init(bounds, carbon_type='c12', ratio=1._r8)
-
-    end if
-
-    if ( use_cn ) then
-
-       ! Initalize soilbiogeochem nitrogen types
-
-       call soilbiogeochem_nitrogenstate_inst%Init(bounds, &
-            soilbiogeochem_carbonstate_inst%decomp_cpools_vr_col(begc:endc,1:nlevdecomp_full,1:ndecomp_pools), &
-            soilbiogeochem_carbonstate_inst%decomp_cpools_col(begc:endc,1:ndecomp_pools),  &
-            soilbiogeochem_carbonstate_inst%decomp_cpools_1m_col(begc:endc, 1:ndecomp_pools))
-
-       call soilbiogeochem_nitrogenflux_inst%Init(bounds) 
-
-    end if ! end of if use_cn 
-
-    if (use_cn ) then
-       call crop_inst%Init(bounds)
-    end if
-
-    
     deallocate (h2osno_col)
     deallocate (snow_depth_col)
 

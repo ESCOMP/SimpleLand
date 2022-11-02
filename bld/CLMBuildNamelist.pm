@@ -80,15 +80,6 @@ REQUIRED OPTIONS
                               "-sim_year list" to list valid simulation years
                               (default 2000)
 OPTIONS
-     -bgc "value"             Build CLM with BGC package [ sp | bgc ]
-                              (default is sp).
-                                CLM Biogeochemistry mode
-                                sp    = Satellite Phenology (SP)
-                                    This toggles off the namelist variable: use_cn
-                                bgc   = Carbon Nitrogen with methane, nitrification, vertical soil C,
-                                        CENTURY decomposition
-                                    This toggles on the namelist variables:
-                                          use_cn
      -[no-]chk_res            Also check [do NOT check] to make sure the resolution and
                               land-mask is valid.
      -clm_demand "list"       List of variables to require on clm namelist besides the usuals.
@@ -531,7 +522,6 @@ sub process_namelist_commandline_options {
   setup_cmdl_chk_res($opts, $defaults);
   setup_cmdl_resolution($opts, $nl_flags, $definition, $defaults);
   setup_cmdl_mask($opts, $nl_flags, $definition, $defaults, $nl);
-  setup_cmdl_bgc($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
   setup_cmdl_maxpft($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
   setup_cmdl_glc_nec($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_rcp($opts, $nl_flags, $definition, $defaults, $nl);
@@ -603,53 +593,6 @@ sub setup_cmdl_mask {
   }
   $log->verbose_message("CLM land mask is $nl_flags->{'mask'}");
 }
-
-#-------------------------------------------------------------------------------
-sub setup_cmdl_bgc {
-  # BGC - alias for group of biogeochemistry related use_XXX namelists
-
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv) = @_;
-
-  my $val;
-  my $var = "bgc";
-
-  $val = $opts->{$var};
-  $nl_flags->{'bgc_mode'} = $val;
-
-  my $var = "bgc_mode";
-  if ( $nl_flags->{$var} eq "default" ) {
-     $nl_flags->{$var} = $defaults->get_value($var);
-  }
-  my $group = $definition->get_group_name($var);
-  $nl->set_variable_value($group, $var, quote_string( $nl_flags->{$var} ) );
-  if (  ! $definition->is_valid_value( $var, quote_string( $nl_flags->{$var}) ) ) {
-    my @valid_values   = $definition->get_valid_values( $var );
-    $log->fatal_error("$var has a value (".$nl_flags->{$var}.") that is NOT valid. Valid values are: @valid_values");
-  }
-  $log->verbose_message("Using $nl_flags->{$var} for bgc.");
-
-  # now set the actual name list variables based on the bgc alias
-  if ($nl_flags->{$var} eq "bgc" ) {
-    $nl_flags->{'use_cn'} = ".true.";
-  } else {
-    $nl_flags->{'use_cn'} = ".false.";
-  }
-  if ( defined($nl->get_value("use_cn")) && ($nl_flags->{'use_cn'} ne $nl->get_value("use_cn")) ) {
-    $log->fatal_error("The namelist variable use_cn is inconsistent with the -bgc option");
-  }
-
-  # Now set use_cn
-  foreach $var ( "use_cn" ) {
-     $val = $nl_flags->{$var};
-     $group = $definition->get_group_name($var);
-     $nl->set_variable_value($group, $var, $val);
-     if (  ! $definition->is_valid_value( $var, $val ) ) {
-       my @valid_values   = $definition->get_valid_values( $var );
-       $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
-     }
-  }
-} # end bgc
-
 
 #-------------------------------------------------------------------------------
 
@@ -904,7 +847,6 @@ sub process_namelist_commandline_use_case {
     $settings{'sim_year'}       = $nl_flags->{'sim_year'};
     $settings{'sim_year_range'} = $nl_flags->{'sim_year_range'};
     $settings{'phys'}           = $nl_flags->{'phys'};
-    $settings{'use_cn'}      = $nl_flags->{'use_cn'};
     $settings{'cnfireson'}   = $nl_flags->{'cnfireson'};
     # Loop over the variables specified in the use case.
     # Add each one to the namelist.
@@ -1000,11 +942,6 @@ sub process_namelist_inline_logic {
   # namelist group: rooting_profile_inparm    #
   #############################################
   setup_logic_rooting_profile($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
-  ####################################
-  # namelist group: cnvegcarbonstate #
-  ####################################
-  setup_logic_cnvegcarbonstate($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
   #############################################
   # namelist group: soil_resis_inparm #
@@ -1237,7 +1174,6 @@ sub setup_logic_demand {
   $settings{'rcp'}            = $nl_flags->{'rcp'};
   $settings{'glc_nec'}        = $nl_flags->{'glc_nec'};
   # necessary for demand to be set correctly
-  $settings{'use_cn'}              = $nl_flags->{'use_cn'};
 
   my $demand = $nl->get_value('clm_demand');
   if (defined($demand)) {
@@ -1353,7 +1289,7 @@ sub setup_logic_initial_conditions {
     } else {
        delete( $settings{'sim_year'} );
     }
-    foreach my $item ( "mask", "maxpft", "glc_nec", "use_cn" ) {
+    foreach my $item ( "mask", "maxpft", "glc_nec" ) {
        $settings{$item}    = $nl_flags->{$item};
     }
     if ($opts->{'ignore_ic_year'}) {
@@ -1397,7 +1333,7 @@ sub setup_logic_initial_conditions {
              add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, "init_interp_attributes",
                         'sim_year'=>$settings{'sim_year'},
                         'glc_nec'=>$nl_flags->{'glc_nec'},
-                        'use_cn'=>$nl_flags->{'use_cn'}, 'nofail'=>1 );
+                        'nofail'=>1 );
              my $attributes_string = remove_leading_and_trailing_quotes($nl->get_value("init_interp_attributes"));
              foreach my $pair ( split( /\s/, $attributes_string) ) {
                 if ( $pair =~ /^([a-z_]+)=([a-z._0-9]+)$/ ) {
@@ -1481,17 +1417,6 @@ sub setup_logic_soilwater_movement {
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'inexpensive' );
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'flux_calculation' );
 }
-#-------------------------------------------------------------------------------
-
-sub setup_logic_cnvegcarbonstate {
-  #  MUST be AFTER: setup_logic_dynamic_plant_nitrogen_alloc as depends on mm_nuptake_opt which is set there
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ( &value_is_true($nl->get_value('use_cn')) ) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_cn' => $nl->get_value('use_cn'));
-  }
-}
-
 #-------------------------------------------------------------------------------
 
 sub setup_logic_rooting_profile {

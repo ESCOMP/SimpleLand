@@ -10,7 +10,7 @@ module WaterstateType
   use shr_kind_mod   , only : r8 => shr_kind_r8
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use decompMod      , only : bounds_type
-  use clm_varctl     , only : use_cn, iulog
+  use clm_varctl     , only : iulog
   use clm_varpar     , only : nlevgrnd, nlevurb, nlevsno   
   use clm_varcon     , only : spval
   use LandunitType   , only : lun                
@@ -248,7 +248,6 @@ contains
     !
     ! !USES:
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-    use clm_varctl     , only : use_cn
     use clm_varpar     , only : nlevsno, nlevsoi
     use histFileMod    , only : hist_addfld1d, hist_addfld2d, no_snow_normal, no_snow_zero
     !
@@ -425,34 +424,6 @@ contains
          avgflag='A', long_name='effective fraction of ground covered by snow', &
          ptr_col=this%frac_sno_eff_col, c2l_scale_type='urbanf', default='inactive')
 
-    if (use_cn) then
-       this%fwet_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FWET', units='proportion', &
-            avgflag='A', long_name='fraction of canopy that is wet', &
-            ptr_patch=this%fwet_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%fcansno_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FCANSNO', units='proportion', &
-            avgflag='A', long_name='fraction of canopy that is wet', &
-            ptr_patch=this%fcansno_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%fdry_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FDRY', units='proportion', &
-            avgflag='A', long_name='fraction of foliage that is green and dry', &
-            ptr_patch=this%fdry_patch, default='inactive')
-    end if
-
-    if (use_cn)then
-       this%frac_iceold_col(begc:endc,:) = spval
-       call hist_addfld2d (fname='FRAC_ICEOLD', units='proportion', type2d='levgrnd', &
-            avgflag='A', long_name='fraction of ice relative to the tot water', &
-            ptr_col=this%frac_iceold_col, default='inactive')
-    end if
-
     ! Snow properties - these will be vertically averaged over the snow profile
 
     this%snow_depth_col(begc:endc) = spval
@@ -495,13 +466,6 @@ contains
     call hist_addfld1d (fname='SNOW_PERSISTENCE',  units='seconds',  &
          avgflag='I', long_name='Length of time of continuous snow cover (nat. veg. landunits only)', &
          ptr_col=this%snow_persistence_col, l2g_scale_type='natveg', default='inactive') 
-
-    if (use_cn) then
-       this%wf_col(begc:endc) = spval
-       call hist_addfld1d (fname='WF', units='proportion', &
-            avgflag='A', long_name='soil water as frac. of whc for top 0.05 m', &
-            ptr_col=this%wf_col, default='inactive')
-    end if
 
     this%h2osno_top_col(begc:endc) = spval
     call hist_addfld1d (fname='H2OSNO_TOP', units='kg/m2', &
@@ -1053,15 +1017,6 @@ contains
     call restartvar(ncid=ncid, flag=flag, varname='qaf', xtype=ncd_double, dim1name='landunit',                       &
          long_name='urban canopy specific humidity', units='kg/kg',                                                   &
          interpinic_flag='interp', readvar=readvar, data=this%qaf_lun)
-
-    if (use_cn) then
-       call restartvar(ncid=ncid, flag=flag, varname='wf', xtype=ncd_double,  &
-            dim1name='column', &
-            long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%wf_col) 
-    end if
-
-
 
   end subroutine Restart
 

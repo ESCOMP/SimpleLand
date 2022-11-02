@@ -13,7 +13,7 @@ module atm2lndMod
   use clm_varpar     , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.
   use clm_varcon     , only : rair, grav, cpair, hfus, tfrz, denh2o, spval
   use clm_varcon     , only : wv_to_dair_weight_ratio
-  use clm_varctl     , only : iulog, use_cn, iulog
+  use clm_varctl     , only : iulog
   use abortutils     , only : endrun
   use decompMod      , only : bounds_type
   use atm2lndType    , only : atm2lnd_type

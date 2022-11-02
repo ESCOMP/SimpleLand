@@ -266,7 +266,6 @@ contains
     ! !USES:
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
     use clm_varpar     , only : nlevsno, nlevgrnd
-    use clm_varctl     , only : use_cn
     use histFileMod    , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     use ncdio_pio      , only : ncd_inqvdlen
     implicit none
@@ -483,48 +482,6 @@ contains
          ptr_patch=this%netrad_patch, c2l_scale_type='urbanf', &
          default='inactive')
 
-    if (use_cn) then
-       this%dlrad_patch(begp:endp) = spval
-       call hist_addfld1d (fname='DLRAD', units='W/m^2', &
-            avgflag='A', long_name='downward longwave radiation below the canopy', &
-            ptr_patch=this%dlrad_patch, default='inactive', c2l_scale_type='urbanf')
-    end if 
-
-    if (use_cn) then
-       this%ulrad_patch(begp:endp) = spval
-       call hist_addfld1d (fname='ULRAD', units='W/m^2', &
-            avgflag='A', long_name='upward longwave radiation above the canopy', &
-            ptr_patch=this%ulrad_patch, default='inactive', c2l_scale_type='urbanf')
-    end if 
-
-    if (use_cn) then
-       this%cgrnd_patch(begp:endp) = spval
-       call hist_addfld1d (fname='CGRND', units='W/m^2/K', &
-            avgflag='A', long_name='deriv. of soil energy flux wrt to soil temp', &
-            ptr_patch=this%cgrnd_patch, default='inactive', c2l_scale_type='urbanf')
-    end if 
-
-    if (use_cn) then
-       this%cgrndl_patch(begp:endp) = spval
-       call hist_addfld1d (fname='CGRNDL', units='W/m^2/K', &
-            avgflag='A', long_name='deriv. of soil latent heat flux wrt soil temp', &
-            ptr_patch=this%cgrndl_patch, default='inactive', c2l_scale_type='urbanf')
-    end if 
-
-    if (use_cn) then
-       this%cgrnds_patch(begp:endp) = spval
-       call hist_addfld1d (fname='CGRNDS', units='W/m^2/K', &
-            avgflag='A', long_name='deriv. of soil sensible heat flux wrt soil temp', &
-            ptr_patch=this%cgrnds_patch, default='inactive', c2l_scale_type='urbanf')
-    end if 
-
-    if (use_cn) then
-       this%eflx_gnet_patch(begp:endp) = spval
-       call hist_addfld1d (fname='EFLX_GNET', units='W/m^2', &
-            avgflag='A', long_name='net heat flux into ground', &
-            ptr_patch=this%eflx_gnet_patch, default='inactive', c2l_scale_type='urbanf')
-    end if 
-
     this%eflx_grnd_lake_patch(begp:endp) = spval
     call hist_addfld1d (fname='EFLX_GRND_LAKE', units='W/m^2', &
          avgflag='A', long_name='net heat flux into lake/snow surface, excluding light transmission', &
@@ -630,13 +587,6 @@ contains
     call hist_addfld1d (fname='BTRAN2', units='unitless',  &
          avgflag='A', long_name='root zone soil wetness factor', &
          ptr_patch=this%btran2_patch, set_lake=spval, set_urb=spval, default='inactive')
-
-    if (use_cn) then
-       this%rresis_patch(begp:endp,:) = spval
-       call hist_addfld2d (fname='RRESIS', units='proportion', type2d='levgrnd', &
-            avgflag='A', long_name='root resistance in each soil layer', &
-            ptr_patch=this%rresis_patch, default='inactive')
-    end if
 
     this%errsoi_col(begc:endc) = spval
     call hist_addfld1d (fname='ERRSOI',  units='W/m^2',  &

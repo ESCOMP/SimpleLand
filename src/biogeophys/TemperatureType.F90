@@ -269,7 +269,6 @@ contains
     !
     ! !USES:
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-    use clm_varctl     , only : use_cn
     use histFileMod    , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     !
     ! !ARGUMENTS:
@@ -475,34 +474,6 @@ contains
     call hist_addfld1d (fname='SNOdTdzL', units='K/m', &
          avgflag='A', long_name='top snow layer temperature gradient (land)', &
          ptr_col=this%dTdz_top_col, set_urb=spval, default='inactive')
-
-    if (use_cn) then
-       this%dt_veg_patch(begp:endp) = spval
-       call hist_addfld1d (fname='DT_VEG', units='K', &
-            avgflag='A', long_name='change in t_veg, last iteration', &
-            ptr_patch=this%dt_veg_patch, default='inactive')
-    end if
-
-    if (use_cn ) then
-       this%emv_patch(begp:endp) = spval
-       call hist_addfld1d (fname='EMV', units='proportion', &
-            avgflag='A', long_name='vegetation emissivity', &
-            ptr_patch=this%emv_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%emg_col(begc:endc) = spval
-       call hist_addfld1d (fname='EMG', units='proportion', &
-            avgflag='A', long_name='ground emissivity', &
-            ptr_col=this%emg_col, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%beta_col(begc:endc) = spval
-       call hist_addfld1d (fname='BETA', units='none', &
-            avgflag='A', long_name='coefficient of convective velocity', &
-            ptr_col=this%beta_col, default='inactive')
-    end if
 
     ! Accumulated quantities
 

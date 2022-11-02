@@ -10,7 +10,7 @@ module atm2lndType
   use shr_log_mod   , only : errMsg => shr_log_errMsg
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.  ! MML: numrad = 2, 1=vis, 2=nir
   use clm_varcon    , only : rair, grav, cpair, hfus, tfrz, spval
-  use clm_varctl    , only : iulog, use_cn
+  use clm_varctl    , only : iulog
   use decompMod     , only : bounds_type
   use abortutils    , only : endrun
   use PatchType     , only : patch
@@ -1613,23 +1613,6 @@ contains
          avgflag='A', long_name='direct radiation (last 240hrs)', &
          ptr_patch=this%fsd240_patch, default='inactive')
 
-    if (use_cn) then
-       this%rh30_patch(begp:endp) = spval
-       call hist_addfld1d (fname='RH30', units='%',  &
-            avgflag='A', long_name='30-day running mean of relative humidity', &
-            ptr_patch=this%rh30_patch, default='inactive')
-
-       this%prec10_patch(begp:endp) = spval
-       call hist_addfld1d (fname='PREC10', units='MM H2O/S',  &
-            avgflag='A', long_name='10-day running mean of PREC', &
-            ptr_patch=this%prec10_patch, default='inactive')
-
-       this%prec60_patch(begp:endp) = spval
-       call hist_addfld1d (fname='PREC60', units='MM H2O/S',  &
-            avgflag='A', long_name='60-day running mean of PREC', &
-            ptr_patch=this%prec60_patch, default='inactive')
-    end if
-
   end subroutine InitHistory
 
 !-----------------------------------------------------------------------
@@ -1858,20 +1841,6 @@ contains
          desc='240hr average of diffuse solar radiation',  accum_type='runmean', accum_period=-10, &
          subgrid_type='pft', numlev=1, init_value=0._r8)
 
-    if (use_cn) then
-       call init_accum_field (name='PREC10', units='MM H2O/S', &
-            desc='10-day running mean of total precipitation', accum_type='runmean', accum_period=-10, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
-
-       call init_accum_field (name='PREC60', units='MM H2O/S', &
-            desc='60-day running mean of total precipitation', accum_type='runmean', accum_period=-60, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
-    
-       call init_accum_field (name='RH30', units='%', &
-            desc='30-day running mean of relative humidity', accum_type='runmean', accum_period=-30, &
-            subgrid_type='pft', numlev=1, init_value=100._r8)
-    end if
-
   end subroutine InitAccBuffer
 
   !-----------------------------------------------------------------------
@@ -1932,17 +1901,6 @@ contains
 
     call extract_accum_field ('FSI240', rbufslp, nstep)
     this%fsi240_patch(begp:endp) = rbufslp(begp:endp)
-
-    if (use_cn) then
-       call extract_accum_field ('PREC10', rbufslp, nstep)
-       this%prec10_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('PREC60', rbufslp, nstep)
-       this%prec60_patch(begp:endp) = rbufslp(begp:endp)
-   
-       call extract_accum_field ('RH30', rbufslp, nstep)
-       this%rh30_patch(begp:endp) = rbufslp(begp:endp)
-    end if
 
     deallocate(rbufslp)
     deallocate(rbufslc)
@@ -2016,26 +1974,6 @@ contains
        rbufslp(p) = this%forc_rain_downscaled_col(c) + this%forc_snow_downscaled_col(c)
        rbufslc(c) = this%forc_rain_downscaled_col(c) + this%forc_snow_downscaled_col(c)
     end do
-
-    if (use_cn) then
-       ! Accumulate and extract PREC60 (accumulates total precipitation as 60-day running mean)
-       call update_accum_field  ('PREC60', rbufslp, nstep)
-       call extract_accum_field ('PREC60', this%prec60_patch, nstep)
-
-       ! Accumulate and extract PREC10 (accumulates total precipitation as 10-day running mean)
-       call update_accum_field  ('PREC10', rbufslp, nstep)
-       call extract_accum_field ('PREC10', this%prec10_patch, nstep)
-    end if
-
-    if (use_cn) then
-       do p = begp,endp
-          g = patch%gridcell(p) 
-          rbufslp(p) = this%forc_rh_grc(g)
-       end do
-       ! Accumulate and extract RH30 (accumulates RH as 30-day running mean)
-       call update_accum_field  ('RH30', rbufslp, nstep)
-       call extract_accum_field ('RH30', this%rh30_patch, nstep)
-    endif
 
     deallocate(rbufslp)
     deallocate(rbufslc)

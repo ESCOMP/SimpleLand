@@ -498,12 +498,6 @@ Turn vegetation snow canopy ON, OFF, or ON with albedo influence (ON_RAD)
 <!-- Former CPP tokens -->
 <!-- ========================================================================================  -->
 
-<entry id="use_cn" type="logical" category="bgc"
-       group="clm_inparm" valid_values="" value=".false.">
-CLM Biogeochemistry mode : Carbon Nitrogen model (CN) 
-(or CLM45BGC if phys=clm4_5, vsoilc_centbgc='on', and clm4me='on')
-</entry>
-
 <entry id="use_noio" type="logical" category="default_settings"
        group="clm_inparm" valid_values="" value=".false." >
 Toggle to turn all history output completely OFF (possibly used for testing)

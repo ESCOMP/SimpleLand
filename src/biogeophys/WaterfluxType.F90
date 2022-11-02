@@ -241,7 +241,6 @@ contains
   subroutine InitHistory(this, bounds)
     !
     ! !USES:
-    use clm_varctl  , only : use_cn
     use histFileMod , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     !
     ! !ARGUMENTS:

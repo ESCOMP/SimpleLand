@@ -12,7 +12,6 @@ module FrictionVelocityMod
   use shr_log_mod  , only : errMsg => shr_log_errMsg
   use decompMod    , only : bounds_type
   use clm_varcon   , only : spval
-  use clm_varctl   , only : use_cn
   use LandunitType , only : lun                
   use ColumnType   , only : col
   use PatchType    , only : patch                
@@ -186,48 +185,6 @@ contains
          avgflag='A', long_name='10-m wind for dust model', &
          ptr_patch=this%u10_patch, default='inactive')
 
-    if (use_cn) then
-       this%ram1_patch(begp:endp) = spval
-       call hist_addfld1d (fname='RAM1', units='s/m', &
-            avgflag='A', long_name='aerodynamical resistance ', &
-            ptr_patch=this%ram1_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%fv_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FV', units='m/s', &
-            avgflag='A', long_name='friction velocity for dust model', &
-            ptr_patch=this%fv_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%z0hv_patch(begp:endp) = spval
-       call hist_addfld1d (fname='Z0HV', units='m', &
-            avgflag='A', long_name='roughness length over vegetation, sensible heat', &
-            ptr_patch=this%z0hv_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%z0m_patch(begp:endp) = spval
-       call hist_addfld1d (fname='Z0M', units='m', &
-            avgflag='A', long_name='momentum roughness length', &
-            ptr_patch=this%z0m_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%z0mv_patch(begp:endp) = spval
-       call hist_addfld1d (fname='Z0MV', units='m', &
-            avgflag='A', long_name='roughness length over vegetation, momentum', &
-            ptr_patch=this%z0mv_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%z0qv_patch(begp:endp) = spval
-       call hist_addfld1d (fname='Z0QV', units='m', &
-            avgflag='A', long_name='roughness length over vegetation, latent heat', &
-            ptr_patch=this%z0qv_patch, default='inactive')
-    end if
-
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------
@@ -249,12 +206,6 @@ contains
     ! Changed 3/21/08, KO: still needed but don't have sufficient information 
     ! to set this properly (e.g., patch-level displacement height and roughness 
     ! length). So leave at 30m.
-
-    if (use_cn) then
-       do p = bounds%begp, bounds%endp
-          this%forc_hgt_u_patch(p) = 30._r8
-       end do
-    end if
 
     do c = bounds%begc, bounds%endc
        l = col%landunit(c)

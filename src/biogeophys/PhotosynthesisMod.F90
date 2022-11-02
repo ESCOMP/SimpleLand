@@ -14,7 +14,6 @@ module  PhotosynthesisMod
   use shr_log_mod         , only : errMsg => shr_log_errMsg
   use shr_infnan_mod      , only : nan => shr_infnan_nan, assignment(=)
   use abortutils          , only : endrun
-  use clm_varctl          , only : use_cn
   use clm_varctl          , only : iulog
   use clm_varpar          , only : nlevcan, nvegwcs, mxpft
   use clm_varcon          , only : namep, spval
@@ -320,18 +319,6 @@ contains
          avgflag='I', long_name='Product-limited photosynthesis', &
          ptr_patch=this%fpsn_wp_patch, set_lake=0._r8, set_urb=0._r8, &
          default='inactive')
-
-    if (use_cn) then
-       this%psnsun_patch(begp:endp) = spval
-       call hist_addfld1d (fname='PSNSUN', units='umolCO2/m^2/s', &
-            avgflag='A', long_name='sunlit leaf photosynthesis', &
-            ptr_patch=this%psnsun_patch, default='inactive')
-
-       this%psnsha_patch(begp:endp) = spval
-       call hist_addfld1d (fname='PSNSHA', units='umolCO2/m^2/s', &
-            avgflag='A', long_name='shaded leaf photosynthesis', &
-            ptr_patch=this%psnsha_patch, default='inactive')
-    end if
 
     this%rssun_patch(begp:endp) = spval
     call hist_addfld1d (fname='RSSUN', units='s/m',  &

@@ -9,7 +9,6 @@ module SoilStateType
   use abortutils      , only : endrun
   use clm_varpar      , only : nlevsoi, nlevgrnd, nlevlak, nlayer, nlevsno
   use clm_varcon      , only : spval
-  use clm_varctl      , only : use_cn
   use clm_varctl      , only : iulog
   use LandunitType    , only : lun                
   use ColumnType      , only : col                
@@ -216,35 +215,6 @@ contains
           avgflag='A', long_name='soil conductance in each soil layer', &
           ptr_patch=this%soil_conductance_patch, default='inactive')
 
-    if (use_cn) then
-       this%bsw_col(begc:endc,:) = spval 
-       call hist_addfld2d (fname='bsw', units='unitless', type2d='levgrnd', &
-            avgflag='A', long_name='clap and hornberger B', &
-            ptr_col=this%bsw_col, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%rootr_patch(begp:endp,:) = spval
-       call hist_addfld2d (fname='ROOTR', units='proportion', type2d='levgrnd', &
-            avgflag='A', long_name='effective fraction of roots in each soil layer', &
-            ptr_patch=this%rootr_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%rootr_col(begc:endc,:) = spval
-       call hist_addfld2d (fname='ROOTR_COLUMN', units='proportion', type2d='levgrnd', &
-            avgflag='A', long_name='effective fraction of roots in each soil layer', &
-            ptr_col=this%rootr_col, default='inactive')
-       
-    end if
-
-    if (use_cn) then
-       this%soilpsi_col(begc:endc,:) = spval
-       call hist_addfld2d (fname='SOILPSI', units='MPa', type2d='levgrnd', &
-            avgflag='A', long_name='soil water potential in each soil layer', &
-            ptr_col=this%soilpsi_col, default='inactive')
-    end if
-
     this%thk_col(begc:endc,-nlevsno+1:0) = spval
     data2dptr => this%thk_col(:,-nlevsno+1:0)
     call hist_addfld2d (fname='SNO_TK', units='W/m-K', type2d='levsno', &
@@ -270,27 +240,6 @@ contains
     call hist_addfld1d (fname='SoilAlpha_U',  units='unitless',  &
          avgflag='A', long_name='urban factor limiting ground evap', &
          ptr_col=this%soilalpha_u_col, set_nourb=spval, default='inactive')
-
-    if (use_cn) then
-       this%watsat_col(begc:endc,:) = spval 
-       call hist_addfld2d (fname='watsat', units='m^3/m^3', type2d='levgrnd', &
-            avgflag='A', long_name='water saturated', &
-            ptr_col=this%watsat_col, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%eff_porosity_col(begc:endc,:) = spval
-       call hist_addfld2d (fname='EFF_POROSITY', units='proportion', type2d='levgrnd', &
-            avgflag='A', long_name='effective porosity = porosity - vol_ice', &
-            ptr_col=this%eff_porosity_col, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%watfc_col(begc:endc,:) = spval 
-       call hist_addfld2d (fname='watfc', units='m^3/m^3', type2d='levgrnd', &
-            avgflag='A', long_name='water field capacity', &
-            ptr_col=this%watfc_col, default='inactive')
-    end if
 
     this%soilresis_col(begc:endc) = spval
     call hist_addfld1d (fname='SOILRESIS',  units='s/m',  &

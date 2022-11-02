@@ -10,7 +10,7 @@ module CanopyStateType
   use landunit_varcon , only : istsoil, istcrop
   use clm_varpar      , only : nlevcan, nvegwcs
   use clm_varcon      , only : spval  
-  use clm_varctl      , only : iulog, use_cn
+  use clm_varctl      , only : iulog
   use LandunitType    , only : lun                
   use ColumnType      , only : col                
   use PatchType       , only : patch                
@@ -187,53 +187,8 @@ contains
          avgflag='A', long_name='shaded projected leaf area index', &
          ptr_patch=this%laisha_patch, set_urb=0._r8, default='inactive')
 
-    if (use_cn) then
-       this%fsun_patch(begp:endp) = spval
-       call hist_addfld1d (fname='FSUN', units='proportion', &
-            avgflag='A', long_name='sunlit fraction of canopy', &
-            ptr_patch=this%fsun_patch, default='inactive')
-
-       this%dewmx_patch(begp:endp) = spval
-       call hist_addfld1d (fname='DEWMX', units='mm', &
-            avgflag='A', long_name='Maximum allowed dew', &
-            ptr_patch=this%dewmx_patch, default='inactive')
-
-       this%htop_patch(begp:endp) = spval
-       call hist_addfld1d (fname='HTOP', units='m', &
-            avgflag='A', long_name='canopy top', &
-            ptr_patch=this%htop_patch, default='inactive')
-
-       this%hbot_patch(begp:endp) = spval
-       call hist_addfld1d (fname='HBOT', units='m', &
-            avgflag='A', long_name='canopy bottom', &
-            ptr_patch=this%hbot_patch, default='inactive')
-
-       this%displa_patch(begp:endp) = spval
-       call hist_addfld1d (fname='DISPLA', units='m', &
-            avgflag='A', long_name='displacement height', &
-            ptr_patch=this%displa_patch, default='inactive')
-    end if
-
-    if (use_cn) then
-       this%alt_col(begc:endc) = spval
-       call hist_addfld1d (fname='ALT', units='m', &
-            avgflag='A', long_name='current active layer thickness', &
-            ptr_col=this%alt_col, default='inactive')
-
-       this%altmax_col(begc:endc) = spval
-       call hist_addfld1d (fname='ALTMAX', units='m', &
-            avgflag='A', long_name='maximum annual active layer thickness', &
-            ptr_col=this%altmax_col, default='inactive')
-
-       this%altmax_lastyear_col(begc:endc) = spval
-       call hist_addfld1d (fname='ALTMAX_LASTYEAR', units='m', &
-            avgflag='A', long_name='maximum prior year active layer thickness', &
-            ptr_col=this%altmax_lastyear_col, default='inactive')
-    end if
-
     ! Allow active layer fields to be optionally output even if not running CN
 
-    if (.not. use_cn) then
        this%alt_col(begc:endc) = spval
        call hist_addfld1d (fname='ALT', units='m', &
             avgflag='A', long_name='current active layer thickness', &
@@ -248,9 +203,6 @@ contains
        call hist_addfld1d (fname='ALTMAX_LASTYEAR', units='m', &
             avgflag='A', long_name='maximum prior year active layer thickness', &
             ptr_col=this%altmax_lastyear_col, default='inactive')
-    end if
-
-
 
     ! Accumulated fields
     this%fsun24_patch(begp:endp) = spval
@@ -522,24 +474,6 @@ contains
              this%fsun_patch(p) = spval
           end if
        end do
-    end if
-
-    if (use_cn) then
-       call restartvar(ncid=ncid, flag=flag, varname='altmax', xtype=ncd_double,  &
-            dim1name='column', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%altmax_col) 
-
-       call restartvar(ncid=ncid, flag=flag, varname='altmax_lastyear', xtype=ncd_double,  &
-            dim1name='column', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%altmax_lastyear_col) 
-
-       call restartvar(ncid=ncid, flag=flag, varname='altmax_indx', xtype=ncd_int,  &
-            dim1name='column', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%altmax_indx_col) 
-
-       call restartvar(ncid=ncid, flag=flag, varname='altmax_lastyear_indx', xtype=ncd_int,  &
-            dim1name='column', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%altmax_lastyear_indx_col) 
     end if
 
   end subroutine Restart
