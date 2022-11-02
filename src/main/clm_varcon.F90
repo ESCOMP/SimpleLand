@@ -205,8 +205,6 @@ module clm_varcon
   real(r8) :: omegas(numrad)           ! two-stream parameter omega for snow by band
   data (omegas(i),i=1,numrad) /0.8_r8, 0.4_r8/
 
-  ! Lake Model Constants will be defined in LakeCon.
-
   !------------------------------------------------------------------
   ! Soil depths are constants for now; lake depths can vary by gridcell
   ! zlak and dzlak correspond to the default 50 m lake depth.

@@ -105,7 +105,6 @@ contains
     use fileutils           , only : getfil
     use organicFileMod      , only : organicrd 
     use FuncPedotransferMod , only : pedotransf, get_ipedof
-    use RootBiophysMod      , only : init_vegrootfr
     use GridcellType     , only : grc                
     !
     ! !ARGUMENTS:
@@ -206,13 +205,6 @@ contains
           soilstate_inst%rootfr_col (c,:) = spval
        end if
     end do
-
-    ! Initialize root fraction 
-
-     call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-          soilstate_inst%rootfr_patch(begp:endp,1:nlevgrnd),'water')
-     call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-          soilstate_inst%crootfr_patch(begp:endp,1:nlevgrnd),'carbon')
 
     ! --------------------------------------------------------------------
     ! dynamic memory allocation

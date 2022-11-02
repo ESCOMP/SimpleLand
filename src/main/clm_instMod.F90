@@ -29,7 +29,6 @@ module clm_instMod
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
   use GlacierSurfaceMassBalanceMod    , only : glacier_smb_type
-  use LakeStateType                   , only : lakestate_type
   use SoilHydrologyType               , only : soilhydrology_type  
   use SoilStateType                   , only : soilstate_type
   use SolarAbsorbedType               , only : solarabs_type
@@ -48,11 +47,9 @@ module clm_instMod
   use LandunitType                    , only : lun                
   use ColumnType                      , only : col                
   use PatchType                       , only : patch                
-  use SoilWaterRetentionCurveMod      , only : soil_water_retention_curve_type
   !
   use SoilStateInitTimeConstMod       , only : SoilStateInitTimeConst
   use SoilHydrologyInitTimeConstMod   , only : SoilHydrologyInitTimeConst
-  use LakeCon                         , only : LakeConInit 
   !
   implicit none
   public   ! By default everything is public 
@@ -66,7 +63,6 @@ module clm_instMod
   type(energyflux_type)                   :: energyflux_inst
   type(frictionvel_type)                  :: frictionvel_inst
   type(glacier_smb_type)                  :: glacier_smb_inst
-  type(lakestate_type)                    :: lakestate_inst
   type(soilstate_type)                    :: soilstate_inst
   type(soilhydrology_type)                :: soilhydrology_inst
   type(solarabs_type)                     :: solarabs_inst
@@ -81,7 +77,6 @@ module clm_instMod
   type(lnd2glc_type)                      :: lnd2glc_inst
   type(glc_behavior_type), target         :: glc_behavior
   type(topo_type)                         :: topo_inst
-  class(soil_water_retention_curve_type) , allocatable :: soil_water_retention_curve
 
   ! General biogeochem types
   type(dust_type)                         :: dust_inst
@@ -204,9 +199,6 @@ contains
          IsSimpleBuildTemp(), IsProgBuildTemp() )
 
     call frictionvel_inst%Init(bounds)
-
-    call lakestate_inst%Init(bounds)
-    call LakeConInit()
 
     call soilhydrology_inst%Init(bounds, nlfilename)
     call SoilHydrologyInitTimeConst(bounds, soilhydrology_inst) ! sets time constant properties

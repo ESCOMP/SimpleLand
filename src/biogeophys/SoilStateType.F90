@@ -283,7 +283,6 @@ contains
     use ncdio_pio        , only : file_desc_t, ncd_io, ncd_double
     use restUtilMod
     use spmdMod          , only : masterproc
-    use RootBiophysMod   , only : init_vegrootfr
     !
     ! !ARGUMENTS:
     class(soilstate_type) :: this
@@ -315,16 +314,6 @@ contains
          long_name='hydraulic conductivity', units='mm/s', &
          interpinic_flag='interp', readvar=readvar, data=this%hk_l_col)
 
-    if (flag=='read') then
-       if (masterproc) then
-          write(iulog,*) "Initialize rootfr to default"
-       end if
-       call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-       this%rootfr_patch(bounds%begp:bounds%endp,1:nlevgrnd), 'water')
-       call init_vegrootfr(bounds, nlevsoi, nlevgrnd, &
-       this%crootfr_patch(bounds%begp:bounds%endp,1:nlevgrnd), 'carbon')
-    end if
-    
   end subroutine Restart
 
 end module SoilStateType

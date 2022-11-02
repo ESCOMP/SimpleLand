@@ -230,8 +230,6 @@ contains
     use clm_varctl            , only : single_column, scmlat, scmlon
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 
     use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart
-    !use DaylengthMod          , only : InitDaylength, daylength
-!    use dynSubgridDriverMod   , only : dynSubgrid_init
     use fileutils             , only : getfil
     use initInterpMod         , only : initInterp
     use subgridWeightsMod     , only : init_subgrid_weights_mod
@@ -239,8 +237,6 @@ contains
     use histFileMod           , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     use restFileMod           , only : restFile_getfile, restFile_open, restFile_close
     use restFileMod           , only : restFile_read, restFile_write 
-    !use ndepStreamMod         , only : ndep_init, ndep_interp
-    use LakeCon               , only : LakeConInit 
     use lnd2atmMod            , only : lnd2atm_minimal
     use controlMod            , only : NLFilename
     !
