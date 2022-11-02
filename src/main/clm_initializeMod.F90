@@ -241,7 +241,6 @@ contains
     use restFileMod           , only : restFile_read, restFile_write 
     !use ndepStreamMod         , only : ndep_init, ndep_interp
     use LakeCon               , only : LakeConInit 
-    use SnowSnicarMod         , only : SnowAge_init, SnowOptics_init
     use lnd2atmMod            , only : lnd2atm_minimal
     use controlMod            , only : NLFilename
     !
@@ -332,11 +331,6 @@ contains
     ! Initialize instances of all derived types as well as time constant variables
 
     call clm_instInit(bounds_proc)
-
-    ! Initialize SNICAR optical and aging parameters
-
-    call SnowOptics_init( ) ! SNICAR optical parameters:
-    call SnowAge_init( )    ! SNICAR aging   parameters:
 
     call hist_printflds()
 

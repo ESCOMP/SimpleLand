@@ -284,11 +284,6 @@ Thus, in general, large values of h2osno_max should have glc_snow_persistence_ma
 small values of h2osno_max should have glc_snow_persistence_max_days > 0.
 </entry>
 
-<entry id="albice" type="real(2)" category="clm_physics"
-       group="clm_inparm" >
-Visible and Near-infrared albedo's for glacier ice
-</entry>
-
 <entry id="dtime" type="real"  category="clm_physics" 
        group="clm_inparm" valid_values="">
 Time step (seconds)

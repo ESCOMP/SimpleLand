@@ -24,18 +24,15 @@ module clm_instMod
   ! Definition of component types 
   !-----------------------------------------
 
-  use AerosolMod                      , only : aerosol_type
   use CanopyStateType                 , only : canopystate_type
   use DUSTMod                         , only : dust_type
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
   use GlacierSurfaceMassBalanceMod    , only : glacier_smb_type
   use LakeStateType                   , only : lakestate_type
-  use PhotosynthesisMod               , only : photosyns_type
   use SoilHydrologyType               , only : soilhydrology_type  
   use SoilStateType                   , only : soilstate_type
   use SolarAbsorbedType               , only : solarabs_type
-  use SurfaceRadiationMod             , only : surfrad_type
   use SurfaceAlbedoType               , only : surfalb_type
   use TemperatureType                 , only : temperature_type
   use WaterFluxType                   , only : waterflux_type
@@ -55,7 +52,6 @@ module clm_instMod
   !
   use SoilStateInitTimeConstMod       , only : SoilStateInitTimeConst
   use SoilHydrologyInitTimeConstMod   , only : SoilHydrologyInitTimeConst
-  use SurfaceAlbedoMod                , only : SurfaceAlbedoInitTimeConst 
   use LakeCon                         , only : LakeConInit 
   !
   implicit none
@@ -66,18 +62,15 @@ module clm_instMod
   !-----------------------------------------
 
   ! Physics types 
-  type(aerosol_type)                      :: aerosol_inst
   type(canopystate_type)                  :: canopystate_inst
   type(energyflux_type)                   :: energyflux_inst
   type(frictionvel_type)                  :: frictionvel_inst
   type(glacier_smb_type)                  :: glacier_smb_inst
   type(lakestate_type)                    :: lakestate_inst
-  type(photosyns_type)                    :: photosyns_inst
   type(soilstate_type)                    :: soilstate_inst
   type(soilhydrology_type)                :: soilhydrology_inst
   type(solarabs_type)                     :: solarabs_inst
   type(surfalb_type)                      :: surfalb_inst
-  type(surfrad_type)                      :: surfrad_inst
   type(temperature_type)                  :: temperature_inst
   type(urbanparams_type)                  :: urbanparams_inst
   type(waterflux_type)                    :: waterflux_inst
@@ -210,14 +203,10 @@ contains
     call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc), &
          IsSimpleBuildTemp(), IsProgBuildTemp() )
 
-    !call aerosol_inst%Init(bounds, NLFilename)
-
     call frictionvel_inst%Init(bounds)
 
     call lakestate_inst%Init(bounds)
     call LakeConInit()
-
-    call photosyns_inst%Init(bounds)
 
     call soilhydrology_inst%Init(bounds, nlfilename)
     call SoilHydrologyInitTimeConst(bounds, soilhydrology_inst) ! sets time constant properties
@@ -225,9 +214,6 @@ contains
     call solarabs_inst%Init(bounds)
 
     call surfalb_inst%Init(bounds)
-    call SurfaceAlbedoInitTimeConst(bounds)
-
-    call surfrad_inst%Init(bounds)
 
     call dust_inst%Init(bounds)
 
@@ -290,8 +276,6 @@ contains
 
     call frictionvel_inst% restart (bounds, ncid, flag=flag)
 
-    call photosyns_inst%restart (bounds, ncid, flag=flag)
-
     call soilhydrology_inst%restart (bounds, ncid, flag=flag)
 
     call solarabs_inst%restart (bounds, ncid, flag=flag)
@@ -305,10 +289,6 @@ contains
 
     call waterstate_inst%restart (bounds, ncid, flag=flag, &
          watsat_col=soilstate_inst%watsat_col(bounds%begc:bounds%endc,:)) 
-
-    !call aerosol_inst%restart (bounds, ncid,  flag=flag, &
-         !h2osoi_ice_col=waterstate_inst%h2osoi_ice_col(bounds%begc:bounds%endc,:), &
-         !h2osoi_liq_col=waterstate_inst%h2osoi_liq_col(bounds%begc:bounds%endc,:))
 
     call surfalb_inst%restart (bounds, ncid, flag=flag, &
          tlai_patch=canopystate_inst%tlai_patch(bounds%begp:bounds%endp), &

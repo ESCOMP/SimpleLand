@@ -26,7 +26,6 @@ module controlMod
   use histFileMod                      , only: hist_fexcl4, hist_fexcl5, hist_fexcl6
   use initInterpMod                    , only: initInterp_readnl
   use UrbanParamsType                  , only: UrbanReadNML
-  use SurfaceAlbedoMod                 , only: albice
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
@@ -172,7 +171,7 @@ contains
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
          create_crop_landunit, nsegspc, co2_ppmv, override_nsrest, &
-         albice, soil_layerstruct, subgridflag
+         soil_layerstruct, subgridflag
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
 
@@ -429,7 +428,6 @@ contains
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (co2_ppmv, 1, MPI_REAL8,0, mpicom, ier)
-    call mpi_bcast (albice, 2, MPI_REAL8,0, mpicom, ier)
     call mpi_bcast (soil_layerstruct,len(soil_layerstruct), MPI_CHARACTER, 0, mpicom, ier)
 
     ! snow pack variables
@@ -547,7 +545,6 @@ contains
        write(iulog,*) '   CO2 volume mixing ratio                = ', co2_type
     end if
 
-    write(iulog,*) '   land-ice albedos      (unitless 0-1)   = ', albice
     write(iulog,*) '   soil layer structure = ', soil_layerstruct
     if (nsrest == nsrContinue) then
        write(iulog,*) 'restart warning:'

@@ -31,7 +31,6 @@ Module DryDepVelocity
   ! the same values are used as found in wesely's look-up-tables, the only  
   ! difference is that this subroutine uses a CLM generated LAI to select values 
   ! from the look-up-table instead of seasonality.  Inaddition, Wesely(1989)  
-  ! land use types are "mapped" into CLM patch types.
   ! 
   ! Subroutine written to operate at the patch level. 
   ! 
@@ -54,22 +53,8 @@ Module DryDepVelocity
   !
   !----------------------------------------------------------------------- 
 
-  use shr_log_mod          , only : errMsg => shr_log_errMsg
   use shr_kind_mod         , only : r8 => shr_kind_r8 
-  use abortutils           , only : endrun
-  use clm_time_manager     , only : get_nstep, get_curr_date, get_curr_time 
-  use spmdMod              , only : masterproc
-  use seq_drydep_mod       , only : n_drydep, drydep_list 
   use decompMod            , only : bounds_type
-  use clm_varcon           , only : namep
-  use atm2lndType          , only : atm2lnd_type
-  use CanopyStateType      , only : canopystate_type
-  use FrictionVelocityMod  , only : frictionvel_type
-  use PhotosynthesisMod    , only : photosyns_type
-  use WaterstateType       , only : waterstate_type
-  use GridcellType         , only : grc                
-  use LandunitType         , only : lun                
-  use PatchType            , only : patch                
   !
   implicit none 
   private
