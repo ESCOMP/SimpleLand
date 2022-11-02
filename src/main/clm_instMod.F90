@@ -19,7 +19,6 @@ module clm_instMod
 
   use UrbanParamsType                    , only : urbanparams_type   ! Constants 
   use UrbanParamsType                    , only : IsSimpleBuildTemp, IsProgBuildTemp
-  use SoilBiogeochemDecompCascadeConType , only : decomp_cascade_con
 
   !-----------------------------------------
   ! Definition of component types 
@@ -27,13 +26,6 @@ module clm_instMod
 
   use AerosolMod                      , only : aerosol_type
   use CanopyStateType                 , only : canopystate_type
-  use ch4Mod                          , only : ch4_type
-  use SoilBiogeochemStateType         , only : soilbiogeochem_state_type
-  use SoilBiogeochemCarbonFluxType    , only : soilbiogeochem_carbonflux_type
-  use SoilBiogeochemCarbonStateType   , only : soilbiogeochem_carbonstate_type
-  use SoilBiogeochemNitrogenFluxType  , only : soilbiogeochem_nitrogenflux_type
-  use SoilBiogeochemNitrogenStateType , only : soilbiogeochem_nitrogenstate_type
-  use CropType                        , only : crop_type
   use DUSTMod                         , only : dust_type
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
@@ -98,20 +90,7 @@ module clm_instMod
   type(topo_type)                         :: topo_inst
   class(soil_water_retention_curve_type) , allocatable :: soil_water_retention_curve
 
-  ! CN vegetation types
-
-  ! Soil biogeochem types 
-  type(soilbiogeochem_state_type)         :: soilbiogeochem_state_inst
-  type(soilbiogeochem_carbonstate_type)   :: soilbiogeochem_carbonstate_inst
-  type(soilbiogeochem_carbonstate_type)   :: c13_soilbiogeochem_carbonstate_inst
-  type(soilbiogeochem_carbonstate_type)   :: c14_soilbiogeochem_carbonstate_inst
-  type(soilbiogeochem_carbonflux_type)    :: soilbiogeochem_carbonflux_inst
-  type(soilbiogeochem_nitrogenstate_type) :: soilbiogeochem_nitrogenstate_inst
-  type(soilbiogeochem_nitrogenflux_type)  :: soilbiogeochem_nitrogenflux_inst
-
   ! General biogeochem types
-  type(ch4_type)                          :: ch4_inst
-  type(crop_type)                         :: crop_inst
   type(dust_type)                         :: dust_inst
 
   !
@@ -128,10 +107,8 @@ contains
     use clm_varpar                         , only : nlevsno, numpft
     use controlMod                         , only : nlfilename, fsurdat
     use domainMod                          , only : ldomain
-    use SoilBiogeochemDecompCascadeContype , only : init_decomp_cascade_constants
     use initVerticalMod                    , only : initVertical
     use accumulMod                         , only : print_accum_fields 
-    use SoilWaterRetentionCurveFactoryMod  , only : create_soil_water_retention_curve
     use decompMod                          , only : get_proc_bounds
     !
     ! !ARGUMENTS    

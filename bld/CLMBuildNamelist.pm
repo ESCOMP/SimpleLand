@@ -1556,7 +1556,6 @@ sub write_output_files {
   # CLM component
   my @groups = qw(clm_inparm 
                  lai_streams atm2lnd_inparm lnd2atm_inparm 
-                 cnvegcarbonstate
                  finidat_consistency_checks 
                  clm_initinterp_inparm 
                  soilwater_movement_inparm rooting_profile_inparm

@@ -92,7 +92,7 @@ module subgridWeightsMod
   use shr_kind_mod , only : r8 => shr_kind_r8
   use shr_log_mod  , only : errMsg => shr_log_errMsg
   use abortutils   , only : endrun
-  use clm_varctl   , only : iulog, all_active
+  use clm_varctl   , only : iulog
   use clm_varcon   , only : nameg, namel, namec, namep
   use decompMod    , only : bounds_type
   use GridcellType , only : grc                
@@ -310,10 +310,6 @@ contains
     integer :: g  ! grid cell index
     !------------------------------------------------------------------------
 
-    if (all_active) then
-       is_active_l = .true.
-
-    else
        g =lun%gridcell(l)
 
        is_active_l = .false.
@@ -355,8 +351,6 @@ contains
           is_active_l = .true.
        end if
 
-    end if
-
   end function is_active_l
 
   !-----------------------------------------------------------------------
@@ -378,10 +372,6 @@ contains
     integer :: g  ! grid cell index
     !------------------------------------------------------------------------
 
-    if (all_active) then
-       is_active_c = .true.
-
-    else
        l =col%landunit(c)
        g =col%gridcell(c)
 
@@ -411,7 +401,6 @@ contains
        if (lun%active(l) .and. (lun%itype(l) >= isturb_MIN .and. lun%itype(l) <= isturb_MAX)) then
           is_active_c = .true.
        end if
-    end if
 
   end function is_active_c
 
@@ -431,10 +420,6 @@ contains
     integer :: c  ! column index
     !------------------------------------------------------------------------
 
-    if (all_active) then
-       is_active_p = .true.
-
-    else
        c =patch%column(p)
     
        is_active_p = .false.
@@ -444,8 +429,6 @@ contains
        ! the requirements laid out at the top of this module:
        ! ------------------------------------------------------------------------
        if (col%active(c) .and. patch%wtcol(p) > 0._r8) is_active_p = .true.
-
-    end if
 
   end function is_active_p
 

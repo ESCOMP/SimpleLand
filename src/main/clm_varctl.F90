@@ -129,9 +129,6 @@ module clm_varctl
   ! Other subgrid logic
   !----------------------------------------------------------
 
-  ! true => make ALL patches, cols & landunits active (even if weight is 0)
-  logical, public :: all_active = .false.          
-
   !----------------------------------------------------------
   ! BGC logic and datasets
   !----------------------------------------------------------

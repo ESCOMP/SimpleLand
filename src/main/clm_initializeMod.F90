@@ -241,7 +241,6 @@ contains
     use restFileMod           , only : restFile_read, restFile_write 
     !use ndepStreamMod         , only : ndep_init, ndep_interp
     use LakeCon               , only : LakeConInit 
-    use SatellitePhenologyMod , only : SatellitePhenologyInit, readAnnualVegetation, interpMonthlyVeg
     use SnowSnicarMod         , only : SnowAge_init, SnowOptics_init
     use lnd2atmMod            , only : lnd2atm_minimal
     use controlMod            , only : NLFilename
@@ -354,8 +353,6 @@ contains
     ! ------------------------------------------------------------------------
     ! Initialize modules (after time-manager initialization in most cases)
     ! ------------------------------------------------------------------------
-
-    call SatellitePhenologyInit(bounds_proc)
 
     ! ------------------------------------------------------------------------
     ! On restart only - process the history namelist. 

@@ -19,15 +19,13 @@ module clm_driver
   use restFileMod            , only : restFile_write, restFile_filename
   use abortutils             , only : endrun
   !
-  use SoilBiogeochemVerticalProfileMod   , only : SoilBiogeochemVerticalProfile
   use ActiveLayerMod         , only : alt_calc
   !
   use perf_mod				! MML: this is where t_startf and t_stopf are 
   !
   use clm_instMod            , only : temperature_inst, canopystate_inst
-  use clm_instMod            , only : soilstate_inst, soilbiogeochem_state_inst
-  use clm_instMod            , only : atm2lnd_inst, lnd2atm_inst
   use clm_instMod            , only : soilstate_inst
+  use clm_instMod            , only : atm2lnd_inst, lnd2atm_inst
 
   ! MML: add use simple land model module
   use mml_mainMod			 , only : mml_main	! MML if I don't say "only", it'll be fine, yes?
@@ -103,7 +101,7 @@ contains
        call get_clump_bounds(nc, bounds_clump)
 
        ! BUG(wjs, 2014-12-15, bugz 2107) Because of the placement of the following
-       ! routines (alt_calc and SoilBiogeochemVerticalProfile) in the driver sequence -
+       ! routines (alt_calc ) in the driver sequence -
        ! they are called very early in each timestep, before weights are adjusted and
        ! filters are updated - it may be necessary for these routines to compute values
        ! over inactive as well as active points (since some inactive points may soon
@@ -171,14 +169,6 @@ contains
        !write(iulog,*)'MML: about to call htapes_wrapup, prepare to die, my name is inigio montoya... also wtf does it want the soilstate for? '
 
        ! MML workaround to try and avoid the soilstate leading to crashing - this is CLM's soil state, not SLIM's, so the values shouldn't be meaningful anyhow
-       !soilstate_inst%watsat_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
-       !soilstate_inst%sucsat_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
-       !soilstate_inst%bsw_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
-       !soilstate_inst%hksat_col(bounds_proc%begc:bounds_proc%endc, :) = 0.0_r8
-
-       !write(iulog,*)'MML: clobbered the soilstate_inst values, call hist_htapes_wrapup now'
-
-       !write(iulog,*)'MML: rstwr = ',rstwr,', nlend = ',nlend
 
        call hist_htapes_wrapup( rstwr, nlend, bounds_proc,                    &
             soilstate_inst%watsat_col(bounds_proc%begc:bounds_proc%endc, 1:), &

@@ -30,7 +30,7 @@ module controlMod
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
-  use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, all_active, co2_type
+  use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
   use clm_varctl                       , only: create_crop_landunit, glc_snow_persistence_max_days
@@ -172,8 +172,7 @@ contains
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
          create_crop_landunit, nsegspc, co2_ppmv, override_nsrest, &
-         albice, soil_layerstruct, subgridflag, &
-         all_active
+         albice, soil_layerstruct, subgridflag
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
 
@@ -418,9 +417,6 @@ contains
 	
     ! Landunit generation
     call mpi_bcast(create_crop_landunit, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    ! Other subgrid logic
-    call mpi_bcast(all_active, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     ! max number of plant functional types in naturally vegetated landunit
     call mpi_bcast(maxpatch_pft, 1, MPI_LOGICAL, 0, mpicom, ier)
