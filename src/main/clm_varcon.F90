@@ -14,7 +14,7 @@ module clm_varcon
                            SHR_CONST_PDB, SHR_CONST_PI, SHR_CONST_CDAY,       &
                            SHR_CONST_RGAS, SHR_CONST_PSTD,                    &
                            SHR_CONST_MWDAIR, SHR_CONST_MWWV
-  use clm_varpar   , only: numrad, nlevgrnd, nlevlak, nlevdecomp_full
+  use clm_varpar   , only: numrad, nlevgrnd, nlevlak
   use clm_varpar   , only: ngases
   use clm_varpar   , only: nlayer
   
@@ -216,7 +216,6 @@ module clm_varcon
   real(r8), allocatable :: zsoi(:)         !soil z  (layers)
   real(r8), allocatable :: dzsoi(:)        !soil dz (thickness)
   real(r8), allocatable :: zisoi(:)        !soil zi (interfaces)
-  real(r8), allocatable :: dzsoi_decomp(:) !soil dz (thickness)
   integer , allocatable :: nlvic(:)        !number of CLM layers in each VIC layer (#)
   real(r8), allocatable :: dzvic(:)        !soil dz (thickness) of each VIC layer
   real(r8) ,allocatable :: zsoifl(:)       !original soil midpoint (used in interpolation of sand and clay)
@@ -264,7 +263,7 @@ contains
     ! MUST be called  after clm_varpar_init.
     !
     ! !USES:
-    use clm_varpar, only: nlevgrnd, nlevlak, nlevdecomp_full, nlevsoifl, nlayer
+    use clm_varpar, only: nlevgrnd, nlevlak, nlevsoifl, nlayer
     !
     ! !ARGUMENTS:
     implicit none
@@ -279,7 +278,6 @@ contains
     allocate( zsoi(1:nlevgrnd                ))
     allocate( dzsoi(1:nlevgrnd               ))
     allocate( zisoi(0:nlevgrnd               ))
-    allocate( dzsoi_decomp(1:nlevdecomp_full ))
     allocate( nlvic(1:nlayer                 ))
     allocate( dzvic(1:nlayer                 ))
     allocate( zsoifl(1:nlevsoifl             ))

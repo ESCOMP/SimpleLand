@@ -25,19 +25,12 @@ module clm_varpar
                                               ! (includes lower layers that are hydrologically inactive)
   integer            :: nlevurb               ! number of urban layers
   integer            :: nlevlak               ! number of lake layers
-  integer            :: nlevdecomp            ! number of biogeochemically active soil layers
-  integer            :: nlevdecomp_full       ! number of biogeochemical layers 
                                               ! (includes lower layers that are biogeochemically inactive)
   integer            :: nlevsno     =  -1     ! maximum number of snow layers
   integer, parameter :: ngases      =   3     ! CH4, O2, & CO2
   integer, parameter :: nlevcan     =   1     ! number of leaf layers in canopy layer
-  integer, parameter :: nvegwcs     =   4     ! number of vegetation water conductance segments
   !ED variables
-  integer, parameter :: numwat      =   5     ! number of water types (soil, ice, 2 lakes, wetland)
   integer, parameter :: numrad      =   2     ! number of solar radiation bands: vis, nir
-  integer, parameter :: ivis        =   1     ! index for visible band
-  integer, parameter :: inir        =   2     ! index for near-infrared band
-  integer, parameter :: numsolar    =   2     ! number of solar type bands: direct, diffuse
   integer, parameter :: ndst        =   4     ! number of dust size classes (BGC only)
   integer, parameter :: dst_src_nbr =   3     ! number of size distns in src soil (BGC only)
   integer, parameter :: sz_nbr      = 200     ! number of sub-grid bins in large bin of dust size distribution (BGC only)
@@ -53,16 +46,6 @@ module clm_varpar
   integer :: maxpatch_urb= 5       ! max number of urban patches (columns) in urban landunit
 
   integer :: maxpatch_pft        ! max number of plant functional types in naturally vegetated landunit (namelist setting)
-
-  ! constants for decomposition cascade
-
-  integer, parameter :: i_met_lit  = 1
-  integer, parameter :: i_cel_lit  = i_met_lit + 1
-  integer, parameter :: i_lig_lit  = i_cel_lit + 1
-  integer            :: i_cwd
-
-  integer :: ndecomp_pools
-  integer :: ndecomp_cascade_transitions
 
   ! Indices used in surface file read and set in clm_varpar_init
 
@@ -147,25 +130,15 @@ contains
     endif
     if ( masterproc ) write(iulog, *) 'soil_layerstruct varpar ',soil_layerstruct,nlevsoi,nlevgrnd
 
-    ! here is a switch to set the number of soil levels for the biogeochemistry calculations.
-    ! currently it works on either a single level or on nlevsoi and nlevgrnd levels
-    nlevdecomp      = 1
-    nlevdecomp_full = 1
     nlevlak     =  10     ! number of lake layers
 
     if ( masterproc )then
        write(iulog, *) 'CLM varpar subsurface discretization levels '
        write(iulog, '(a, i3)') '    nlevsoi = ', nlevsoi
        write(iulog, '(a, i3)') '    nlevgrnd = ', nlevgrnd
-       write(iulog, '(a, i3)') '    nlevdecomp = ', nlevdecomp
-       write(iulog, '(a, i3)') '    nlevdecomp_full = ', nlevdecomp_full
        write(iulog, '(a, i3)') '    nlevlak = ', nlevlak
        write(iulog, *)
     end if
-
-    i_cwd = 4
-    ndecomp_pools = 8
-    ndecomp_cascade_transitions = 9
 
   end subroutine clm_varpar_init
 

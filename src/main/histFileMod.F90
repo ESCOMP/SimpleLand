@@ -13,7 +13,7 @@ module histFileMod
   use spmdMod        , only : masterproc
   use abortutils     , only : endrun
   use clm_varctl     , only : iulog
-  use clm_varcon     , only : spval, ispval, dzsoi_decomp 
+  use clm_varcon     , only : spval, ispval
   use clm_varcon     , only : grlnd, nameg, namel, namec, namep, nameCohort
   use decompMod      , only : get_proc_bounds, get_proc_global, bounds_type
   use GridcellType   , only : grc                
@@ -107,7 +107,6 @@ module histFileMod
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: hist_addfld1d        ! Add a 1d single-level field to the master field list
   public :: hist_addfld2d        ! Add a 2d multi-level field to the master field list
-  public :: hist_addfld_decomp   ! Add a 2d multi-level field to the master field list
   public :: hist_add_subscript   ! Add a 2d subscript dimension
   public :: hist_printflds       ! Print summary of master field list
   public :: hist_htapes_build    ! Initialize history file handler for initial or continue run
@@ -1851,7 +1850,7 @@ contains
     !
     ! !USES:
     use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, nlevurb, numrad, nlevcan, nlevsoi
-    use clm_varpar      , only : natpft_size, cft_size, maxpatch_glcmec, nlevdecomp_full
+    use clm_varpar      , only : natpft_size, maxpatch_glcmec
     use landunit_varcon , only : max_lunit
     use clm_varctl      , only : caseid, ctitle, fsurdat, finidat, paramfile
     use clm_varctl      , only : version, hostname, username, conventions, source
@@ -2015,7 +2014,6 @@ contains
     end do
     call ncd_defdim(lnfid, 'string_length', hist_dim_name_length, strlen_dimid)
     call ncd_defdim(lnfid, 'scale_type_string_length', scale_type_strlen, dimid)
-    call ncd_defdim( lnfid, 'levdcmp', nlevdecomp_full, dimid)
     ! MML: adding a mml soiz dimension:
     call ncd_defdim(lnfid, 'mml_lev', 10, dimid); ! hard-coded for 10 soil layers; make more clever.
     call ncd_defdim(lnfid, 'mml_dust', 4, dimid); ! hard-coded for 4 dust bins
@@ -2450,8 +2448,6 @@ contains
           call ncd_defvar(varname='levlak', xtype=tape(t)%ncprec, &
                dim1name='levlak', &
                long_name='coordinate lake levels', units='m', ncid=nfid(t))
-          call ncd_defvar(varname='levdcmp', xtype=tape(t)%ncprec, dim1name='levdcmp', &
-               long_name='coordinate soil levels', units='m', ncid=nfid(t))
 
       	  ! Add MML soil layers
           call ncd_defvar(varname='mml_lev', xtype=tape(t)%ncprec, dim1name='mml_lev', &
@@ -2465,7 +2461,6 @@ contains
           call ncd_io(varname='levgrnd', data=zsoi, ncid=nfid(t), flag='write')
           call ncd_io(varname='levlak' , data=zlak, ncid=nfid(t), flag='write')
           zsoi_1d(1) = 1._r8
-          call ncd_io(varname='levdcmp', data=zsoi_1d, ncid=nfid(t), flag='write')
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')
           
@@ -3415,7 +3410,7 @@ contains
     use clm_varctl      , only : nsrest, caseid, inst_suffix, nsrStartup, nsrBranch
     use fileutils       , only : getfil
     use domainMod       , only : ldomain
-    use clm_varpar      , only : nlevgrnd, nlevlak, numrad, nlevdecomp_full
+    use clm_varpar      , only : nlevgrnd, nlevlak, numrad
     use clm_time_manager, only : is_restart
     use restUtilMod     , only : iflag_skip
     use pio
@@ -4541,7 +4536,7 @@ contains
     ! initial or branch run to initialize the actual history tapes.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevdecomp_full, nlevcan, nlevsoi
+    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevcan, nlevsoi
     use clm_varpar      , only : natpft_size, cft_size, maxpatch_glcmec
     use landunit_varcon , only : max_lunit
     !
@@ -4621,8 +4616,6 @@ contains
        num2d = nlevlak
     case ('numrad')
        num2d = numrad
-    case ('levdcmp')
-       num2d = nlevdecomp_full
     case ('ltype')
        num2d = max_lunit
     case ('natpft')
@@ -4653,7 +4646,7 @@ contains
     case default
        write(iulog,*) trim(subname),' ERROR: unsupported 2d type ',type2d, &
           ' currently supported types for multi level fields are: ', &
-          '[levgrnd,levsoi,levlak,numrad,levdcmp,levtrc,ltype,natpft,cft,glc_nec,elevclas,levsno]'
+          '[levgrnd,levsoi,levlak,numrad,levtrc,ltype,natpft,cft,glc_nec,elevclas,levsno]'
        call endrun(msg=errMsg(sourcefile, __LINE__))
     end select
 
@@ -4808,94 +4801,6 @@ contains
     end if
 
   end subroutine hist_addfld2d
-
-  !-----------------------------------------------------------------------
-  subroutine hist_addfld_decomp (fname, type2d, units, avgflag, long_name, ptr_col, &
-       ptr_patch, l2g_scale_type, default)
-
-    !
-    ! !USES:
-    use clm_varpar  , only : nlevdecomp_full
-    use clm_varctl  , only : iulog
-    use abortutils  , only : endrun
-    use shr_log_mod , only : errMsg => shr_log_errMsg
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: fname                    ! field name
-    character(len=*), intent(in) :: type2d                   ! 2d output type
-    character(len=*), intent(in) :: units                    ! units of field
-    character(len=*), intent(in) :: avgflag                  ! time averaging flag
-    character(len=*), intent(in) :: long_name                ! long name of field
-    real(r8)        , optional, pointer    :: ptr_col(:,:)   ! pointer to column array
-    real(r8)        , optional, pointer    :: ptr_patch(:,:)   ! pointer to patch array
-    character(len=*), optional, intent(in) :: l2g_scale_type ! scale type for subgrid averaging of landunits to gridcells
-    character(len=*), optional, intent(in) :: default        ! if set to 'inactive, field will not appear on primary tape
-    !
-    ! !LOCAL VARIABLES:
-    real(r8), pointer  :: ptr_1d(:)
-    !-----------------------------------------------------------------------
-
-    if (present(ptr_col)) then
-
-       ! column-level data
-       if (present(default)) then
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_col, l2g_scale_type=l2g_scale_type, default=default)
-          else
-             ptr_1d => ptr_col(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_1d, l2g_scale_type=l2g_scale_type, default=default)
-          endif
-       else
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_col, l2g_scale_type=l2g_scale_type)
-          else
-             ptr_1d => ptr_col(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_1d, l2g_scale_type=l2g_scale_type)
-          endif
-       endif
-
-    else if (present(ptr_patch)) then
-
-       ! patch-level data
-       if (present(default)) then
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_patch, l2g_scale_type=l2g_scale_type, default=default)
-          else
-             ptr_1d => ptr_patch(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_1d, l2g_scale_type=l2g_scale_type, default=default)
-          endif
-       else
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_patch, l2g_scale_type=l2g_scale_type)
-          else
-             ptr_1d => ptr_patch(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_1d, l2g_scale_type=l2g_scale_type)
-          endif
-       endif
-
-    else
-       write(iulog, *) ' error: hist_addfld_decomp needs either patch or column level pointer'
-       write(iulog, *) fname
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-
-  end subroutine hist_addfld_decomp
 
   !-----------------------------------------------------------------------
   integer function pointer_index ()

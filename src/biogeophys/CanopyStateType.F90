@@ -8,7 +8,7 @@ module CanopyStateType
   use abortutils      , only : endrun
   use decompMod       , only : bounds_type
   use landunit_varcon , only : istsoil, istcrop
-  use clm_varpar      , only : nlevcan, nvegwcs
+  use clm_varpar      , only : nlevcan
   use clm_varcon      , only : spval  
   use clm_varctl      , only : iulog
   use LandunitType    , only : lun                
@@ -53,7 +53,6 @@ module CanopyStateType
      real(r8) , pointer :: dewmx_patch              (:)   ! patch maximum allowed dew [mm] 
      real(r8) , pointer :: dleaf_patch              (:)   ! patch characteristic leaf width (diameter) [m]
                                                           ! same as pftcon%dleaf()
-     real(r8) , pointer :: vegwp_patch              (:,:) ! patch vegetation water matric potential (mm)
 
    contains
 
@@ -134,7 +133,6 @@ contains
 
     allocate(this%dewmx_patch              (begp:endp))           ; this%dewmx_patch              (:)   = nan
     allocate(this%dleaf_patch              (begp:endp))           ; this%dleaf_patch              (:)   = nan
-    allocate(this%vegwp_patch              (begp:endp,1:nvegwcs)) ; this%vegwp_patch              (:,:) = nan
 
   end subroutine InitAllocate
 
@@ -383,7 +381,6 @@ contains
        this%htop_patch(p)       = 0._r8
        this%hbot_patch(p)       = 0._r8
        this%dewmx_patch(p)      = 0.1_r8
-       this%vegwp_patch(p,:)    = -2.5e4_r8
 
        if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
           this%laisun_patch(p) = 0._r8

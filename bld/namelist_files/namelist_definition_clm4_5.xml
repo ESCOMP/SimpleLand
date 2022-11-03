@@ -1096,24 +1096,6 @@ E-folding depth over which decomposition is slowed with depth in all soils.
 separate q10 for frozen soil respiration rates.  default to same as above zero rates
 </entry>
 
-<!-- rooting parameters    -->
-
-<!-- General CN flags -->
-<entry id="reseed_dead_plants" type="logical" category="clm_physics"
-       group="cn_general" valid_values="" >
-Flag to reseed any dead plants on startup from reading the initial conditions file
-</entry>
-
-
-<!-- permfrost-specific flags    -->
-
-<!-- stress deciduous onset trigger    -->
-<entry id="constrain_stress_deciduous_onset" type="logical" category="clm_physics"
-       group="bgc_shared" valid_values="" >
-If TRUE use additional stress deciduous onset trigger
-</entry>
-
-
 <!-- ========================================================================================  -->
 <!-- namelist elements associated with the Hydrology1Mod                                       -->
 <!-- ========================================================================================  -->

@@ -17,7 +17,7 @@ module initVerticalMod
   use clm_varpar        , only : nlevsoi, nlevsoifl, nlevurb 
   use clm_varctl        , only : fsurdat, iulog
   use clm_varctl        , only : soil_layerstruct
-  use clm_varcon        , only : zlak, dzlak, zsoi, dzsoi, zisoi, dzsoi_decomp, spval, ispval, grlnd 
+  use clm_varcon        , only : zlak, dzlak, zsoi, dzsoi, zisoi, spval, ispval, grlnd 
   use column_varcon     , only : icol_roof, icol_sunwall, icol_shadewall, is_hydrologically_active
   use landunit_varcon   , only : istdlak, istice_mec
   use fileutils         , only : getfil
@@ -220,13 +220,10 @@ contains
        enddo
     end if
 
-    dzsoi_decomp(1) = 1.
-
     if (masterproc) then
        write(iulog, *) 'zsoi', zsoi(:) 
        write(iulog, *) 'zisoi: ', zisoi(:)
        write(iulog, *) 'dzsoi: ', dzsoi(:)
-       write(iulog, *) 'dzsoi_decomp: ',dzsoi_decomp
     end if
 
     if (nlevurb > 0) then

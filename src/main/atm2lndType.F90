@@ -888,7 +888,7 @@ contains
     ! !USES:
     ! use histFileMod, only : hist_addfld1d 
     ! MML:
-    use histFileMod, only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp
+    use histFileMod, only : hist_addfld1d, hist_addfld2d
     !
     ! !ARGUMENTS:
     class(atm2lnd_type) :: this
@@ -1366,11 +1366,6 @@ contains
     ! Soil variables
 ! start 2d
   
-    ! 2d example from SoilBiogeochemCarbonStateType.F90
-    !call hist_addfld2d (fname=fieldname, units='gC/m^3',  type2d='levdcmp', &
-    !              avgflag='A', long_name=longname, &
-    !              ptr_col=data2dptr)
-    
     ! I wanted to add an mml case to the type2d, but for now change it back, since its crashing
  
  	!write(iulog,*)  'MML write to h0: 2d soil vars '

@@ -1364,9 +1364,6 @@ sub setup_logic_initial_conditions {
 sub setup_logic_bgc_shared {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
-  if ( $nl_flags->{'bgc_mode'} ne "sp" ) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'constrain_stress_deciduous_onset', 'phys'=>$physv->as_string() );
-  }
 }
 
 #-------------------------------------------------------------------------------

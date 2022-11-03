@@ -7,7 +7,6 @@ module clm_instMod
   ! !USES:
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use decompMod       , only : bounds_type
-  use clm_varpar      , only : ndecomp_pools, nlevdecomp_full
   use clm_varcon      , only : bdsno
   use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
