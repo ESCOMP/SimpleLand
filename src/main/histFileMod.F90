@@ -2190,15 +2190,15 @@ contains
     !
     real(r8), pointer :: histi(:,:)       ! temporary
     real(r8), pointer :: histo(:,:)       ! temporary
-    integer, parameter :: nflds = 6       ! Number of 3D time-constant fields
+    integer, parameter :: nflds = 2       ! Number of 3D time-constant fields
     character(len=*),parameter :: subname = 'htape_timeconst3D'
     character(len=*),parameter :: varnames(nflds) = (/ &
                                                         'ZSOI  ', &
-                                                        'DZSOI ', &
-                                                        'WATSAT', &
-                                                        'SUCSAT', &
-                                                        'BSW   ', &
-                                                        'HKSAT '  &
+                                                        'DZSOI '  &
+!                                                       'WATSAT', &
+!                                                       'SUCSAT', &
+!                                                       'BSW   ', &
+!                                                       'HKSAT '  &
                                                     /)
     real(r8), pointer :: histil(:,:)      ! temporary
     real(r8), pointer :: histol(:,:)
@@ -2228,14 +2228,14 @@ contains
              long_name='soil depth'; units = 'm'
           else if (ifld == 2) then
              long_name='soil thickness'; units = 'm'
-          else if (ifld == 3) then
-             long_name='saturated soil water content (porosity)';  units = 'mm3/mm3'
-          else if (ifld == 4) then
-             long_name='saturated soil matric potential'; units = 'mm'
-          else if (ifld == 5) then
-             long_name='slope of soil water retention curve'; units = 'unitless'
-          else if (ifld == 6) then
-             long_name='saturated hydraulic conductivity'; units = 'mm s-1'
+!         else if (ifld == 3) then
+!            long_name='saturated soil water content (porosity)';  units = 'mm3/mm3'
+!         else if (ifld == 4) then
+!            long_name='saturated soil matric potential'; units = 'mm'
+!         else if (ifld == 5) then
+!            long_name='slope of soil water retention curve'; units = 'unitless'
+!         else if (ifld == 6) then
+!            long_name='saturated hydraulic conductivity'; units = 'mm s-1'
           else
              call endrun(msg=' ERROR: bad 3D time-constant field index'//errMsg(sourcefile, __LINE__))
           end if
@@ -2291,14 +2291,14 @@ contains
              l2g_scale_type = 'nonurb'
           else if (ifld == 2) then  ! DZSOI
              l2g_scale_type = 'nonurb'
-          else if (ifld == 3) then  ! WATSAT
-             l2g_scale_type = 'veg'
-          else if (ifld == 4) then  ! SUCSAT
-             l2g_scale_type = 'veg'
-          else if (ifld == 5) then  ! BSW
-             l2g_scale_type = 'veg'
-          else if (ifld == 6) then  ! HKSAT
-             l2g_scale_type = 'veg'
+!         else if (ifld == 3) then  ! WATSAT
+!            l2g_scale_type = 'veg'
+!         else if (ifld == 4) then  ! SUCSAT
+!            l2g_scale_type = 'veg'
+!         else if (ifld == 5) then  ! BSW
+!            l2g_scale_type = 'veg'
+!         else if (ifld == 6) then  ! HKSAT
+!            l2g_scale_type = 'veg'
           end if
 
           histi(:,:) = spval
@@ -2308,10 +2308,10 @@ contains
                    ! Field indices MUST match varnames array order above!
                    if (ifld ==1) histi(c,lev) = col%z(c,lev)
                    if (ifld ==2) histi(c,lev) = col%dz(c,lev)
-                   if (ifld ==3) histi(c,lev) = watsat_col(c,lev)
-                   if (ifld ==4) histi(c,lev) = sucsat_col(c,lev)
-                   if (ifld ==5) histi(c,lev) = bsw_col(c,lev)
-                   if (ifld ==6) histi(c,lev) = hksat_col(c,lev)
+!                  if (ifld ==3) histi(c,lev) = watsat_col(c,lev)
+!                  if (ifld ==4) histi(c,lev) = sucsat_col(c,lev)
+!                  if (ifld ==5) histi(c,lev) = bsw_col(c,lev)
+!                  if (ifld ==6) histi(c,lev) = hksat_col(c,lev)
              end do
           end do
           if (tape(t)%dov2xy) then

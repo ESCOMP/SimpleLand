@@ -44,7 +44,6 @@ contains
     use landunit_varcon , only : istwet, istsoil, istdlak, istcrop, istice_mec
     use column_varcon   , only : icol_shadewall, icol_road_perv, icol_road_imperv, icol_roof, icol_sunwall
     use fileutils       , only : getfil
-    use organicFileMod  , only : organicrd 
     use ncdio_pio       , only : file_desc_t, ncd_io, ncd_pio_openfile, ncd_pio_closefile
     !
     ! !ARGUMENTS:

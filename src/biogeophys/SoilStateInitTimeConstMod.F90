@@ -103,7 +103,6 @@ contains
     use landunit_varcon     , only : istdlak, istwet, istsoil, istcrop, istice_mec
     use column_varcon       , only : icol_roof, icol_sunwall, icol_shadewall, icol_road_perv, icol_road_imperv 
     use fileutils           , only : getfil
-    use organicFileMod      , only : organicrd 
     use FuncPedotransferMod , only : pedotransf, get_ipedof
     use GridcellType     , only : grc                
     !
@@ -148,7 +147,6 @@ contains
     real(r8) ,pointer  :: gti (:)                       ! read in - fmax 
     real(r8) ,pointer  :: sand3d (:,:)                  ! read in - soil texture: percent sand (needs to be a pointer for use in ncdio)
     real(r8) ,pointer  :: clay3d (:,:)                  ! read in - soil texture: percent clay (needs to be a pointer for use in ncdio)
-    real(r8) ,pointer  :: organic3d (:,:)               ! read in - organic matter: kg/m3 (needs to be a pointer for use in ncdio)
     character(len=256) :: locfn                         ! local filename
     integer            :: ipedof  
     integer            :: begp, endp
@@ -231,11 +229,6 @@ contains
 
     call getfil (fsurdat, locfn, 0)
     call ncd_pio_openfile (ncid, locfn, 0)
-
-    ! Read in organic matter dataset 
-
-    allocate(organic3d(begg:endg,nlevsoifl))
-    call organicrd(organic3d)
 
     ! Read in sand and clay data
 
@@ -380,13 +373,13 @@ contains
                 if (lev .eq. 1) then
                    clay = clay3d(g,1)
                    sand = sand3d(g,1)
-                   om_frac = organic3d(g,1)/organic_max 
+                   om_frac = 0._r8
                 else if (lev <= nlevsoi) then
                    do j = 1,nlevsoifl-1
                       if (zisoi(lev) >= zisoifl(j) .AND. zisoi(lev) < zisoifl(j+1)) then
                          clay = clay3d(g,j+1)
                          sand = sand3d(g,j+1)
-                         om_frac = organic3d(g,j+1)/organic_max    
+                         om_frac = 0._r8
                       endif
                    end do
                 else
@@ -399,9 +392,9 @@ contains
                    clay = clay3d(g,lev)
                    sand = sand3d(g,lev)
                    if ( organic_frac_squared )then
-                      om_frac = (organic3d(g,lev)/organic_max)**2._r8
+                      om_frac = 0._r8
                    else
-                      om_frac = organic3d(g,lev)/organic_max
+                      om_frac = 0._r8
                    end if
                 else
                    clay = clay3d(g,nlevsoi)
@@ -609,7 +602,7 @@ contains
     ! Deallocate memory
     ! --------------------------------------------------------------------
 
-    deallocate(sand3d, clay3d, organic3d)
+    deallocate(sand3d, clay3d)
     deallocate(zisoifl, zsoifl, dzsoifl)
 
   end subroutine SoilStateInitTimeConst
