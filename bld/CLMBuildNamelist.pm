@@ -1151,7 +1151,6 @@ sub error_if_set {
 sub setup_logic_soilstate {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
- add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'organic_frac_squared' );
  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'soil_layerstruct' );
 }
 

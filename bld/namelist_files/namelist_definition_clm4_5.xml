@@ -92,12 +92,6 @@ over-productive.
 If TRUE, separate the vegetated landunit into a crop landunit and a natural vegetation landunit
 </entry>
 
-<entry id="organic_frac_squared" type="logical" category="clm_physics"
-       group="clm_soilstate_inparm" valid_values="" >
-If TRUE, square the organic fraction when it's used (as was done in CLM4.5)
-Otherwise use the fraction straight up              (the default for CLM5.0)
-</entry>
-
 <entry id="soil_layerstruct" type="char*16" category="clm_physics"
        group="clm_inparm" valid_values="10SL_3.5m,23SL_3.5m,49SL_10m,20SL_8.5m" >
 10SL_3.5m    = standard CLM4 and CLM4.5 version

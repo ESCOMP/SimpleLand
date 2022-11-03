@@ -16,72 +16,14 @@ module SoilStateInitTimeConstMod
   ! !PUBLIC MEMBER FUNCTIONS:
   public  :: SoilStateInitTimeConst
   !
-  ! !PRIVATE MEMBER FUNCTIONS:
-  private :: ReadNL
-  !
   ! !PRIVATE DATA:
   ! Control variables (from namelist)
-  logical, private :: organic_frac_squared ! If organic fraction should be squared (as in CLM4.5)
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
   !-----------------------------------------------------------------------
   !
 contains
-
-  !-----------------------------------------------------------------------
-  subroutine ReadNL( nlfilename )
-    !
-    ! !DESCRIPTION:
-    ! Read namelist for SoilStateType
-    !
-    ! !USES:
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    use shr_log_mod    , only : errMsg => shr_log_errMsg
-    use fileutils      , only : getavu, relavu, opnfil
-    use clm_nlUtilsMod , only : find_nlgroup_name
-    use clm_varctl     , only : iulog
-    use spmdMod        , only : mpicom, masterproc
-    use abortUtils     , only : endrun    
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: nlfilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-    character(len=32) :: subname = 'SoilState_readnl'  ! subroutine name
-    !-----------------------------------------------------------------------
-
-    character(len=*), parameter :: nl_name  = 'clm_soilstate_inparm'  ! Namelist name
-                                                                      ! MUST agree with name in namelist and read
-    namelist / clm_soilstate_inparm / organic_frac_squared
-
-    ! preset values
-
-    organic_frac_squared = .false.
-
-    if ( masterproc )then
-
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nl_name//' namelist'
-       call opnfil (nlfilename, unitn, 'F')
-       call find_nlgroup_name(unitn, nl_name, status=ierr)
-       if (ierr == 0) then
-          read(unit=unitn, nml=clm_soilstate_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading '//nl_name//' namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR finding '//nl_name//' namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-
-    end if
-
-    call shr_mpi_bcast(organic_frac_squared, mpicom)
-
-  end subroutine ReadNL
 
   !-----------------------------------------------------------------------
   subroutine SoilStateInitTimeConst(bounds, soilstate_inst, nlfilename) 
@@ -159,12 +101,6 @@ contains
     do c = begc,endc
        soilstate_inst%smpmin_col(c) = -1.e8_r8
     end do
-
-    ! --------------------------------------------------------------------
-    ! Read namelist
-    ! --------------------------------------------------------------------
-
-    call ReadNL( nlfilename )
 
     ! --------------------------------------------------------------------
     ! Initialize root fraction (computing from surface, d is depth in meter):
@@ -389,11 +325,7 @@ contains
                 if (lev <= nlevsoi) then ! duplicate clay and sand values from 10th soil layer
                    clay = clay3d(g,lev)
                    sand = sand3d(g,lev)
-                   if ( organic_frac_squared )then
-                      om_frac = 0._r8
-                   else
-                      om_frac = 0._r8
-                   end if
+                   om_frac = 0._r8
                 else
                    clay = clay3d(g,nlevsoi)
                    sand = sand3d(g,nlevsoi)
@@ -510,11 +442,7 @@ contains
              if ( lev <= nlevsoi )then
                 clay    =  soilstate_inst%cellclay_col(c,lev)
                 sand    =  soilstate_inst%cellsand_col(c,lev)
-                if ( organic_frac_squared )then
-                   om_frac = (soilstate_inst%cellorg_col(c,lev)/organic_max)**2._r8
-                else
-                   om_frac = soilstate_inst%cellorg_col(c,lev)/organic_max
-                end if
+                om_frac =  0._r8
              else
                 clay    = soilstate_inst%cellclay_col(c,nlevsoi)
                 sand    = soilstate_inst%cellsand_col(c,nlevsoi)
