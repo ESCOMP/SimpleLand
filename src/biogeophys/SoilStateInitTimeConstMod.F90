@@ -103,7 +103,6 @@ contains
     use landunit_varcon     , only : istdlak, istwet, istsoil, istcrop, istice_mec
     use column_varcon       , only : icol_roof, icol_sunwall, icol_shadewall, icol_road_perv, icol_road_imperv 
     use fileutils           , only : getfil
-    use FuncPedotransferMod , only : pedotransf, get_ipedof
     use GridcellType     , only : grc                
     !
     ! !ARGUMENTS:
@@ -148,7 +147,6 @@ contains
     real(r8) ,pointer  :: sand3d (:,:)                  ! read in - soil texture: percent sand (needs to be a pointer for use in ncdio)
     real(r8) ,pointer  :: clay3d (:,:)                  ! read in - soil texture: percent clay (needs to be a pointer for use in ncdio)
     character(len=256) :: locfn                         ! local filename
-    integer            :: ipedof  
     integer            :: begp, endp
     integer            :: begc, endc
     integer            :: begg, endg
@@ -423,16 +421,11 @@ contains
                    soilstate_inst%cellorg_col(c,lev)  = om_frac*organic_max
                 end if
 
-                ! Note that the following properties are overwritten for urban impervious road 
-                ! layers that are not soil in SoilThermProp.F90 within SoilTemperatureMod.F90
-
-                !determine the type of pedotransfer function to be used based on soil order
-                !I will use the following implementation to further explore the ET problem, now
-                !I set soil order to 0 for all soils. Jinyun Tang, Mar 20, 2014
-
-                ipedof=get_ipedof(0)
-                call pedotransf(ipedof, sand, clay, &
-                     soilstate_inst%watsat_col(c,lev), soilstate_inst%bsw_col(c,lev), soilstate_inst%sucsat_col(c,lev), xksat)
+                ! TODO slevis: Temporary during dismantling for SLIM
+                soilstate_inst%watsat_col(c,lev) = 1._r8
+                soilstate_inst%bsw_col(c,lev) = 1._r8
+                soilstate_inst%sucsat_col(c,lev) = 1._r8
+                xksat = 1._r8
 
                 om_watsat         = max(0.93_r8 - 0.1_r8   *(zsoi(lev)/zsapric), 0.83_r8)
                 om_b              = min(2.7_r8  + 9.3_r8   *(zsoi(lev)/zsapric), 12.0_r8)
