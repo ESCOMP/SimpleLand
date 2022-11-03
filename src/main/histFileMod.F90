@@ -125,8 +125,6 @@ module histFileMod
   private :: htape_create              ! Define contents of history file t
   private :: htape_add_ltype_metadata  ! Add global metadata defining landunit types
   private :: htape_add_ctype_metadata  ! Add global metadata defining column types
-  private :: htape_add_natpft_metadata ! Add global metadata defining natpft types
-  private :: htape_add_cft_metadata    ! Add global metadata defining cft types
   private :: htape_timeconst           ! Write time constant values to history tape
   private :: htape_timeconst3D         ! Write time constant 3D values to primary history tape
   private :: hfields_normalize         ! Normalize history file fields by number of accumulations
@@ -2007,10 +2005,6 @@ contains
     call htape_add_ltype_metadata(lnfid)
     call htape_add_ctype_metadata(lnfid)
     call ncd_defdim(lnfid, 'natpft', natpft_size, dimid)
-    if (cft_size > 0) then
-       call ncd_defdim(lnfid, 'cft', cft_size, dimid)
-       call htape_add_cft_metadata(lnfid)
-    end if
     call ncd_defdim(lnfid, 'glc_nec' , maxpatch_glcmec , dimid)
     ! elevclas (in contrast to glc_nec) includes elevation class 0 (bare land)
     ! (although on the history file it will go 1:(nec+1) rather than 0:nec)
@@ -2093,66 +2087,6 @@ contains
     call write_coltype_metadata(att_prefix, lnfid)
 
   end subroutine htape_add_ctype_metadata
-
-  !-----------------------------------------------------------------------
-  subroutine htape_add_natpft_metadata(lnfid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining natpft types
-    !
-    ! !USES:
-    use clm_varpar, only : natpft_lb, natpft_ub
-    use pftconMod , only : pftname_len, pftname
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: lnfid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ptype  ! patch type
-    integer :: ptype_1_indexing ! patch type, translated to 1 indexing
-    character(len=*), parameter :: att_prefix = 'natpft_' ! prefix for attributes
-    character(len=len(att_prefix)+pftname_len) :: attname ! attribute name
-
-    character(len=*), parameter :: subname = 'htape_add_natpft_metadata'
-    !-----------------------------------------------------------------------
-    
-    do ptype = natpft_lb, natpft_ub
-       ptype_1_indexing = ptype + (1 - natpft_lb)
-       attname = att_prefix // pftname(ptype)
-       call ncd_putatt(lnfid, ncd_global, attname, ptype_1_indexing)
-    end do
-
-  end subroutine htape_add_natpft_metadata
-
-  !-----------------------------------------------------------------------
-  subroutine htape_add_cft_metadata(lnfid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining natpft types
-    !
-    ! !USES:
-    use clm_varpar, only : cft_lb, cft_ub
-    use pftconMod , only : pftname_len, pftname
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: lnfid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ptype  ! patch type
-    integer :: ptype_1_indexing ! patch type, translated to 1 indexing
-    character(len=*), parameter :: att_prefix = 'cft_'    ! prefix for attributes
-    character(len=len(att_prefix)+pftname_len) :: attname ! attribute name
-
-    character(len=*), parameter :: subname = 'htape_add_cft_metadata'
-    !-----------------------------------------------------------------------
-    
-    do ptype = cft_lb, cft_ub
-       ptype_1_indexing = ptype + (1 - cft_lb)
-       attname = att_prefix // pftname(ptype)
-       call ncd_putatt(lnfid, ncd_global, attname, ptype_1_indexing)
-    end do
-
-  end subroutine htape_add_cft_metadata
 
   !-----------------------------------------------------------------------
   subroutine htape_timeconst3D(t, &

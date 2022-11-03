@@ -47,7 +47,6 @@ module restFileMod
   private :: restFile_add_flag_metadata ! Add global metadata for some logical flag
   private :: restFile_add_ilun_metadata ! Add global metadata defining landunit types
   private :: restFile_add_icol_metadata ! Add global metadata defining column types
-  private :: restFile_add_ipft_metadata ! Add global metadata defining patch types
   private :: restFile_dimcheck
   private :: restFile_enddef
   private :: restFile_check_consistency   ! Perform consistency checks on the restart file
@@ -556,7 +555,6 @@ contains
     ! hard-coded .true. value.
     call restFile_add_flag_metadata(ncid, .true., 'created_glacier_mec_landunits')
 
-    call restFile_add_ipft_metadata(ncid)
     call restFile_add_icol_metadata(ncid)
     call restFile_add_ilun_metadata(ncid)
 
@@ -637,37 +635,6 @@ contains
     call write_coltype_metadata(att_prefix, ncid)
 
   end subroutine restFile_add_icol_metadata
-
-  !-----------------------------------------------------------------------
-  subroutine restFile_add_ipft_metadata(ncid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining patch types
-    !
-    ! !USES:
-    use clm_varpar, only : natpft_lb, mxpft, cft_lb, cft_ub
-    use pftconMod , only : pftname_len, pftname
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: ncid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ptype  ! patch type
-    character(len=*), parameter :: att_prefix = 'ipft_'   ! prefix for attributes
-    character(len=len(att_prefix)+pftname_len) :: attname ! attribute name
-
-    character(len=*), parameter :: subname = 'restFile_add_ipft_metadata'
-    !-----------------------------------------------------------------------
-    
-    do ptype = natpft_lb, mxpft
-       attname = att_prefix // pftname(ptype)
-       call ncd_putatt(ncid, ncd_global, attname, ptype)
-    end do
-
-    call ncd_putatt(ncid, ncd_global, 'cft_lb', cft_lb)
-    call ncd_putatt(ncid, ncd_global, 'cft_ub', cft_ub)
-
-  end subroutine restFile_add_ipft_metadata
 
   !-----------------------------------------------------------------------
   subroutine restFile_dimcheck( ncid )

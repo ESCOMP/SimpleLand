@@ -269,7 +269,6 @@ contains
     use clm_instur      , only : wt_lunit
     use landunit_varcon , only : istwet, istdlak
     use subgridMod      , only : subgrid_get_info_wetland, subgrid_get_info_lake
-    use pftconMod       , only : noveg
 
     !
     ! !ARGUMENTS:
@@ -316,7 +315,7 @@ contains
        
        call add_landunit(li=li, gi=gi, ltype=ltype, wtgcell=wtlunit2gcell)
        call add_column(ci=ci, li=li, ctype=ltype, wtlunit=1.0_r8)
-       call add_patch(pi=pi, ci=ci, ptype=noveg, wtcol=1.0_r8)
+       call add_patch(pi=pi, ci=ci, ptype=0, wtcol=1.0_r8)
 
     endif       ! npatches > 0       
 
@@ -334,7 +333,6 @@ contains
     use landunit_varcon , only : istice_mec
     use column_varcon   , only : icemec_class_to_col_itype
     use subgridMod      , only : subgrid_get_info_glacier_mec
-    use pftconMod       , only : noveg
     !
     ! !ARGUMENTS:
     type(glc_behavior_type), intent(in) :: glc_behavior
@@ -388,7 +386,7 @@ contains
           if (col_exists) then
              call add_column(ci=ci, li=li, ctype=icemec_class_to_col_itype(m), &
                   wtlunit=wtcol2lunit, type_is_dynamic=type_is_dynamic)
-             call add_patch(pi=pi, ci=ci, ptype=noveg, wtcol=1.0_r8)
+             call add_patch(pi=pi, ci=ci, ptype=0, wtcol=1.0_r8)
           endif
        enddo
 
@@ -486,7 +484,6 @@ contains
     use subgridMod      , only : subgrid_get_info_urban_md
     use UrbanParamsType , only : urbinp
     use decompMod       , only : ldecomp
-    use pftconMod       , only : noveg
     !
     ! !ARGUMENTS:
     integer , intent(in)    :: ltype             ! landunit type
@@ -560,7 +557,7 @@ contains
 
           call add_column(ci=ci, li=li, ctype=ctype, wtlunit=wtcol2lunit)
 
-          call add_patch(pi=pi, ci=ci, ptype=noveg, wtcol=1.0_r8)
+          call add_patch(pi=pi, ci=ci, ptype=0, wtcol=1.0_r8)
 
        end do   ! end of loop through urban columns-pfts
     end if

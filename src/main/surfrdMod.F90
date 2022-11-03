@@ -14,7 +14,7 @@ module surfrdMod
   use landunit_varcon , only : numurbl
   use clm_varcon      , only : grlnd
   use clm_varctl      , only : iulog, scmlat, scmlon, single_column
-  use surfrdUtilsMod  , only : check_sums_equal_1, collapse_crop_types
+  use surfrdUtilsMod  , only : check_sums_equal_1
   use ncdio_pio       , only : file_desc_t, var_desc_t, ncd_pio_openfile, ncd_pio_closefile
   use ncdio_pio       , only : ncd_io, check_var, ncd_inqfdims, check_dim, ncd_inqdid
   use pio
@@ -699,7 +699,6 @@ contains
     use clm_varpar      , only : natpft_lb, natpft_ub, natpft_size, cft_size, cft_lb
     use clm_instur      , only : wt_lunit, wt_nat_patch, wt_cft, fert_cft
     use landunit_varcon , only : istsoil, istcrop
-    use surfrdUtilsMod  , only : convert_cft_to_pft
     !
     ! !ARGUMENTS:
     implicit none

@@ -434,7 +434,6 @@ contains
     ! !USES:
     use clm_varpar           , only : cft_lb, cft_ub
     use clm_varctl           , only : create_crop_landunit
-    use pftconmod            , only : pftcon
     use landunit_varcon      , only : istcrop
     !
     ! !ARGUMENTS:

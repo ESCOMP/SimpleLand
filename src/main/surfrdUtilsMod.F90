@@ -20,8 +20,6 @@ module surfrdUtilsMod
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: check_sums_equal_1  ! Confirm that sum(arr(n,:)) == 1 for all n
   public :: renormalize         ! Renormalize an array
-  public :: convert_cft_to_pft  ! Conversion of crop CFT to natural veg PFT:w
-  public :: collapse_crop_types ! Collapse unused crop types into types used in this run
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -99,86 +97,5 @@ contains
     end do
 
   end subroutine renormalize
-
-!-----------------------------------------------------------------------
-  subroutine convert_cft_to_pft( begg, endg, cftsize, wt_cft )
-    !
-    ! !DESCRIPTION:
-    !        Convert generic crop types that were read in as seperate CFT's on
-    !        a crop landunit, and put them on the vegetated landunit.
-    ! !USES:
-    use clm_instur      , only : wt_lunit, wt_nat_patch, fert_cft
-    use clm_varpar      , only : cft_size, natpft_size
-    use pftconMod       , only : nc3crop
-    use landunit_varcon , only : istsoil, istcrop
-    ! !ARGUMENTS:
-    implicit none
-    integer          , intent(in)    :: begg, endg
-    integer          , intent(in)    :: cftsize          ! CFT size
-    real(r8)         , intent(inout) :: wt_cft(begg:,:)  ! CFT weights
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g    ! index
-!-----------------------------------------------------------------------
-    SHR_ASSERT_ALL((ubound(wt_cft) == (/endg, cftsize/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(wt_nat_patch) == (/endg, nc3crop+cftsize-1/)), errMsg(sourcefile, __LINE__))
-
-    do g = begg, endg
-       if ( wt_lunit(g,istcrop) > 0.0_r8 )then
-          ! Move CFT over to PFT and do weighted average of the crop and soil parts
-          wt_nat_patch(g,:) = wt_nat_patch(g,:) * wt_lunit(g,istsoil)
-          wt_cft(g,:)       = wt_cft(g,:) * wt_lunit(g,istcrop)
-          wt_nat_patch(g,nc3crop:) = wt_cft(g,:)      ! Add crop CFT's to end of natural veg PFT's
-          wt_lunit(g,istsoil) = (wt_lunit(g,istsoil) + wt_lunit(g,istcrop)) ! Add crop landunit to soil landunit
-          wt_nat_patch(g,:)   =  wt_nat_patch(g,:) / wt_lunit(g,istsoil)
-          wt_lunit(g,istcrop) = 0.0_r8                ! Zero out crop CFT's
-       else
-          wt_nat_patch(g,nc3crop:) = 0.0_r8    ! Make sure generic crops are zeroed out
-       end if
-    end do
-
-  end subroutine convert_cft_to_pft
-
-  !-----------------------------------------------------------------------
-  subroutine collapse_crop_types(wt_cft, fert_cft, begg, endg, verbose)
-    !
-    ! !DESCRIPTION:
-    ! Collapse unused crop types into types used in this run.
-    !
-    ! Should only be called if using prognostic crops - otherwise, wt_cft is meaningless
-    !
-    ! !USES:
-    use clm_varpar , only : cft_lb, cft_ub, cft_size
-    !
-    ! !ARGUMENTS:
-
-    ! Note that we use begg and endg rather than 'bounds', because bounds may not be
-    ! available yet when this is called
-    integer, intent(in) :: begg     ! Beginning grid cell index
-    integer, intent(in) :: endg     ! Ending grid cell index
-
-    ! Weight and fertilizer of each CFT in each grid cell; dimensioned [g, cft_lb:cft_ub]
-    ! This array is modified in-place
-    real(r8), intent(inout) :: wt_cft(begg:, cft_lb:)
-    real(r8), intent(inout) :: fert_cft(begg:, cft_lb:)
-
-    logical, intent(in) :: verbose  ! If true, print some extra information
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g
-    integer :: m
-
-    character(len=*), parameter :: subname = 'collapse_crop_types'
-    !-----------------------------------------------------------------------
-
-    SHR_ASSERT_ALL((ubound(wt_cft) == (/endg, cft_ub/)), errMsg(sourcefile, __LINE__))
-
-    if (cft_size <= 0) then
-       call endrun(msg = subname//' can only be called if cft_size > 0' // &
-            errMsg(sourcefile, __LINE__))
-    end if
-
-  end subroutine collapse_crop_types
-
 
 end module surfrdUtilsMod

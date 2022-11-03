@@ -44,7 +44,6 @@ contains
     use clm_varcon       , only: clm_varcon_init
     use landunit_varcon  , only: landunit_varcon_init, max_lunit
     use clm_varctl       , only: fsurdat, fatmlndfrc, noland, version, mml_surdat  
-    use pftconMod        , only: pftcon       
     use decompInitMod    , only: decompInit_lnd, decompInit_clumps, decompInit_glcp
     use domainMod        , only: domain_check, ldomain, domain_init
     use surfrdMod        , only: surfrd_get_globmask, surfrd_get_grid, surfrd_get_data 
@@ -154,11 +153,6 @@ contains
     allocate (fert_cft     (begg:endg, cft_lb:cft_ub       ))
     allocate (wt_glc_mec  (begg:endg, maxpatch_glcmec))
     allocate (topo_glc_mec(begg:endg, maxpatch_glcmec))
-
-    ! Read list of Patches and their corresponding parameter values
-    ! Independent of model resolution, Needs to stay before surfrd_get_data
-
-    call pftcon%Init()
 
     ! Read surface dataset and set up subgrid weight arrays
     
