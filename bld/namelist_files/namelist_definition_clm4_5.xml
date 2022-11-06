@@ -943,12 +943,6 @@ to use for methane model
 (only applies when CN and methane model are turned on)
 </entry>
        
-<entry id="light_res" type="char*10" category="default_settings"
-       group="default_settings" valid_values="none,360x720,94x192">
-Resolution of Lightning dataset to use for CN fire model
-(only applies when CN and the CN fire model are turned on)
-</entry>
-
 <entry id="chk_res" type="integer"  category="default_settings"
        group="default_settings" valid_values="0,1" >
 Check that the resolution and land-mask is valid before continuing.

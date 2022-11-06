@@ -847,7 +847,6 @@ sub process_namelist_commandline_use_case {
     $settings{'sim_year'}       = $nl_flags->{'sim_year'};
     $settings{'sim_year_range'} = $nl_flags->{'sim_year_range'};
     $settings{'phys'}           = $nl_flags->{'phys'};
-    $settings{'cnfireson'}   = $nl_flags->{'cnfireson'};
     # Loop over the variables specified in the use case.
     # Add each one to the namelist.
     my @vars = $uc_defaults->get_variable_names();

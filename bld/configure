@@ -66,8 +66,6 @@ OPTIONS
                             Parameters relating to the build which are system dependent will
                             be ignored.
      -help [or -h]          Print usage to STDOUT.
-     -nofire                Turn off wildfires for BGC setting of CN 
-                            (default includes fire for CN)
      -noio                  Turn history output completely off (typically for testing).
      -phys <name>           Value of clm4_5, or clm5_0 (default is clm4_5)   
      -silent [or -s]        Turns on silent mode - only fatal messages issued.
@@ -121,7 +119,6 @@ my $commandline = "$cfgdir/configure @ARGV";
 my %opts = (
 	    cache       => "config_cache.xml",
             phys        => "clm4_5",
-            nofire      => undef,
             noio        => undef,
             cimeroot    => undef,
             clm_root    => undef,
@@ -140,7 +137,6 @@ GetOptions(
     "defaults=s"                => \$opts{'defaults'},
     "clm4me=s"                  => \$opts{'clm4me'},
     "h|help"                    => \$opts{'help'},
-    "nofire"                    => \$opts{'nofire'},
     "noio"                      => \$opts{'noio'},
     "phys=s"                    => \$opts{'phys'},
     "snicar_frc=s"              => \$opts{'snicar_frc'}, 
