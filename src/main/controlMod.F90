@@ -36,7 +36,6 @@ module controlMod
   use clm_varctl                       , only: subgridflag, nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: create_crop_landunit
-  use clm_varctl                       , only: spinup_state
   use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
@@ -183,7 +182,6 @@ contains
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ &
                create_crop_landunit,   &
-               spinup_state, &
                single_column
 
     character(len=256) :: fsnowaging, fsnowoptics

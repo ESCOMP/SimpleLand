@@ -1043,16 +1043,6 @@ How close in years to use when looking for an initial condition file (finidat) i
 Simulation years you can look for in initial condition files (finidat) if interpolation is turned on (use_init_interp is .true.)
 </entry>
 
-<entry id="clm_accelerated_spinup" type="char*3" category="default_settings"
-       group="default_settings" valid_values="on,off" >
-Command line argument for setting up your simulation in a mode for faster
-throughput. By default turns off some options, and sets up for a lower level
-of output. When bgc_mode is some level of prognostic BGC (so NOT Satellite Phenology)
-it also sets up for accelerated decomposition.
-NOTE: THIS CORRESPONDS DIRECTLY TO THE env_run.xml VARIABLE OF THE SAME NAME.
-      Set the env_run variable, rather than setting this directly.
-</entry>
-
 <entry id="bgc_mode" type="char*5" category="default_settings"
        group="default_settings" valid_values="sp,cn,bgc" >
 Command line arguement for biogeochemistry mode for CLM4.5
@@ -1068,16 +1058,6 @@ Command line arguement for biogeochemistry mode for CLM4.5
 <!-- ========================================================================================  -->
 <!-- namelist elements associated with the vertical CN model                                   -->
 <!-- ========================================================================================  -->
-
-<entry id="spinup_state" type="integer" category="clm_vertcn"
-       group="clm_inparm" valid_values="0,1,2" >
-Flag for setting the state of the Accelerated decomposition spinup state for the BGC model.  
-   0 = normal model behavior; 
-   1 = AD spinup (standard)
-   2 = AD spinup (accelerated spinup from Ricciuto, not implemented for CN soil decomposition)
-Entering and exiting spinup mode occurs automatically by comparing the namelist and restart file values for this variable.
-NOTE: THIS CAN ONLY BE SET TO NON-ZERO WHEN BGC_MODE IS NOT SATELITE PHENOLOGY!
-</entry>
 
 <!-- turnover time modifications    -->
 <entry id="decomp_depth_efolding" type="real" category="clm_vertcn"

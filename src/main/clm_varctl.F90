@@ -131,10 +131,6 @@ module clm_varctl
   ! values of 'prognostic','diagnostic','constant'
   character(len=16), public :: co2_type = 'constant'    
 
-  ! State of the model for the accelerated decomposition (AD) spinup. 
-  ! 0 (default) = normal model; 1 = AD SPINUP
-  integer, public :: spinup_state = 0 
-
   ! true => anoxia is applied to heterotrophic respiration also considered in CH4 model
   ! default value reset in controlMod
   logical, public :: anoxia  = .true. 

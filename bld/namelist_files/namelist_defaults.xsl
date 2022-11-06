@@ -30,7 +30,6 @@
        <li>Data model forcing source (forcing)</li>
        <li>Representative concentration pathway for future scenarios (rcp)</li>
        <li>New good wood harvest (newwoodharv)</li>
-       <li>CN Spin-up mode (spinup)</li>
        <li>Type of file (type)</li>
        <li>Grid mapping to (to_hgrid)</li>
        <li>Land-mask mapping to (to_lmask)</li>
@@ -132,9 +131,6 @@
         </xsl:if>
         <xsl:if test="string-length(@crop)>0">
         crop=<xsl:value-of select="@crop"/>
-        </xsl:if>
-        <xsl:if test="string-length(@spinup)>0">
-        spinup=<xsl:value-of select="@spinup"/>
         </xsl:if>
         <xsl:if test="string-length(@source)>0">
         forcing=<xsl:value-of select="@source"/>

@@ -141,7 +141,7 @@ OPTIONS
 
 Note: The precedence for setting the values of namelist variables is (highest to lowest):
       0. namelist values set by specific command-line options, like, -d, -sim_year
-             (i.e.  compset choice and CLM_BLDNML_OPTS, CLM_ACCELERATED_SPINUP, LND_TUNING_MODE env_run variables)
+             (i.e.  compset choice and CLM_BLDNML_OPTS, LND_TUNING_MODE env_run variables)
      (NOTE: If you try to contradict these settings by methods below, an error will be triggered)
       1. values set on the command-line using the -namelist option,
              (i.e. CLM_NAMELIST_OPTS env_run variable)

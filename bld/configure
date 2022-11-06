@@ -72,14 +72,6 @@ OPTIONS
      -sitespf_pt <name>     Setup for the given site specific single-point resolution.
      -snicar_frc <name>     Turn on SNICAR radiative forcing calculation. [on | off] 
                             (default is off)
-     -spinup <name>         CLM 4.0 Only. For CLM 4.5, spinup is controlled from build-namelist.
-                            Turn on given spinup mode for BGC setting of CN		  (level)
-                              AD            Turn on Accelerated Decomposition from	      (2)
-                                            bare-soil
-                              exit          Jump directly from AD spinup to normal mode	      (1)
-                              normal        Normal decomposition ("final spinup mode")	      (0)
-                                            (default)
-                            The recommended sequence is 2-1-0
      -usr_src <dir1>[,<dir2>[,<dir3>[...]]]
                             Directories containing user source code.
      -verbose [or -v]       Turn on verbose echoing of settings made by configure.
@@ -122,10 +114,8 @@ my %opts = (
             noio        => undef,
             cimeroot    => undef,
             clm_root    => undef,
-            spinup      => "normal",
 	    );
 GetOptions(
-    "spinup=s"                  => \$opts{'spinup'}, 
     "bgc=s"                     => \$opts{'bgc'}, 
     "cache=s"                   => \$opts{'cache'},
     "cachedir=s"                => \$opts{'cachedir'},

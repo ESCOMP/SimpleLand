@@ -116,16 +116,6 @@
       This is an advanced flag and should only be used by expert users.</desc>
   </entry>
 
-  <entry id="CLM_ACCELERATED_SPINUP">
-    <type>char</type>
-    <valid_values>off</valid_values>
-    <default_value>off</default_value>
-    <group>run_component_clm</group>
-    <file>env_run.xml</file>
-    <desc>Turn on any settings for accellerating the model spinup. This is unused for SLIM!
-    </desc>
-  </entry>
-
   <entry id="CLM_FORCE_COLDSTART">
     <type>char</type>
     <valid_values>on,off</valid_values>
