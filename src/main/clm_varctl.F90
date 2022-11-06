@@ -131,10 +131,6 @@ module clm_varctl
   ! values of 'prognostic','diagnostic','constant'
   character(len=16), public :: co2_type = 'constant'    
 
-  ! true => anoxia is applied to heterotrophic respiration also considered in CH4 model
-  ! default value reset in controlMod
-  logical, public :: anoxia  = .true. 
-
   ! used to override an error check on reading in restart files
   logical, public :: override_bgc_restart_mismatch_dump = .false. 
 

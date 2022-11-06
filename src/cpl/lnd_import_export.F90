@@ -161,10 +161,6 @@ contains
           co2_ppmv_diag = co2_ppmv
        end if
 
-       if (index_x2l_Sa_methane /= 0) then
-          atm2lnd_inst%forc_pch4_grc(g) = x2l(index_x2l_Sa_methane,i)
-       endif
-
        ! Determine derived quantities for required fields
 
        forc_t = atm2lnd_inst%forc_t_not_downscaled_grc(g)
@@ -350,10 +346,6 @@ contains
           l2x(index_l2x_Fall_flxvoc:index_l2x_Fall_flxvoc+shr_megan_mechcomps_n-1,i) = &
                -lnd2atm_inst%flxvoc_grc(g,:shr_megan_mechcomps_n)
        end if
-
-       if (index_l2x_Fall_methane /= 0) then
-          l2x(index_l2x_Fall_methane,i) = -lnd2atm_inst%flux_ch4_grc(g) 
-       endif
 
        ! sign convention is positive downward with 
        ! hierarchy of atm/glc/lnd/rof/ice/ocn.  

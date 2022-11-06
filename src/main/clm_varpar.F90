@@ -27,7 +27,6 @@ module clm_varpar
   integer            :: nlevlak               ! number of lake layers
                                               ! (includes lower layers that are biogeochemically inactive)
   integer            :: nlevsno     =  -1     ! maximum number of snow layers
-  integer, parameter :: ngases      =   3     ! CH4, O2, & CO2
   integer, parameter :: nlevcan     =   1     ! number of leaf layers in canopy layer
   !ED variables
   integer, parameter :: numrad      =   2     ! number of solar radiation bands: vis, nir
