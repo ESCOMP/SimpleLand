@@ -98,11 +98,6 @@ module clm_varctl
   !----------------------------------------------------------
   character(len=fname_len), public :: mml_surdat   = ' '      ! MML surface data file for simple model
   	
-  !----------------------------------------------------------
-  ! Flag to read ndep rather than obtain it from coupler
-  !----------------------------------------------------------
-  
-  logical, public :: ndep_from_cpl = .false.
 
   !----------------------------------------------------------
   ! Interpolation of finidat if requested
