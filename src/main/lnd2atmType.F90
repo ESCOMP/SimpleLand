@@ -13,7 +13,6 @@ module lnd2atmType
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins. 	! MML: ndst = 4 from clm varpar
   use clm_varcon    , only : spval
   use clm_varctl    , only : iulog
-  use seq_drydep_mod, only : n_drydep, drydep_method, DD_XLND
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -172,10 +171,6 @@ contains
     allocate(this%qflx_rofliq_drain_perched_grc    (begg:endg))       ; this%qflx_rofliq_drain_perched_grc    (:)   =ival
     allocate(this%qflx_rofice_grc    (begg:endg))            ; this%qflx_rofice_grc    (:)   =ival
     allocate(this%qflx_liq_from_ice_col(begc:endc))          ; this%qflx_liq_from_ice_col(:) = ival
-
-    if ( n_drydep > 0 .and. drydep_method == DD_XLND )then
-       allocate(this%ddvel_grc(begg:endg,1:n_drydep)); this%ddvel_grc(:,:)=ival
-    end if
 
   end subroutine InitAllocate
 

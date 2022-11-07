@@ -129,7 +129,6 @@ contains
     use seq_flds_mod   , only: seq_flds_x2l_fields, seq_flds_l2x_fields
     use mct_mod        , only: mct_aVect, mct_aVect_init, mct_avect_indexra
     use mct_mod        , only: mct_aVect_clean, mct_avect_nRattr
-    use seq_drydep_mod , only: drydep_fields_token, lnd_drydep
     use glc_elevclass_mod, only: glc_get_num_elevation_classes, glc_elevclass_as_string
     !
     ! !ARGUMENTS:
@@ -178,12 +177,6 @@ contains
     index_l2x_Sl_ram1       = mct_avect_indexra(l2x,'Sl_ram1')
     index_l2x_Sl_fv         = mct_avect_indexra(l2x,'Sl_fv')
     index_l2x_Sl_soilw      = mct_avect_indexra(l2x,'Sl_soilw',perrwith='quiet')
-
-    if ( lnd_drydep )then
-       index_l2x_Sl_ddvel = mct_avect_indexra(l2x, trim(drydep_fields_token))
-    else
-       index_l2x_Sl_ddvel = 0
-    end if
 
     index_l2x_Fall_taux     = mct_avect_indexra(l2x,'Fall_taux')
     index_l2x_Fall_tauy     = mct_avect_indexra(l2x,'Fall_tauy')

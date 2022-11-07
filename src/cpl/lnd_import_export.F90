@@ -275,7 +275,6 @@ contains
     use seq_flds_mod       , only : seq_flds_l2x_fields
     use clm_varctl         , only : iulog
     use clm_time_manager   , only : get_nstep, get_step_size  
-    use seq_drydep_mod     , only : n_drydep
     use domainMod          , only : ldomain
     use shr_string_mod     , only : shr_string_listGetName
     use shr_infnan_mod     , only : isnan => shr_infnan_isnan
@@ -332,13 +331,6 @@ contains
        if (index_l2x_Fall_flxdst2 /= 0 )  l2x(index_l2x_Fall_flxdst2,i)= -lnd2atm_inst%flxdst_grc(g,2)
        if (index_l2x_Fall_flxdst3 /= 0 )  l2x(index_l2x_Fall_flxdst3,i)= -lnd2atm_inst%flxdst_grc(g,3)
        if (index_l2x_Fall_flxdst4 /= 0 )  l2x(index_l2x_Fall_flxdst4,i)= -lnd2atm_inst%flxdst_grc(g,4)
-
-
-       ! for dry dep velocities
-       if (index_l2x_Sl_ddvel     /= 0 )  then
-          l2x(index_l2x_Sl_ddvel:index_l2x_Sl_ddvel+n_drydep-1,i) = &
-               lnd2atm_inst%ddvel_grc(g,:n_drydep)
-       end if
 
        ! sign convention is positive downward with 
        ! hierarchy of atm/glc/lnd/rof/ice/ocn.  
