@@ -314,21 +314,6 @@
 
 <hr/>
 
-<h2>Namelist items for Driver MEGAN Physics</h2>
-    <table border="1" cellpadding="10">
-    <caption>Driver Physics</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='drv_physics']"/>
-    </table>
-
-
 <h2>Namelist items for Driver Dry Deposition</h2>
     <table border="1" cellpadding="10">
     <caption>Driver Dry-Deposition Namelist Options</caption>

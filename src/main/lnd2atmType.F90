@@ -13,7 +13,6 @@ module lnd2atmType
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins. 	! MML: ndst = 4 from clm varpar
   use clm_varcon    , only : spval
   use clm_varctl    , only : iulog
-  use shr_megan_mod , only : shr_megan_mechcomps_n
   use seq_drydep_mod, only : n_drydep, drydep_method, DD_XLND
   !
   ! !PUBLIC TYPES:
@@ -60,7 +59,6 @@ module lnd2atmType
      real(r8), pointer :: fv_grc             (:)   => null() ! friction velocity (m/s) (for dust model)
      real(r8), pointer :: flxdst_grc         (:,:) => null() ! dust flux (size bins)
      real(r8), pointer :: ddvel_grc          (:,:) => null() ! dry deposition velocities
-     real(r8), pointer :: flxvoc_grc         (:,:) => null() ! VOC flux (size bins)
      ! lnd->rof
      real(r8), pointer :: qflx_rofliq_grc         (:)   => null() ! rof liq forcing
      real(r8), pointer :: qflx_rofliq_qsur_grc    (:)   => null() ! rof liq -- surface runoff component
@@ -175,9 +173,6 @@ contains
     allocate(this%qflx_rofice_grc    (begg:endg))            ; this%qflx_rofice_grc    (:)   =ival
     allocate(this%qflx_liq_from_ice_col(begc:endc))          ; this%qflx_liq_from_ice_col(:) = ival
 
-    if (shr_megan_mechcomps_n>0) then
-       allocate(this%flxvoc_grc(begg:endg,1:shr_megan_mechcomps_n));  this%flxvoc_grc(:,:)=ival
-    endif
     if ( n_drydep > 0 .and. drydep_method == DD_XLND )then
        allocate(this%ddvel_grc(begg:endg,1:n_drydep)); this%ddvel_grc(:,:)=ival
     end if

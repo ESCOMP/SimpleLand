@@ -53,7 +53,6 @@ module clm_cpl_indices
   integer, public ::index_l2x_Fall_flxdst2    ! dust flux size bin 2    
   integer, public ::index_l2x_Fall_flxdst3    ! dust flux size bin 3    
   integer, public ::index_l2x_Fall_flxdst4    ! dust flux size bin 4
-  integer, public ::index_l2x_Fall_flxvoc     ! MEGAN fluxes
 
   ! In the following, index 0 is bare land, other indices are glc elevation classes
   integer, allocatable, public ::index_l2x_Sl_tsrf(:)   ! glc MEC temperature
@@ -131,7 +130,6 @@ contains
     use mct_mod        , only: mct_aVect, mct_aVect_init, mct_avect_indexra
     use mct_mod        , only: mct_aVect_clean, mct_avect_nRattr
     use seq_drydep_mod , only: drydep_fields_token, lnd_drydep
-    use shr_megan_mod  , only: shr_megan_fields_token, shr_megan_mechcomps_n
     use glc_elevclass_mod, only: glc_get_num_elevation_classes, glc_elevclass_as_string
     !
     ! !ARGUMENTS:
@@ -202,13 +200,6 @@ contains
     index_l2x_Fall_fco2_lnd = mct_avect_indexra(l2x,'Fall_fco2_lnd',perrwith='quiet')
 
     index_l2x_Fall_methane  = mct_avect_indexra(l2x,'Fall_methane',perrWith='quiet')
-
-    ! MEGAN fluxes
-    if (shr_megan_mechcomps_n>0) then
-       index_l2x_Fall_flxvoc = mct_avect_indexra(l2x,trim(shr_megan_fields_token))
-    else
-       index_l2x_Fall_flxvoc = 0
-    endif
 
     !-------------------------------------------------------------
     ! drv -> clm

@@ -9,7 +9,6 @@ module lnd2atmMod
   use shr_kind_mod         , only : r8 => shr_kind_r8
   use shr_infnan_mod       , only : nan => shr_infnan_nan, assignment(=)
   use shr_log_mod          , only : errMsg => shr_log_errMsg
-  use shr_megan_mod        , only : shr_megan_mechcomps_n
   use clm_varpar           , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.
   use clm_varcon           , only : rair, grav, cpair, hfus, tfrz, spval
   use clm_varctl           , only : iulog
@@ -20,7 +19,6 @@ module lnd2atmMod
   use atm2lndType          , only : atm2lnd_type
   use DUSTMod              , only : dust_type
   use DryDepVelocity       , only : drydepvel_type
-  use VocEmissionMod       , only : vocemis_type
   use EnergyFluxType       , only : energyflux_type
   use FrictionVelocityMod  , only : frictionvel_type
   use SolarAbsorbedType    , only : solarabs_type
@@ -121,7 +119,7 @@ contains
        atm2lnd_inst, surfalb_inst, temperature_inst, frictionvel_inst, &
        waterstate_inst, waterflux_inst, energyflux_inst, &
        solarabs_inst, drydepvel_inst,  &
-       vocemis_inst, dust_inst, glc_behavior, &
+       dust_inst, glc_behavior, &
        lnd2atm_inst, &
        net_carbon_exchange_grc) 
     !
@@ -141,7 +139,6 @@ contains
     type(energyflux_type)       , intent(in)    :: energyflux_inst
     type(solarabs_type)         , intent(in)    :: solarabs_inst
     type(drydepvel_type)        , intent(in)    :: drydepvel_inst
-    type(vocemis_type)          , intent(in)    :: vocemis_inst
     type(dust_type)             , intent(in)    :: dust_inst
     type(glc_behavior_type)     , intent(in)    :: glc_behavior
     type(lnd2atm_type)          , intent(inout) :: lnd2atm_inst 
@@ -260,14 +257,6 @@ contains
             lnd2atm_inst%ddvel_grc        (bounds%begg:bounds%endg, :), &
             p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
     endif
-
-    ! voc emission flux
-    if (shr_megan_mechcomps_n>0) then
-       !call p2g(bounds, shr_megan_mechcomps_n, &
-            !vocemis_inst%vocflx_patch(bounds%begp:bounds%endp,:), &
-            !lnd2atm_inst%flxvoc_grc  (bounds%begg:bounds%endg,:), &
-            !p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
-    end if
 
     ! dust emission flux
     call p2g(bounds, ndst, &

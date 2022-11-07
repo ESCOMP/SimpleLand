@@ -276,7 +276,6 @@ contains
     use clm_varctl         , only : iulog
     use clm_time_manager   , only : get_nstep, get_step_size  
     use seq_drydep_mod     , only : n_drydep
-    use shr_megan_mod      , only : shr_megan_mechcomps_n
     use domainMod          , only : ldomain
     use shr_string_mod     , only : shr_string_listGetName
     use shr_infnan_mod     , only : isnan => shr_infnan_isnan
@@ -324,7 +323,7 @@ contains
           l2x(index_l2x_Fall_fco2_lnd,i) = -lnd2atm_inst%net_carbon_exchange_grc(g)  
        end if
 
-       ! Additional fields for DUST, PROGSSLT, dry-deposition and VOC
+       ! Additional fields for DUST, PROGSSLT, dry-deposition
        ! These are now standard fields, but the check on the index makes sure the driver handles them
        if (index_l2x_Sl_ram1      /= 0 )  l2x(index_l2x_Sl_ram1,i)     =  lnd2atm_inst%ram1_grc(g)
        if (index_l2x_Sl_fv        /= 0 )  l2x(index_l2x_Sl_fv,i)       =  lnd2atm_inst%fv_grc(g)
@@ -339,12 +338,6 @@ contains
        if (index_l2x_Sl_ddvel     /= 0 )  then
           l2x(index_l2x_Sl_ddvel:index_l2x_Sl_ddvel+n_drydep-1,i) = &
                lnd2atm_inst%ddvel_grc(g,:n_drydep)
-       end if
-
-       ! for MEGAN VOC emis fluxes
-       if (index_l2x_Fall_flxvoc  /= 0 ) then
-          l2x(index_l2x_Fall_flxvoc:index_l2x_Fall_flxvoc+shr_megan_mechcomps_n-1,i) = &
-               -lnd2atm_inst%flxvoc_grc(g,:shr_megan_mechcomps_n)
        end if
 
        ! sign convention is positive downward with 

@@ -522,7 +522,7 @@ in its attributes. (Only used if scripgriddata_src_type = UGRID.)
 <!--                                                   -->
 <entry id="mksrf_filename" type="char*256" category="mksurfdata"
        group="default_settings" 
-       valid_values="mksrf_fsoitex,mksrf_forganic,mksrf_flakwat,mksrf_fwetlnd,mksrf_fmax,mksrf_fmax,mksrf_fglacier,mksrf_fglacierregion,mksrf_fvocef,mksrf_furbtopo,firrig,mksrf_furban,mksrf_fvegtyp,mksrf_fhrvtyp,mksrf_fsoicol,mksrf_flai,mksrf_fgdp,mksrf_fpeat,mksrf_fsoildepth,mksrf_fabm,mksrf_ftopostats,mksrf_fvic,mksrf_fch4" >
+       valid_values="mksrf_fsoitex,mksrf_flakwat,mksrf_fwetlnd,mksrf_fsoicol,mksrf_ftopostats" >
 Filename for mksurfdata_map to remap raw data into the output surface dataset
 </entry>
 
@@ -566,11 +566,6 @@ Soil texture dataset for mksurfdata
 Soil color dataset for mksurfdata
 </entry>
 
-<entry id="mksrf_fmax" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Soil max fraction dataset for mksurfdata
-</entry>
-
 <entry id="mksrf_ffrac" type="char*256" category="mksurfdata"
        input_pathname="abs" group="clmexp" valid_values="" >
 High resolution land mask/fraction dataset for mksurfdata
@@ -587,27 +582,10 @@ Type of grid to create for mksurfdata
 Grid file at the output resolution for mksurfdata
 </entry>
 
-<entry id="mksrf_fdynuse" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Text file with filepaths (or list of XML elements) for vegetation fractions
-and harvesting for each year to run over for mksurfdata to be able to model
-transient land-use change
-</entry>
-
 <entry id="mksrf_ftopo" type="char*256" category="mksurfdata"
        input_pathname="abs" group="clmexp" valid_values="" >
 High resolution topography dataset for mksurfdata
 (used for glacier_mec land-units)
-</entry>
-
-<entry id="mksrf_firrig" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Irrigation dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_forganic" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Organic soil dataset for mksurfdata
 </entry>
 
 <entry id="mksrf_flakwat" type="char*256" category="mksurfdata"
@@ -620,49 +598,14 @@ Lake water dataset for mksurfdata
 Wetland dataset for mksurfdata
 </entry>
 
-<entry id="mksrf_furban" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Urban dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fvocef" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Biogenic Volatile Organic Compounds (VOC) emissions dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fgdp" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-GDP dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fpeat" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Peat dataset for mksurfdata
-</entry>
-
 <entry id="mksrf_fsoildepth" type="char*256" category="mksurfdata"
        input_pathname="abs" group="clmexp" valid_values="" >
 Soil depth dataset for mksurfdata
 </entry>
 
-<entry id="mksrf_fabm" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Agricultural burning dominant month dataset for mksurfdata
-</entry>
-
 <entry id="mksrf_ftopostats" type="char*256" category="mksurfdata"
        input_pathname="abs" group="clmexp" valid_values="" >
 Topography statistics dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fvic" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-VIC parameters dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fch4" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Inversion-derived CH4 parameters dataset for mksurfdata
 </entry>
 
 <entry id="outnc_double" type="logical" category="mksurfdata"
@@ -702,11 +645,6 @@ Plant Function Type fraction to override global file with for mksurfdata
        group="clmexp"
        valid_values="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20" >
 Soil color index to override global file with for mksurfdata
-</entry>
-
-<entry id="soil_fmax" type="real" category="mksurfdata"
-       group="clmexp" >
-Soil maximum fraction to override global file with for mksurfdata
 </entry>
 
 <entry id="soil_sand" type="real" category="mksurfdata"
@@ -985,11 +923,6 @@ General configuration of model version and atmospheric forcing to tune the model
 This sets the model to run with constants and initial conditions that were set to run well under 
 the configuration of model version and atmospheric forcing. To run well constants would need to be changed
 to run with a different type of atmospheric forcing.
-</entry> 
-
-<entry id="megan" type="integer" category="default_settings"
-       group="default_settings"  valid_values="0,1">
-If 1, turn on the MEGAN model for BVOC's (Biogenic Volitile Organic Compounds)
 </entry> 
 
 <entry id="sim_year" type="integer" category="default_settings"
