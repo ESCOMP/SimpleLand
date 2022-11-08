@@ -438,7 +438,6 @@ contains
     use clm_varpar      , only : maxpatch_glcmec, nlevurb
     use landunit_varcon , only : isturb_MIN, isturb_MAX, istdlak, istwet, istice_mec
     use clm_instur      , only : wt_lunit, urban_valid, wt_glc_mec, topo_glc_mec
-    use UrbanParamsType , only : CheckUrban
     !
     ! !ARGUMENTS:
     integer          , intent(in)    :: begg, endg 
@@ -575,8 +574,6 @@ contains
        end do
 
     end do
-
-    call CheckUrban(begg, endg, pcturb(begg:endg,:), subname)
 
     deallocate(pctgla,pctlak,pctwet,pcturb,pcturb_tot,urban_region_id,pctspec)
 

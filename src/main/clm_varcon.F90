@@ -224,7 +224,7 @@ module clm_varcon
 contains
 
   !------------------------------------------------------------------------------
-  subroutine clm_varcon_init( is_simple_buildtemp )
+  subroutine clm_varcon_init()
     !
     ! !DESCRIPTION:
     ! This subroutine initializes constant arrays in clm_varcon. 
@@ -235,7 +235,6 @@ contains
     !
     ! !ARGUMENTS:
     implicit none
-    logical, intent(in) :: is_simple_buildtemp   ! If simple building temp method is being used
     !
     ! !REVISION HISTORY:
     !   Created by E. Kluzek
@@ -251,12 +250,6 @@ contains
     allocate( zsoifl(1:nlevsoifl             ))
     allocate( zisoifl(0:nlevsoifl            ))
     allocate( dzsoifl(1:nlevsoifl            ))
-
-    ! Zero out wastheat factors for simpler building temperature method (introduced in CLM4.5)
-    if ( is_simple_buildtemp )then
-        ht_wasteheat_factor = 0.0_r8
-        ac_wasteheat_factor = 0.0_r8
-    end if
 
   end subroutine clm_varcon_init
 

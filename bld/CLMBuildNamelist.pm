@@ -922,11 +922,6 @@ sub process_namelist_inline_logic {
   #########################################
   setup_logic_lnd2atm($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
-  ###############################
-  # namelist group: clmu_inparm #
-  ###############################
-  setup_logic_urban($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
   ##################################
   # namelist group: bgc_shared
   ##################################
@@ -1122,16 +1117,6 @@ sub setup_logic_create_crop_landunit {
   my $var = 'create_crop_landunit';
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var );
 }
-#-------------------------------------------------------------------------------
-
-sub setup_logic_urban {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'building_temp_method');
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'urban_hac');
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'urban_traffic');
-}
-
 #-------------------------------------------------------------------------------
 
 sub error_if_set {

@@ -17,8 +17,6 @@ module clm_instMod
   !-----------------------------------------
 
   use UrbanParamsType                    , only : urbanparams_type   ! Constants 
-  use UrbanParamsType                    , only : IsSimpleBuildTemp, IsProgBuildTemp
-
   !-----------------------------------------
   ! Definition of component types 
   !-----------------------------------------
@@ -172,8 +170,7 @@ contains
          urbanparams_inst%em_roof(begl:endl),    &
          urbanparams_inst%em_wall(begl:endl),    &
          urbanparams_inst%em_improad(begl:endl), &
-         urbanparams_inst%em_perroad(begl:endl), &
-         IsSimpleBuildTemp(), IsProgBuildTemp() )
+         urbanparams_inst%em_perroad(begl:endl))
 
     call canopystate_inst%Init(bounds)
 
@@ -194,8 +191,7 @@ contains
     ! assertion in energyflux_inst%Init fails with pgi 14.7 on yellowstone, presumably due
     ! to a compiler bug.
     dummy_to_make_pgi_happy = ubound(temperature_inst%t_grnd_col, 1)
-    call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc), &
-         IsSimpleBuildTemp(), IsProgBuildTemp() )
+    call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc))
 
     call frictionvel_inst%Init(bounds)
 
@@ -239,7 +235,6 @@ contains
     !
     ! !USES:
     use ncdio_pio       , only : file_desc_t
-    use UrbanParamsType , only : IsSimpleBuildTemp, IsProgBuildTemp
     use decompMod       , only : get_proc_bounds, get_proc_clumps, get_clump_bounds
 
     !
@@ -262,8 +257,7 @@ contains
 
     call canopystate_inst%restart (bounds, ncid, flag=flag)
 
-    call energyflux_inst%restart (bounds, ncid, flag=flag, &
-         is_simple_buildtemp=IsSimpleBuildTemp(), is_prog_buildtemp=IsProgBuildTemp())
+    call energyflux_inst%restart (bounds, ncid, flag=flag)
 
     call frictionvel_inst% restart (bounds, ncid, flag=flag)
 
@@ -271,8 +265,7 @@ contains
 
     call solarabs_inst%restart (bounds, ncid, flag=flag)
 
-    call temperature_inst%restart (bounds, ncid, flag=flag, &
-         is_simple_buildtemp=IsSimpleBuildTemp(), is_prog_buildtemp=IsProgBuildTemp())
+    call temperature_inst%restart (bounds, ncid, flag=flag)
 
     call soilstate_inst%restart (bounds, ncid, flag=flag)
 

@@ -57,10 +57,8 @@ module EnergyFluxType
      real(r8), pointer :: eflx_urban_ac_col       (:)   ! col urban air conditioning flux (W/m**2)
      real(r8), pointer :: eflx_urban_heat_col     (:)   ! col urban heating flux (W/m**2)
      real(r8), pointer :: eflx_anthro_patch       (:)   ! patch total anthropogenic heat flux (W/m**2)
-     real(r8), pointer :: eflx_traffic_patch      (:)   ! patch traffic sensible heat flux (W/m**2)
      real(r8), pointer :: eflx_wasteheat_patch    (:)   ! patch sensible heat flux from domestic heating/cooling sources of waste heat (W/m**2)
      real(r8), pointer :: eflx_heat_from_ac_patch (:)   ! patch sensible heat flux put back into canyon due to removal by AC (W/m**2)
-     real(r8), pointer :: eflx_traffic_lun        (:)   ! lun traffic sensible heat flux (W/m**2)
      real(r8), pointer :: eflx_wasteheat_lun      (:)   ! lun sensible heat flux from domestic heating/cooling sources of waste heat (W/m**2)
      real(r8), pointer :: eflx_heat_from_ac_lun   (:)   ! lun sensible heat flux to be put back into canyon due to removal by AC (W/m**2)
      real(r8), pointer :: eflx_building_lun       (:)   ! lun building heat flux from change in interior building air temperature (W/m**2)
@@ -129,7 +127,7 @@ module EnergyFluxType
 contains
 
   !------------------------------------------------------------------------
-  subroutine Init(this, bounds, t_grnd_col, is_simple_buildtemp, is_prog_buildtemp )
+  subroutine Init(this, bounds, t_grnd_col)
     !
     ! !DESCRIPTION:
     !    Allocate and initialize the data type and setup history, and initialize for cold-start.
@@ -139,14 +137,12 @@ contains
     class(energyflux_type)         :: this
     type(bounds_type) , intent(in) :: bounds  
     real(r8)          , intent(in) :: t_grnd_col( bounds%begc: )
-    logical           , intent(in) :: is_simple_buildtemp        ! If using simple building temp method
-    logical           , intent(in) :: is_prog_buildtemp          ! If using prognostic building temp method
 
     SHR_ASSERT_ALL((ubound(t_grnd_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
 
     call this%InitAllocate ( bounds )
-    call this%InitHistory ( bounds, is_simple_buildtemp )
-    call this%InitCold ( bounds, t_grnd_col, is_simple_buildtemp, is_prog_buildtemp ) 
+    call this%InitHistory ( bounds)
+    call this%InitCold ( bounds, t_grnd_col) 
 
   end subroutine Init
 
@@ -214,13 +210,11 @@ contains
     allocate( this%eflx_urban_ac_col       (begc:endc))             ; this%eflx_urban_ac_col       (:)   = nan
     allocate( this%eflx_urban_heat_col     (begc:endc))             ; this%eflx_urban_heat_col     (:)   = nan
     allocate( this%eflx_wasteheat_patch    (begp:endp))             ; this%eflx_wasteheat_patch    (:)   = nan
-    allocate( this%eflx_traffic_patch      (begp:endp))             ; this%eflx_traffic_patch      (:)   = nan
     allocate( this%eflx_heat_from_ac_patch (begp:endp))             ; this%eflx_heat_from_ac_patch (:)   = nan
     allocate( this%eflx_heat_from_ac_lun   (begl:endl))             ; this%eflx_heat_from_ac_lun   (:)   = nan
     allocate( this%eflx_building_lun       (begl:endl))             ; this%eflx_building_lun       (:)   = nan
     allocate( this%eflx_urban_ac_lun       (begl:endl))             ; this%eflx_urban_ac_lun       (:)   = nan
     allocate( this%eflx_urban_heat_lun     (begl:endl))             ; this%eflx_urban_heat_lun     (:)   = nan
-    allocate( this%eflx_traffic_lun        (begl:endl))             ; this%eflx_traffic_lun        (:)   = nan
     allocate( this%eflx_wasteheat_lun      (begl:endl))             ; this%eflx_wasteheat_lun      (:)   = nan
     allocate( this%eflx_anthro_patch       (begp:endp))             ; this%eflx_anthro_patch       (:)   = nan
 
@@ -258,7 +252,7 @@ contains
   end subroutine InitAllocate
     
   !------------------------------------------------------------------------
-  subroutine InitHistory(this, bounds, is_simple_buildtemp)
+  subroutine InitHistory(this, bounds)
     !
     ! !DESCRIPTION:
     ! Setup fields that can be output to history files
@@ -273,7 +267,6 @@ contains
     ! !ARGUMENTS:
     class(energyflux_type) :: this
     type(bounds_type), intent(in) :: bounds  
-    logical          , intent(in) :: is_simple_buildtemp ! If using simple building temp method
     !
     ! !LOCAL VARIABLES:
     integer           :: begp, endp
@@ -487,39 +480,6 @@ contains
          avgflag='A', long_name='net heat flux into lake/snow surface, excluding light transmission', &
          ptr_patch=this%eflx_grnd_lake_patch, set_nolake=spval, default='inactive')
 
-    if (      is_simple_buildtemp )then
-       this%eflx_building_heat_errsoi_col(begc:endc) = spval
-       call hist_addfld1d (fname='BUILDHEAT', units='W/m^2',  &
-            avgflag='A', long_name='heat flux from urban building interior to walls and roof', &
-            ptr_col=this%eflx_building_heat_errsoi_col, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
-
-       this%eflx_urban_ac_col(begc:endc) = spval
-       call hist_addfld1d (fname='URBAN_AC', units='W/m^2',  &
-            avgflag='A', long_name='urban air conditioning flux', &
-            ptr_col=this%eflx_urban_ac_col, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
-   
-       this%eflx_urban_heat_col(begc:endc) = spval
-       call hist_addfld1d (fname='URBAN_HEAT', units='W/m^2',  &
-            avgflag='A', long_name='urban heating flux', &
-            ptr_col=this%eflx_urban_heat_col, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
-    else
-       this%eflx_urban_ac_lun(begl:endl) = spval
-       call hist_addfld1d (fname='EFLXBUILD', units='W/m^2',  &
-            avgflag='A', long_name='building heat flux from change in interior building air temperature', &
-            ptr_lunit=this%eflx_building_lun, set_nourb=0._r8, l2g_scale_type='unity', default='inactive')
-
-       this%eflx_urban_ac_lun(begl:endl) = spval
-       call hist_addfld1d (fname='URBAN_AC', units='W/m^2',  &
-            avgflag='A', long_name='urban air conditioning flux', &
-            ptr_lunit=this%eflx_urban_ac_lun, set_nourb=0._r8, l2g_scale_type='unity', default='inactive')
-
-       this%eflx_urban_heat_lun(begl:endl) = spval
-       call hist_addfld1d (fname='URBAN_HEAT', units='W/m^2',  &
-            avgflag='A', long_name='urban heating flux', &
-            ptr_lunit=this%eflx_urban_heat_lun, set_nourb=0._r8, l2g_scale_type='unity', default='inactive')
-    end if
-
-
     this%dgnetdT_patch(begp:endp) = spval
     call hist_addfld1d (fname='DGNETDT', units='W/m^2/K', &
          avgflag='A', long_name='derivative of net ground heat flux wrt soil temp', &
@@ -534,30 +494,6 @@ contains
     call hist_addfld2d (fname='FGR_SOIL_R', units='watt/m^2', type2d='levgrnd', &
          avgflag='A', long_name='Rural downward heat flux at interface below each soil layer', &
          ptr_col=this%eflx_fgr_col, set_spec=spval, default='inactive')
-
-    this%eflx_traffic_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TRAFFICFLUX', units='W/m^2',  &
-         avgflag='A', long_name='sensible heat flux from urban traffic', &
-         ptr_patch=this%eflx_traffic_patch, set_nourb=0._r8, c2l_scale_type='urbanf', &
-         default='inactive')
-
-    this%eflx_wasteheat_patch(begp:endp) = spval
-    call hist_addfld1d (fname='WASTEHEAT', units='W/m^2',  &
-         avgflag='A', long_name='sensible heat flux from heating/cooling sources of urban waste heat', &
-         ptr_patch=this%eflx_wasteheat_patch, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
-
-    this%eflx_heat_from_ac_patch(begp:endp) = spval
-    call hist_addfld1d (fname='HEAT_FROM_AC', units='W/m^2',  &
-         avgflag='A', long_name='sensible heat flux put into canyon due to heat removed from air conditioning', &
-         ptr_patch=this%eflx_heat_from_ac_patch, set_nourb=0._r8, c2l_scale_type='urbanf', default='inactive')
-
-    if ( is_simple_buildtemp )then
-       this%eflx_anthro_patch(begp:endp) = spval
-       call hist_addfld1d (fname='Qanth', units='W/m^2',  &
-            avgflag='A', long_name='anthropogenic heat flux', &
-            ptr_patch=this%eflx_anthro_patch, set_nourb=0._r8, c2l_scale_type='urbanf', &
-            default='inactive')
-    end if
 
     this%taux_patch(begp:endp) = spval
     call hist_addfld1d (fname='TAUX', units='kg/m/s^2',  &
@@ -606,7 +542,7 @@ contains
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------
-  subroutine InitCold(this, bounds, t_grnd_col, is_simple_buildtemp, is_prog_buildtemp)
+  subroutine InitCold(this, bounds, t_grnd_col)
     !
     ! !DESCRIPTION:
     ! Initialize cold start conditions for module variables
@@ -626,32 +562,12 @@ contains
     class(energyflux_type)         :: this
     type(bounds_type) , intent(in) :: bounds  
     real(r8)          , intent(in) :: t_grnd_col( bounds%begc: )
-    logical           , intent(in) :: is_simple_buildtemp ! If using simple building temp method
-    logical           , intent(in) :: is_prog_buildtemp   ! If using prognostic building temp method
     !
     ! !LOCAL VARIABLES:
     integer  :: j,l,c,p,levs,lev
     !-----------------------------------------------------------------------
 
     SHR_ASSERT_ALL((ubound(t_grnd_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-
-    ! Columns
-    if ( is_simple_buildtemp )then
-       do c = bounds%begc, bounds%endc
-          l = col%landunit(c)
-
-          if (lun%urbpoi(l)) then
-             this%eflx_building_heat_errsoi_col(c) = 0._r8
-             this%eflx_urban_ac_col(c)             = 0._r8
-             this%eflx_urban_heat_col(c)           = 0._r8
-          else
-             this%eflx_building_heat_errsoi_col(c) = 0._r8
-             this%eflx_urban_ac_col(c)             = 0._r8
-             this%eflx_urban_heat_col(c)           = 0._r8
-          end if
-
-       end do
-    end if
 
     ! Patches
     do p = bounds%begp, bounds%endp 
@@ -674,25 +590,10 @@ contains
        l = patch%landunit(p)
 
        if (.not. lun%urbpoi(l)) then
-          this%eflx_traffic_lun(l)        = spval
           this%eflx_wasteheat_lun(l)      = spval
-          if ( is_prog_buildtemp )then
-             this%eflx_building_lun(l)   = 0._r8
-             this%eflx_urban_ac_lun(l)   = 0._r8
-             this%eflx_urban_heat_lun(l) = 0._r8
-          end if
 
           this%eflx_wasteheat_patch(p)    = 0._r8
           this%eflx_heat_from_ac_patch(p) = 0._r8
-          this%eflx_traffic_patch(p)      = 0._r8
-          if ( is_simple_buildtemp) &
-             this%eflx_anthro_patch(p)    = 0._r8
-       else
-          if ( is_prog_buildtemp )then
-             this%eflx_building_lun(l)   = 0._r8
-             this%eflx_urban_ac_lun(l)   = 0._r8
-             this%eflx_urban_heat_lun(l) = 0._r8
-          end if
        end if
     end do
 
@@ -706,7 +607,7 @@ contains
   end subroutine InitCold
 
   !------------------------------------------------------------------------
-  subroutine Restart(this, bounds, ncid, flag, is_simple_buildtemp, is_prog_buildtemp)
+  subroutine Restart(this, bounds, ncid, flag)
     ! 
     ! !DESCRIPTION:
     ! Read/Write module information to/from restart file.
@@ -726,8 +627,6 @@ contains
     type(bounds_type), intent(in)    :: bounds 
     type(file_desc_t), intent(inout) :: ncid   
     character(len=*) , intent(in)    :: flag   
-    logical          , intent(in)    :: is_simple_buildtemp ! If using simple building temp method
-    logical          , intent(in)    :: is_prog_buildtemp   ! If using prognostic building temp method
     !
     ! !LOCAL VARIABLES:
     integer :: j,c ! indices
@@ -743,59 +642,6 @@ contains
          dim1name='pft', &
          long_name='emitted infrared (longwave) radiation', units='watt/m^2', &
          interpinic_flag='interp', readvar=readvar, data=this%eflx_lwrad_out_patch)
-
-    ! Restart for building air temperature method
-    if ( is_prog_buildtemp )then
-       ! landunit urban energy state variable - eflx_urban_ac
-       do_io = .true.
-       ! On a read, confirm that this variable has the expected size (landunit-level); if not, 
-       ! don't read it (instead give it a default value). This is needed to support older initial
-       ! conditions for which this variable had a different size (column-level).
-       if (flag == 'read') then
-          call ncd_inqvdlen(ncid, 'URBAN_AC_L', 1, dimlen, err_code)
-          if (dimlen /= numl_global) then
-             do_io = .false.
-             readvar = .false.
-          end if
-       end if
-       if (do_io) then
-          call restartvar(ncid=ncid, flag=flag, varname='URBAN_AC_L', xtype=ncd_double,  &
-               dim1name='landunit',&
-               long_name='urban air conditioning flux', units='watt/m^2', &
-               interpinic_flag='interp', readvar=readvar, data=this%eflx_urban_ac_lun)
-       else
-          this%eflx_urban_ac_lun = 0.0_r8
-       end if
-       ! landunit urban energy state variable - eflx_urban_heat
-       do_io = .true.
-       ! On a read, confirm that this variable has the expected size (landunit-level); if not, 
-       ! don't read it (instead give it a default value). This is needed to support older initial
-       ! conditions for which this variable had a different size (column-level).
-       if (flag == 'read') then
-          call ncd_inqvdlen(ncid, 'URBAN_HEAT_L', 1, dimlen, err_code)
-          if (dimlen /= numl_global) then
-             do_io = .false.
-             readvar = .false.
-          end if
-       end if
-       if (do_io) then
-          call restartvar(ncid=ncid, flag=flag, varname='URBAN_HEAT_L', xtype=ncd_double,  &
-               dim1name='landunit',&
-               long_name='urban heating flux', units='watt/m^2', &
-               interpinic_flag='interp', readvar=readvar, data=this%eflx_urban_heat_lun)
-       else
-          this%eflx_urban_heat_lun = 0.0_r8
-       end if
-    else if ( is_simple_buildtemp )then
-        call restartvar(ncid=ncid, flag=flag, varname='URBAN_AC', xtype=ncd_double, &
-            dim1name='column', &
-            long_name='urban air conditioning flux', units='watt/m^2', &
-            interpinic_flag='interp', readvar=readvar, data=this%eflx_urban_ac_col)
-        call restartvar(ncid=ncid, flag=flag, varname='URBAN_HEAT', xtype=ncd_double,  &
-            dim1name='column', &
-            long_name='urban heating flux', units='watt/m^2', &
-            interpinic_flag='interp', readvar=readvar, data=this%eflx_urban_heat_col)
-    end if
 
     call restartvar(ncid=ncid, flag=flag, varname='btran2', xtype=ncd_double,  &
          dim1name='pft', &
