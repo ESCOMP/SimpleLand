@@ -482,6 +482,7 @@ contains
     use clm_instur      , only : wt_lunit
     use subgridMod      , only : subgrid_get_info_urban_tbd, subgrid_get_info_urban_hd
     use subgridMod      , only : subgrid_get_info_urban_md
+    use UrbanParamsType , only : urbinp
     use decompMod       , only : ldecomp
     !
     ! !ARGUMENTS:
@@ -525,8 +526,8 @@ contains
     wtlunit2gcell = wt_lunit(gi, ltype)
 
     n = ltype - isturb_MIN + 1
-    wtlunit_roof = 0._r8
-    wtroad_perv  = 0._r8
+    wtlunit_roof = urbinp%wtlunit_roof(gi,n)
+    wtroad_perv  = urbinp%wtroad_perv(gi,n)
 
     if (npatches > 0) then
 

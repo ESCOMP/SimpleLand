@@ -43,7 +43,7 @@ contains
     use clm_varcon          , only : secspday, pc, mu, denh2o, denice, grlnd
     use clm_varctl          , only : iulog, fsurdat, paramfile, soil_layerstruct
     use landunit_varcon     , only : istdlak, istwet, istsoil, istcrop, istice_mec
-    use column_varcon       , only : icol_roof, icol_sunwall, icol_shadewall, icol_road_perv, icol_road_imperv 
+    use column_varcon       , only : icol_road_perv, icol_road_imperv 
     use fileutils           , only : getfil
     use GridcellType     , only : grc                
     !
@@ -105,26 +105,6 @@ contains
     ! --------------------------------------------------------------------
     ! Initialize root fraction (computing from surface, d is depth in meter):
     ! --------------------------------------------------------------------
-
-    ! Currently pervious road has same properties as soil
-    do c = begc,endc
-       l = col%landunit(c)
-
-       if (lun%urbpoi(l) .and. col%itype(c) == icol_road_perv) then 
-          do lev = 1, nlevgrnd
-             soilstate_inst%rootfr_road_perv_col(c,lev) = 0._r8
-          enddo
-          do lev = 1,nlevsoi
-             soilstate_inst%rootfr_road_perv_col(c,lev) = 1.0_r8/real(nlevsoi,r8)
-          end do
-! remove roots below bedrock layer
-          soilstate_inst%rootfr_road_perv_col(c,1:col%nbedrock(c)) = &
-               soilstate_inst%rootfr_road_perv_col(c,1:col%nbedrock(c)) &
-               + sum(soilstate_inst%rootfr_road_perv_col(c,col%nbedrock(c)+1:nlevsoi)) &
-               /real(col%nbedrock(c))
-          soilstate_inst%rootfr_road_perv_col(c,col%nbedrock(c)+1:nlevsoi) = 0._r8
-       end if
-    end do
 
     do c = bounds%begc,bounds%endc
        l = col%landunit(c)
@@ -421,8 +401,6 @@ contains
                 soilstate_inst%watdry_col(c,lev) = spval 
                 soilstate_inst%watopt_col(c,lev) = spval 
              end do
-          else if (col%itype(c) == icol_road_perv) then 
-             ! pervious road layers  - set in UrbanInitTimeConst
           end if
 
        end if

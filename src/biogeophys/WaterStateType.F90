@@ -520,8 +520,8 @@ contains
     use shr_const_mod   , only : SHR_CONST_TKFRZ
     use clm_varpar      , only : nlevsoi, nlevgrnd, nlevsno, nlevlak, nlevurb
     use landunit_varcon , only : istwet, istsoil, istdlak, istcrop, istice_mec  
-    use column_varcon   , only : icol_shadewall, icol_road_perv
-    use column_varcon   , only : icol_road_imperv, icol_roof, icol_sunwall
+    use column_varcon   , only : icol_road_perv
+    use column_varcon   , only : icol_road_imperv
     use clm_varcon      , only : denice, denh2o, spval, sb, bdsno 
     use clm_varcon      , only : zlnd, tfrz, spval, pc
     use clm_varctl      , only : fsurdat, iulog

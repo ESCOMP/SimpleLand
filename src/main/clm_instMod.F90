@@ -166,11 +166,7 @@ contains
 
     ! Initialization of public data types
 
-    call temperature_inst%Init(bounds,           &
-         urbanparams_inst%em_roof(begl:endl),    &
-         urbanparams_inst%em_wall(begl:endl),    &
-         urbanparams_inst%em_improad(begl:endl), &
-         urbanparams_inst%em_perroad(begl:endl))
+    call temperature_inst%Init(bounds)
 
     call canopystate_inst%Init(bounds)
 

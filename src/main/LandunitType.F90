@@ -48,9 +48,6 @@ module LandunitType
      real(r8), pointer :: canyon_hwr   (:) ! urban landunit canyon height to width ratio (-)   
      real(r8), pointer :: wtroad_perv  (:) ! urban landunit weight of pervious road column to total road (-)
      real(r8), pointer :: wtlunit_roof (:) ! weight of roof with respect to urban landunit (-)
-     real(r8), pointer :: ht_roof      (:) ! height of urban roof (m)
-     real(r8), pointer :: z_0_town     (:) ! urban landunit momentum roughness length (m)
-     real(r8), pointer :: z_d_town     (:) ! urban landunit displacement height (m)
 
    contains
 
@@ -97,10 +94,7 @@ contains
     ! The following is set in routine urbanparams_inst%Init in module UrbanParamsType
     allocate(this%canyon_hwr   (begl:endl)); this%canyon_hwr   (:) = nan
     allocate(this%wtroad_perv  (begl:endl)); this%wtroad_perv  (:) = nan
-    allocate(this%ht_roof      (begl:endl)); this%ht_roof      (:) = nan
     allocate(this%wtlunit_roof (begl:endl)); this%wtlunit_roof (:) = nan
-    allocate(this%z_0_town     (begl:endl)); this%z_0_town     (:) = nan
-    allocate(this%z_d_town     (begl:endl)); this%z_d_town     (:) = nan
 
   end subroutine Init
 
@@ -130,10 +124,7 @@ contains
     deallocate(this%active       )
     deallocate(this%canyon_hwr   )
     deallocate(this%wtroad_perv  )
-    deallocate(this%ht_roof      )
     deallocate(this%wtlunit_roof )
-    deallocate(this%z_0_town     )
-    deallocate(this%z_d_town     )
 
   end subroutine Clean
 

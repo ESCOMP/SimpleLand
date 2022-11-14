@@ -42,7 +42,7 @@ contains
     use clm_varcon      , only : zsoi, dzsoi, zisoi, spval, nlvic, dzvic, pc, grlnd
     use clm_varcon      , only : aquifer_water_baseline
     use landunit_varcon , only : istwet, istsoil, istdlak, istcrop, istice_mec
-    use column_varcon   , only : icol_shadewall, icol_road_perv, icol_road_imperv, icol_roof, icol_sunwall
+    use column_varcon   , only : icol_road_perv
     use fileutils       , only : getfil
     use ncdio_pio       , only : file_desc_t, ncd_io, ncd_pio_openfile, ncd_pio_closefile
     !

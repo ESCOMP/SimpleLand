@@ -34,14 +34,8 @@ module TemperatureType
      real(r8), pointer :: t_ssbef_col              (:,:) ! col soil/snow temperature before update (-nlevsno+1:nlevgrnd) 
      real(r8), pointer :: t_soisno_col             (:,:) ! col soil temperature (Kelvin)  (-nlevsno+1:nlevgrnd) 
      real(r8), pointer :: t_soi10cm_col            (:)   ! col soil temperature in top 10cm of soil (Kelvin)
-     real(r8), pointer :: t_soi17cm_col            (:)   ! col soil temperature in top 17cm of soil (Kelvin)
      real(r8), pointer :: t_lake_col               (:,:) ! col lake temperature (Kelvin)  (1:nlevlak)          
      real(r8), pointer :: t_grnd_col               (:)   ! col ground temperature (Kelvin)
-     real(r8), pointer :: t_building_lun           (:)   ! lun internal building air temperature (K)
-     real(r8), pointer :: t_roof_inner_lun         (:)   ! lun roof inside surface temperature (K)
-     real(r8), pointer :: t_sunw_inner_lun         (:)   ! lun sunwall inside surface temperature (K)
-     real(r8), pointer :: t_shdw_inner_lun         (:)   ! lun shadewall inside surface temperature (K)
-     real(r8), pointer :: t_floor_lun              (:)   ! lun floor temperature (K)
      real(r8), pointer :: snot_top_col             (:)   ! col temperature of top snow layer [K]
      real(r8), pointer :: dTdz_top_col             (:)   ! col temperature gradient in top layer  [K m-1]
      real(r8), pointer :: dt_veg_patch             (:)   ! patch change in t_veg, last iteration (Kelvin)
@@ -88,7 +82,6 @@ module TemperatureType
 
      ! Emissivities
      real(r8), pointer :: emv_patch                (:)   ! patch vegetation emissivity 
-     real(r8), pointer :: emg_col                  (:)   ! col ground emissivity
 
      ! Misc
      real(r8), pointer    :: xmf_col               (:)   ! total latent heat of phase change of ground water
@@ -116,8 +109,7 @@ module TemperatureType
 contains
 
   !------------------------------------------------------------------------
-  subroutine Init(this, bounds, &
-       em_roof_lun,  em_wall_lun, em_improad_lun, em_perroad_lun)
+  subroutine Init(this, bounds)
     !
     ! !DESCRIPTION:
     !
@@ -126,18 +118,10 @@ contains
     !
     class(temperature_type)        :: this
     type(bounds_type) , intent(in) :: bounds  
-    real(r8)          , intent(in) :: em_roof_lun(bounds%begl:)
-    real(r8)          , intent(in) :: em_wall_lun(bounds%begl:)
-    real(r8)          , intent(in) :: em_improad_lun(bounds%begl:)
-    real(r8)          , intent(in) :: em_perroad_lun(bounds%begl:)
 
     call this%InitAllocate ( bounds )
     call this%InitHistory ( bounds)
-    call this%InitCold ( bounds,                  &
-         em_roof_lun(bounds%begl:bounds%endl),    &
-         em_wall_lun(bounds%begl:bounds%endl),    &
-         em_improad_lun(bounds%begl:bounds%endl), &
-         em_perroad_lun(bounds%begl:bounds%endl))
+    call this%InitCold ( bounds)
 
   end subroutine Init
 
@@ -174,17 +158,11 @@ contains
     allocate(this%t_soisno_col             (begc:endc,-nlevsno+1:nlevgrnd))  ; this%t_soisno_col             (:,:) = nan
     allocate(this%t_lake_col               (begc:endc,1:nlevlak))            ; this%t_lake_col               (:,:) = nan
     allocate(this%t_grnd_col               (begc:endc))                      ; this%t_grnd_col               (:)   = nan
-    allocate(this%t_building_lun           (begl:endl))                      ; this%t_building_lun           (:)   = nan
-    allocate(this%t_roof_inner_lun         (begl:endl))                      ; this%t_roof_inner_lun         (:)   = nan
-    allocate(this%t_sunw_inner_lun         (begl:endl))                      ; this%t_sunw_inner_lun         (:)   = nan
-    allocate(this%t_shdw_inner_lun         (begl:endl))                      ; this%t_shdw_inner_lun         (:)   = nan
-    allocate(this%t_floor_lun              (begl:endl))                      ; this%t_floor_lun              (:)   = nan
     allocate(this%snot_top_col             (begc:endc))                      ; this%snot_top_col             (:)   = nan
     allocate(this%dTdz_top_col             (begc:endc))                      ; this%dTdz_top_col             (:)   = nan
     allocate(this%dt_veg_patch             (begp:endp))                      ; this%dt_veg_patch             (:)   = nan
 
     allocate(this%t_soi10cm_col            (begc:endc))                      ; this%t_soi10cm_col            (:)   = nan
-    allocate(this%t_soi17cm_col            (begc:endc))                      ; this%t_soi17cm_col            (:)   = spval
     allocate(this%dt_grnd_col              (begc:endc))                      ; this%dt_grnd_col              (:)   = nan
     allocate(this%thv_col                  (begc:endc))                      ; this%thv_col                  (:)   = nan
     allocate(this%thm_patch                (begp:endp))                      ; this%thm_patch                (:)   = nan
@@ -220,7 +198,6 @@ contains
 
     ! emissivities
     allocate(this%emv_patch                (begp:endp))                      ; this%emv_patch                (:)   = nan
-    allocate(this%emg_col                  (begc:endc))                      ; this%emg_col                  (:)   = nan
 
     allocate(this%xmf_col                  (begc:endc))                      ; this%xmf_col                  (:)   = nan
     allocate(this%xmf_h2osfc_col           (begc:endc))                      ; this%xmf_h2osfc_col           (:)   = nan
@@ -368,8 +345,7 @@ contains
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------
-  subroutine InitCold(this, bounds, &
-       em_roof_lun,  em_wall_lun, em_improad_lun, em_perroad_lun)
+  subroutine InitCold(this, bounds)
     !
     ! !DESCRIPTION:
     ! Initialize cold start conditions for module variables
@@ -386,10 +362,6 @@ contains
     ! !ARGUMENTS:
     class(temperature_type)        :: this
     type(bounds_type) , intent(in) :: bounds  
-    real(r8)          , intent(in) :: em_roof_lun(bounds%begl:)
-    real(r8)          , intent(in) :: em_wall_lun(bounds%begl:)
-    real(r8)          , intent(in) :: em_improad_lun(bounds%begl:)
-    real(r8)          , intent(in) :: em_perroad_lun(bounds%begl:)
     !
     ! !LOCAL VARIABLES:
     integer  :: j,l,c,p ! indices
@@ -399,13 +371,7 @@ contains
     integer  :: lev
     !-----------------------------------------------------------------------
 
-    SHR_ASSERT_ALL((ubound(em_roof_lun)    == (/bounds%endl/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(em_wall_lun)    == (/bounds%endl/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(em_improad_lun) == (/bounds%endl/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(em_perroad_lun) == (/bounds%endl/)), errMsg(sourcefile, __LINE__))
-
     associate(snl => col%snl) ! Output: [integer (:)    ]  number of snow layers   
-
       ! Set snow/soil temperature
       ! t_lake only has valid values over non-lake   
       ! t_soisno, t_grnd and t_veg have valid values over all land 
@@ -457,7 +423,6 @@ contains
          else
             this%t_grnd_col(c) = this%t_soisno_col(c,snl(c)+1)
          end if
-         this%t_soi17cm_col(c) = this%t_grnd_col(c)
       end do
 
       do c = bounds%begc,bounds%endc
@@ -489,16 +454,6 @@ contains
        if (lun%urbpoi(l)) then
           this%taf_lun(l) = 283._r8
        end if
-    end do
-
-    do c = bounds%begc,bounds%endc
-       l = col%landunit(c)
-
-       if (col%itype(c) == icol_roof       ) this%emg_col(c) = em_roof_lun(l)
-       if (col%itype(c) == icol_sunwall    ) this%emg_col(c) = em_wall_lun(l)
-       if (col%itype(c) == icol_shadewall  ) this%emg_col(c) = em_wall_lun(l)
-       if (col%itype(c) == icol_road_imperv) this%emg_col(c) = em_improad_lun(l)
-       if (col%itype(c) == icol_road_perv  ) this%emg_col(c) = em_perroad_lun(l)
     end do
 
   end subroutine InitCold

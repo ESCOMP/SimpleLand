@@ -70,8 +70,6 @@ module SoilStateType
      real(r8), pointer :: rootfr_patch         (:,:) ! patch fraction of roots for water in each soil layer (nlevgrnd)
      real(r8), pointer :: crootfr_patch        (:,:) ! patch fraction of roots for carbon in each soil layer (nlevgrnd)
      real(r8), pointer :: root_depth_patch     (:)   ! root depth
-     real(r8), pointer :: rootr_road_perv_col  (:,:) ! col effective fraction of roots in each soil layer of urban pervious road
-     real(r8), pointer :: rootfr_road_perv_col (:,:) ! col effective fraction of roots in each soil layer of urban pervious road
      real(r8), pointer :: k_soil_root_patch    (:,:) ! patch soil-root interface conductance [mm/s]
      real(r8), pointer :: root_conductance_patch(:,:) ! patch root conductance [mm/s]
      real(r8), pointer :: soil_conductance_patch(:,:) ! patch soil conductance [mm/s]
@@ -160,11 +158,9 @@ contains
     allocate(this%rootr_patch          (begp:endp,1:nlevgrnd))          ; this%rootr_patch          (:,:) = nan
     allocate(this%root_depth_patch     (begp:endp))                     ; this%root_depth_patch     (:)   = nan
     allocate(this%rootr_col            (begc:endc,nlevgrnd))            ; this%rootr_col            (:,:) = nan
-    allocate(this%rootr_road_perv_col  (begc:endc,1:nlevgrnd))          ; this%rootr_road_perv_col  (:,:) = nan
     allocate(this%rootfr_patch         (begp:endp,1:nlevgrnd))          ; this%rootfr_patch         (:,:) = nan
     allocate(this%crootfr_patch        (begp:endp,1:nlevgrnd))          ; this%crootfr_patch        (:,:) = nan
     allocate(this%rootfr_col           (begc:endc,1:nlevgrnd))          ; this%rootfr_col           (:,:) = nan 
-    allocate(this%rootfr_road_perv_col (begc:endc,1:nlevgrnd))          ; this%rootfr_road_perv_col (:,:) = nan
     allocate(this%k_soil_root_patch    (begp:endp,1:nlevsoi))           ; this%k_soil_root_patch (:,:) = nan
     allocate(this%root_conductance_patch(begp:endp,1:nlevsoi))          ; this%root_conductance_patch (:,:) = nan
     allocate(this%soil_conductance_patch(begp:endp,1:nlevsoi))          ; this%soil_conductance_patch (:,:) = nan
