@@ -46,7 +46,6 @@ module SoilStateType
      real(r8), pointer :: soilresis_col        (:)   ! col soil evaporative resistance S&L14 (s/m)
      real(r8), pointer :: soilbeta_col         (:)   ! col factor that reduces ground evaporation L&P1992(-)
      real(r8), pointer :: soilalpha_col        (:)   ! col factor that reduces ground saturated specific humidity (-)
-     real(r8), pointer :: soilalpha_u_col      (:)   ! col urban factor that reduces ground saturated specific humidity (-) 
      real(r8), pointer :: soilpsi_col          (:,:) ! col soil water potential in each soil layer (MPa) (CN)
      real(r8), pointer :: wtfact_col           (:)   ! col maximum saturated fraction for a gridcell
      real(r8), pointer :: porosity_col         (:,:) ! col soil porisity (1-bulk_density/soil_density) (VIC)
@@ -146,7 +145,6 @@ contains
     allocate(this%soilresis_col        (begc:endc))                     ; this%soilresis_col         (:)   = spval!nan   
     allocate(this%soilbeta_col         (begc:endc))                     ; this%soilbeta_col         (:)   = nan   
     allocate(this%soilalpha_col        (begc:endc))                     ; this%soilalpha_col        (:)   = nan
-    allocate(this%soilalpha_u_col      (begc:endc))                     ; this%soilalpha_u_col      (:)   = nan
     allocate(this%soilpsi_col          (begc:endc,nlevgrnd))            ; this%soilpsi_col          (:,:) = nan
     allocate(this%wtfact_col           (begc:endc))                     ; this%wtfact_col           (:)   = nan
     allocate(this%porosity_col         (begc:endc,nlayer))              ; this%porosity_col         (:,:) = spval
@@ -235,11 +233,6 @@ contains
     call hist_addfld1d (fname='SoilAlpha',  units='unitless',  &
          avgflag='A', long_name='factor limiting ground evap', &
          ptr_col=this%soilalpha_col, set_urb=spval, default='inactive' )
-
-    this%soilalpha_u_col(begc:endc) = spval
-    call hist_addfld1d (fname='SoilAlpha_U',  units='unitless',  &
-         avgflag='A', long_name='urban factor limiting ground evap', &
-         ptr_col=this%soilalpha_u_col, set_nourb=spval, default='inactive')
 
     this%soilresis_col(begc:endc) = spval
     call hist_addfld1d (fname='SOILRESIS',  units='s/m',  &

@@ -224,8 +224,6 @@ contains
     
     call energyflux_inst%InitAccBuffer(bounds)
 
-    call canopystate_inst%InitAccBuffer(bounds)
-
     call t_stopf('init_accflds')
 
   end subroutine clm_instInit
@@ -255,15 +253,11 @@ contains
 
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
 
-    call canopystate_inst%restart (bounds, ncid, flag=flag)
-
     call energyflux_inst%restart (bounds, ncid, flag=flag)
 
     call frictionvel_inst% restart (bounds, ncid, flag=flag)
 
     call soilhydrology_inst%restart (bounds, ncid, flag=flag)
-
-    call solarabs_inst%restart (bounds, ncid, flag=flag)
 
     call temperature_inst%restart (bounds, ncid, flag=flag)
 
@@ -274,9 +268,7 @@ contains
     call waterstate_inst%restart (bounds, ncid, flag=flag, &
          watsat_col=soilstate_inst%watsat_col(bounds%begc:bounds%endc,:)) 
 
-    call surfalb_inst%restart (bounds, ncid, flag=flag, &
-         tlai_patch=canopystate_inst%tlai_patch(bounds%begp:bounds%endp), &
-         tsai_patch=canopystate_inst%tsai_patch(bounds%begp:bounds%endp))
+    call surfalb_inst%restart (bounds, ncid, flag=flag)
 
     call topo_inst%restart (bounds, ncid, flag=flag)
 

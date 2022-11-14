@@ -20,8 +20,6 @@ module SolarAbsorbedType
      
      ! Solar Absorbed
      real(r8), pointer :: fsa_patch              (:)   ! patch solar radiation absorbed (total) (W/m**2)  
-     real(r8), pointer :: fsa_u_patch            (:)   ! patch urban solar radiation absorbed (total) (W/m**2)
-     real(r8), pointer :: fsa_r_patch            (:)   ! patch rural solar radiation absorbed (total) (W/m**2)
      real(r8), pointer :: parsun_z_patch         (:,:) ! patch absorbed PAR for sunlit leaves in canopy layer (W/m**2) 
      real(r8), pointer :: parsha_z_patch         (:,:) ! patch absorbed PAR for shaded leaves in canopy layer (W/m**2) 
      real(r8), pointer :: par240d_z_patch        (:,:) ! 10-day running mean of daytime patch absorbed PAR for leaves in canopy layer (W/m**2) 
@@ -38,17 +36,6 @@ module SolarAbsorbedType
      real(r8), pointer :: sub_surf_abs_SW_patch  (:)   ! patch fraction of solar radiation absorbed below first snow layer
      real(r8), pointer :: sabv_patch             (:)   ! patch solar radiation absorbed by vegetation (W/m**2) 
 
-     real(r8), pointer :: sabs_roof_dir_lun      (:,:) ! lun direct solar absorbed by roof per unit ground area per unit incident flux
-     real(r8), pointer :: sabs_roof_dif_lun      (:,:) ! lun diffuse solar absorbed by roof per unit ground area per unit incident flux
-     real(r8), pointer :: sabs_sunwall_dir_lun   (:,:) ! lun direct  solar absorbed by sunwall per unit wall area per unit incident flux
-     real(r8), pointer :: sabs_sunwall_dif_lun   (:,:) ! lun diffuse solar absorbed by sunwall per unit wall area per unit incident flux
-     real(r8), pointer :: sabs_shadewall_dir_lun (:,:) ! lun direct  solar absorbed by shadewall per unit wall area per unit incident flux
-     real(r8), pointer :: sabs_shadewall_dif_lun (:,:) ! lun diffuse solar absorbed by shadewall per unit wall area per unit incident flux
-     real(r8), pointer :: sabs_improad_dir_lun   (:,:) ! lun direct  solar absorbed by impervious road per unit ground area per unit incident flux
-     real(r8), pointer :: sabs_improad_dif_lun   (:,:) ! lun diffuse solar absorbed by impervious road per unit ground area per unit incident flux
-     real(r8), pointer :: sabs_perroad_dir_lun   (:,:) ! lun direct  solar absorbed by pervious road per unit ground area per unit incident flux
-     real(r8), pointer :: sabs_perroad_dif_lun   (:,:) ! lun diffuse solar absorbed by pervious road per unit ground area per unit incident flux
-
      ! Currently needed by lake code 
      ! TODO (MV 8/20/2014) should be moved in the future
      real(r8), pointer :: fsds_nir_d_patch       (:)   ! patch incident direct beam nir solar radiation (W/m**2)
@@ -63,8 +50,6 @@ module SolarAbsorbedType
      procedure, public  :: Init         
      procedure, private :: InitAllocate 
      procedure, private :: InitHistory  
-     procedure, private :: InitCold     
-     procedure, public  :: Restart      
 
   end type solarabs_type
   !-----------------------------------------------------------------------
@@ -79,7 +64,6 @@ contains
 
     call this%InitAllocate(bounds)
     call this%InitHistory(bounds)
-    call this%InitCold(bounds)
 
   end subroutine Init
 
@@ -107,8 +91,6 @@ contains
     begl = bounds%begl; endl = bounds%endl
 
     allocate(this%fsa_patch              (begp:endp))              ; this%fsa_patch              (:)   = nan
-    allocate(this%fsa_u_patch            (begp:endp))              ; this%fsa_u_patch            (:)   = nan
-    allocate(this%fsa_r_patch            (begp:endp))              ; this%fsa_r_patch            (:)   = nan
     allocate(this%parsun_z_patch         (begp:endp,1:nlevcan))    ; this%parsun_z_patch         (:,:) = nan
     allocate(this%parsha_z_patch         (begp:endp,1:nlevcan))    ; this%parsha_z_patch         (:,:) = nan 
     allocate(this%sabv_patch             (begp:endp))              ; this%sabv_patch             (:)   = nan
@@ -118,16 +100,6 @@ contains
     allocate(this%sabg_soil_patch        (begp:endp))              ; this%sabg_soil_patch        (:)   = nan
     allocate(this%sabg_snow_patch        (begp:endp))              ; this%sabg_snow_patch        (:)   = nan
     allocate(this%sabg_chk_patch         (begp:endp))              ; this%sabg_chk_patch         (:)   = nan
-    allocate(this%sabs_roof_dir_lun      (begl:endl,1:numrad))     ; this%sabs_roof_dir_lun      (:,:) = nan
-    allocate(this%sabs_roof_dif_lun      (begl:endl,1:numrad))     ; this%sabs_roof_dif_lun      (:,:) = nan
-    allocate(this%sabs_sunwall_dir_lun   (begl:endl,1:numrad))     ; this%sabs_sunwall_dir_lun   (:,:) = nan
-    allocate(this%sabs_sunwall_dif_lun   (begl:endl,1:numrad))     ; this%sabs_sunwall_dif_lun   (:,:) = nan
-    allocate(this%sabs_shadewall_dir_lun (begl:endl,1:numrad))     ; this%sabs_shadewall_dir_lun (:,:) = nan
-    allocate(this%sabs_shadewall_dif_lun (begl:endl,1:numrad))     ; this%sabs_shadewall_dif_lun (:,:) = nan
-    allocate(this%sabs_improad_dir_lun   (begl:endl,1:numrad))     ; this%sabs_improad_dir_lun   (:,:) = nan
-    allocate(this%sabs_improad_dif_lun   (begl:endl,1:numrad))     ; this%sabs_improad_dif_lun   (:,:) = nan
-    allocate(this%sabs_perroad_dir_lun   (begl:endl,1:numrad))     ; this%sabs_perroad_dir_lun   (:,:) = nan
-    allocate(this%sabs_perroad_dif_lun   (begl:endl,1:numrad))     ; this%sabs_perroad_dif_lun   (:,:) = nan 
     allocate(this%sub_surf_abs_SW_patch  (begp:endp))              ; this%sub_surf_abs_SW_patch  (:)   = nan
     allocate(this%fsr_patch              (begp:endp))              ; this%fsr_patch              (:)   = nan
     allocate(this%fsr_nir_d_patch        (begp:endp))              ; this%fsr_nir_d_patch        (:)   = nan
@@ -174,16 +146,6 @@ contains
          avgflag='A', long_name='absorbed solar radiation (ice landunits only)', &
          ptr_patch=this%fsa_patch, c2l_scale_type='urbanf', l2g_scale_type='ice', &
          default='inactive')
-
-    this%fsa_r_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSA_R', units='W/m^2',  &
-         avgflag='A', long_name='Rural absorbed solar radiation', &
-         ptr_patch=this%fsa_r_patch, set_spec=spval, default='inactive')
-
-    this%fsa_u_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSA_U', units='W/m^2',  &
-         avgflag='A', long_name='Urban absorbed solar radiation', &
-         ptr_patch=this%fsa_u_patch, c2l_scale_type='urbanf', set_nourb=spval, default='inactive')
 
     this%fsr_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSR', units='W/m^2',  &
@@ -262,112 +224,5 @@ contains
          ptr_patch=this%sub_surf_abs_SW_patch, set_lake=spval, set_urb=spval, default='inactive')
 
   end subroutine InitHistory
-
-  !------------------------------------------------------------------------
-  subroutine InitCold(this, bounds)
-    !
-    ! Initialize module surface albedos to reasonable values
-    !
-    use landunit_varcon, only : istsoil, istcrop
-    !
-    ! !ARGUMENTS:
-    class(solarabs_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer :: begl, endl
-    !-----------------------------------------------------------------------
-
-    begl = bounds%begl; endl = bounds%endl
-
-    this%sabs_roof_dir_lun      (begl:endl, :) = 0._r8    
-    this%sabs_roof_dif_lun      (begl:endl, :) = 0._r8    
-    this%sabs_sunwall_dir_lun   (begl:endl, :) = 0._r8
-    this%sabs_sunwall_dif_lun   (begl:endl, :) = 0._r8
-    this%sabs_shadewall_dir_lun (begl:endl, :) = 0._r8
-    this%sabs_shadewall_dif_lun (begl:endl, :) = 0._r8
-    this%sabs_improad_dir_lun   (begl:endl, :) = 0._r8
-    this%sabs_improad_dif_lun   (begl:endl, :) = 0._r8
-    this%sabs_perroad_dir_lun   (begl:endl, :) = 0._r8
-    this%sabs_perroad_dif_lun   (begl:endl, :) = 0._r8
-
-  end subroutine InitCold
-
-  !---------------------------------------------------------------------
-  subroutine Restart(this, bounds, ncid, flag)
-    ! 
-    ! !DESCRIPTION:
-    ! Read/Write module information to/from restart file.
-    !
-    ! !USES:
-    use shr_infnan_mod , only : shr_infnan_isnan
-    use clm_varctl     , only : iulog 
-    use spmdMod        , only : masterproc
-    use abortutils     , only : endrun
-    use ncdio_pio      , only : file_desc_t, ncd_defvar, ncd_io, ncd_double, ncd_int, ncd_inqvdlen
-    use restUtilMod
-    !
-    ! !ARGUMENTS:
-    class(solarabs_type) :: this
-    type(bounds_type), intent(in)    :: bounds 
-    type(file_desc_t), intent(inout) :: ncid   ! netcdf id
-    character(len=*) , intent(in)    :: flag   ! 'read' or 'write'
-    !
-    ! !LOCAL VARIABLES:
-    logical :: readvar      ! determine if variable is on initial file
-    integer :: p
-    !---------------------------------------------------------------------
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_roof_dir', xtype=ncd_double,  dim1name='landunit',            & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='direct solar absorbed by roof per unit ground area per unit incident flux', units='',             &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_roof_dir_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_roof_dif', xtype=ncd_double,  dim1name='landunit',            & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='diffuse solar absorbed by roof per unit ground area per unit incident flux', units='',            &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_roof_dif_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_sunwall_dir', xtype=ncd_double,  dim1name='landunit',         & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='direct solar absorbed by sunwall per unit wall area per unit incident flux', units='',            &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_sunwall_dir_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_sunwall_dif', xtype=ncd_double,  dim1name='landunit',         & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='diffuse solar absorbed by sunwall per unit wall area per unit incident flux', units='',           &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_sunwall_dif_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_shadewall_dir', xtype=ncd_double,  dim1name='landunit',       & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='direct solar absorbed by shadewall per unit wall area per unit incident flux', units='',          &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_shadewall_dir_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_shadewall_dif', xtype=ncd_double,  dim1name='landunit',       & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='diffuse solar absorbed by shadewall per unit wall area per unit incident flux', units='',         &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_shadewall_dif_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_improad_dir', xtype=ncd_double,  dim1name='landunit',         & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='direct solar absorbed by impervious road per unit ground area per unit incident flux', units='',  &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_improad_dir_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_improad_dif', xtype=ncd_double,  dim1name='landunit',         & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='diffuse solar absorbed by impervious road per unit ground area per unit incident flux', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_improad_dif_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_perroad_dir', xtype=ncd_double,  dim1name='landunit',         & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='direct solar absorbed by pervious road per unit ground area per unit incident flux', units='',    &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_perroad_dir_lun)
-
-    call restartvar(ncid=ncid, flag=flag, varname='sabs_perroad_dif', xtype=ncd_double,  dim1name='landunit',         & 
-         dim2name='numrad', switchdim=.true.,                                                                         &
-         long_name='diffuse solar absorbed by pervious road per unit ground area per unit incident flux', units='',   &
-         interpinic_flag='interp', readvar=readvar, data=this%sabs_perroad_dif_lun)
-
-  end subroutine Restart
 
 end module SolarAbsorbedType

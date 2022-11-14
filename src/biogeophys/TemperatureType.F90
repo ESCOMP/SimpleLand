@@ -37,8 +37,6 @@ module TemperatureType
      real(r8), pointer :: t_soi17cm_col            (:)   ! col soil temperature in top 17cm of soil (Kelvin)
      real(r8), pointer :: t_lake_col               (:,:) ! col lake temperature (Kelvin)  (1:nlevlak)          
      real(r8), pointer :: t_grnd_col               (:)   ! col ground temperature (Kelvin)
-     real(r8), pointer :: t_grnd_r_col             (:)   ! col rural ground temperature (Kelvin)
-     real(r8), pointer :: t_grnd_u_col             (:)   ! col urban ground temperature (Kelvin) (needed by Hydrology2Mod)
      real(r8), pointer :: t_building_lun           (:)   ! lun internal building air temperature (K)
      real(r8), pointer :: t_roof_inner_lun         (:)   ! lun roof inside surface temperature (K)
      real(r8), pointer :: t_sunw_inner_lun         (:)   ! lun sunwall inside surface temperature (K)
@@ -58,20 +56,10 @@ module TemperatureType
      real(r8), pointer :: taf_lun                  (:)   ! lun urban canopy air temperature (K)
 
      real(r8), pointer :: t_ref2m_patch            (:)   ! patch 2 m height surface air temperature (Kelvin)
-     real(r8), pointer :: t_ref2m_r_patch          (:)   ! patch rural 2 m height surface air temperature (Kelvin)
-     real(r8), pointer :: t_ref2m_u_patch          (:)   ! patch urban 2 m height surface air temperature (Kelvin)
      real(r8), pointer :: t_ref2m_min_patch        (:)   ! patch daily minimum of average 2 m height surface air temperature (K)
-     real(r8), pointer :: t_ref2m_min_r_patch      (:)   ! patch daily minimum of average 2 m height surface air temperature - rural(K)
-     real(r8), pointer :: t_ref2m_min_u_patch      (:)   ! patch daily minimum of average 2 m height surface air temperature - urban (K)
      real(r8), pointer :: t_ref2m_max_patch        (:)   ! patch daily maximum of average 2 m height surface air temperature (K)
-     real(r8), pointer :: t_ref2m_max_r_patch      (:)   ! patch daily maximum of average 2 m height surface air temperature - rural(K)
-     real(r8), pointer :: t_ref2m_max_u_patch      (:)   ! patch daily maximum of average 2 m height surface air temperature - urban (K)
      real(r8), pointer :: t_ref2m_min_inst_patch   (:)   ! patch instantaneous daily min of average 2 m height surface air temp (K)
-     real(r8), pointer :: t_ref2m_min_inst_r_patch (:)   ! patch instantaneous daily min of average 2 m height surface air temp - rural (K)
-     real(r8), pointer :: t_ref2m_min_inst_u_patch (:)   ! patch instantaneous daily min of average 2 m height surface air temp - urban (K)
      real(r8), pointer :: t_ref2m_max_inst_patch   (:)   ! patch instantaneous daily max of average 2 m height surface air temp (K)
-     real(r8), pointer :: t_ref2m_max_inst_r_patch (:)   ! patch instantaneous daily max of average 2 m height surface air temp - rural (K)
-     real(r8), pointer :: t_ref2m_max_inst_u_patch (:)   ! patch instantaneous daily max of average 2 m height surface air temp - urban (K)
 
      ! Accumulated quantities
      !
@@ -81,8 +69,6 @@ module TemperatureType
      ! being: that way one parameterization is free to change the exact meaning of its
      ! accumulator without affecting the other).
      !
-     real(r8), pointer :: t_veg24_patch           (:)   ! patch 24hr average vegetation temperature (K)
-     real(r8), pointer :: t_veg240_patch          (:)   ! patch 240hr average vegetation temperature (Kelvin)
      real(r8), pointer :: gdd0_patch              (:)   ! patch growing degree-days base  0C from planting  (ddays)
      real(r8), pointer :: gdd8_patch              (:)   ! patch growing degree-days base  8C from planting  (ddays)
      real(r8), pointer :: gdd10_patch             (:)   ! patch growing degree-days base 10C from planting  (ddays)
@@ -188,8 +174,6 @@ contains
     allocate(this%t_soisno_col             (begc:endc,-nlevsno+1:nlevgrnd))  ; this%t_soisno_col             (:,:) = nan
     allocate(this%t_lake_col               (begc:endc,1:nlevlak))            ; this%t_lake_col               (:,:) = nan
     allocate(this%t_grnd_col               (begc:endc))                      ; this%t_grnd_col               (:)   = nan
-    allocate(this%t_grnd_r_col             (begc:endc))                      ; this%t_grnd_r_col             (:)   = nan
-    allocate(this%t_grnd_u_col             (begc:endc))                      ; this%t_grnd_u_col             (:)   = nan
     allocate(this%t_building_lun           (begl:endl))                      ; this%t_building_lun           (:)   = nan
     allocate(this%t_roof_inner_lun         (begl:endl))                      ; this%t_roof_inner_lun         (:)   = nan
     allocate(this%t_sunw_inner_lun         (begl:endl))                      ; this%t_sunw_inner_lun         (:)   = nan
@@ -211,24 +195,12 @@ contains
     allocate(this%taf_lun                  (begl:endl))                      ; this%taf_lun                  (:)   = nan
 
     allocate(this%t_ref2m_patch            (begp:endp))                      ; this%t_ref2m_patch            (:)   = nan
-    allocate(this%t_ref2m_r_patch          (begp:endp))                      ; this%t_ref2m_r_patch          (:)   = nan
-    allocate(this%t_ref2m_u_patch          (begp:endp))                      ; this%t_ref2m_u_patch          (:)   = nan
     allocate(this%t_ref2m_min_patch        (begp:endp))                      ; this%t_ref2m_min_patch        (:)   = nan
-    allocate(this%t_ref2m_min_r_patch      (begp:endp))                      ; this%t_ref2m_min_r_patch      (:)   = nan
-    allocate(this%t_ref2m_min_u_patch      (begp:endp))                      ; this%t_ref2m_min_u_patch      (:)   = nan
     allocate(this%t_ref2m_max_patch        (begp:endp))                      ; this%t_ref2m_max_patch        (:)   = nan
-    allocate(this%t_ref2m_max_r_patch      (begp:endp))                      ; this%t_ref2m_max_r_patch      (:)   = nan
-    allocate(this%t_ref2m_max_u_patch      (begp:endp))                      ; this%t_ref2m_max_u_patch      (:)   = nan
     allocate(this%t_ref2m_max_inst_patch   (begp:endp))                      ; this%t_ref2m_max_inst_patch   (:)   = nan
-    allocate(this%t_ref2m_max_inst_r_patch (begp:endp))                      ; this%t_ref2m_max_inst_r_patch (:)   = nan
-    allocate(this%t_ref2m_max_inst_u_patch (begp:endp))                      ; this%t_ref2m_max_inst_u_patch (:)   = nan
     allocate(this%t_ref2m_min_inst_patch   (begp:endp))                      ; this%t_ref2m_min_inst_patch   (:)   = nan
-    allocate(this%t_ref2m_min_inst_r_patch (begp:endp))                      ; this%t_ref2m_min_inst_r_patch (:)   = nan
-    allocate(this%t_ref2m_min_inst_u_patch (begp:endp))                      ; this%t_ref2m_min_inst_u_patch (:)   = nan
 
     ! Accumulated fields
-    allocate(this%t_veg24_patch            (begp:endp))                      ; this%t_veg24_patch            (:)   = nan
-    allocate(this%t_veg240_patch           (begp:endp))                      ; this%t_veg240_patch           (:)   = nan
     allocate(this%gdd0_patch               (begp:endp))                      ; this%gdd0_patch               (:)   = spval
     allocate(this%gdd8_patch               (begp:endp))                      ; this%gdd8_patch               (:)   = spval
     allocate(this%gdd10_patch              (begp:endp))                      ; this%gdd10_patch              (:)   = spval
@@ -291,11 +263,6 @@ contains
          avgflag='A', long_name='surface water temperature', &
          ptr_col=this%t_h2osfc_col, default='inactive')
 
-    this%t_grnd_u_col(begc:endc) = spval
-    call hist_addfld1d (fname='TG_U', units='K',  &
-         avgflag='A', long_name='Urban ground temperature', &
-         ptr_col=this%t_grnd_u_col, set_nourb=spval, c2l_scale_type='urbans', default='inactive')
-
     this%t_lake_col(begc:endc,:) = spval
     call hist_addfld2d (fname='TLAKE',  units='K', type2d='levlak', &
          avgflag='A', long_name='lake temperature', &
@@ -321,11 +288,6 @@ contains
          avgflag='A', long_name='2m air temperature (ice landunits only)', &
          ptr_patch=this%t_ref2m_patch, l2g_scale_type='ice', default='inactive')
 
-    this%t_ref2m_r_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TSA_R', units='K',  &
-         avgflag='A', long_name='Rural 2m air temperature', &
-         ptr_patch=this%t_ref2m_r_patch, set_spec=spval, default='inactive')
-
     this%t_ref2m_min_patch(begp:endp) = spval
     call hist_addfld1d (fname='TREFMNAV', units='K',  &
          avgflag='A', long_name='daily minimum of average 2-m temperature', &
@@ -335,31 +297,6 @@ contains
     call hist_addfld1d (fname='TREFMXAV', units='K',  &
          avgflag='A', long_name='daily maximum of average 2-m temperature', &
          ptr_patch=this%t_ref2m_max_patch, default='inactive')
-
-    this%t_ref2m_min_r_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TREFMNAV_R', units='K',  &
-         avgflag='A', long_name='Rural daily minimum of average 2-m temperature', &
-         ptr_patch=this%t_ref2m_min_r_patch, set_spec=spval, default='inactive')
-
-    this%t_ref2m_max_r_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TREFMXAV_R', units='K',  &
-         avgflag='A', long_name='Rural daily maximum of average 2-m temperature', &
-         ptr_patch=this%t_ref2m_max_r_patch, set_spec=spval, default='inactive')
-
-    this%t_ref2m_u_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TSA_U', units='K',  &
-         avgflag='A', long_name='Urban 2m air temperature', &
-         ptr_patch=this%t_ref2m_u_patch, set_nourb=spval, default='inactive')
-
-    this%t_ref2m_min_u_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TREFMNAV_U', units='K',  &
-         avgflag='A', long_name='Urban daily minimum of average 2-m temperature', &
-         ptr_patch=this%t_ref2m_min_u_patch, set_nourb=spval, default='inactive')
-
-    this%t_ref2m_max_u_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TREFMXAV_U', units='K',  &
-         avgflag='A', long_name='Urban daily maximum of average 2-m temperature', &
-         ptr_patch=this%t_ref2m_max_u_patch, set_nourb=spval, default='inactive')
 
     this%t_veg_patch(begp:endp) = spval
     call hist_addfld1d (fname='TV', units='K',  &
@@ -375,11 +312,6 @@ contains
          avgflag='A', long_name='ground temperature (ice landunits only)', &
          ptr_col=this%t_grnd_col, c2l_scale_type='urbans', l2g_scale_type='ice', &
          default='inactive')
-
-    this%t_grnd_r_col(begc:endc) = spval
-    call hist_addfld1d (fname='TG_R', units='K',  &
-         avgflag='A', long_name='Rural ground temperature', &
-         ptr_col=this%t_grnd_r_col, set_spec=spval, default='inactive')
 
     this%t_soisno_col(begc:endc,:) = spval
     call hist_addfld2d (fname='TSOI',  units='K', type2d='levgrnd', &
@@ -432,18 +364,6 @@ contains
     call hist_addfld1d (fname='SNOdTdzL', units='K/m', &
          avgflag='A', long_name='top snow layer temperature gradient (land)', &
          ptr_col=this%dTdz_top_col, set_urb=spval, default='inactive')
-
-    ! Accumulated quantities
-
-    this%t_veg24_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TV24', units='K',  &
-         avgflag='A', long_name='vegetation temperature (last 24hrs)', &
-         ptr_patch=this%t_veg24_patch, default='inactive')
-
-    this%t_veg240_patch(begp:endp)  = spval
-    call hist_addfld1d (fname='TV240', units='K',  &
-         avgflag='A', long_name='vegetation temperature (last 240hrs)', &
-         ptr_patch=this%t_veg240_patch, default='inactive')
 
   end subroutine InitHistory
 
@@ -552,7 +472,7 @@ contains
 
       this%t_h2osfc_col(bounds%begc:bounds%endc)  = 274._r8
 
-      ! Set t_veg, t_ref2m, t_ref2m_u and tref2m_r 
+      ! Set t_veg, t_ref2m
 
       do p = bounds%begp, bounds%endp
          c = patch%column(p)
@@ -560,16 +480,6 @@ contains
 
          this%t_veg_patch(p)   = 283._r8
          this%t_ref2m_patch(p) = 283._r8
-
-         if (lun%urbpoi(l)) then
-            this%t_ref2m_u_patch(p) = 283._r8
-         else 
-            if (.not. lun%ifspecial(l)) then 
-               this%t_ref2m_r_patch(p) = 283._r8
-            else 
-               this%t_ref2m_r_patch(p) = spval
-            end if
-         end if
 
       end do
 
@@ -645,91 +555,31 @@ contains
          long_name='ground temperature', units='K', &
          interpinic_flag='interp', readvar=readvar, data=this%t_grnd_col)
 
-    call restartvar(ncid=ncid, flag=flag, varname='T_GRND_R', xtype=ncd_double,  &
-         dim1name='column', &
-         long_name='rural ground temperature', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_grnd_r_col)
-         
-    call restartvar(ncid=ncid, flag=flag, varname='T_GRND_U', xtype=ncd_double, &
-         dim1name='column',                    &
-         long_name='urban ground temperature', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_grnd_u_col)
-
     call restartvar(ncid=ncid, flag=flag, varname='T_REF2M', xtype=ncd_double,  &
          dim1name='pft', &
          long_name='2m height surface air temperature', units='K', &
          interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_patch)
     if (flag=='read' .and. .not. readvar) call endrun(msg=errMsg(sourcefile, __LINE__))
 
-    call restartvar(ncid=ncid, flag=flag, varname="T_REF2M_R", xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='Rural 2m height surface air temperature', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_r_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname="T_REF2M_U", xtype=ncd_double, dim1name='pft',                      &
-         long_name='Urban 2m height surface air temperature', units='K',                                              &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_u_patch)
-
-
     call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MIN', xtype=ncd_double,  &
          dim1name='pft', &
          long_name='daily minimum of average 2 m height surface air temperature (K)', units='K', &
          interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_min_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MIN_R', xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='rural daily minimum of average 2 m height surface air temperature (K)', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_min_r_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MIN_U', xtype=ncd_double, dim1name='pft',                  &
-         long_name='urban daily minimum of average 2 m height surface air temperature (K)', units='K',                &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_min_u_patch)
 
     call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MAX', xtype=ncd_double,  &
          dim1name='pft', &
          long_name='daily maximum of average 2 m height surface air temperature (K)', units='K', &
          interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_max_patch)
 
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MAX_R', xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='rural daily maximum of average 2 m height surface air temperature (K)', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_max_r_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MAX_U', xtype=ncd_double, dim1name='pft',                  &
-         long_name='urban daily maximum of average 2 m height surface air temperature (K)', units='K',                &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_max_u_patch)
-
     call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MIN_INST', xtype=ncd_double,  &
          dim1name='pft', &
          long_name='instantaneous daily min of average 2 m height surface air temp (K)', units='K', &
          interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_min_inst_patch)
 
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MIN_INST_R', xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='rural instantaneous daily min of average 2 m height surface air temp (K)', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_min_inst_r_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MIN_INST_U', xtype=ncd_double, dim1name='pft',             &
-         long_name='urban instantaneous daily min of average 2 m height surface air temp (K)', units='K',             &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_min_inst_u_patch)
-
     call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MAX_INST', xtype=ncd_double,  &
          dim1name='pft', &
          long_name='instantaneous daily max of average 2 m height surface air temp (K)', units='K', &
          interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_max_inst_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MAX_INST_R', xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='rural instantaneous daily max of average 2 m height surface air temp (K)', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_max_inst_r_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M_MAX_INST_U', xtype=ncd_double,  dim1name='pft',            &
-         long_name='urban instantaneous daily max of average 2 m height surface air temp (K)', units='K',             &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_max_inst_u_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='taf', xtype=ncd_double, dim1name='landunit',                       &
-         long_name='urban canopy air temperature', units='K',                                                         &
-         interpinic_flag='interp', readvar=readvar, data=this%taf_lun)
 
   end subroutine Restart
 
@@ -772,26 +622,8 @@ contains
 
     dtime = get_step_size()
 
-    this%t_veg24_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='T_VEG24', units='K',                                              &
-         desc='24hr average of vegetation temperature',  accum_type='runmean', accum_period=-1,    &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    this%t_veg240_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='T_VEG240', units='K',                                             &
-         desc='240hr average of vegetation temperature',  accum_type='runmean', accum_period=-10,  &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
     call init_accum_field(name='TREFAV', units='K', &
          desc='average over an hour of 2-m temperature', accum_type='timeavg', accum_period=nint(3600._r8/dtime), &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    call init_accum_field(name='TREFAV_U', units='K', &
-         desc='average over an hour of urban 2-m temperature', accum_type='timeavg', accum_period=nint(3600._r8/dtime), &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    call init_accum_field(name='TREFAV_R', units='K', &
-         desc='average over an hour of rural 2-m temperature', accum_type='timeavg', accum_period=nint(3600._r8/dtime), &
          subgrid_type='pft', numlev=1, init_value=0._r8)
 
     ! The following is a running mean. The accumulation period is set to -10 for a 10-day running mean.
@@ -840,12 +672,6 @@ contains
     ! Determine time step
     nstep = get_nstep()
 
-    call extract_accum_field ('T_VEG24', rbufslp, nstep)
-    this%t_veg24_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('T_VEG240', rbufslp, nstep)
-    this%t_veg240_patch(begp:endp) = rbufslp(begp:endp)
-
     call extract_accum_field ('T10', rbufslp, nstep)
     this%t_a10_patch(begp:endp) = rbufslp(begp:endp)
 
@@ -854,20 +680,9 @@ contains
 
     if (nsrest == nsrStartup) then 
        this%t_ref2m_max_patch(begp:endp)        =  spval
-       this%t_ref2m_max_r_patch(begp:endp)      =  spval
-       this%t_ref2m_max_u_patch(begp:endp)      =  spval
-
        this%t_ref2m_min_patch(begp:endp)        =  spval
-       this%t_ref2m_min_r_patch(begp:endp)      =  spval
-       this%t_ref2m_min_u_patch(begp:endp)      =  spval
-
        this%t_ref2m_max_inst_patch(begp:endp)   = -spval
-       this%t_ref2m_max_inst_r_patch(begp:endp) = -spval
-       this%t_ref2m_max_inst_u_patch(begp:endp) = -spval
-
        this%t_ref2m_min_inst_patch(begp:endp)   =  spval
-       this%t_ref2m_min_inst_r_patch(begp:endp) =  spval
-       this%t_ref2m_min_inst_u_patch(begp:endp) =  spval
     end if
 
     deallocate(rbufslp)
@@ -915,15 +730,6 @@ contains
        call endrun(msg=errMsg(sourcefile, __LINE__))
     endif
 
-    ! Accumulate and extract T_VEG24 & T_VEG240 
-    do p = begp,endp
-       rbufslp(p) = this%t_veg_patch(p)
-    end do
-    call update_accum_field  ('T_VEG24' , rbufslp             , nstep)
-    call extract_accum_field ('T_VEG24' , this%t_veg24_patch  , nstep)
-    call update_accum_field  ('T_VEG240', rbufslp             , nstep)
-    call extract_accum_field ('T_VEG240', this%t_veg240_patch , nstep)
-
     ! Accumulate and extract TREFAV - hourly average 2m air temperature
     ! Used to compute maximum and minimum of hourly averaged 2m reference
     ! temperature over a day. Note that "spval" is returned by the call to
@@ -947,62 +753,6 @@ contains
        else if (secs == dtime) then
           this%t_ref2m_max_patch(p) = spval
           this%t_ref2m_min_patch(p) = spval
-       endif
-    end do
-
-    ! Accumulate and extract TREFAV_U - hourly average urban 2m air temperature
-    ! Used to compute maximum and minimum of hourly averaged 2m reference
-    ! temperature over a day. Note that "spval" is returned by the call to
-    ! accext if the time step does not correspond to the end of an
-    ! accumulation interval. First, initialize the necessary values for
-    ! an initial run at the first time step the accumulator is called
-
-    call update_accum_field  ('TREFAV_U', this%t_ref2m_u_patch, nstep)
-    call extract_accum_field ('TREFAV_U', rbufslp, nstep)
-    do p = begp,endp
-       l = patch%landunit(p)
-       if (rbufslp(p) /= spval) then
-          this%t_ref2m_max_inst_u_patch(p) = max(rbufslp(p), this%t_ref2m_max_inst_u_patch(p))
-          this%t_ref2m_min_inst_u_patch(p) = min(rbufslp(p), this%t_ref2m_min_inst_u_patch(p))
-       endif
-       if (end_cd) then
-         if (lun%urbpoi(l)) then
-          this%t_ref2m_max_u_patch(p) = this%t_ref2m_max_inst_u_patch(p)
-          this%t_ref2m_min_u_patch(p) = this%t_ref2m_min_inst_u_patch(p)
-          this%t_ref2m_max_inst_u_patch(p) = -spval
-          this%t_ref2m_min_inst_u_patch(p) =  spval
-         end if
-       else if (secs == dtime) then
-          this%t_ref2m_max_u_patch(p) = spval
-          this%t_ref2m_min_u_patch(p) = spval
-       endif
-    end do
-
-    ! Accumulate and extract TREFAV_R - hourly average rural 2m air temperature
-    ! Used to compute maximum and minimum of hourly averaged 2m reference
-    ! temperature over a day. Note that "spval" is returned by the call to
-    ! accext if the time step does not correspond to the end of an
-    ! accumulation interval. First, initialize the necessary values for
-    ! an initial run at the first time step the accumulator is called
-
-    call update_accum_field  ('TREFAV_R', this%t_ref2m_r_patch, nstep)
-    call extract_accum_field ('TREFAV_R', rbufslp, nstep)
-    do p = begp,endp
-       l = patch%landunit(p)
-       if (rbufslp(p) /= spval) then
-          this%t_ref2m_max_inst_r_patch(p) = max(rbufslp(p), this%t_ref2m_max_inst_r_patch(p))
-          this%t_ref2m_min_inst_r_patch(p) = min(rbufslp(p), this%t_ref2m_min_inst_r_patch(p))
-       endif
-       if (end_cd) then
-         if (.not.(lun%ifspecial(l))) then
-          this%t_ref2m_max_r_patch(p) = this%t_ref2m_max_inst_r_patch(p)
-          this%t_ref2m_min_r_patch(p) = this%t_ref2m_min_inst_r_patch(p)
-          this%t_ref2m_max_inst_r_patch(p) = -spval
-          this%t_ref2m_min_inst_r_patch(p) =  spval
-         end if
-       else if (secs == dtime) then
-          this%t_ref2m_max_r_patch(p) = spval
-          this%t_ref2m_min_r_patch(p) = spval
        endif
     end do
 

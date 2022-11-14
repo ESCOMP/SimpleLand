@@ -37,7 +37,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <soil_layerstruct phys="clm5_0">20SL_8.5m</soil_layerstruct>
 <soil_layerstruct phys="clm4_5">10SL_3.5m</soil_layerstruct>
 
-
 <!-- Rooting profile namelist defaults -->
 <rooting_profile_method_water  phys="clm5_0">1</rooting_profile_method_water>
 <rooting_profile_method_water  phys="clm4_5">0</rooting_profile_method_water>

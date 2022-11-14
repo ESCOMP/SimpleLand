@@ -53,8 +53,6 @@ module SurfaceAlbedoType
      real(r8), pointer :: flx_absin_col        (:,:) ! col absorbed flux per unit incident diffuse flux: NIR (col,lyr) [frc]
 
      real(r8) , pointer :: fsun_z_patch        (:,:) ! patch patch sunlit fraction of canopy layer
-     real(r8) , pointer :: tlai_z_patch        (:,:) ! patch tlai increment for canopy layer                         
-     real(r8) , pointer :: tsai_z_patch        (:,:) ! patch tsai increment for canopy layer                         
      integer  , pointer :: ncan_patch          (:)   ! patch number of canopy layers
      integer  , pointer :: nrad_patch          (:)   ! patch number of canopy layers, above snow for radiative transfer
      real(r8) , pointer :: vcmaxcintsun_patch  (:)   ! patch leaf to canopy scaling coefficient, sunlit leaf vcmax   
@@ -146,8 +144,6 @@ contains
     allocate(this%flx_absin_col      (begc:endc,-nlevsno+1:1)) ; this%flx_absin_col      (:,:) = spval
 
     allocate(this%fsun_z_patch       (begp:endp,nlevcan))      ; this%fsun_z_patch       (:,:) = 0._r8
-    allocate(this%tlai_z_patch       (begp:endp,nlevcan))      ; this%tlai_z_patch       (:,:) = 0._r8
-    allocate(this%tsai_z_patch       (begp:endp,nlevcan))      ; this%tsai_z_patch       (:,:) = 0._r8
     allocate(this%ncan_patch         (begp:endp))              ; this%ncan_patch         (:)   = 0
     allocate(this%nrad_patch         (begp:endp))              ; this%nrad_patch         (:)   = 0
     allocate(this%vcmaxcintsun_patch (begp:endp))              ; this%vcmaxcintsun_patch (:)   = nan
@@ -252,8 +248,7 @@ contains
   end subroutine InitCold
    
   !---------------------------------------------------------------------
-  subroutine Restart(this, bounds, ncid, flag, &
-       tlai_patch, tsai_patch)
+  subroutine Restart(this, bounds, ncid, flag)
     ! 
     ! !DESCRIPTION:
     ! Read/Write module information to/from restart file.
@@ -271,8 +266,6 @@ contains
     type(bounds_type) , intent(in)    :: bounds 
     type(file_desc_t) , intent(inout) :: ncid ! netcdf id
     character(len=*)  , intent(in)    :: flag ! 'read' or 'write'
-    real(r8)          , intent(in)    :: tlai_patch(bounds%begp:)
-    real(r8)          , intent(in)    :: tsai_patch(bounds%begp:)
     !
     ! !LOCAL VARIABLES:
     logical :: readvar      ! determine if variable is on initial file
@@ -280,9 +273,6 @@ contains
     integer :: begp, endp
     integer :: begc, endc
     !---------------------------------------------------------------------
-
-    SHR_ASSERT_ALL((ubound(tlai_patch)  == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(tsai_patch)  == (/bounds%endp/)), errMsg(sourcefile, __LINE__))
 
     begp = bounds%begp; endp = bounds%endp
     begc = bounds%begc; endc = bounds%endc
@@ -331,34 +321,6 @@ contains
          dim1name='column', dim2name='numrad', switchdim=.true., &
          long_name='snow albedo (diffuse) (0 to 1)', units='proportion', &
          interpinic_flag='interp', readvar=readvar, data=this%albsni_hst_col)
-
-    call restartvar(ncid=ncid, flag=flag, varname='tlai_z', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='tlai increment for canopy layer', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%tlai_z_patch)
-    if (flag=='read' .and. .not. readvar) then
-       if (masterproc) then
-          write(iulog,*) "can't find tlai_z in restart (or initial) file..."
-          write(iulog,*) "Initialize tlai_z to tlai/nlevcan" 
-       end if
-       do iv=1,nlevcan
-          this%tlai_z_patch(begp:endp,iv) =  tlai_patch(begp:endp) / nlevcan
-       end do
-    end if
-
-    call restartvar(ncid=ncid, flag=flag, varname='tsai_z', xtype=ncd_double,  &
-         dim1name='pft', dim2name='levcan', switchdim=.true., &
-         long_name='tsai increment for canopy layer', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%tsai_z_patch)
-    if (flag=='read' .and. .not. readvar) then
-       if (masterproc) then
-          write(iulog,*) "can't find tsai_z in restart (or initial) file..."
-          write(iulog,*) "Initialize tsai_z to tsai/nlevcan" 
-       end if
-       do iv=1,nlevcan
-          this%tsai_z_patch(begp:endp,iv) = tsai_patch(begp:endp) / nlevcan
-       end do
-    end if
 
     call restartvar(ncid=ncid, flag=flag, varname='ncan', xtype=ncd_int,  &
          dim1name='pft', long_name='number of canopy layers', units='', &

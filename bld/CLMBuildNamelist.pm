@@ -1117,6 +1117,7 @@ sub setup_logic_create_crop_landunit {
   my $var = 'create_crop_landunit';
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var );
 }
+
 #-------------------------------------------------------------------------------
 
 sub error_if_set {
