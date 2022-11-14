@@ -18,11 +18,7 @@ module UrbanParamsType
   private
   !
   ! !PUBLIC MEMBER FUNCTIONS:
-  public  :: UrbanReadNML      ! Read in the urban namelist items
   public  :: UrbanInput        ! Read in urban input data
-  public  :: CheckUrban        ! Check validity of urban points
-  public  :: IsSimpleBuildTemp ! If using the simple building temperature method
-  public  :: IsProgBuildTemp   ! If using the prognostic building temperature method
   !
   ! !PRIVATE TYPE
   type urbinp_type
@@ -52,7 +48,6 @@ module UrbanParamsType
      real(r8), pointer :: thick_wall      (:,:)
      real(r8), pointer :: thick_roof      (:,:)
      integer,  pointer :: nlev_improad    (:,:)
-     real(r8), pointer :: t_building_min  (:,:)
   end type urbinp_type
   type (urbinp_type), public :: urbinp   ! urban input derived type
 
@@ -88,8 +83,6 @@ module UrbanParamsType
      real(r8), pointer     :: vf_rw               (:)   ! lun view factor of road for one wall
      real(r8), pointer     :: vf_ww               (:)   ! lun view factor of opposing wall for one wall
 
-     real(r8), pointer     :: t_building_min      (:)   ! lun minimum internal building air temperature (K)
-     real(r8), pointer     :: eflx_traffic_factor (:)   ! lun multiplicative traffic factor for sensible heat flux from urban traffic (-)
    contains
 
      procedure, public :: Init 
@@ -97,17 +90,9 @@ module UrbanParamsType
   end type urbanparams_type
   !
   ! !Urban control variables
-  character(len= *), parameter, public :: urban_hac_off = 'OFF'                
-  character(len= *), parameter, public :: urban_hac_on =  'ON'                 
   character(len= *), parameter, public :: urban_wasteheat_on = 'ON_WASTEHEAT'  
-  character(len= 16), public           :: urban_hac = urban_hac_off
-  logical, public                      :: urban_traffic = .false.     ! urban traffic fluxes
 
   ! !PRIVATE MEMBER DATA:
-  logical, private    :: ReadNamelist = .false.     ! If namelist was read yet or not
-  integer, parameter, private :: BUILDING_TEMP_METHOD_SIMPLE = 0       ! Simple method introduced in CLM4.5
-  integer, parameter, private :: BUILDING_TEMP_METHOD_PROG   = 1       ! Prognostic method introduced in CLM5.0
-  integer, private :: building_temp_method = BUILDING_TEMP_METHOD_PROG ! Method to calculate the building temperature
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -164,7 +149,6 @@ contains
        allocate(this%cv_wall          (begl:endl,nlevurb))  ; this%cv_wall             (:,:) = nan
        allocate(this%cv_roof          (begl:endl,nlevurb))  ; this%cv_roof             (:,:) = nan
     end if
-    allocate(this%t_building_min      (begl:endl))          ; this%t_building_min      (:)   = nan
     allocate(this%tk_improad          (begl:endl,nlevurb))  ; this%tk_improad          (:,:) = nan
     allocate(this%cv_improad          (begl:endl,nlevurb))  ; this%cv_improad          (:,:) = nan
     allocate(this%thick_wall          (begl:endl))          ; this%thick_wall          (:)   = nan
@@ -188,7 +172,6 @@ contains
     allocate(this%alb_perroad_dif     (begl:endl,numrad))   ; this%alb_perroad_dif     (:,:) = nan       
     allocate(this%alb_wall_dir        (begl:endl,numrad))   ; this%alb_wall_dir        (:,:) = nan    
     allocate(this%alb_wall_dif        (begl:endl,numrad))   ; this%alb_wall_dif        (:,:) = nan
-    allocate(this%eflx_traffic_factor (begl:endl))          ; this%eflx_traffic_factor (:)   = nan
 
     ! Initialize time constant urban variables
 
@@ -232,19 +215,6 @@ contains
           this%thick_wall(l)     = urbinp%thick_wall(g,dindx)
           this%thick_roof(l)     = urbinp%thick_roof(g,dindx)
           this%nlev_improad(l)   = urbinp%nlev_improad(g,dindx)
-          this%t_building_min(l) = urbinp%t_building_min(g,dindx)
-
-          ! Inferred from Sailor and Lu 2004
-          if (urban_traffic) then
-             this%eflx_traffic_factor(l) = 3.6_r8 * (lun%canyon_hwr(l)-0.5_r8) + 1.0_r8
-          else
-             this%eflx_traffic_factor(l) = 0.0_r8
-          end if
-
-          if (urban_hac == urban_hac_off) then
-             ! Overwrite values read in from urbinp by freely evolving values
-             this%t_building_min(l) = 200.00_r8
-          end if
 
           !----------------------------------------------------------------------------------
           ! View factors for road and one wall in urban canyon (depends only on canyon_hwr)
@@ -328,9 +298,6 @@ contains
                (1 - lun%z_d_town(l) / lun%ht_roof(l)) * frontal_ai)**(-0.5_r8))
 
        else ! Not urban point 
-
-          this%eflx_traffic_factor(l) = spval
-          this%t_building_min(l) = spval
 
           this%vf_sr(l) = spval
           this%vf_wr(l) = spval
@@ -438,7 +405,6 @@ contains
                 urbinp%thick_wall(begg:endg, numurbl), &
                 urbinp%thick_roof(begg:endg, numurbl), &
                 urbinp%nlev_improad(begg:endg, numurbl), &
-                urbinp%t_building_min(begg:endg, numurbl), &
                 stat=ier)
        if (ier /= 0) then
           call endrun(msg="Allocation error "//errmsg(sourcefile, __LINE__))
@@ -545,12 +511,6 @@ contains
             dim1name=grlnd, readvar=readvar)
        if (.not. readvar) then
           call endrun( msg=' ERROR: NLEV_IMPROAD NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='T_BUILDING_MIN', flag='read', data=urbinp%t_building_min, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: T_BUILDING_MIN NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
        end if
 
        call ncd_io(ncid=ncid, varname='ALB_IMPROAD_DIR', flag='read', data=urbinp%alb_improad_dir, &
@@ -673,7 +633,6 @@ contains
                   urbinp%thick_wall, &
                   urbinp%thick_roof, &
                   urbinp%nlev_improad, &
-                  urbinp%t_building_min, &
                   stat=ier)
        if (ier /= 0) then
           call endrun(msg='initUrbanInput: deallocation error '//errmsg(sourcefile, __LINE__))
@@ -684,257 +643,6 @@ contains
     end if
 
   end subroutine UrbanInput
-
-  !-----------------------------------------------------------------------
-  subroutine CheckUrban(begg, endg, pcturb, caller)
-
-    !-----------------------------------------------------------------------
-    ! !DESCRIPTION:
-    ! Confirm that we have valid urban data for all points with pct urban > 0. If this isn't
-    ! true, abort with a message.
-    !
-    ! !USES:
-    use clm_instur      , only : urban_valid
-    use landunit_varcon , only : numurbl
-    !
-    ! !ARGUMENTS:
-    implicit none
-    integer         , intent(in) :: begg, endg           ! beg & end grid cell indices
-    real(r8)        , intent(in) :: pcturb(begg:,:)      ! % urban
-    character(len=*), intent(in) :: caller               ! identifier of caller, for more meaningful error messages
-    !
-    ! !REVISION HISTORY:
-    ! Created by Bill Sacks 7/2013, mostly by moving code from surfrd_special
-    !
-    ! !LOCAL VARIABLES:
-    logical :: found
-    integer :: nl, n
-    integer :: nindx, dindx
-    integer :: nlev
-    !-----------------------------------------------------------------------
-
-    found = .false.
-    do nl = begg,endg
-       do n = 1, numurbl
-          if ( pcturb(nl,n) > 0.0_r8 ) then
-             if ( .not. urban_valid(nl) .or. &
-                  urbinp%canyon_hwr(nl,n)            <= 0._r8 .or. &
-                  urbinp%em_improad(nl,n)            <= 0._r8 .or. &
-                  urbinp%em_perroad(nl,n)            <= 0._r8 .or. &
-                  urbinp%em_roof(nl,n)               <= 0._r8 .or. &
-                  urbinp%em_wall(nl,n)               <= 0._r8 .or. &
-                  urbinp%ht_roof(nl,n)               <= 0._r8 .or. &
-                  urbinp%thick_roof(nl,n)            <= 0._r8 .or. &
-                  urbinp%thick_wall(nl,n)            <= 0._r8 .or. &
-                  urbinp%t_building_min(nl,n)        <= 0._r8 .or. &
-                  urbinp%wind_hgt_canyon(nl,n)       <= 0._r8 .or. &
-                  urbinp%wtlunit_roof(nl,n)          <= 0._r8 .or. &
-                  urbinp%wtroad_perv(nl,n)           <= 0._r8 .or. &
-                  any(urbinp%alb_improad_dir(nl,n,:) <= 0._r8) .or. &
-                  any(urbinp%alb_improad_dif(nl,n,:) <= 0._r8) .or. &
-                  any(urbinp%alb_perroad_dir(nl,n,:) <= 0._r8) .or. &
-                  any(urbinp%alb_perroad_dif(nl,n,:) <= 0._r8) .or. &
-                  any(urbinp%alb_roof_dir(nl,n,:)    <= 0._r8) .or. &
-                  any(urbinp%alb_roof_dif(nl,n,:)    <= 0._r8) .or. &
-                  any(urbinp%alb_wall_dir(nl,n,:)    <= 0._r8) .or. &
-                  any(urbinp%alb_wall_dif(nl,n,:)    <= 0._r8) .or. &
-                  any(urbinp%tk_roof(nl,n,:)         <= 0._r8) .or. &
-                  any(urbinp%tk_wall(nl,n,:)         <= 0._r8) .or. &
-                  any(urbinp%cv_roof(nl,n,:)         <= 0._r8) .or. &
-                  any(urbinp%cv_wall(nl,n,:)         <= 0._r8)) then
-                found = .true.
-                nindx = nl
-                dindx = n
-                exit
-             else
-                if (urbinp%nlev_improad(nl,n) > 0) then
-                   nlev = urbinp%nlev_improad(nl,n)
-                   if ( any(urbinp%tk_improad(nl,n,1:nlev) <= 0._r8) .or. &
-                        any(urbinp%cv_improad(nl,n,1:nlev) <= 0._r8)) then
-                      found = .true.
-                      nindx = nl
-                      dindx = n
-                      exit
-                   end if
-                end if
-             end if
-             if (found) exit
-          end if
-       end do
-    end do
-    if ( found ) then
-       write(iulog,*) trim(caller), ' ERROR: no valid urban data for nl=',nindx
-       write(iulog,*)'density type:    ',dindx
-       write(iulog,*)'urban_valid:     ',urban_valid(nindx)
-       write(iulog,*)'canyon_hwr:      ',urbinp%canyon_hwr(nindx,dindx)
-       write(iulog,*)'em_improad:      ',urbinp%em_improad(nindx,dindx)
-       write(iulog,*)'em_perroad:      ',urbinp%em_perroad(nindx,dindx)
-       write(iulog,*)'em_roof:         ',urbinp%em_roof(nindx,dindx)
-       write(iulog,*)'em_wall:         ',urbinp%em_wall(nindx,dindx)
-       write(iulog,*)'ht_roof:         ',urbinp%ht_roof(nindx,dindx)
-       write(iulog,*)'thick_roof:      ',urbinp%thick_roof(nindx,dindx)
-       write(iulog,*)'thick_wall:      ',urbinp%thick_wall(nindx,dindx)
-       write(iulog,*)'t_building_min:  ',urbinp%t_building_min(nindx,dindx)
-       write(iulog,*)'wind_hgt_canyon: ',urbinp%wind_hgt_canyon(nindx,dindx)
-       write(iulog,*)'wtlunit_roof:    ',urbinp%wtlunit_roof(nindx,dindx)
-       write(iulog,*)'wtroad_perv:     ',urbinp%wtroad_perv(nindx,dindx)
-       write(iulog,*)'alb_improad_dir: ',urbinp%alb_improad_dir(nindx,dindx,:)
-       write(iulog,*)'alb_improad_dif: ',urbinp%alb_improad_dif(nindx,dindx,:)
-       write(iulog,*)'alb_perroad_dir: ',urbinp%alb_perroad_dir(nindx,dindx,:)
-       write(iulog,*)'alb_perroad_dif: ',urbinp%alb_perroad_dif(nindx,dindx,:)
-       write(iulog,*)'alb_roof_dir:    ',urbinp%alb_roof_dir(nindx,dindx,:)
-       write(iulog,*)'alb_roof_dif:    ',urbinp%alb_roof_dif(nindx,dindx,:)
-       write(iulog,*)'alb_wall_dir:    ',urbinp%alb_wall_dir(nindx,dindx,:)
-       write(iulog,*)'alb_wall_dif:    ',urbinp%alb_wall_dif(nindx,dindx,:)
-       write(iulog,*)'tk_roof:         ',urbinp%tk_roof(nindx,dindx,:)
-       write(iulog,*)'tk_wall:         ',urbinp%tk_wall(nindx,dindx,:)
-       write(iulog,*)'cv_roof:         ',urbinp%cv_roof(nindx,dindx,:)
-       write(iulog,*)'cv_wall:         ',urbinp%cv_wall(nindx,dindx,:)
-       if (urbinp%nlev_improad(nindx,dindx) > 0) then
-          nlev = urbinp%nlev_improad(nindx,dindx)
-          write(iulog,*)'tk_improad: ',urbinp%tk_improad(nindx,dindx,1:nlev)
-          write(iulog,*)'cv_improad: ',urbinp%cv_improad(nindx,dindx,1:nlev)
-       end if
-       call endrun(msg=errmsg(sourcefile, __LINE__))
-    end if
-
-  end subroutine CheckUrban
-
-  !-----------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------
-  !BOP
-  !
-  ! !IROUTINE: UrbanReadNML
-  !
-  ! !INTERFACE:
-  !
-  subroutine UrbanReadNML ( NLFilename )
-    !
-    ! !DESCRIPTION:
-    !
-    ! Read in the urban namelist
-    !
-    ! !USES:
-    use shr_mpi_mod   , only : shr_mpi_bcast
-    use abortutils    , only : endrun
-    use spmdMod       , only : masterproc, mpicom
-    use fileutils     , only : getavu, relavu, opnfil
-    use shr_nl_mod    , only : shr_nl_find_group_name
-    use shr_mpi_mod   , only : shr_mpi_bcast
-    implicit none
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(IN) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-    character(len=32) :: subname = 'UrbanReadNML'  ! subroutine name
-
-    namelist / clmu_inparm / urban_hac, urban_traffic, building_temp_method
-    !EOP
-    !-----------------------------------------------------------------------
-
-    ! ----------------------------------------------------------------------
-    ! Read namelist from input namelist filename
-    ! ----------------------------------------------------------------------
-
-    if ( masterproc )then
-
-       unitn = getavu()
-       write(iulog,*) 'Read in clmu_inparm  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, 'clmu_inparm', status=ierr)
-       if (ierr == 0) then
-          read(unitn, clmu_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading clmu_inparm namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR finding clmu_inparm namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-
-    end if
-
-    ! Broadcast namelist variables read in
-    call shr_mpi_bcast(urban_hac,             mpicom)
-    call shr_mpi_bcast(urban_traffic,         mpicom)
-    call shr_mpi_bcast(building_temp_method,  mpicom)
-
-    !
-    if (urban_traffic) then
-       write(iulog,*)'Urban traffic fluxes are not implemented currently'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    end if
-    !
-    if ( masterproc )then
-       write(iulog,*) '   urban air conditioning/heating and wasteheat   = ', urban_hac
-       write(iulog,*) '   urban traffic flux   = ', urban_traffic
-    end if
-
-    ReadNamelist = .true.
-
-  end subroutine UrbanReadNML
-
-  !-----------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------
-  !BOP
-  !
-  ! !IROUTINE: IsSimpleBuildTemp
-  !
-  ! !INTERFACE:
-  !
-  logical function IsSimpleBuildTemp( )
-    !
-    ! !DESCRIPTION:
-    !
-    ! If the simple building temperature method is being used
-    !
-    ! !USES:
-    implicit none
-    !EOP
-    !-----------------------------------------------------------------------
-
-    if ( .not. ReadNamelist )then
-       write(iulog,*)'Testing on building_temp_method before urban namelist was read in'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    end if
-    IsSimpleBuildTemp = building_temp_method == BUILDING_TEMP_METHOD_SIMPLE
-
-  end function IsSimpleBuildTemp
-
-  !-----------------------------------------------------------------------
-
-  !-----------------------------------------------------------------------
-  !BOP
-  !
-  ! !IROUTINE: IsProgBuildTemp
-  !
-  ! !INTERFACE:
-  !
-  logical function IsProgBuildTemp( )
-    !
-    ! !DESCRIPTION:
-    !
-    ! If the prognostic building temperature method is being used
-    !
-    ! !USES:
-    implicit none
-    !EOP
-    !-----------------------------------------------------------------------
-
-    if ( .not. ReadNamelist )then
-       write(iulog,*)'Testing on building_temp_method before urban namelist was read in'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    end if
-    IsProgBuildTemp = building_temp_method == BUILDING_TEMP_METHOD_PROG
-
-  end function IsProgBuildTemp
-
-  !-----------------------------------------------------------------------
 
 end module UrbanParamsType
 

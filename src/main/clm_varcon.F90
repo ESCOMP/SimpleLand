@@ -148,31 +148,6 @@ module clm_varcon
   ! isotope ratio (13c/[12c+13c]) for C4 photosynthesis
   real(r8), parameter :: c4_r2 = c4_r1/(1._r8 + c4_r1)
 
-  !------------------------------------------------------------------
-  ! Urban building temperature constants
-  !------------------------------------------------------------------
-  real(r8) :: ht_wasteheat_factor = 0.2_r8   ! wasteheat factor for urban heating (-)
-  real(r8) :: ac_wasteheat_factor = 0.6_r8   ! wasteheat factor for urban air conditioning (-)
-  real(r8) :: em_roof_int  = 0.9_r8          ! emissivity of interior surface of roof (Bueno et al. 2012, GMD)
-  real(r8) :: em_sunw_int  = 0.9_r8          ! emissivity of interior surface of sunwall (Bueno et al. 2012, GMD)
-  real(r8) :: em_shdw_int  = 0.9_r8          ! emissivity of interior surface of shadewall Bueno et al. 2012, GMD)
-  real(r8) :: em_floor_int = 0.9_r8          ! emissivity of interior surface of floor (Bueno et al. 2012, GMD)
-  real(r8) :: hcv_roof = 0.948_r8            ! interior convective heat transfer coefficient for roof (Bueno et al. 2012, GMD) (W m-2 K-1)
-  real(r8) :: hcv_roof_enhanced  = 4.040_r8  ! enhanced (t_roof_int <= t_room) interior convective heat transfer coefficient for roof (Bueno et al. 2012, GMD) !(W m-2 K-1)
-  real(r8) :: hcv_floor = 0.948_r8           ! interior convective heat transfer coefficient for floor (Bueno et al. 2012, GMD) (W m-2 K-1)
-  real(r8) :: hcv_floor_enhanced  = 4.040_r8 ! enhanced (t_floor_int >= t_room) interior convective heat transfer coefficient for floor (Bueno et al.  !2012, GMD) (W m-2 K-1)
-  real(r8) :: hcv_sunw  = 3.076_r8           ! interior convective heat transfer coefficient for sunwall (Bueno et al. 2012, GMD) (W m-2 K-1)
-  real(r8) :: hcv_shdw  = 3.076_r8           ! interior convective heat transfer coefficient for shadewall (Bueno et al. 2012, GMD) (W m-2 K-1)
-  real(r8) :: dz_floor = 0.1_r8                 ! floor thickness - concrete (Salmanca et al. 2010, TAC) (m)
-  real(r8), parameter :: dens_floor = 2.35e3_r8 ! density of floor - concrete (Salmanca et al. 2010, TAC) (kg m-3)
-  real(r8), parameter :: sh_floor = 880._r8     ! specific heat of floor - concrete (Salmanca et al. 2010, TAC) (J kg-1 K-1)
-  real(r8) :: cp_floor = dens_floor*sh_floor    ! volumetric heat capacity of floor - concrete (Salmanca et al. 2010, TAC) (J m-3 K-1)
-  real(r8) :: vent_ach = 0.3                    ! ventilation rate (air exchanges per hour)
-
-  real(r8) :: wasteheat_limit = 100._r8         ! limit on wasteheat (W/m2)
-
-  !------------------------------------------------------------------
-
   real(r8) :: h2osno_max   = -999.0_r8            ! max allowed snow thickness (mm H2O)
   real(r8) :: int_snow_max = -999.0_r8            ! limit applied to integrated snowfall when determining changes in snow-covered fraction during melt (mm H2O)
   real(r8) :: n_melt_glcmec = -999.0_r8           ! SCA shape parameter for glc_mec columns
@@ -224,7 +199,7 @@ module clm_varcon
 contains
 
   !------------------------------------------------------------------------------
-  subroutine clm_varcon_init( is_simple_buildtemp )
+  subroutine clm_varcon_init()
     !
     ! !DESCRIPTION:
     ! This subroutine initializes constant arrays in clm_varcon. 
@@ -235,7 +210,6 @@ contains
     !
     ! !ARGUMENTS:
     implicit none
-    logical, intent(in) :: is_simple_buildtemp   ! If simple building temp method is being used
     !
     ! !REVISION HISTORY:
     !   Created by E. Kluzek
@@ -251,12 +225,6 @@ contains
     allocate( zsoifl(1:nlevsoifl             ))
     allocate( zisoifl(0:nlevsoifl            ))
     allocate( dzsoifl(1:nlevsoifl            ))
-
-    ! Zero out wastheat factors for simpler building temperature method (introduced in CLM4.5)
-    if ( is_simple_buildtemp )then
-        ht_wasteheat_factor = 0.0_r8
-        ac_wasteheat_factor = 0.0_r8
-    end if
 
   end subroutine clm_varcon_init
 

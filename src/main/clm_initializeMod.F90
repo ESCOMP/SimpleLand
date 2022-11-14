@@ -50,7 +50,7 @@ contains
     use controlMod       , only: control_init, control_print, NLFilename
     use ncdio_pio        , only: ncd_pio_init
     use initGridCellsMod , only: initGridCells
-    use UrbanParamsType  , only: UrbanInput, IsSimpleBuildTemp
+    use UrbanParamsType  , only: UrbanInput
     !
     ! !LOCAL VARIABLES:
     integer           :: ier                     ! error status
@@ -82,7 +82,7 @@ contains
 
     call control_init()
     call clm_varpar_init()
-    call clm_varcon_init( IsSimpleBuildTemp() )
+    call clm_varcon_init()
     call landunit_varcon_init()
     call ncd_pio_init()
 
@@ -441,7 +441,6 @@ contains
     call temperature_inst%initAccVars(bounds_proc)
     call waterflux_inst%initAccVars(bounds_proc)
     call energyflux_inst%initAccVars(bounds_proc)
-    call canopystate_inst%initAccVars(bounds_proc)
 
     !------------------------------------------------------------       
     ! Determine gridcell averaged properties to send to atm

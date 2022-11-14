@@ -86,8 +86,6 @@ module WaterfluxType
      real(r8), pointer :: qflx_snow_drain_col      (:)   ! col drainage from snow pack
      real(r8), pointer :: qflx_qrgwl_col           (:)   ! col qflx_surf at glaciers, wetlands, lakes
      real(r8), pointer :: qflx_runoff_col          (:)   ! col total runoff (qflx_drain+qflx_surf+qflx_qrgwl) (mm H2O /s)
-     real(r8), pointer :: qflx_runoff_r_col        (:)   ! col Rural total runoff (qflx_drain+qflx_surf+qflx_qrgwl) (mm H2O /s)
-     real(r8), pointer :: qflx_runoff_u_col        (:)   ! col urban total runoff (qflx_drain+qflx_surf) (mm H2O /s) 
      real(r8), pointer :: qflx_ice_runoff_snwcp_col(:)   ! col solid runoff from snow capping (mm H2O /s)
      real(r8), pointer :: qflx_ice_runoff_xs_col   (:)   ! col solid runoff from excess ice in soil (mm H2O /s)
      real(r8), pointer :: qflx_rsub_sat_col        (:)   ! col soil saturation excess [mm/s]
@@ -223,8 +221,6 @@ contains
     allocate(this%qflx_floodc_col          (begc:endc))              ; this%qflx_floodc_col          (:)   = nan
     allocate(this%qflx_sl_top_soil_col     (begc:endc))              ; this%qflx_sl_top_soil_col     (:)   = nan
     allocate(this%qflx_runoff_col          (begc:endc))              ; this%qflx_runoff_col          (:)   = nan
-    allocate(this%qflx_runoff_r_col        (begc:endc))              ; this%qflx_runoff_r_col        (:)   = nan
-    allocate(this%qflx_runoff_u_col        (begc:endc))              ; this%qflx_runoff_u_col        (:)   = nan
     allocate(this%qflx_ice_runoff_snwcp_col(begc:endc))              ; this%qflx_ice_runoff_snwcp_col(:)   = nan
     allocate(this%qflx_ice_runoff_xs_col   (begc:endc))              ; this%qflx_ice_runoff_xs_col   (:)   = nan
     allocate(this%qflx_rsub_sat_col        (begc:endc))              ; this%qflx_rsub_sat_col        (:)   = nan
@@ -304,16 +300,6 @@ contains
     call hist_addfld1d (fname='QRUNOFF_ICE', units='mm/s', avgflag='A', &
          long_name='total liquid runoff not incl corret for LULCC (ice landunits only)', &
          ptr_col=this%qflx_runoff_col, c2l_scale_type='urbanf', l2g_scale_type='ice', default='inactive')
-
-    this%qflx_runoff_u_col(begc:endc) = spval
-    call hist_addfld1d (fname='QRUNOFF_U', units='mm/s',  &
-         avgflag='A', long_name='Urban total runoff', &
-         ptr_col=this%qflx_runoff_u_col, set_nourb=spval, c2l_scale_type='urbanf', default='inactive')
-
-    this%qflx_runoff_r_col(begc:endc) = spval
-    call hist_addfld1d (fname='QRUNOFF_R', units='mm/s',  &
-         avgflag='A', long_name='Rural total runoff', &
-         ptr_col=this%qflx_runoff_r_col, set_spec=spval, default='inactive')
 
     this%qflx_snow_drain_col(begc:endc) = spval
     call hist_addfld1d (fname='QFLX_SNOW_DRAIN',  units='mm/s',  &

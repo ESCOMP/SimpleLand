@@ -441,25 +441,6 @@ Perturbation limit when doing error growth test
 If FALSE, don't write any restart files.
 </entry>
 
-<entry id="urban_hac" type="char*16" category="clm_physics"
-       group="clmu_inparm" valid_values="OFF,ON,ON_WASTEHEAT" >
-Turn urban air conditioning/heating ON or OFF and add wasteheat:
-    OFF          = Air conditioning/heating is OFF in buildings, internal temperature allowed to float freely
-    ON           = Air conditioning/heating is ON in buildings, internal temperature constrained
-    ON_WASTEHEAT = Air conditioning/heating is ON and waste-heat sent to urban canyon
-</entry>
-
-<entry id="urban_traffic" type="logical" category="clm_physics"
-       group="clmu_inparm" valid_values="" >
-If TRUE, urban traffic flux will be activated (Currently NOT implemented).
-</entry>
-
-<entry id="building_temp_method" type="integer" category="clm_physics"
-       group="clmu_inparm" valid_values="0,1" >
-0 = simpler method (clm4_5)
-1 = prognostic calculation of interior building temp (clm5_0)
-</entry>
-
 <entry id="wrtdia" type="logical" category="history"
        group="clm_inparm" valid_values="" >
 If TRUE, write diagnostic of global radiative temperature written to CLM log file.

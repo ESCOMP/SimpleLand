@@ -67,8 +67,6 @@ module WaterstateType
 
      real(r8), pointer :: q_ref2m_patch          (:)   ! patch 2 m height surface specific humidity (kg/kg)
      real(r8), pointer :: rh_ref2m_patch         (:)   ! patch 2 m height surface relative humidity (%)
-     real(r8), pointer :: rh_ref2m_r_patch       (:)   ! patch 2 m height surface relative humidity - rural (%)
-     real(r8), pointer :: rh_ref2m_u_patch       (:)   ! patch 2 m height surface relative humidity - urban (%)
      real(r8), pointer :: rh_af_patch            (:)   ! patch fractional humidity of canopy air (dimensionless) ! private
      real(r8), pointer :: rh10_af_patch          (:)   ! 10-day mean patch fractional humidity of canopy air (dimensionless)
      real(r8), pointer :: qg_snow_col            (:)   ! col ground specific humidity [kg/kg]
@@ -217,8 +215,6 @@ contains
     allocate(this%qaf_lun                (begl:endl))                     ; this%qaf_lun                (:)   = nan
     allocate(this%q_ref2m_patch          (begp:endp))                     ; this%q_ref2m_patch          (:)   = nan
     allocate(this%rh_ref2m_patch         (begp:endp))                     ; this%rh_ref2m_patch         (:)   = nan
-    allocate(this%rh_ref2m_u_patch       (begp:endp))                     ; this%rh_ref2m_u_patch       (:)   = nan
-    allocate(this%rh_ref2m_r_patch       (begp:endp))                     ; this%rh_ref2m_r_patch       (:)   = nan
     allocate(this%rh_af_patch            (begp:endp))                     ; this%rh_af_patch            (:)   = nan
     allocate(this%rh10_af_patch          (begp:endp))                     ; this%rh10_af_patch          (:)   = spval
 
@@ -385,21 +381,6 @@ contains
     call hist_addfld1d (fname='RH2M', units='%',  &
          avgflag='A', long_name='2m relative humidity', &
          ptr_patch=this%rh_ref2m_patch, default='inactive')
-
-    this%rh_ref2m_r_patch(begp:endp) = spval
-    call hist_addfld1d (fname='RH2M_R', units='%',  &
-         avgflag='A', long_name='Rural 2m specific humidity', &
-         ptr_patch=this%rh_ref2m_r_patch, set_spec=spval, default='inactive')
-
-    this%rh_ref2m_u_patch(begp:endp) = spval
-    call hist_addfld1d (fname='RH2M_U', units='%',  &
-         avgflag='A', long_name='Urban 2m relative humidity', &
-         ptr_patch=this%rh_ref2m_u_patch, set_nourb=spval, default='inactive')
-
-    this%rh_af_patch(begp:endp) = spval
-    call hist_addfld1d (fname='RHAF', units='fraction', &
-         avgflag='A', long_name='fractional humidity of canopy air', &
-         ptr_patch=this%rh_af_patch, set_spec=spval, default='inactive')
 
     ! Fractions
 

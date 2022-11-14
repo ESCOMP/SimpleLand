@@ -25,7 +25,6 @@ module controlMod
   use histFileMod                      , only: hist_fincl4, hist_fincl5, hist_fincl6, hist_fexcl1, hist_fexcl2, hist_fexcl3
   use histFileMod                      , only: hist_fexcl4, hist_fexcl5, hist_fexcl6
   use initInterpMod                    , only: initInterp_readnl
-  use UrbanParamsType                  , only: UrbanReadNML
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
@@ -320,7 +319,6 @@ contains
     ! ----------------------------------------------------------------------
 
     call initInterp_readnl( NLFilename )
-    call UrbanReadNML           ( NLFilename )
 
     ! ----------------------------------------------------------------------
     ! Broadcast all control information if appropriate

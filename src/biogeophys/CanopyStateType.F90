@@ -29,7 +29,6 @@ module CanopyStateType
      real(r8) , pointer :: tsai_patch               (:)   ! patch canopy one-sided stem area index, no burying by snow
      real(r8) , pointer :: elai_patch               (:)   ! patch canopy one-sided leaf area index with burying by snow
      real(r8) , pointer :: esai_patch               (:)   ! patch canopy one-sided stem area index with burying by snow
-     real(r8) , pointer :: elai240_patch            (:)   ! patch canopy one-sided leaf area index with burying by snow average over 10days 
      real(r8) , pointer :: laisun_patch             (:)   ! patch patch sunlit projected leaf area index  
      real(r8) , pointer :: laisha_patch             (:)   ! patch patch shaded projected leaf area index  
      real(r8) , pointer :: laisun_z_patch           (:,:) ! patch patch sunlit leaf area for canopy layer 
@@ -40,8 +39,6 @@ module CanopyStateType
      real(r8) , pointer :: hbot_patch               (:)   ! patch canopy bottom (m)
      real(r8) , pointer :: displa_patch             (:)   ! patch displacement height (m)
      real(r8) , pointer :: fsun_patch               (:)   ! patch sunlit fraction of canopy         
-     real(r8) , pointer :: fsun24_patch             (:)   ! patch 24hr average of sunlit fraction of canopy 
-     real(r8) , pointer :: fsun240_patch            (:)   ! patch 240hr average of sunlit fraction of canopy
 
      real(r8) , pointer :: alt_col                  (:)   ! col current depth of thaw 
      integer  , pointer :: alt_indx_col             (:)   ! col current depth of thaw 
@@ -60,10 +57,6 @@ module CanopyStateType
      procedure, private :: InitAllocate 
      procedure, private :: InitHistory  
      procedure, private :: InitCold     
-     procedure, public  :: InitAccBuffer
-     procedure, public  :: InitAccVars
-     procedure, public  :: UpdateAccVars
-     procedure, public  :: Restart      
 
   end type CanopyState_type
 
@@ -109,7 +102,6 @@ contains
     allocate(this%tlai_patch               (begp:endp))           ; this%tlai_patch               (:)   = nan
     allocate(this%tsai_patch               (begp:endp))           ; this%tsai_patch               (:)   = nan
     allocate(this%elai_patch               (begp:endp))           ; this%elai_patch               (:)   = nan
-    allocate(this%elai240_patch            (begp:endp))           ; this%elai240_patch            (:)   = nan
     allocate(this%esai_patch               (begp:endp))           ; this%esai_patch               (:)   = nan
     allocate(this%laisun_patch             (begp:endp))           ; this%laisun_patch             (:)   = nan
     allocate(this%laisha_patch             (begp:endp))           ; this%laisha_patch             (:)   = nan
@@ -121,8 +113,6 @@ contains
     allocate(this%hbot_patch               (begp:endp))           ; this%hbot_patch               (:)   = nan
     allocate(this%displa_patch             (begp:endp))           ; this%displa_patch             (:)   = nan
     allocate(this%fsun_patch               (begp:endp))           ; this%fsun_patch               (:)   = nan
-    allocate(this%fsun24_patch             (begp:endp))           ; this%fsun24_patch             (:)   = nan
-    allocate(this%fsun240_patch            (begp:endp))           ; this%fsun240_patch            (:)   = nan
 
     allocate(this%alt_col                  (begc:endc))           ; this%alt_col                  (:)   = spval     
     allocate(this%altmax_col               (begc:endc))           ; this%altmax_col               (:)   = spval
@@ -155,36 +145,6 @@ contains
     begp = bounds%begp; endp= bounds%endp
     begc = bounds%begc; endc= bounds%endc
 
-    this%elai_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ELAI', units='m^2/m^2', &
-        avgflag='A', long_name='exposed one-sided leaf area index', &
-         ptr_patch=this%elai_patch, default='inactive')
-
-    this%esai_patch(begp:endp) = spval
-    call hist_addfld1d (fname='ESAI', units='m^2/m^2', &
-         avgflag='A', long_name='exposed one-sided stem area index', &
-         ptr_patch=this%esai_patch, default='inactive')
-
-    this%tlai_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TLAI', units='none', &
-         avgflag='A', long_name='total projected leaf area index', &
-         ptr_patch=this%tlai_patch, default='inactive')
-
-    this%tsai_patch(begp:endp) = spval
-    call hist_addfld1d (fname='TSAI', units='none', &
-         avgflag='A', long_name='total projected stem area index', &
-         ptr_patch=this%tsai_patch, default='inactive')
-
-    this%laisun_patch(begp:endp) = spval
-    call hist_addfld1d (fname='LAISUN', units='none', &
-         avgflag='A', long_name='sunlit projected leaf area index', &
-         ptr_patch=this%laisun_patch, set_urb=0._r8, default='inactive')
-
-    this%laisha_patch(begp:endp) = spval
-    call hist_addfld1d (fname='LAISHA', units='none', &
-         avgflag='A', long_name='shaded projected leaf area index', &
-         ptr_patch=this%laisha_patch, set_urb=0._r8, default='inactive')
-
     ! Allow active layer fields to be optionally output even if not running CN
 
        this%alt_col(begc:endc) = spval
@@ -202,162 +162,7 @@ contains
             avgflag='A', long_name='maximum prior year active layer thickness', &
             ptr_col=this%altmax_lastyear_col, default='inactive')
 
-    ! Accumulated fields
-    this%fsun24_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSUN24', units='K',  &
-         avgflag='A', long_name='fraction sunlit (last 24hrs)', &
-         ptr_patch=this%fsun24_patch, default='inactive')
-
-    this%fsun240_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSUN240', units='K',  &
-         avgflag='A', long_name='fraction sunlit (last 240hrs)', &
-         ptr_patch=this%fsun240_patch, default='inactive')
-
-    this%elai240_patch(begp:endp) = spval
-    call hist_addfld1d (fname='LAI240', units='m^2/m^2', &
-         avgflag='A', long_name='240hr average of leaf area index', &
-         ptr_patch=this%elai240_patch, default='inactive')
-
   end subroutine InitHistory
-
-  !-----------------------------------------------------------------------
-  subroutine InitAccBuffer (this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize accumulation buffer for all required module accumulated fields
-    ! This routine set defaults values that are then overwritten by the
-    ! restart file for restart or branch runs
-    !
-    ! !USES 
-    use accumulMod  , only : init_accum_field
-    !
-    ! !ARGUMENTS:
-    class(canopystate_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !---------------------------------------------------------------------
-
-    this%fsun24_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSUN24', units='fraction',                                        &
-         desc='24hr average of diffuse solar radiation',  accum_type='runmean', accum_period=-1,   &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    this%fsun240_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSUN240', units='fraction',                                       &
-         desc='240hr average of diffuse solar radiation',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    this%elai240_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='LAI240', units='m2/m2',                                             &
-         desc='240hr average of leaf area index',  accum_type='runmean', accum_period=-10,      &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-  end subroutine InitAccBuffer
-
-  !-----------------------------------------------------------------------
-  subroutine InitAccVars(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize module variables that are associated with
-    ! time accumulated fields. This routine is called for both an initial run
-    ! and a restart run (and must therefore must be called after the restart file 
-    ! is read in and the accumulation buffer is obtained)
-    !
-    ! !USES 
-    use accumulMod       , only : extract_accum_field
-    use clm_time_manager , only : get_nstep
-    !
-    ! !ARGUMENTS:
-    class(canopystate_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer  :: begp, endp
-    integer  :: nstep
-    integer  :: ier
-    real(r8), pointer :: rbufslp(:)  ! temporary
-    !---------------------------------------------------------------------
-
-    begp = bounds%begp; endp = bounds%endp
-
-    ! Allocate needed dynamic memory for single level patch field
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)' in '
-       call endrun(msg="extract_accum_hist allocation error for rbufslp"//&
-            errMsg(sourcefile, __LINE__))
-    endif
-
-    ! Determine time step
-    nstep = get_nstep()
-
-    call extract_accum_field ('FSUN24', rbufslp, nstep)
-    this%fsun24_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('FSUN240', rbufslp, nstep)
-    this%fsun240_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('LAI240', rbufslp, nstep)
-    this%elai240_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('FSUN24', rbufslp, nstep)
-    this%fsun24_patch(begp:endp) = rbufslp(begp:endp)
-
-    deallocate(rbufslp)
-
-  end subroutine InitAccVars
-
-  !-----------------------------------------------------------------------
-  subroutine UpdateAccVars (this, bounds)
-    !
-    ! USES
-    use clm_time_manager, only : get_nstep
-    use accumulMod      , only : update_accum_field, extract_accum_field
-    use abortutils      , only : endrun
-    !
-    ! !ARGUMENTS:
-    class(canopystate_type)             :: this
-    type(bounds_type)      , intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g,p                       ! indices
-    integer :: dtime                     ! timestep size [seconds]
-    integer :: nstep                     ! timestep number
-    integer :: ier                       ! error status
-    integer :: begp, endp
-    real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
-    !---------------------------------------------------------------------
-
-    begp = bounds%begp; endp = bounds%endp
-
-    nstep = get_nstep()
-
-    ! Allocate needed dynamic memory for single level patch field
-
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)'update_accum_hist allocation error for rbuf1dp'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-
-    ! Accumulate and extract fsun24 & fsun240   
-    do p = begp,endp
-       rbufslp(p) = this%fsun_patch(p)
-    end do
-    call update_accum_field  ('FSUN24' , rbufslp              , nstep)
-    call extract_accum_field ('FSUN24' , this%fsun24_patch    , nstep)
-    call update_accum_field  ('FSUN240', rbufslp              , nstep)
-    call extract_accum_field ('FSUN240', this%fsun240_patch   , nstep)
-
-    ! Accumulate and extract elai240
-    do p = begp,endp
-       rbufslp(p) = this%elai_patch(p)
-    end do
-    call update_accum_field  ('LAI240', rbufslp               , nstep)
-    call extract_accum_field ('LAI240', this%elai240_patch    , nstep)
-
-    deallocate(rbufslp)
-
-  end subroutine UpdateAccVars
 
   !-----------------------------------------------------------------------
   subroutine InitCold(this, bounds)
@@ -406,73 +211,5 @@ contains
     end do
 
   end subroutine InitCold
-
-  !------------------------------------------------------------------------
-  subroutine Restart(this, bounds, ncid, flag)
-    ! 
-    ! !USES:
-    use spmdMod    , only : masterproc
-    use ncdio_pio  , only : file_desc_t, ncd_defvar, ncd_io, ncd_double, ncd_int, ncd_inqvdlen
-    use restUtilMod
-    !
-    ! !ARGUMENTS:
-    class(canopystate_type) :: this
-    type(bounds_type) , intent(in)    :: bounds 
-    type(file_desc_t) , intent(inout) :: ncid   ! netcdf id
-    character(len=*)  , intent(in)    :: flag   ! 'read' or 'write'
-    !
-    ! !LOCAL VARIABLES:
-    integer :: j,p,c,iv ! indices
-    logical :: readvar      ! determine if variable is on initial file
-    integer :: begp, endp
-    !-----------------------------------------------------------------------
-
-    begp = bounds%begp; endp = bounds%endp
-
-    call restartvar(ncid=ncid, flag=flag, varname='FRAC_VEG_NOSNO_ALB', xtype=ncd_int,  &
-         dim1name='pft', long_name='fraction of vegetation not covered by snow (0 or 1)', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%frac_veg_nosno_alb_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='tlai', xtype=ncd_double,  &
-         dim1name='pft', long_name='one-sided leaf area index, no burying by snow', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%tlai_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='tsai', xtype=ncd_double,  &
-         dim1name='pft', long_name='one-sided stem area index, no burying by snow', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%tsai_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='elai', xtype=ncd_double,  &
-         dim1name='pft', long_name='one-sided leaf area index, with burying by snow', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%elai_patch)
-    
-    call restartvar(ncid=ncid, flag=flag, varname='esai', xtype=ncd_double,  &
-         dim1name='pft', long_name='one-sided stem area index, with burying by snow', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%esai_patch)
-    
-    call restartvar(ncid=ncid, flag=flag, varname='htop', xtype=ncd_double,  &
-         dim1name='pft', long_name='canopy top', units='m', &
-         interpinic_flag='interp', readvar=readvar, data=this%htop_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='hbot', xtype=ncd_double,  &
-         dim1name='pft', long_name='canopy botton', units='m', &
-         interpinic_flag='interp', readvar=readvar, data=this%hbot_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='mlaidiff', xtype=ncd_double,  &
-         dim1name='pft', long_name='difference between lai month one and month two', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%mlaidiff_patch)
-
-    call restartvar(ncid=ncid, flag=flag, varname='fsun', xtype=ncd_double,  &
-         dim1name='pft', long_name='sunlit fraction of canopy', units='', &
-         interpinic_flag='interp', readvar=readvar, data=this%fsun_patch)
-
-    if (flag=='read' )then
-       do p = bounds%begp,bounds%endp
-          if (shr_infnan_isnan(this%fsun_patch(p)) ) then
-             this%fsun_patch(p) = spval
-          end if
-       end do
-    end if
-
-  end subroutine Restart
 
 end module CanopyStateType
