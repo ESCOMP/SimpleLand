@@ -47,7 +47,7 @@ contains
 
   !------------------------------------------------------------------------
   subroutine initVertical(bounds, glc_behavior, snow_depth, thick_wall, thick_roof)
-    use clm_varcon, only : zmin_bedrock, n_melt_glcmec
+    use clm_varcon, only : zmin_bedrock
     !
     ! !ARGUMENTS:
     type(bounds_type)   , intent(in)    :: bounds
@@ -502,7 +502,7 @@ contains
           ! their use of multiple elevation classes; thus, to avoid double-accounting for
           ! topographic variability in these columns, we ignore topo_std and use a fixed
           ! value of n_melt.
-          col%n_melt(c) = n_melt_glcmec
+          col%n_melt(c) = 10._r8
        else
           col%n_melt(c) = 200.0/max(10.0_r8, col%topo_std(c))
        end if

@@ -17,7 +17,7 @@ module controlMod
   use abortutils                       , only: endrun
   use spmdMod                          , only: masterproc
   use decompMod                        , only: clump_pproc
-  use clm_varcon                       , only: h2osno_max, int_snow_max, n_melt_glcmec
+  use clm_varcon                       , only: h2osno_max, int_snow_max
   use clm_varpar                       , only: maxpatch_pft, numrad, nlevsno
   use histFileMod                      , only: max_tapes, max_namlen 
   use histFileMod                      , only: hist_empty_htapes, hist_dov2xy, hist_avgflag_pertape, hist_type1d_pertape 
@@ -160,7 +160,7 @@ contains
 
     ! Glacier_mec info
     namelist /clm_inparm/ &    
-         nlevsno, h2osno_max, int_snow_max, n_melt_glcmec
+         nlevsno, h2osno_max, int_snow_max
 
     ! Other options
 
@@ -281,7 +281,7 @@ contains
           nfix_timeconst = 0._r8
        end if
 
-       ! If nlevsno, h2osno_max, int_snow_max or n_melt_glcmec are equal to their junk
+       ! If nlevsno, h2osno_max, int_snow_max are equal to their junk
        ! default value, then they were not specified by the user namelist and we generate
        ! an error message. Also check nlevsno for bounds.
        if (nlevsno < 3 .or. nlevsno > 12)  then
@@ -297,11 +297,6 @@ contains
        if (int_snow_max <= 0.0_r8) then
           write(iulog,*)'ERROR: int_snow_max = ',int_snow_max,' is not supported, must be greater than 0.0.'
           call endrun(msg=' ERROR: invalid value for int_snow_max in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
-       if (n_melt_glcmec <= 0.0_r8) then
-          write(iulog,*)'ERROR: n_melt_glcmec = ',n_melt_glcmec,' is not supported, must be greater than 0.0.'
-          call endrun(msg=' ERROR: invalid value for n_melt_glcmec in CLM namelist. '//&
                errMsg(sourcefile, __LINE__))
        endif
 
@@ -423,7 +418,6 @@ contains
     call mpi_bcast (nlevsno, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (h2osno_max, 1, MPI_REAL8, 0, mpicom, ier)
     call mpi_bcast (int_snow_max, 1, MPI_REAL8, 0, mpicom, ier)
-    call mpi_bcast (n_melt_glcmec, 1, MPI_REAL8, 0, mpicom, ier)
 
     ! history file variables
     call mpi_bcast (hist_empty_htapes, 1, MPI_LOGICAL, 0, mpicom, ier)
