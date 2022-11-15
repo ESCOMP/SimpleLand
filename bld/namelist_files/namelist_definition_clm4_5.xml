@@ -208,11 +208,6 @@ lower_boundary_condition = 4 : 11-layer solution w/ aquifer layer               
 
 </entry>
 
-<entry id="maxpatch_glcmec" type="integer"  category="clm_physics"
-       group="clm_inparm" valid_values="1,3,5,10,36" >
-Number of  multiple elevation classes over glacier points.
-</entry>
-
 <entry id="glacier_region_behavior" type="char*32(10)" category="clm_physics"
        group="clm_glacier_behavior"
        valid_values="multiple,virtual,single_at_atm_topo" >

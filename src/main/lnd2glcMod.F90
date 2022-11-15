@@ -24,7 +24,6 @@ module lnd2glcMod
   use column_varcon   , only : col_itype_to_icemec_class
   use landunit_varcon , only : istice_mec, istsoil
   use abortutils      , only : endrun
-  use GlacierSurfaceMassBalanceMod, only : glacier_smb_type
   use TemperatureType , only : temperature_type
   use LandunitType    , only : lun                
   use ColumnType      , only : col
@@ -102,7 +101,7 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine update_lnd2glc(this, bounds, num_do_smb_c, filter_do_smb_c, &
-       temperature_inst, glacier_smb_inst, topo_inst, init)
+       temperature_inst, topo_inst, init)
     !
     ! !DESCRIPTION:
     ! Assign values to lnd2glc+
@@ -113,7 +112,6 @@ contains
     integer                , intent(in)    :: num_do_smb_c       ! number of columns in filter_do_smb_c
     integer                , intent(in)    :: filter_do_smb_c(:) ! column filter: columns where smb calculations are performed
     type(temperature_type) , intent(in)    :: temperature_inst
-    type(glacier_smb_type) , intent(in)    :: glacier_smb_inst
     type(topo_type)        , intent(in)    :: topo_inst
     logical                , intent(in)    :: init               ! if true=>only set a subset of fields
     !
@@ -176,14 +174,6 @@ contains
       fields_assigned(g,n) = .true.
       this%tsrf_grc(g,n) = temperature_inst%t_soisno_col(c,1)
       this%topo_grc(g,n) = topo_inst%topo_col(c)
-      if (.not. init) then
-         this%qice_grc(g,n) = glacier_smb_inst%qflx_glcice_col(c) * flux_normalization
-
-         ! Check for bad values of qice
-         if ( abs(this%qice_grc(g,n)) > 1.0_r8) then
-            write(iulog,*) 'WARNING: qice out of bounds: g, n, qice =', g, n, this%qice_grc(g,n)
-         end if
-      end if
 
     end do
 

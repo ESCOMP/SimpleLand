@@ -67,8 +67,4 @@ determine default values for namelists.
 <mask hgrid="1x1_brazil"          >navy</mask>
 <mask                             >gx1v6</mask>
 
-<!-- Default glacier model options -->
-
-<glc_dyntopo         >.false.</glc_dyntopo>
-
 </namelist_defaults>

@@ -25,7 +25,6 @@ module clm_instMod
   use DUSTMod                         , only : dust_type
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
-  use GlacierSurfaceMassBalanceMod    , only : glacier_smb_type
   use SoilHydrologyType               , only : soilhydrology_type  
   use SoilStateType                   , only : soilstate_type
   use SolarAbsorbedType               , only : solarabs_type
@@ -59,7 +58,6 @@ module clm_instMod
   type(canopystate_type)                  :: canopystate_inst
   type(energyflux_type)                   :: energyflux_inst
   type(frictionvel_type)                  :: frictionvel_inst
-  type(glacier_smb_type)                  :: glacier_smb_inst
   type(soilstate_type)                    :: soilstate_inst
   type(soilhydrology_type)                :: soilhydrology_inst
   type(solarabs_type)                     :: solarabs_inst
@@ -180,8 +178,6 @@ contains
          temperature_inst%t_soisno_col(begc:endc, -nlevsno+1:) )
 
     call waterflux_inst%Init(bounds)
-
-    call glacier_smb_inst%Init(bounds)
 
     ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) Without the following assignment, the
     ! assertion in energyflux_inst%Init fails with pgi 14.7 on yellowstone, presumably due
