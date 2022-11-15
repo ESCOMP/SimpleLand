@@ -22,7 +22,6 @@ module clm_instMod
   !-----------------------------------------
 
   use CanopyStateType                 , only : canopystate_type
-  use DUSTMod                         , only : dust_type
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
   use SoilHydrologyType               , only : soilhydrology_type  
@@ -73,10 +72,6 @@ module clm_instMod
   type(glc_behavior_type), target         :: glc_behavior
   type(topo_type)                         :: topo_inst
 
-  ! General biogeochem types
-  type(dust_type)                         :: dust_inst
-
-  !
   public :: clm_instInit       ! Initialize
   public :: clm_instRest       ! Setup restart
   !-----------------------------------------------------------------------
@@ -193,8 +188,6 @@ contains
     call solarabs_inst%Init(bounds)
 
     call surfalb_inst%Init(bounds)
-
-    call dust_inst%Init(bounds)
 
     call topo_inst%Init(bounds)
 
