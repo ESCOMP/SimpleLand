@@ -17,7 +17,6 @@ Module SoilHydrologyType
   type, public :: soilhydrology_type
 
      integer :: h2osfcflag              ! true => surface water is active (namelist)       
-     integer :: origflag                ! used to control soil hydrology properties (namelist)
 
      real(r8), pointer :: num_substeps_col   (:)    ! col adaptive timestep counter     
      ! NON-VIC
@@ -276,16 +275,13 @@ contains
      ! !LOCAL VARIABLES:
      integer :: ierr                 ! error code
      integer :: unitn                ! unit for namelist file
-     integer :: origflag=0            !use to control soil hydraulic properties
      integer :: h2osfcflag=1          !If surface water is active or not
      character(len=32) :: subname = 'SoilHydrology_readnl'  ! subroutine name
      !-----------------------------------------------------------------------
 
-     namelist / clm_soilhydrology_inparm / h2osfcflag, origflag
+     namelist / clm_soilhydrology_inparm / h2osfcflag
 
      ! preset values
-
-     origflag = 0          
      h2osfcflag = 1        
 
      if ( masterproc )then
@@ -307,10 +303,8 @@ contains
      end if
 
      call shr_mpi_bcast(h2osfcflag, mpicom)
-     call shr_mpi_bcast(origflag,   mpicom)
 
      this%h2osfcflag = h2osfcflag
-     this%origflag   = origflag
 
    end subroutine ReadNL
 

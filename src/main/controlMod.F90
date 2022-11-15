@@ -30,7 +30,7 @@ module controlMod
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
-  use clm_varctl                       , only: subgridflag, nfix_timeconst
+  use clm_varctl                       , only: nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: single_column
   !
@@ -163,7 +163,7 @@ contains
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
          nsegspc, co2_ppmv, override_nsrest, &
-         soil_layerstruct, subgridflag
+         soil_layerstruct
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
 
@@ -388,7 +388,6 @@ contains
 
     ! physics variables
     call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)
-    call mpi_bcast (subgridflag , 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (co2_ppmv, 1, MPI_REAL8,0, mpicom, ier)

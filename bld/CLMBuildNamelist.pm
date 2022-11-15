@@ -604,14 +604,6 @@ sub setup_cmdl_maxpft {
   }
   $nl_flags->{'maxpft'} = $val;
 
-  if ( ($nl_flags->{'bgc_mode'} ne "sp") && ($nl_flags->{'maxpft'} != $maxpatchpft) ) {
-    $log->fatal_error("** For CN or BGC mode you MUST set max patch PFT's to $maxpatchpft\n" .
-                "**\n" .
-                "** Set the bgc mode, crop and maxpft by the following means from highest to lowest precedence:\n" .
-                "** * by the command-line options -bgc and -maxpft\n" .
-                "** * by a default configuration file, specified by -defaults\n" .
-                "**");
-  }
   if ( $nl_flags->{'maxpft'} > $maxpatchpft ) {
     $log->fatal_error("** Max patch PFT's can NOT exceed $maxpatchpft\n" .
                 "**\n" .
@@ -890,27 +882,6 @@ sub process_namelist_inline_logic {
   # namelist group: bgc_shared
   ##################################
   setup_logic_bgc_shared($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
-  #############################################
-  # namelist group: soilwater_movement_inparm #
-  #############################################
-  setup_logic_soilwater_movement($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
-  #############################################
-  # namelist group: rooting_profile_inparm    #
-  #############################################
-  setup_logic_rooting_profile($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
-  #############################################
-  # namelist group: soil_resis_inparm #
-  #############################################
-  setup_logic_soil_resis($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
-  #######################################################################
-  # namelist groups: clm_hydrology1_inparm and clm_soilhydrology_inparm #
-  #######################################################################
-  setup_logic_hydrology_switches($nl, $physv);
-
 }
 
 #-------------------------------------------------------------------------------
@@ -1280,69 +1251,6 @@ sub setup_logic_initial_conditions {
 sub setup_logic_bgc_shared {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_hydrology_switches {
-  #
-  # Check on Switches for hydrology
-  #
-  my ($nl, $physv) = @_;
-
-  my $subgrid    = $nl->get_value('subgridflag' );
-  my $origflag   = $nl->get_value('origflag'    );
-  my $h2osfcflag = $nl->get_value('h2osfcflag'  );
-  if ( $origflag == 1 && $subgrid == 1 ) {
-    $log->fatal_error("if origflag is ON, subgridflag can NOT also be on!");
-  }
-  if ( $h2osfcflag == 1 && $subgrid != 1 ) {
-    $log->fatal_error("if h2osfcflag is ON, subgridflag can NOT be off!");
-  }
-  # These should NOT be set for CLM5.0 and beyond
-  if ( $physv->as_long() > $physv->as_long("clm4_5") ) {
-     foreach my $var ( "origflag", "h2osfcflag", "oldfflag" ) {
-        my $val = $nl->get_value($var);
-        if ( defined($val) ) {
-           $log->fatal_error( "ERROR:: $var=$val is deprecated and can only be used with CLM4.5" );
-        }
-     }
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_soilwater_movement {
-  # soilwater_movement require clm4_5/clm5_0
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'soilwater_movement_method' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'upper_boundary_condition' );
-
-  my $soilmtd = $nl->get_value("soilwater_movement_method");
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 
-  'lower_boundary_condition' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'expensive' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'inexpensive' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'flux_calculation' );
-}
-#-------------------------------------------------------------------------------
-
-sub setup_logic_rooting_profile {
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'rooting_profile_method_water' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'rooting_profile_method_carbon' );
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_soil_resis {
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'soil_resis_method' );
 }
 
 #-------------------------------------------------------------------------------

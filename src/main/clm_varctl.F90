@@ -142,9 +142,6 @@ module clm_varctl
   ! Physics
   !----------------------------------------------------------
 
-  ! use subgrid fluxes
-  integer,  public :: subgridflag = 1                   
-
   ! true => write global average diagnostics to std out
   logical,  public :: wrtdia       = .false.            
 

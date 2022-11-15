@@ -78,114 +78,10 @@ Type of CO2 feedback.
 </entry>
 
 
-<entry id="suplnitro" type="char*15" category="clm_physics"
-       group="clm_inparm" valid_values="NONE,ALL" >
-Supplemental Nitrogen mode and for what type of vegetation it's turned on for. 
-In this mode Nitrogen is unlimited rather than prognosed and in general vegetation is 
-over-productive.
-    NONE           = No vegetation types get supplemental Nitrogen
-    ALL            = Supplemental Nitrogen is active for all vegetation types
-</entry>
-
 <entry id="soil_layerstruct" type="char*16" category="clm_physics"
        group="clm_inparm" valid_values="10SL_3.5m,23SL_3.5m,49SL_10m,20SL_8.5m" >
 10SL_3.5m    = standard CLM4 and CLM4.5 version
 23SL_3.5m    = more vertical layers for permafrost simulations 
-</entry>
-
-<entry id="rooting_profile_method_water" type="integer" category="clm_physics"
-       group="rooting_profile_inparm" valid_values="0,1,2" >
-Index of rooting profile for water
-
-Changes rooting profile from Zeng 2001 double exponential (0) to
-Jackson 1996 single exponential (1) to Koven uniform exponential (2).
-</entry>
-
-<entry id="rooting_profile_method_carbon" type="integer" category="clm_physics"
-       group="rooting_profile_inparm" valid_values="0,1,2" >
-Index of rooting profile for carbon
-
-Changes rooting profile from Zeng 2001 double exponential (0) to
-Jackson 1996 single exponential (1) to Koven uniform exponential (2).
-</entry>
-
-<entry id="rooting_profile_method_soilcarbon" type="integer" category="clm_physics"
-       group="rooting_profile_inparm" valid_values="0,1,2" >
-Index of rooting profile for soil carbon
-
-Changes rooting profile from Zeng 2001 double exponential (0) to
-Jackson 1996 single exponential (1) to Koven uniform exponential (2).
-</entry>
-
-<entry id="rooting_profile_varindex_water" type="integer" category="clm_physics"
-       group="rooting_profile_inparm" valid_values="1,2" >
-Variant index of rooting profile for water
-(Currently only used for Jackson 1996 method)
-</entry>
-
-<entry id="rooting_profile_varindex_carbon" type="integer" category="clm_physics"
-       group="rooting_profile_inparm" valid_values="1,2" >
-Variant index of rooting profile for carbon and soil carbon
-(Currently only used for Jackson 1996 method)
-</entry>
-
-<entry id="rooting_profile_method_carbon" type="integer" category="clm_physics"
-       group="rooting_profile_inparm" valid_values="0,1,2" >
-Index of rooting profile for carbon
-
-Changes rooting profile from Zeng 2001 double exponential (0) to
-Jackson 1996 single exponential (1) to Koven uniform exponential (2).
-</entry>
-
-<entry id="soil_resis_method" type="integer" category="clm_physics"
-       group="soil_resis_inparm" valid_values="0,1" >
-Index of evaporative resistance method.
-
-Changes soil evaporative resistance method from Sakaguchi and Zeng
-2009 Beta function (0) to Swenson and Lawrence 2014 dry surface layer
-formulation (1).
-</entry>
-
-<entry id="freelivfix_slope_wET" type="real" category="clm_physics"
-       group="mineral_nitrogen_dynamics" >
-Slope of free living Nitrogen fixation with annual ET
-</entry>
-
-<entry id="freelivfix_intercept" type="real" category="clm_physics"
-       group="mineral_nitrogen_dynamics" >
-Intercept of free living Nitrogen fixation with zero annual ET
-</entry>
-
-<entry id="soilwater_movement_method" type="integer" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="0,1" >
-Index of solution method of Richards equation.
-
-CLM 4.5 - soilwater_movement_method = 0 (Zeng and Decker, 2009, method). 
-</entry>
-
-<entry id="upper_boundary_condition" type="integer" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="1" >
-Index of upper boundary condition for Richards equation.
-</entry>
-
-<entry id="lower_boundary_condition" type="integer" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="1,2,3,4" >
-Index of lower boundary condition for Richards equation.
-
-lower_boundary_condition = 4 : 11-layer solution w/ aquifer layer                                (only used with soilwater_movement_method=Zeng&Decker 2009)
-</entry>
-
-<entry id="expensive" type="integer" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="" >
-
-</entry>
-<entry id="inexpensive" type="integer" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="" >
-
-</entry>
-<entry id="flux_calculation" type="integer" category="clm_physics"
-       group="soilwater_movement_inparm" valid_values="" >
-
 </entry>
 
 <entry id="glacier_region_behavior" type="char*32(10)" category="clm_physics"
@@ -251,13 +147,6 @@ Time step (seconds)
        group="clm_inparm" valid_values="3">
 Override the start type from the driver: it can only be
 set to 3 meaning branch.
-</entry>
-
-<entry id="lnc_opt" type="logical" category="clm_nitrogen"
-       group="clm_nitrogen" value=".false.">
-How LUNA and Photosynthesis (if needed) will get Leaf nitrogen content
-   lnc_opt = true  get from leaf N from CN model
-   lnc_opt = false get based on LAI and fixed CN ratio from parameter file
 </entry>
 
 <entry id="paramfile" type="char*256" category="datasets"
@@ -410,16 +299,6 @@ If FALSE, don't write any restart files.
 If TRUE, write diagnostic of global radiative temperature written to CLM log file.
 </entry>
 
-<entry id="subgridflag" type="integer" category="clm_physics"
-       group="clm_inparm" valid_values="0,1" >
-Subgrid fluxes for snow
-</entry>
-
-<entry id="snowveg_flag" type="char*10" category="clm_physics"
-       group="clm_canopyhydrology_inparm" valid_values="OFF,ON,ON_RAD" >
-Turn vegetation snow canopy ON, OFF, or ON with albedo influence (ON_RAD)
-</entry>
-
 <!-- ========================================================================================  -->
 <!-- Former CPP tokens -->
 <!-- ========================================================================================  -->
@@ -433,239 +312,6 @@ Toggle to turn all history output completely OFF (possibly used for testing)
        group="clm_inparm" valid_values="" value="17">
 Max number of plant functional types in naturally vegetated landunit.
 </entry>
-
-<!--                                                   -->
-<!-- mkmapdata  namelist                               -->
-<!--                                                   -->
-<entry id="scripgriddata" type="char*256" category="mkmapdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-SCRIP format grid data file
-</entry>
-
-<entry id="scripgriddata_lrgfile_needed" type="char*256" category="mkmapdata"
-       group="clmexp" valid_values="none,64bit_offset,netcdf4" >
-Flag to pass to the ESMF mapping utility, telling it what kind of large
-file support is needed for an output file generated with this grid as
-either the source or destination ('none', '64bit_offset' or 'netcdf4'). 
-</entry>
-
-<entry id="scripgriddata_type" type="char*256" category="mkmapdata"
-       group="clmexp" valid_values="SCRIP,UGRID" >
-Flag to pass to the ESMF mapping utility, telling it what kind of grid
-file this is (SCRIP or UGRID).
-</entry>
-
-<entry id="scripgriddata_meshname" type="char*256" category="mkmapdata"
-       group="clmexp" valid_values="" >
-For UGRID files, flag to pass to the ESMF mapping utility, telling it the
-name of the dummy variable that has all of the topology information stored
-in its attributes. (Only used if scripgriddata_src_type = UGRID.)
-</entry>
-
-<!--                                                   -->
-<!-- mksurfdata namelist                               -->
-<!--                                                   -->
-<entry id="mksrf_filename" type="char*256" category="mksurfdata"
-       group="default_settings" 
-       valid_values="mksrf_fsoitex,mksrf_flakwat,mksrf_fwetlnd,mksrf_fsoicol,mksrf_ftopostats" >
-Filename for mksurfdata_map to remap raw data into the output surface dataset
-</entry>
-
-<entry id="mksrf_fvegtyp" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Plant Function Type dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fhrvtyp" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Harvest dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fglacier" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Dataset for percent glacier land-unit for mksurfdata
-</entry>
-
-<entry id="mksrf_fglacierregion" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Dataset for glacier region ID for mksurfdata
-</entry>
-
-<entry id="mksrf_furbtopo" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Dataset for topography used to define urban threshold
-</entry>
-
-<entry id="mksrf_flai" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Leaf Area Index dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fsoitex" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Soil texture dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fsoicol" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Soil color dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_ffrac" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-High resolution land mask/fraction dataset for mksurfdata
-(used for glacier_mec land-units)
-</entry>
-
-<entry id="mksrf_gridtype" type="char*256" category="mksurfdata"
-       group="clmexp" value="global" valid_values="global,regional" >
-Type of grid to create for mksurfdata
-</entry>
-
-<entry id="mksrf_fgrid" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Grid file at the output resolution for mksurfdata
-</entry>
-
-<entry id="mksrf_ftopo" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-High resolution topography dataset for mksurfdata
-(used for glacier_mec land-units)
-</entry>
-
-<entry id="mksrf_flakwat" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Lake water dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fwetlnd" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Wetland dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_fsoildepth" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Soil depth dataset for mksurfdata
-</entry>
-
-<entry id="mksrf_ftopostats" type="char*256" category="mksurfdata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Topography statistics dataset for mksurfdata
-</entry>
-
-<entry id="outnc_double" type="logical" category="mksurfdata"
-       group="clmexp" value=".true.">
-If TRUE, output variables in double precision for mksurfdata
-</entry>
-
-<entry id="all_urban" type="logical" category="mksurfdata"
-       group="clmexp" value=".false.">
-If TRUE, ignore other files, and set the output percentage to 100% urban and
-zero for other land-use types.
-</entry>
-
-<entry id="no_inlandwet" type="logical" category="mksurfdata"
-       group="clmexp" value=".true.">
-If TRUE, set wetland to 0% over land (renormalizing other landcover types as needed);
-wetland will only be used for ocean points.
-</entry>
-
-<entry id="numpft" type="integer" category="mksurfdata"
-       group="clmexp" value="16" valid_values="16,20" >
-Number of Plant Functional Types (excluding bare-soil)
-</entry>
-
-<entry id="pft_idx" type="integer" category="mksurfdata"
-       group="clmexp"
-       valid_values="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20" >
-Plant Function Type index to override global file with for mksurfdata
-</entry>
-
-<entry id="pft_frc" type="real" category="mksurfdata"
-       group="clmexp" valid_values="">
-Plant Function Type fraction to override global file with for mksurfdata
-</entry>
-
-<entry id="soil_color" type="integer" category="mksurfdata"
-       group="clmexp"
-       valid_values="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20" >
-Soil color index to override global file with for mksurfdata
-</entry>
-
-<entry id="soil_sand" type="real" category="mksurfdata"
-       group="clmexp" >
-Soil percent sand to override global file with for mksurfdata
-</entry>
-
-<entry id="soil_clay" type="real" category="mksurfdata"
-       group="clmexp" >
-Soil percent clay to override global file with for mksurfdata
-</entry>
-
-
-<!--                                                   -->
-<!-- mkgriddata namelist                               -->
-<!--                                                   -->
-<entry id="mksrf_fnavyoro" type="char*256" category="mkgriddata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Orography file with surface heights and land area fraction
-</entry>
-
-<entry id="mksrf_fclmgrid" type="char*256" category="mkgriddata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-CLM grid file
-</entry>
-
-<entry id="mksrf_fccsmdom" type="char*256" category="mkgriddata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-CESM domain file
-</entry>
-
-<entry id="mksrf_fcamfile" type="char*256" category="mkgriddata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-CAM file
-</entry>
-
-<entry id="mksrf_frawtopo" type="char*256" category="mkgriddata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-Raw topography file
-</entry>
-
-<entry id="mksrf_fcamtopo" type="char*256" category="mkgriddata"
-       input_pathname="abs" group="clmexp" valid_values="" >
-CAM topography file
-</entry>
-
-<entry id="mksrf_lsmlon" type="integer" category="mkgriddata"
-       group="clmexp" valid_values="" >
-Number of longitudes to use for a regional grid (for single-point set to 1)
-</entry>
-
-<entry id="mksrf_lsmlat" type="integer" category="mkgriddata"
-       group="clmexp" valid_values="" >
-Number of latitudes to use for a regional grid (for single-point set to 1)
-</entry>
-
-<entry id="mksrf_edgen" type="real" category="mkgriddata"
-       group="clmexp" valid_values="" >
-Northern edge of the regional grid
-</entry>
-
-<entry id="mksrf_edges" type="real" category="mkgriddata"
-       group="clmexp" valid_values="" >
-Southern edge of the regional grid
-</entry>
-
-<entry id="mksrf_edgee" type="real" category="mkgriddata"
-       group="clmexp" valid_values="" >
-Eastern edge of the regional grid
-</entry>
-
-<entry id="mksrf_edgew" type="real" category="mkgriddata"
-       group="clmexp" valid_values="" >
-Western edge of the regional grid
-</entry>
-
 
 <!--             -->
 <!-- mkghg       -->
@@ -881,52 +527,13 @@ How close in years to use when looking for an initial condition file (finidat) i
 Simulation years you can look for in initial condition files (finidat) if interpolation is turned on (use_init_interp is .true.)
 </entry>
 
-<entry id="bgc_mode" type="char*5" category="default_settings"
-       group="default_settings" valid_values="sp,cn,bgc" >
-Command line arguement for biogeochemistry mode for CLM4.5
-   sp  = Satellitte Phenology
-   cn  = Carbon Nitrogen model
-   bgc = CLM4.5 BGC model with: 
-        CENTURY model pools 
-        Nitrification/De-nitrification
-        Methane model
-        Vertically resolved Carbon
-</entry>
-
-<!-- ========================================================================================  -->
-<!-- namelist elements associated with the vertical CN model                                   -->
-<!-- ========================================================================================  -->
-
-<!-- turnover time modifications    -->
-<entry id="decomp_depth_efolding" type="real" category="clm_vertcn"
-       group="bgc_shared" valid_values="" >
-E-folding depth over which decomposition is slowed with depth in all soils.
-</entry>
-
-<entry id="froz_q10" type="real" category="clm_vertcn"
-       group="clm_inparm" valid_values="" >
-separate q10 for frozen soil respiration rates.  default to same as above zero rates
-</entry>
-
 <!-- ========================================================================================  -->
 <!-- namelist elements associated with the Hydrology1Mod                                       -->
 <!-- ========================================================================================  -->
 
-<entry id="oldfflag" type="integer" category="clm_physics"
-       group="clm_canopyhydrology_inparm" valid_values="0,1" >
-Use old snow cover fraction from Niu et al. 2007
-(deprecated -- will be removed)
-</entry>
-
 <entry id="h2osfcflag" type="integer" category="clm_physics"
        group="clm_soilhydrology_inparm" valid_values="0,1" >
 If surface water is active or not
-(deprecated -- will be removed)
-</entry>
-
-<entry id="origflag" type="integer" category="clm_physics"
-       group="clm_soilhydrology_inparm" valid_values="0,1" >
-Use original CLM4 soil hydraulic properties
 (deprecated -- will be removed)
 </entry>
 
