@@ -169,13 +169,6 @@ module clm_varctl
   character(len=16), public :: soil_layerstruct = '10SL_3.5m'
 
   !----------------------------------------------------------
-  ! glacier_mec control variables: default values (may be overwritten by namelist)
-  !----------------------------------------------------------
-
-  ! true => CLM glacier area & topography changes dynamically 
-  logical , public :: glc_do_dynglacier = .false.           
-
-  !----------------------------------------------------------
   ! single column control variables
   !----------------------------------------------------------
 

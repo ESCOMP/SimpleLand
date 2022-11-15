@@ -15,7 +15,7 @@ module lnd_import_export
 contains
 
   !===============================================================================
-  subroutine lnd_import( bounds, x2l, glc_present, atm2lnd_inst, glc2lnd_inst)
+  subroutine lnd_import( bounds, x2l, atm2lnd_inst, glc2lnd_inst)
 
     !---------------------------------------------------------------------------
     ! !DESCRIPTION:
@@ -33,7 +33,6 @@ contains
     ! !ARGUMENTS:
     type(bounds_type)  , intent(in)    :: bounds   ! bounds
     real(r8)           , intent(in)    :: x2l(:,:) ! driver import state to land model
-    logical            , intent(in)    :: glc_present       ! .true. => running with a non-stub GLC model
     type(atm2lnd_type) , intent(inout) :: atm2lnd_inst      ! clm internal input data type
     type(glc2lnd_type) , intent(inout) :: glc2lnd_inst      ! clm internal input data type
     !
@@ -246,20 +245,6 @@ contains
 
     end do
 
-    call glc2lnd_inst%set_glc2lnd_fields( &
-         bounds = bounds, &
-         glc_present = glc_present, &
-         ! NOTE(wjs, 2017-12-13) the x2l argument doesn't have the typical bounds
-         ! subsetting (bounds%begg:bounds%endg). This mirrors the lack of these bounds in
-         ! the call to lnd_import from lnd_run_mct. This is okay as long as this code is
-         ! outside a clump loop.
-         x2l = x2l, &
-         index_x2l_Sg_ice_covered = index_x2l_Sg_ice_covered, &
-         index_x2l_Sg_topo = index_x2l_Sg_topo, &
-         index_x2l_Flgg_hflx = index_x2l_Flgg_hflx, &
-         index_x2l_Sg_icemask = index_x2l_Sg_icemask, &
-         index_x2l_Sg_icemask_coupled_fluxes = index_x2l_Sg_icemask_coupled_fluxes)
-
   end subroutine lnd_import
 
   !===============================================================================
@@ -351,9 +336,7 @@ contains
        l2x(index_l2x_Flrl_rofi,i) = lnd2atm_inst%qflx_rofice_grc(g)
 
        ! glc coupling
-       ! We could avoid setting these fields if glc_present is .false., if that would
-       ! help with performance. (The downside would be that we wouldn't have these fields
-       ! available for diagnostic purposes or to force a later T compset with dlnd.)
+       ! We could avoid setting these fields if glc_present is .false.
        do num = 0,10
           l2x(index_l2x_Sl_tsrf(num),i)   = lnd2glc_inst%tsrf_grc(g,num)
           l2x(index_l2x_Sl_topo(num),i)   = lnd2glc_inst%topo_grc(g,num)

@@ -333,7 +333,6 @@ contains
     logical      :: dosend               ! true => send data back to driver
     logical      :: doalb                ! .true. ==> do albedo calculation on this time step
     logical      :: rof_prognostic       ! .true. => running with a prognostic ROF model
-    logical      :: glc_present          ! .true. => running with a non-stub GLC model
     real(r8)     :: nextsw_cday          ! calday from clock of next radiation computation
     real(r8)     :: caldayp1             ! clm calday plus dtime offset
     integer      :: shrlogunit,shrloglev ! old values for share log unit and log level
@@ -389,8 +388,7 @@ contains
     ! their being set in initialization, so need to get them in the run method.
 
     call seq_infodata_GetData( infodata, &
-         rof_prognostic=rof_prognostic, &
-         glc_present=glc_present)
+         rof_prognostic=rof_prognostic)
 
     ! Map MCT to land data type
     ! Perform downscaling if appropriate
@@ -402,7 +400,6 @@ contains
     call t_startf ('lc_lnd_import')
     call lnd_import( bounds, &
          x2l = x2l_l%rattr, &
-         glc_present = glc_present, &
          atm2lnd_inst = atm2lnd_inst, &
          glc2lnd_inst = glc2lnd_inst)
     call t_stopf ('lc_lnd_import')

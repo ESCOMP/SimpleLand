@@ -10,7 +10,7 @@ module glc2lndMod
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use shr_kind_mod   , only : r8 => shr_kind_r8
   use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-  use clm_varctl     , only : iulog, glc_do_dynglacier
+  use clm_varctl     , only : iulog
   use clm_varcon     , only : nameg, spval, ispval
   use abortutils     , only : endrun
   use GridcellType   , only : grc 
@@ -71,16 +71,6 @@ module glc2lndMod
 
      procedure, public  :: Init
      procedure, public  :: Clean
-
-     ! In each timestep, these routines should be called in order (though they don't need
-     ! to be called all at once):
-     ! - set_glc2lnd_fields
-     ! - update_glc2lnd_topo
-     procedure, public  :: set_glc2lnd_fields       ! set coupling fields sent from glc to lnd
-     procedure, public  :: update_glc2lnd_topo      ! update topographic heights
-
-     ! For unit testing only:
-     procedure, public  :: for_test_set_glc2lnd_fields_directly  ! set glc2lnd fields directly in a unit testing context
 
      ! ------------------------------------------------------------------------
      ! Private routines
@@ -234,94 +224,6 @@ contains
     deallocate(this%glc_dyn_runoff_routing_grc)
 
   end subroutine Clean
-
-  !-----------------------------------------------------------------------
-  subroutine set_glc2lnd_fields(this, bounds, glc_present, x2l, &
-       index_x2l_Sg_ice_covered, index_x2l_Sg_topo, index_x2l_Flgg_hflx, &
-       index_x2l_Sg_icemask, index_x2l_Sg_icemask_coupled_fluxes)
-    !
-    ! !DESCRIPTION:
-    ! Set coupling fields sent from glc to lnd
-    !
-    ! If glc_present is true, then the given fields are all assumed to be valid; if
-    ! glc_present is false, then these fields are ignored.
-    !
-    ! !ARGUMENTS:
-    class(glc2lnd_type), intent(inout) :: this
-    type(bounds_type)  , intent(in)    :: bounds
-    logical  , intent(in) :: glc_present                         ! true if running with a non-stub glc model
-    real(r8) , intent(in) :: x2l(:, bounds%begg: )               ! driver import state to land model [field, gridcell]
-    integer  , intent(in) :: index_x2l_Sg_ice_covered( 0: )      ! indices of ice-covered field in x2l, for each elevation class
-    integer  , intent(in) :: index_x2l_Sg_topo( 0: )             ! indices of topo field in x2l, for each elevation class
-    integer  , intent(in) :: index_x2l_Flgg_hflx( 0: )           ! indices of heat flux field in x2l, for each elevation class
-    integer  , intent(in) :: index_x2l_Sg_icemask                ! index of icemask field in x2l
-    integer  , intent(in) :: index_x2l_Sg_icemask_coupled_fluxes ! index of icemask_coupled_fluxes field in x2l
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g
-    integer :: icemec_class
-
-    character(len=*), parameter :: subname = 'set_glc2lnd_fields'
-    !-----------------------------------------------------------------------
-
-    SHR_ASSERT((ubound(x2l, 2) == bounds%endg), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(index_x2l_Sg_ice_covered) == (/10/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(index_x2l_Sg_topo) == (/10/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(index_x2l_Flgg_hflx) == (/10/)), errMsg(sourcefile, __LINE__))
-
-    if (glc_present) then
-       call endrun(' ERROR: SLIM can NOT run with an active ice sheet model' )
-    end if
-    if (glc_do_dynglacier) then
-       call endrun(' ERROR: With glc_present false (e.g., a stub glc model), glc_do_dynglacier must be false '// &
-            errMsg(sourcefile, __LINE__))
-    end if
-
-  end subroutine set_glc2lnd_fields
-
-  !-----------------------------------------------------------------------
-  subroutine for_test_set_glc2lnd_fields_directly(this, bounds, &
-       topo, icemask)
-    !
-    ! !DESCRIPTION:
-    ! Set glc2lnd fields directly in a unit testing context
-    !
-    ! This currently only provides a mechanism to set fields that are actually needed in
-    ! our unit tests. More could be added later.
-    !
-    ! Also: In contrast to the production version (set_glc2lnd_fields), this does NOT
-    ! currently update glc2lnd_dyn_runoff_routing (because doing so would require having a
-    ! sensible glc_behavior, which we may not have; and also, we currently don't need this
-    ! field in a unit testing context). (Note: If we eventually want/need to update
-    ! glc2lnd_dyn_runoff_routing, and thus need a fully sensible glc_behavior, then we
-    ! should extract the self-calls at the end of set_glc2lnd_fields
-    ! (check_glc2lnd_icemask, check_glc2lnd_icemask_coupled_fluxes,
-    ! update_glc2lnd_dyn_runoff_routing) into a private routine like
-    ! set_glc2lnd_fields_wrapup, which could be called by both set_glc2lnd_fields and this
-    ! routine.)
-    !
-    ! !ARGUMENTS:
-    class(glc2lnd_type), intent(inout) :: this
-    type(bounds_type)  , intent(in)    :: bounds
-    real(r8), intent(in), optional :: topo( bounds%begg: , 0: )  ! topographic height [gridcell, elevclass]
-    real(r8), intent(in), optional :: icemask( bounds%begg: )
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'for_test_set_glc2lnd_fields_directly'
-    !-----------------------------------------------------------------------
-
-    if (present(topo)) then
-       SHR_ASSERT_ALL((ubound(topo) == (/bounds%endg, 10/)), errMsg(sourcefile, __LINE__))
-       this%topo_grc(bounds%begg:bounds%endg, 0:10) = topo(bounds%begg:bounds%endg, 0:10)
-    end if
-
-    if (present(icemask)) then
-       SHR_ASSERT_ALL((ubound(icemask) == (/bounds%endg/)), errMsg(sourcefile, __LINE__))
-       this%icemask_grc(bounds%begg:bounds%endg) = icemask(bounds%begg:bounds%endg)
-    end if
-
-  end subroutine for_test_set_glc2lnd_fields_directly
 
   !-----------------------------------------------------------------------
   subroutine check_glc2lnd_icemask(this, bounds)
@@ -507,72 +409,6 @@ contains
     end do
 
   end subroutine update_glc2lnd_dyn_runoff_routing
-
-
-
-  !-----------------------------------------------------------------------
-  subroutine update_glc2lnd_topo(this, bounds, topo_col, needs_downscaling_col)
-    !
-    ! !DESCRIPTION:
-    ! Update column-level topographic heights based on input from GLC (via the coupler).
-    !
-    ! Also updates the logical array, needs_downscaling_col: Sets this array to true
-    ! anywhere where topo_col is updated, because these points will need downscaling.
-    ! (Leaves other array elements in needs_downscaling_col untouched.)
-    !
-    ! If glc_do_dynglacier is false, then both topographic heights and
-    ! needs_downscaling_col are left unchanged.
-    !
-    ! !USES:
-    use landunit_varcon , only : istice_mec
-    use column_varcon   , only : col_itype_to_icemec_class
-    !
-    ! !ARGUMENTS:
-    class(glc2lnd_type) , intent(in)    :: this
-    type(bounds_type)   , intent(in)    :: bounds                   ! bounds
-    real(r8)            , intent(inout) :: topo_col( bounds%begc: ) ! topographic height (m)
-    logical             , intent(inout) :: needs_downscaling_col( bounds%begc: )
-    !
-    ! !LOCAL VARIABLES:
-    integer :: c, l, g      ! indices
-    integer :: icemec_class ! current icemec class (1..maxpatch_glcmec)
-
-    character(len=*), parameter :: subname = 'update_glc2lnd_topo'
-    !-----------------------------------------------------------------------
-
-    SHR_ASSERT_ALL((ubound(topo_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(needs_downscaling_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-
-    if (glc_do_dynglacier) then
-       do c = bounds%begc, bounds%endc
-          l = col%landunit(c)
-          g = col%gridcell(c)
-
-          ! Values from GLC are only valid within the icemask, so we only update CLM's topo values there
-          if (this%icemask_grc(g) > 0._r8) then
-             if (lun%itype(l) == istice_mec) then
-                icemec_class = col_itype_to_icemec_class(col%itype(c))
-             else
-                ! If not on a glaciated column, assign topography to the bare-land value determined by GLC.
-                icemec_class = 0
-             end if
-
-             ! Note that we do downscaling over all column types. This is for consistency:
-             ! interpretation of results would be difficult if some non-glacier column types
-             ! were downscaled but others were not.
-             !
-             ! BUG(wjs, 2016-11-15, bugz 2377) Actually, do not downscale over urban points:
-             ! this currently isn't allowed because the urban code references some
-             ! non-downscaled, gridcell-level atmospheric forcings
-             if (.not. lun%urbpoi(l)) then
-                topo_col(c) = this%topo_grc(g, icemec_class)
-                needs_downscaling_col(c) = .true.
-             end if
-          end if
-       end do
-    end if
-
-  end subroutine update_glc2lnd_topo
 
 end module glc2lndMod
 

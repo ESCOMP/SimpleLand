@@ -227,12 +227,6 @@ contains
     call glc_behavior%icemec_cols_need_downscaling(bounds, num_icemecc, filter_icemecc, &
          this%needs_downscaling_col(begc:endc))
 
-    ! In addition to updating topo_col, this also sets some additional elements of
-    ! needs_downscaling_col to .true. (but leaves the already-.true. values as is.)
-    call glc2lnd_inst%update_glc2lnd_topo(bounds, &
-         this%topo_col(begc:endc), &
-         this%needs_downscaling_col(begc:endc))
-
     ! For any point that isn't downscaled, set its topo value to the atmosphere's
     ! topographic height. This shouldn't matter, but is useful if topo_col is written to
     ! the history file.
