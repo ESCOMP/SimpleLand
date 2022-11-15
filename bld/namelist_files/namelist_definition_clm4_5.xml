@@ -738,33 +738,10 @@ Type of domain file to create (ocean or atmosphere) (only used for mkdatadomain)
 If TRUE, repartition rain/snow from atmosphere based on temperature.
 </entry>
 
-<entry id="glcmec_downscale_longwave" type="logical" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-If TRUE, downscale longwave radiation over glc_mec landunits.
-This downscaling is conservative.
-<default>Default: .true.</default>
-</entry>
-
 <entry id="lapse_rate" type="real" category="clm_physics"
        group="atm2lnd_inparm" valid_values="" >
 Surface temperature lapse rate (K m-1)
 A positive value means a decrease in temperature with increasing height
-</entry>
-
-<entry id="lapse_rate_longwave" type="real" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-Longwave radiation lapse rate (W m-2 m-1)
-A positive value means a decrease in LW radiation with increasing height
-Only relevant if glcmec_downscale_longwave is .true.
-</entry>
-
-<entry id="longwave_downscaling_limit" type="real" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-Relative limit for how much longwave downscaling can be done (unitless)
-The pre-normalized, downscaled longwave is restricted to be in the range
-[lwrad*(1-longwave_downscaling_limit), lwrad*(1+longwave_downscaling_limit)]
-This parameter must be in the range [0,1]
-Only relevant if glcmec_downscale_longwave is .true.
 </entry>
 
 <entry id="precip_repartition_glc_all_snow_t" type="real" category="clm_physics"
@@ -1095,44 +1072,6 @@ too-large snow pack can cool the atmosphere, thus maintaining the too-large snow
 WARNING: Setting this to .true. will break water conservation for approximately the first
 day of the new run. This is by design: The excess snow is completely removed from the system.
 </entry>
-
-<entry id="reset_snow_glc" type="logical" category="clm_physics"
-       group="clm_snowhydrology_inparm"   >
-If set to .true., then reset the snow pack over glacier columns to a small value.
-This is useful when transitioning from a spinup under one set of atmospheric forcings
-to a run under a different set of atmospheric forcings: By resetting too-large snow packs,
-we make it more likely that points will remain only seasonally snow-covered under the new
-atmospheric forcings. (This is particularly true in a coupled run, where starting with a
-too-large snow pack can cool the atmosphere, thus maintaining the too-large snow pack.)
-
-See also reset_snow_glc_ela, which controls the elevation below which
-glacier columns are reset.
-
-WARNING: Setting this to .true. will break water conservation for approximately the first
-day of the new run. This is by design: The excess snow is completely removed from the system.
-
-WARNING: This variable is intended for short test runs, and generally
-should not be used for scientific production runs. By resetting snow
-below a given elevation, you risk forcing the system to evolve
-differently in areas below and above reset_snow_glc_ela.
-</entry>
-
-<entry id="reset_snow_glc_ela" type="real" category="clm_physics"
-       group="clm_snowhydrology_inparm"   >
-Only relevant if reset_snow_glc is .true.
-
-When resetting snow pack over glacier columns, one can choose to do this over all glacier
-columns, or only those below a certain elevation. A typical use case is to reset only those 
-columns that have a seasonal snow pack in the real world, i.e. SMB less than 0, also known as 
-the equilibrium line altitude (ELA). This parameter sets a single global ELA value. By
-setting this parameter to a large value (i.e. 10000 m), all glacier columns will be reset.
-
-WARNING: This variable is intended for short test runs, and generally
-should not be used for scientific production runs. By resetting snow
-below a given elevation, you risk forcing the system to evolve
-differently in areas below and above reset_snow_glc_ela.
-</entry>
-
 
 <!-- ========================================================================================  -->
 <!-- Namelist options related to initInterp                                                    -->

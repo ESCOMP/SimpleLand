@@ -427,8 +427,6 @@ contains
 
     associate(&
          ! Parameters:
-         lapse_rate_longwave => atm2lnd_inst%params%lapse_rate_longwave  , & ! Input:  [real(r8)] longwave radiation lapse rate (W m-2 m-1)
-         longwave_downscaling_limit => atm2lnd_inst%params%longwave_downscaling_limit, & ! Input:  [real(r8)] Relative limit for how much longwave downscaling can be done (unitless)
 
          ! Gridcell-level metadata:
          forc_topo_g  => atm2lnd_inst%forc_topo_grc                , & ! Input:  [real(r8) (:)]  atmospheric surface height (m)
@@ -450,82 +448,6 @@ contains
             forc_lwrad_c(c) = forc_lwrad_g(g)
          end if
       end do
-
-      ! Optionally, downscale the longwave radiation, conserving energy
-      if (atm2lnd_inst%params%glcmec_downscale_longwave) then
-
-         ! Initialize variables related to normalization
-         do g = bounds%begg, bounds%endg
-            sum_lwrad_g(g) = 0._r8
-            sum_wts_g(g) = 0._r8
-            newsum_lwrad_g(g) = 0._r8
-         end do
-
-         ! Do the downscaling
-         do fc = 1, downscale_filter_c%num
-            c = downscale_filter_c%indices(fc)
-            l = col%landunit(c)
-            g = col%gridcell(c)
-
-            hsurf_g = forc_topo_g(g)
-            hsurf_c = topo_c(c)
-
-            ! Assume a linear decrease in downwelling longwave radiation with increasing
-            ! elevation, based on Van Tricht et al. (2016, TC) Figure 6,
-            ! doi:10.5194/tc-10-2379-2016
-            forc_lwrad_c(c) = forc_lwrad_g(g) - lapse_rate_longwave * (hsurf_c-hsurf_g)
-            ! But ensure that we don't depart too far from the atmospheric forcing value:
-            ! negative values of lwrad are certainly bad, but small positive values might
-            ! also be bad. We can especially run into trouble due to the normalization: a
-            ! small lwrad value in one column can lead to a big normalization factor,
-            ! leading to huge lwrad values in other columns.
-            forc_lwrad_c(c) = min(forc_lwrad_c(c), &
-                 forc_lwrad_g(g) * (1._r8 + longwave_downscaling_limit))
-            forc_lwrad_c(c) = max(forc_lwrad_c(c), &
-                 forc_lwrad_g(g) * (1._r8 - longwave_downscaling_limit))
-
-            ! Keep track of the gridcell-level weighted sum for later normalization.
-            !
-            ! This gridcell-level weighted sum just includes points for which we do the
-            ! downscaling (e.g., glc_mec points). Thus the contributing weights
-            ! generally do not add to 1. So to do the normalization properly, we also
-            ! need to keep track of the weights that have contributed to this sum.
-            sum_lwrad_g(g) = sum_lwrad_g(g) + col%wtgcell(c)*forc_lwrad_c(c)
-            sum_wts_g(g) = sum_wts_g(g) + col%wtgcell(c)
-         end do
-
-
-         ! Normalize forc_lwrad_c(c) to conserve energy
-
-         call build_normalization(orig_field=forc_lwrad_g(bounds%begg:bounds%endg), &
-              sum_field=sum_lwrad_g(bounds%begg:bounds%endg), &
-              sum_wts=sum_wts_g(bounds%begg:bounds%endg), &
-              norms=lwrad_norm_g(bounds%begg:bounds%endg))
-
-         do fc = 1, downscale_filter_c%num
-            c = downscale_filter_c%indices(fc)
-            l = col%landunit(c)
-            g = col%gridcell(c)
-
-            forc_lwrad_c(c) = forc_lwrad_c(c) * lwrad_norm_g(g)
-            newsum_lwrad_g(g) = newsum_lwrad_g(g) + col%wtgcell(c)*forc_lwrad_c(c)
-         end do
-
-
-         ! Make sure that, after normalization, the grid cell mean is conserved
-
-         do g = bounds%begg, bounds%endg
-            if (sum_wts_g(g) > 0._r8) then
-               if (abs((newsum_lwrad_g(g) / sum_wts_g(g)) - forc_lwrad_g(g)) > 1.e-8_r8) then
-                  write(iulog,*) 'g, newsum_lwrad_g, sum_wts_g, forc_lwrad_g: ', &
-                       g, newsum_lwrad_g(g), sum_wts_g(g), forc_lwrad_g(g)
-                  call endrun(msg=' ERROR: Energy conservation error downscaling longwave'//&
-                       errMsg(sourcefile, __LINE__))
-               end if
-            end if
-         end do
-
-      end if    ! glcmec_downscale_longwave
 
     end associate
 

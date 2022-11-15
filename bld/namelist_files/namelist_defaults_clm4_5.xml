@@ -52,15 +52,8 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <repartition_rain_snow phys="clm5_0">.true.</repartition_rain_snow>
 <repartition_rain_snow phys="clm4_5">.false.</repartition_rain_snow>
 
-<glcmec_downscale_longwave>.true.</glcmec_downscale_longwave>
-
 <!-- Pritchard et al. (GRL, 35, 2008) use 0.006 -->
 <lapse_rate>0.006</lapse_rate>
-
-<!-- Based on Van Tricht et al. (2016, TC) Figure 6, doi:10.5194/tc-10-2379-2016 -->
-<lapse_rate_longwave>0.032</lapse_rate_longwave>
-
-<longwave_downscaling_limit>0.5</longwave_downscaling_limit>
 
 <precip_repartition_nonglc_all_snow_t>0.</precip_repartition_nonglc_all_snow_t>
 <precip_repartition_nonglc_all_rain_t>2.</precip_repartition_nonglc_all_rain_t>
@@ -133,11 +126,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <overburden_compress_tfactor>0.08d00</overburden_compress_tfactor>
 
 <reset_snow>.false.</reset_snow>
-<reset_snow_glc>.false.</reset_snow_glc>
-<!-- Set default reset_snow_glc_ela value to very large so that, by
-     default, all glacier columns will be reset if reset_snow_glc is set
-     to .true. -->
-<reset_snow_glc_ela>1.e9</reset_snow_glc_ela>
 
 <!-- Default glacier behavior is:
      Mountain glaciers: single_at_atm_topo

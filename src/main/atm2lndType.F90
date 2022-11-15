@@ -26,19 +26,8 @@ module atm2lndType
      ! true => repartition rain/snow from atm based on temperature
      logical :: repartition_rain_snow
 
-     ! true => downscale longwave radiation
-     logical :: glcmec_downscale_longwave
-
      ! Surface temperature lapse rate (K m-1)
      real(r8) :: lapse_rate
-
-     ! longwave radiation lapse rate (W m-2 m-1)
-     real(r8) :: lapse_rate_longwave
-
-     ! Relative limit for how much longwave downscaling can be done (unitless)
-     ! The pre-normalized, downscaled longwave is restricted to be in the range
-     ! [lwrad*(1-longwave_downscaling_limit), lwrad*(1+longwave_downscaling_limit)]
-     real(r8) :: longwave_downscaling_limit
 
      ! Rain-snow ramp for glacier landunits
      ! frac_rain = (temp - all_snow_t) * frac_rain_slope
@@ -344,8 +333,8 @@ module atm2lndType
 contains
 
   !-----------------------------------------------------------------------
-  function atm2lnd_params_constructor(repartition_rain_snow, glcmec_downscale_longwave, &
-       lapse_rate, lapse_rate_longwave, longwave_downscaling_limit, &
+  function atm2lnd_params_constructor(repartition_rain_snow, &
+       lapse_rate, &
        precip_repartition_glc_all_snow_t, precip_repartition_glc_all_rain_t, &
        precip_repartition_nonglc_all_snow_t, precip_repartition_nonglc_all_rain_t) &
        result(params)
@@ -358,18 +347,9 @@ contains
     ! !ARGUMENTS:
     type(atm2lnd_params_type) :: params  ! function result
     logical, intent(in) :: repartition_rain_snow
-    logical, intent(in) :: glcmec_downscale_longwave
 
     ! Surface temperature lapse rate (K m-1)
     real(r8), intent(in) :: lapse_rate
-
-    ! Longwave radiation lapse rate (W m-2 m-1)
-    ! Must be present if glcmec_downscale_longwave is true; ignored otherwise
-    real(r8), intent(in), optional :: lapse_rate_longwave
-
-    ! Relative limit for how much longwave downscaling can be done (unitless)
-    ! Must be present if glcmec_downscale_longwave is true; ignored otherwise
-    real(r8), intent(in), optional :: longwave_downscaling_limit
 
     ! End-points of the rain-snow ramp for glacier landunits (degrees C)
     ! Must be present if repartition_rain_snow is true; ignored otherwise
@@ -387,32 +367,8 @@ contains
     !-----------------------------------------------------------------------
 
     params%repartition_rain_snow = repartition_rain_snow
-    params%glcmec_downscale_longwave = glcmec_downscale_longwave
 
     params%lapse_rate = lapse_rate
-
-    if (glcmec_downscale_longwave) then
-       if (.not. present(lapse_rate_longwave)) then
-          call endrun(subname // &
-               ' ERROR: For glcmec_downscale_longwave true, lapse_rate_longwave must be provided')
-       end if
-       if (.not. present(longwave_downscaling_limit)) then
-          call endrun(subname // &
-               ' ERROR: For glcmec_downscale_longwave true, longwave_downscaling_limit must be provided')
-       end if
-
-       if (longwave_downscaling_limit < 0._r8 .or. &
-            longwave_downscaling_limit > 1._r8) then
-          call endrun(subname // &
-               ' ERROR: longwave_downscaling_limit must be between 0 and 1')
-       end if
-
-       params%lapse_rate_longwave = lapse_rate_longwave
-       params%longwave_downscaling_limit = longwave_downscaling_limit
-    else
-       params%lapse_rate_longwave = nan
-       params%longwave_downscaling_limit = nan
-    end if
 
     if (repartition_rain_snow) then
 
@@ -528,7 +484,6 @@ contains
        ! Use arbitrary values
        l_params = atm2lnd_params_type( &
             repartition_rain_snow = .false., &
-            glcmec_downscale_longwave = .false., &
             lapse_rate = 0.01_r8)
     end if
 
@@ -558,10 +513,7 @@ contains
 
     ! temporary variables corresponding to the components of atm2lnd_params_type
     logical :: repartition_rain_snow
-    logical :: glcmec_downscale_longwave
     real(r8) :: lapse_rate
-    real(r8) :: lapse_rate_longwave
-    real(r8) :: longwave_downscaling_limit
     real(r8) :: precip_repartition_glc_all_snow_t
     real(r8) :: precip_repartition_glc_all_rain_t
     real(r8) :: precip_repartition_nonglc_all_snow_t
@@ -574,17 +526,14 @@ contains
     character(len=*), parameter :: subname = 'ReadNamelist'
     !-----------------------------------------------------------------------
 
-    namelist /atm2lnd_inparm/ repartition_rain_snow, glcmec_downscale_longwave, &
-         lapse_rate, lapse_rate_longwave, longwave_downscaling_limit, &
+    namelist /atm2lnd_inparm/ repartition_rain_snow, &
+         lapse_rate, &
          precip_repartition_glc_all_snow_t, precip_repartition_glc_all_rain_t, &
          precip_repartition_nonglc_all_snow_t, precip_repartition_nonglc_all_rain_t
 
     ! Initialize namelist variables to defaults
     repartition_rain_snow = .false.
-    glcmec_downscale_longwave = .false.
     lapse_rate = nan
-    lapse_rate_longwave = nan
-    longwave_downscaling_limit = nan
     precip_repartition_glc_all_snow_t = nan
     precip_repartition_glc_all_rain_t = nan
     precip_repartition_nonglc_all_snow_t = nan
@@ -606,10 +555,7 @@ contains
     end if
 
     call shr_mpi_bcast(repartition_rain_snow, mpicom)
-    call shr_mpi_bcast(glcmec_downscale_longwave, mpicom)
     call shr_mpi_bcast(lapse_rate, mpicom)
-    call shr_mpi_bcast(lapse_rate_longwave, mpicom)
-    call shr_mpi_bcast(longwave_downscaling_limit, mpicom)
     call shr_mpi_bcast(precip_repartition_glc_all_snow_t, mpicom)
     call shr_mpi_bcast(precip_repartition_glc_all_rain_t, mpicom)
     call shr_mpi_bcast(precip_repartition_nonglc_all_snow_t, mpicom)
@@ -621,12 +567,7 @@ contains
        ! Write settings one-by-one rather than with a nml write because some settings may
        ! be NaN if certain options are turned off.
        write(iulog,*) 'repartition_rain_snow = ', repartition_rain_snow
-       write(iulog,*) 'glcmec_downscale_longwave = ', glcmec_downscale_longwave
        write(iulog,*) 'lapse_rate = ', lapse_rate
-       if (glcmec_downscale_longwave) then
-          write(iulog,*) 'lapse_rate_longwave = ', lapse_rate_longwave
-          write(iulog,*) 'longwave_downscaling_limit = ', longwave_downscaling_limit
-       end if
        if (repartition_rain_snow) then
           write(iulog,*) 'precip_repartition_glc_all_snow_t = ', precip_repartition_glc_all_snow_t
           write(iulog,*) 'precip_repartition_glc_all_rain_t = ', precip_repartition_glc_all_rain_t
@@ -638,10 +579,7 @@ contains
 
     this%params = atm2lnd_params_type( &
          repartition_rain_snow = repartition_rain_snow, &
-         glcmec_downscale_longwave = glcmec_downscale_longwave, &
          lapse_rate = lapse_rate, &
-         lapse_rate_longwave = lapse_rate_longwave, &
-         longwave_downscaling_limit = longwave_downscaling_limit, &
          precip_repartition_glc_all_snow_t = precip_repartition_glc_all_snow_t, &
          precip_repartition_glc_all_rain_t = precip_repartition_glc_all_rain_t, &
          precip_repartition_nonglc_all_snow_t = precip_repartition_nonglc_all_snow_t, &

@@ -1396,8 +1396,6 @@ sub setup_logic_snowpack {
     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'upplim_destruct_metamorph');
     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fresh_snw_rds_max');
     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'reset_snow');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'reset_snow_glc');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'reset_snow_glc_ela');
 
     if (remove_leading_and_trailing_quotes($nl->get_value('snow_overburden_compaction_method')) eq 'Vionnet2012') {
        # overburden_compress_tfactor isn't used if we're using the Vionnet2012
@@ -1421,22 +1419,10 @@ sub setup_logic_atm_forcing {
    my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
 
    if ($physv->as_long() >= $physv->as_long("clm4_5")) {
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'glcmec_downscale_longwave');
       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'repartition_rain_snow');
       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'lapse_rate');
 
       my $var;
-
-      foreach $var ("lapse_rate_longwave",
-                    "longwave_downscaling_limit") {
-         if ( &value_is_true($nl->get_value("glcmec_downscale_longwave")) ) {
-            add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var);
-         } else {
-            if (defined($nl->get_value($var))) {
-               $log->fatal_error("$var can only be set if glcmec_downscale_longwave is true");
-            }
-         }
-      }
 
       foreach $var ("precip_repartition_glc_all_snow_t",
                     "precip_repartition_glc_all_rain_t",
