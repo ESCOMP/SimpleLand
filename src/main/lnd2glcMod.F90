@@ -55,7 +55,6 @@ module lnd2glcMod
   !
   ! Note that it is not a type-bound procedure, because it doesn't actually involve the
   ! lnd2glc_type. This suggests that perhaps it belongs in some other module.
-  public :: bareland_normalization ! compute normalization factor for fluxes from the bare land portion of the grid cell
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -101,7 +100,7 @@ contains
 
   !------------------------------------------------------------------------------
   subroutine update_lnd2glc(this, bounds, num_do_smb_c, filter_do_smb_c, &
-       temperature_inst, topo_inst, init)
+       temperature_inst, topo_inst)
     !
     ! !DESCRIPTION:
     ! Assign values to lnd2glc+
@@ -113,12 +112,9 @@ contains
     integer                , intent(in)    :: filter_do_smb_c(:) ! column filter: columns where smb calculations are performed
     type(temperature_type) , intent(in)    :: temperature_inst
     type(topo_type)        , intent(in)    :: topo_inst
-    logical                , intent(in)    :: init               ! if true=>only set a subset of fields
     !
     ! !LOCAL VARIABLES:
     integer  :: c, l, g, n, fc                   ! indices
-    logical, allocatable :: fields_assigned(:,:) ! tracks whether fields have already been assigned for each index [begg:endg, 0:maxpatch_glcmec]
-    real(r8) :: flux_normalization               ! factor by which fluxes should be normalized
 
     character(len=*), parameter :: subname = 'update_lnd2glc'
     !------------------------------------------------------------------------------
@@ -131,21 +127,16 @@ contains
   
     ! Fill the lnd->glc data on the clm grid
 
-    allocate(fields_assigned(bounds%begg:bounds%endg, 0:10))
-    fields_assigned(:,:) = .false.
-
     do fc = 1, num_do_smb_c
       c = filter_do_smb_c(fc)
       l = col%landunit(c)
       g = col%gridcell(c) 
 
-      ! Set vertical index and a flux normalization, based on whether the column in question is glacier or vegetated.  
+      ! Set vertical index based on whether the column in question is glacier or vegetated.  
       if (lun%itype(l) == istice_mec) then
          n = col_itype_to_icemec_class(col%itype(c))
-         flux_normalization = 1.0_r8
       else if (lun%itype(l) == istsoil) then
          n = 0  !0-level index (bareland information)
-         flux_normalization = bareland_normalization(c)
       else
          ! Other landunit types do not pass information in the lnd2glc fields.
          ! Note: for this to be acceptable, we need virtual vegetated columns in any grid
@@ -155,96 +146,15 @@ contains
          cycle
       end if
 
-      ! Make sure we haven't already assigned the coupling fields for this point
-      ! (this could happen, for example, if there were multiple columns in the
-      ! istsoil landunit, which we aren't prepared to handle)
-      if (fields_assigned(g,n)) then
-         write(iulog,*) subname//' ERROR: attempt to assign coupling fields twice for the same index.'
-         write(iulog,*) 'One possible cause is having multiple columns in the istsoil landunit,'
-         write(iulog,*) 'which this routine cannot handle.'
-         write(iulog,*) 'g, n = ', g, n
-         call endrun(decomp_index=c, clmlevel=namec, msg=errMsg(sourcefile, __LINE__))
-      end if
-
       ! Send surface temperature, topography, and SMB flux (qice) to coupler.
       ! t_soisno and topo_col are valid even in initialization, so tsrf and topo
-      ! are set here regardless of the value of init. But qflx_glcice is not valid
-      ! until the run loop; thus, in initialization, we will use the default value
-      ! for qice, as set above.
-      fields_assigned(g,n) = .true.
+      ! are set here regardless of the value of init.
       this%tsrf_grc(g,n) = temperature_inst%t_soisno_col(c,1)
       this%topo_grc(g,n) = topo_inst%topo_col(c)
 
     end do
 
-    deallocate(fields_assigned)
-                
   end subroutine update_lnd2glc
-
-  !-----------------------------------------------------------------------
-  real(r8) function bareland_normalization(c)
-    !
-    ! !DESCRIPTION:
-    ! Compute normalization factor for fluxes from the bare land portion of the grid
-    ! cell. Fluxes should be multiplied by this factor before being sent to CISM.
-    !
-    ! The point of this is: CISM effectively has two land cover types: glaciated and
-    ! bare. CLM, on the other hand, subdivides the bare land portion of the grid cell into
-    ! multiple landunits. However, we currently don't do any sort of averaging of
-    ! quantities computed in the different "bare land" landunits - instead, we simply send
-    ! the values computed in the natural vegetated landunit - these fluxes (like SMB) are
-    ! 0 in the other landunits. To achieve conservation, we need to normalize these
-    ! natural veg. fluxes by the fraction of the "bare land" area accounted for by the
-    ! natural veg. landunit.
-    !
-    ! For example, consider a grid cell that is:
-    !   60% glacier_mec
-    !   30% natural veg
-    !   10% lake
-    !
-    ! According to CISM, this grid cell is 60% icesheet, 40% "bare land". Now suppose CLM
-    ! has an SMB flux of 1m in the natural veg landunit. If we simply sent 1m of ice to
-    ! CISM, conservation would be broken, since it would also apply 1m of ice to the 10%
-    ! of the grid cell that CLM says is lake. So, instead, we must multiply the 1m of ice
-    ! by (0.3/0.4), thus "spreading out" the SMB from the natural veg. landunit, so that
-    ! 0.75m of ice is grown throughout the bare land portion of CISM.
-    !
-    ! Note: If the non-glaciated area of the grid cell is 0, then we arbitrarily return a
-    ! normalization factor of 1.0, in order to avoid divide-by-zero errors.
-    !
-    ! Note: We currently aren't careful about how we would handle things if there are
-    ! multiple columns within the vegetated landunit. If that possibility were introduced,
-    ! this code - as well as the code in update_clm_s2x - may need to be reworked somewhat.
-    !
-    ! !USES:
-    use subgridWeightsMod , only : get_landunit_weight
-    !
-    ! !ARGUMENTS:
-    integer, intent(in) :: c  ! column index
-    !
-    ! !LOCAL VARIABLES:
-    integer  :: g             ! grid cell index
-    real(r8) :: area_glacier  ! fractional area of the glacier_mec landunit in this grid cell
-    real(r8) :: area_this_col ! fractional area of column c in the grid cell
-
-    real(r8), parameter :: tol = 1.e-13_r8  ! tolerance for checking subgrid weight equality
-    character(len=*), parameter :: subname = 'bareland_normalization'
-    !-----------------------------------------------------------------------
-
-    g = col%gridcell(c)
-
-    area_glacier = get_landunit_weight(g, istice_mec)
-
-    if (abs(area_glacier - 1.0_r8) < tol) then
-       ! If the whole grid cell is glacier, then the normalization factor is arbitrary;
-       ! set it to 1 so we don't do any normalization in this case
-       bareland_normalization = 1.0_r8
-    else
-       area_this_col = col%wtgcell(c)
-       bareland_normalization = area_this_col / (1.0_r8 - area_glacier)
-    end if
-
-  end function bareland_normalization
 
 end module lnd2glcMod
 

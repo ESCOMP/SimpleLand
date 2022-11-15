@@ -464,8 +464,7 @@ contains
        call t_startf('init_lnd2glc')
        call lnd2glc_inst%update_lnd2glc(bounds_clump,       &
             filter(nc)%num_do_smb_c, filter(nc)%do_smb_c,   &
-            temperature_inst, topo_inst, &
-            init=.true.)
+            temperature_inst, topo_inst)
        call t_stopf('init_lnd2glc')
     end do
     !$OMP END PARALLEL DO
