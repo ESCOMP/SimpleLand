@@ -19,7 +19,6 @@ module lnd2glcMod
   use shr_log_mod     , only : errMsg => shr_log_errMsg
   use decompMod       , only : get_proc_bounds, bounds_type
   use domainMod       , only : ldomain
-  use clm_varpar      , only : maxpatch_glcmec
   use clm_varctl      , only : iulog
   use clm_varcon      , only : spval, tfrz, namec
   use column_varcon   , only : col_itype_to_icemec_class
@@ -47,7 +46,6 @@ module lnd2glcMod
      procedure, public  :: Init
      procedure, public  :: update_lnd2glc
      procedure, private :: InitAllocate
-     procedure, private :: InitHistory
 
   end type lnd2glc_type
 
@@ -73,7 +71,6 @@ contains
     type(bounds_type), intent(in) :: bounds  
 
     call this%InitAllocate(bounds)
-    call this%InitHistory(bounds)
     
   end subroutine Init
 
@@ -97,52 +94,11 @@ contains
 
     begg = bounds%begg; endg = bounds%endg
 
-    allocate(this%tsrf_grc(begg:endg,0:maxpatch_glcmec)) ; this%tsrf_grc(:,:)=0.0_r8
-    allocate(this%topo_grc(begg:endg,0:maxpatch_glcmec)) ; this%topo_grc(:,:)=0.0_r8
-    allocate(this%qice_grc(begg:endg,0:maxpatch_glcmec)) ; this%qice_grc(:,:)=0.0_r8
+    allocate(this%tsrf_grc(begg:endg,0:10)) ; this%tsrf_grc(:,:)=0.0_r8
+    allocate(this%topo_grc(begg:endg,0:10)) ; this%topo_grc(:,:)=0.0_r8
+    allocate(this%qice_grc(begg:endg,0:10)) ; this%qice_grc(:,:)=0.0_r8
 
   end subroutine InitAllocate
-
-  !------------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !USES:
-    use histFileMod, only : hist_addfld1d,hist_addfld2d 
-    !
-    ! !ARGUMENTS:
-    class(lnd2glc_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    real(r8), pointer :: data2dptr(:,:)
-    integer  :: begg, endg
-    !---------------------------------------------------------------------
-
-    begg = bounds%begg; endg = bounds%endg
-
-    this%qice_grc(begg:endg,0:maxpatch_glcmec) = spval
-    ! For this and the following fields, set up a pointer to the field simply for the
-    ! sake of changing the indexing, so that levels start with an index of 1, as is
-    ! assumed by histFileMod - so levels go 1:(nec+1) rather than 0:nec
-    data2dptr => this%qice_grc(:,0:maxpatch_glcmec)
-    call hist_addfld2d (fname='QICE_FORC', units='mm/s', type2d='elevclas', &
-         avgflag='A', long_name='qice forcing sent to GLC', &
-         ptr_lnd=data2dptr, default='inactive')
-
-    this%tsrf_grc(begg:endg,0:maxpatch_glcmec) = spval
-    data2dptr => this%tsrf_grc(:,0:maxpatch_glcmec)
-    call hist_addfld2d (fname='TSRF_FORC', units='K', type2d='elevclas', &
-         avgflag='A', long_name='surface temperature sent to GLC', &
-         ptr_lnd=data2dptr, default='inactive')
-
-    this%topo_grc(begg:endg,0:maxpatch_glcmec) = spval
-    data2dptr => this%topo_grc(:,0:maxpatch_glcmec)
-    call hist_addfld2d (fname='TOPO_FORC', units='m', type2d='elevclas', &
-         avgflag='A', long_name='topograephic height sent to GLC', &
-         ptr_lnd=data2dptr, default='inactive')
-
-  end subroutine InitHistory
-
 
   !------------------------------------------------------------------------------
   subroutine update_lnd2glc(this, bounds, num_do_smb_c, filter_do_smb_c, &
@@ -177,7 +133,7 @@ contains
   
     ! Fill the lnd->glc data on the clm grid
 
-    allocate(fields_assigned(bounds%begg:bounds%endg, 0:maxpatch_glcmec))
+    allocate(fields_assigned(bounds%begg:bounds%endg, 0:10))
     fields_assigned(:,:) = .false.
 
     do fc = 1, num_do_smb_c

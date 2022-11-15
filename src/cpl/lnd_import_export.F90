@@ -354,7 +354,7 @@ contains
        ! We could avoid setting these fields if glc_present is .false., if that would
        ! help with performance. (The downside would be that we wouldn't have these fields
        ! available for diagnostic purposes or to force a later T compset with dlnd.)
-       do num = 0,glc_nec
+       do num = 0,10
           l2x(index_l2x_Sl_tsrf(num),i)   = lnd2glc_inst%tsrf_grc(g,num)
           l2x(index_l2x_Sl_topo(num),i)   = lnd2glc_inst%topo_grc(g,num)
           l2x(index_l2x_Flgl_qice(num),i) = lnd2glc_inst%qice_grc(g,num)

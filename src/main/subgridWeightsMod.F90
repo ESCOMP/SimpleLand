@@ -155,7 +155,7 @@ contains
     !
     ! !USES:
     use landunit_varcon, only : max_lunit
-    use clm_varpar     , only : maxpatch_glcmec, natpft_size, cft_size
+    use clm_varpar     , only : natpft_size, cft_size
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
     use decompMod      , only : BOUNDS_LEVEL_PROC
     use histFileMod    , only : hist_addfld2d
@@ -183,7 +183,7 @@ contains
     subgrid_weights_diagnostics%pct_nat_pft(:,:) = nan
     allocate(subgrid_weights_diagnostics%pct_cft(bounds%begg:bounds%endg, 1:cft_size))
     subgrid_weights_diagnostics%pct_cft(:,:) = nan
-    allocate(subgrid_weights_diagnostics%pct_glc_mec(bounds%begg:bounds%endg, 1:maxpatch_glcmec))
+    allocate(subgrid_weights_diagnostics%pct_glc_mec(bounds%begg:bounds%endg, 1:10))
     subgrid_weights_diagnostics%pct_glc_mec(:,:) = nan
 
     ! ------------------------------------------------------------------------
@@ -198,16 +198,6 @@ contains
           avgflag='A', long_name='% of each PFT on the natural vegetation (i.e., soil) landunit', &
           ptr_lnd=subgrid_weights_diagnostics%pct_nat_pft, default='inactive')
        
-    if (cft_size > 0) then
-       call hist_addfld2d (fname='PCT_CFT', units='%', type2d='cft', &
-            avgflag='A', long_name='% of each crop on the crop landunit', &
-            ptr_lnd=subgrid_weights_diagnostics%pct_cft, default='inactive')
-    end if
-
-    call hist_addfld2d (fname='PCT_GLC_MEC', units='%', type2d='glc_nec', &
-         avgflag='A', long_name='% of each GLC elevation class on the glc_mec landunit', &
-         ptr_lnd=subgrid_weights_diagnostics%pct_glc_mec, default='inactive')
-
   end subroutine init_subgrid_weights_mod
 
 

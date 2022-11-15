@@ -18,9 +18,6 @@ module clm_cpl_indices
   !
   ! !PUBLIC DATA MEMBERS:
   !
-  integer , public :: glc_nec     ! number of elevation classes for glacier_mec landunits 
-                                  ! (from coupler) - must equal maxpatch_glcmec from namelist
-
   ! lnd -> drv (required)
 
   integer, public ::index_l2x_Flrl_rofsur     ! lnd->rtm input liquid surface fluxes
@@ -247,21 +244,16 @@ contains
     index_x2l_Sg_icemask = mct_avect_indexra(x2l,'Sg_icemask')
     index_x2l_Sg_icemask_coupled_fluxes = mct_avect_indexra(x2l,'Sg_icemask_coupled_fluxes')
 
-    glc_nec = glc_get_num_elevation_classes()
-    if (glc_nec < 1) then
-       call shr_sys_abort('ERROR: In CLM4.5 and later, glc_nec must be at least 1.')
-    end if
-
     ! Create coupling fields for all glc elevation classes (1:glc_nec) plus bare land
     ! (index 0).
-    allocate(index_l2x_Sl_tsrf(0:glc_nec))
-    allocate(index_l2x_Sl_topo(0:glc_nec))
-    allocate(index_l2x_Flgl_qice(0:glc_nec))
-    allocate(index_x2l_Sg_ice_covered(0:glc_nec))
-    allocate(index_x2l_Sg_topo(0:glc_nec))
-    allocate(index_x2l_Flgg_hflx(0:glc_nec))
+    allocate(index_l2x_Sl_tsrf(0:10))
+    allocate(index_l2x_Sl_topo(0:10))
+    allocate(index_l2x_Flgl_qice(0:10))
+    allocate(index_x2l_Sg_ice_covered(0:10))
+    allocate(index_x2l_Sg_topo(0:10))
+    allocate(index_x2l_Flgg_hflx(0:10))
 
-    do num = 0,glc_nec
+    do num = 0,10
        nec_str = glc_elevclass_as_string(num)
 
        name = 'Sg_ice_covered' // nec_str

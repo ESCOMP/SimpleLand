@@ -10,7 +10,6 @@ module glc2lndMod
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use shr_kind_mod   , only : r8 => shr_kind_r8
   use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
-  use clm_varpar     , only : maxpatch_glcmec
   use clm_varctl     , only : iulog, glc_do_dynglacier
   use clm_varcon     , only : nameg, spval, ispval
   use abortutils     , only : endrun
@@ -138,9 +137,9 @@ contains
 
     begg = bounds%begg; endg = bounds%endg
 
-    allocate(this%frac_grc    (begg:endg,0:maxpatch_glcmec)) ;   this%frac_grc    (:,:) = nan
-    allocate(this%topo_grc    (begg:endg,0:maxpatch_glcmec)) ;   this%topo_grc    (:,:) = nan
-    allocate(this%hflx_grc    (begg:endg,0:maxpatch_glcmec)) ;   this%hflx_grc    (:,:) = nan
+    allocate(this%frac_grc    (begg:endg,0:10)) ;   this%frac_grc    (:,:) = nan
+    allocate(this%topo_grc    (begg:endg,0:10)) ;   this%topo_grc    (:,:) = nan
+    allocate(this%hflx_grc    (begg:endg,0:10)) ;   this%hflx_grc    (:,:) = nan
     allocate(this%icemask_grc (begg:endg))                   ;   this%icemask_grc (:)   = nan
     allocate(this%icemask_coupled_fluxes_grc (begg:endg))    ;   this%icemask_coupled_fluxes_grc (:)   = nan
     allocate(this%glc_dyn_runoff_routing_grc (begg:endg))    ;   this%glc_dyn_runoff_routing_grc (:)   = nan
@@ -266,9 +265,9 @@ contains
     !-----------------------------------------------------------------------
 
     SHR_ASSERT((ubound(x2l, 2) == bounds%endg), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(index_x2l_Sg_ice_covered) == (/maxpatch_glcmec/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(index_x2l_Sg_topo) == (/maxpatch_glcmec/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(index_x2l_Flgg_hflx) == (/maxpatch_glcmec/)), errMsg(sourcefile, __LINE__))
+    SHR_ASSERT_ALL((ubound(index_x2l_Sg_ice_covered) == (/10/)), errMsg(sourcefile, __LINE__))
+    SHR_ASSERT_ALL((ubound(index_x2l_Sg_topo) == (/10/)), errMsg(sourcefile, __LINE__))
+    SHR_ASSERT_ALL((ubound(index_x2l_Flgg_hflx) == (/10/)), errMsg(sourcefile, __LINE__))
 
     if (glc_present) then
        call endrun(' ERROR: SLIM can NOT run with an active ice sheet model' )
@@ -313,8 +312,8 @@ contains
     !-----------------------------------------------------------------------
 
     if (present(topo)) then
-       SHR_ASSERT_ALL((ubound(topo) == (/bounds%endg, maxpatch_glcmec/)), errMsg(sourcefile, __LINE__))
-       this%topo_grc(bounds%begg:bounds%endg, 0:maxpatch_glcmec) = topo(bounds%begg:bounds%endg, 0:maxpatch_glcmec)
+       SHR_ASSERT_ALL((ubound(topo) == (/bounds%endg, 10/)), errMsg(sourcefile, __LINE__))
+       this%topo_grc(bounds%begg:bounds%endg, 0:10) = topo(bounds%begg:bounds%endg, 0:10)
     end if
 
     if (present(icemask)) then

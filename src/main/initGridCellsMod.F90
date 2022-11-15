@@ -328,7 +328,6 @@ contains
     ! Initialize glacier_mec landunits
     !
     ! !USES:
-    use clm_varpar      , only : maxpatch_glcmec
     use clm_instur      , only : wt_lunit, wt_glc_mec
     use landunit_varcon , only : istice_mec
     use column_varcon   , only : icemec_class_to_col_itype
@@ -380,7 +379,7 @@ contains
        ! balance in each elevation class wherever the SMB is needed.
        
        type_is_dynamic = glc_behavior%cols_have_dynamic_type(gi)
-       do m = 1, maxpatch_glcmec
+       do m = 1, 10
           call glc_behavior%glc_mec_col_exists(gi = gi, elev_class = m, atm_topo = atm_topo, &
                exists = col_exists, col_wt_lunit = wtcol2lunit)
           if (col_exists) then

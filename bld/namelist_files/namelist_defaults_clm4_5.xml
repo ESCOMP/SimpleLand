@@ -212,40 +212,40 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
   Or one specific file will be chosen over another.
 -->
 <init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_GSWP3v1"
->hgrid=0.9x1.25 maxpft=17 mask=gx1v6 glc_nec=10
+>hgrid=0.9x1.25 maxpft=17 mask=gx1v6 
 </init_interp_attributes>
 
 <init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_CRUv7"
->hgrid=0.9x1.25 maxpft=17 mask=gx1v6 glc_nec=10
+>hgrid=0.9x1.25 maxpft=17 mask=gx1v6 
 </init_interp_attributes>
 
 <init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_cam6.0"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v7 glc_nec=10
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v7 
 </init_interp_attributes>
 
 <!--
   Which is correct? The next or the previous one?
 -->
 <init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_GSWP3v1"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v6 glc_nec=10
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v6 
 </init_interp_attributes>
 
 <init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_CRUv7"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v6 glc_nec=10
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v6 
 </init_interp_attributes>
 <!--
   Which is correct? The next or the previous one?
 -->
 <init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_CRUv7"
->hgrid=0.9x1.25 maxpft=17 mask=gx1v6 glc_nec=10
+>hgrid=0.9x1.25 maxpft=17 mask=gx1v6 
 </init_interp_attributes>
 
 <init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_cam6.0"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v7 glc_nec=10
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v7 
 </init_interp_attributes>
 
 <init_interp_attributes sim_year="2000" 
->hgrid=1.9x2.5 maxpft=79 mask=gx1v6 glc_nec=10
+>hgrid=1.9x2.5 maxpft=79 mask=gx1v6 
 </init_interp_attributes>
 
 <!-- MML 2 degree resolution -->
@@ -262,21 +262,21 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 
 <finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" 
+         ic_tod="0" 
          lnd_tuning_mode="clm4_5_GSWP3v1"
 >lnd/clm2/initdata_map/clmi.I1850Clm45BgcGs.0901-01-01.0.9x1.25_gx1v6_simyr1850_c180204.nc
 </finidat>
 
 <finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" 
+         ic_tod="0" 
          lnd_tuning_mode="clm4_5_CRUv7"
 >lnd/clm2/initdata_map/clmi.I1850Clm45BgcCruGs.1101-01-01.0.9x1.25_gx1v6_simyr1850_c180204.nc
 </finidat>
 
 <finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" 
+         ic_tod="0" 
          lnd_tuning_mode="clm4_5_cam6.0"
 >lnd/clm2/initdata_map/clmi.B1850.0161-01-01.0.9x1.25_gx1v7_simyr1850_c180130.nc
 </finidat>
@@ -284,7 +284,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 
 <finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" 
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_GSWP3v1"
 >lnd/clm2/initdata_map/clmi.I1850Clm50Sp.0181-01-01.0.9x1.25_gx1v6_simyr1850_c171214.nc
 </finidat>
@@ -292,7 +292,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 
 <finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" use_init_interp=".true."
+         ic_tod="0" use_init_interp=".true."
          lnd_tuning_mode="clm5_0_GSWP3v1"
 >lnd/clm2/initdata_map/clmi.I1850Clm50BgcCrop.1366-01-01.0.9x1.25_gx1v6_simyr1850_c171213.nc
 </finidat>
@@ -300,7 +300,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 
 <finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" 
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_CRUv7"
 >lnd/clm2/initdata_map/clmi.I1850Clm50BgcCropCru.1526-01-01.0.9x1.25_gx1v6_simyr1850_c180109.nc
 </finidat>
@@ -308,14 +308,14 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 
 <finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" 
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_cam6.0"
 >lnd/clm2/initdata_map/clmi.B1850.0161-01-01.0.9x1.25_gx1v7_simyr1850_c180130.nc
 </finidat>
 
 <finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
          ic_ymd="18500101" sim_year="1850"
-         ic_tod="0" glc_nec="10" 
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_CRUv7"
 >lnd/clm2/initdata_map/clmi.I1850Clm50SpCru.1706-01-01.0.9x1.25_gx1v6_simyr1850_c180110.nc
 </finidat>
@@ -329,7 +329,7 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- Present day crop spinup at 2-degree with irrigation on -->
 <finidat hgrid="1.9x2.5"    maxpft="79"  mask="gx1v6"
          ic_ymd="20110101" sim_year="2000"
-         ic_tod="0" glc_nec="10" use_init_interp=".true."
+         ic_tod="0" use_init_interp=".true."
 >lnd/clm2/initdata_map/clmi.IGM2000GSWP3CLM50BGCCROPIRR.2011-01-01.1.9x2.5_gx1v6_gl5_simyr2000_c170419.nc
 </finidat>
 

@@ -24,7 +24,6 @@
        <li>Initial condition date (ymd - year month day)</li>
        <li>Initial condition time of day (tod) (sec)</li>
        <li>Maximum number of Plant Function Types (maxpft)</li>
-       <li>Number of glacier multiple elevation classes (glc_nec)</li>
        <li>Site specific point name (sitespf_pt)</li>
        <li>Crop model (crop)</li>
        <li>Data model forcing source (forcing)</li>
@@ -119,9 +118,6 @@
         </xsl:if>
         <xsl:if test="string-length(@maxpft)>0">
         maxpft=<xsl:value-of select="@maxpft"/>
-        </xsl:if>
-        <xsl:if test="string-length(@glc_nec)>0">
-        glc_nec=<xsl:value-of select="@glc_nec"/>
         </xsl:if>
         <xsl:if test="string-length(@sitespf_pt)>0">
         sitespf_pt=<xsl:value-of select="@sitespf_pt"/>

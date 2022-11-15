@@ -18,7 +18,7 @@ module controlMod
   use spmdMod                          , only: masterproc
   use decompMod                        , only: clump_pproc
   use clm_varcon                       , only: h2osno_max, int_snow_max, n_melt_glcmec
-  use clm_varpar                       , only: maxpatch_pft, maxpatch_glcmec, numrad, nlevsno
+  use clm_varpar                       , only: maxpatch_pft, numrad, nlevsno
   use histFileMod                      , only: max_tapes, max_namlen 
   use histFileMod                      , only: hist_empty_htapes, hist_dov2xy, hist_avgflag_pertape, hist_type1d_pertape 
   use histFileMod                      , only: hist_nhtfrq, hist_ndens, hist_mfilt, hist_fincl1, hist_fincl2, hist_fincl3
@@ -160,7 +160,6 @@ contains
 
     ! Glacier_mec info
     namelist /clm_inparm/ &    
-         maxpatch_glcmec, &
          glc_snow_persistence_max_days, &
          nlevsno, h2osno_max, int_snow_max, n_melt_glcmec
 
@@ -273,11 +272,6 @@ contains
                    errMsg(sourcefile, __LINE__))
            end if
            call clm_varctl_set( nsrest_in=override_nsrest )
-       end if
-
-       if (maxpatch_glcmec <= 0) then
-          call endrun(msg=' ERROR: maxpatch_glcmec must be at least 1 ' // &
-               errMsg(sourcefile, __LINE__))
        end if
 
        ! If nfix_timeconst is equal to the junk default value, then it was not specified
@@ -433,7 +427,6 @@ contains
     call mpi_bcast (n_melt_glcmec, 1, MPI_REAL8, 0, mpicom, ier)
 
     ! glacier_mec variables
-    call mpi_bcast (maxpatch_glcmec, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (glc_snow_persistence_max_days, 1, MPI_INTEGER, 0, mpicom, ier)
 
     ! history file variables
@@ -512,10 +505,6 @@ contains
     write(iulog,*) '   Max snow depth (mm) =', h2osno_max
     write(iulog,*) '   Limit applied to integrated snowfall when determining changes in'
     write(iulog,*) '       snow-covered fraction during melt (mm) =', int_snow_max
-    write(iulog,*) '   SCA shape parameter for glc_mec columns (n_melt_glcmec) =', n_melt_glcmec
-
-    write(iulog,*) '   glc number of elevation classes =', maxpatch_glcmec
-    write(iulog,*) '   glc snow persistence max days = ', glc_snow_persistence_max_days
 
     if (nsrest == nsrStartup) then
        if (finidat /= ' ') then

@@ -656,7 +656,6 @@ contains
     ! Get number of subgrid units in glc_mec landunit on one grid cell
     !
     ! !USES:
-    use clm_varpar      , only : maxpatch_glcmec
     !
     ! !ARGUMENTS:
     class(glc_behavior_type), intent(in) :: this
@@ -676,7 +675,7 @@ contains
 
     ncols = 0
 
-    do m = 1, maxpatch_glcmec
+    do m = 1, 10
        call this%glc_mec_col_exists(gi = gi, elev_class = m, atm_topo = atm_topo, &
             exists = col_exists, col_wt_lunit = col_wt_lunit)
        if (col_exists) then

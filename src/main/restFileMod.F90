@@ -483,7 +483,6 @@ contains
     use clm_varctl           , only : caseid, ctitle, version, username, hostname, fsurdat
     use clm_varctl           , only : conventions, source
     use clm_varpar           , only : numrad, nlevlak, nlevsno, nlevgrnd, nlevurb, nlevcan
-    use clm_varpar           , only : maxpatch_glcmec
     use decompMod            , only : get_proc_global
     !
     ! !ARGUMENTS:
@@ -523,7 +522,6 @@ contains
     call ncd_defdim(ncid , 'numrad'  , numrad         ,  dimid)
     call ncd_defdim(ncid , 'levcan'  , nlevcan        ,  dimid)
     call ncd_defdim(ncid , 'string_length', 64        ,  dimid)
-    call ncd_defdim(ncid , 'glc_nec', maxpatch_glcmec, dimid)
 	
 	! mml add my soil dimension
     call ncd_defdim(ncid , 'mml_lev'  , 10        ,  dimid) ! mml: hard coded for six soil layers

@@ -159,7 +159,7 @@ module histFileMod
      character(len=max_chars)  :: units        ! units
      character(len=hist_dim_name_length) :: type1d                ! pointer to first dimension type from data type (nameg, etc)
      character(len=hist_dim_name_length) :: type1d_out            ! hbuf first dimension type from data type (nameg, etc)
-     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","glc_nec","elevclas","subname(n)"]
+     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","elevclas","subname(n)"]
      integer :: beg1d                          ! on-node 1d clm pointer start index
      integer :: end1d                          ! on-node 1d clm pointer end index
      integer :: num1d                          ! size of clm pointer first dimension (all nodes)
@@ -1022,7 +1022,7 @@ contains
     integer :: f                   ! field index
     integer :: num2d               ! size of second dimension (e.g. number of vertical levels)
     character(len=*),parameter :: subname = 'hist_update_hbuf'
-    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","glc_nec","elevclas","subname(n)"]
+    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","elevclas","subname(n)"]
     !-----------------------------------------------------------------------
 
     do t = 1,ntapes
@@ -1850,7 +1850,7 @@ contains
     !
     ! !USES:
     use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, nlevurb, numrad, nlevcan, nlevsoi
-    use clm_varpar      , only : natpft_size, maxpatch_glcmec
+    use clm_varpar      , only : natpft_size
     use landunit_varcon , only : max_lunit
     use clm_varctl      , only : caseid, ctitle, fsurdat, finidat, paramfile
     use clm_varctl      , only : version, hostname, username, conventions, source
@@ -2004,10 +2004,9 @@ contains
     call htape_add_ltype_metadata(lnfid)
     call htape_add_ctype_metadata(lnfid)
     call ncd_defdim(lnfid, 'natpft', natpft_size, dimid)
-    call ncd_defdim(lnfid, 'glc_nec' , maxpatch_glcmec , dimid)
-    ! elevclas (in contrast to glc_nec) includes elevation class 0 (bare land)
+    ! elevclas includes elevation class 0 (bare land)
     ! (although on the history file it will go 1:(nec+1) rather than 0:nec)
-    call ncd_defdim(lnfid, 'elevclas' , maxpatch_glcmec + 1, dimid)
+    call ncd_defdim(lnfid, 'elevclas' , 11, dimid)
 
     do n = 1,num_subs
        call ncd_defdim(lnfid, subs_name(n), subs_dim(n), dimid)
@@ -4537,7 +4536,7 @@ contains
     !
     ! !USES:
     use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevcan, nlevsoi
-    use clm_varpar      , only : natpft_size, cft_size, maxpatch_glcmec
+    use clm_varpar      , only : natpft_size, cft_size
     use landunit_varcon , only : max_lunit
     !
     ! !ARGUMENTS:
@@ -4628,12 +4627,10 @@ contains
                ' only valid for cft_size > 0'
           call endrun()
        end if
-    case ('glc_nec')
-       num2d = maxpatch_glcmec
     case ('elevclas')
-       ! add one because indexing starts at 0 (elevclas, unlike glc_nec, includes the
+       ! add one because indexing starts at 0 (elevclas includes the
        ! bare ground "elevation class")
-       num2d = maxpatch_glcmec + 1
+       num2d = 11
     case ('levsno')
        num2d = nlevsno
     case ('nlevcan')
@@ -4646,7 +4643,7 @@ contains
     case default
        write(iulog,*) trim(subname),' ERROR: unsupported 2d type ',type2d, &
           ' currently supported types for multi level fields are: ', &
-          '[levgrnd,levsoi,levlak,numrad,levtrc,ltype,natpft,cft,glc_nec,elevclas,levsno]'
+          '[levgrnd,levsoi,levlak,numrad,levtrc,ltype,natpft,cft,elevclas,levsno]'
        call endrun(msg=errMsg(sourcefile, __LINE__))
     end select
 

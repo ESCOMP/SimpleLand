@@ -96,8 +96,6 @@ OPTIONS
      -co2_ppmv "value"        Set CO2 concentration to use when co2_type is constant (ppmv).
      -csmdata "dir"           Root directory of CESM input data.
                               Can also be set by using the CSMDATA environment variable.
-     -glc_nec <name>          Glacier number of elevation classes [0 | 3 | 5 | 10 | 36]
-                              (default is 0) (standard option with land-ice model is 10)
      -help [or -h]            Print usage to STDOUT.
      -ignore_ic_date          Ignore the date on the initial condition files
                               when determining what input initial condition file to use.
@@ -171,7 +169,6 @@ sub process_commandline {
                co2_ppmv              => undef,
                clm_demand            => "null",
                help                  => 0,
-               glc_nec               => "default",
                l_ncpl                => undef,
                lnd_frac              => undef,
                dir                   => "$cwd",
@@ -201,7 +198,6 @@ sub process_commandline {
              "ignore_warnings!"          => \$opts{'ignore_warnings'},
              "chk_res!"                  => \$opts{'chk_res'},
              "note!"                     => \$opts{'note'},
-             "glc_nec=i"                 => \$opts{'glc_nec'},
              "d:s"                       => \$opts{'dir'},
              "h|help"                    => \$opts{'help'},
              "ignore_ic_date"            => \$opts{'ignore_ic_date'},
@@ -523,7 +519,6 @@ sub process_namelist_commandline_options {
   setup_cmdl_resolution($opts, $nl_flags, $definition, $defaults);
   setup_cmdl_mask($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_maxpft($opts, $nl_flags, $definition, $defaults, $nl, $cfg, $physv);
-  setup_cmdl_glc_nec($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_rcp($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_simulation_year($opts, $nl_flags, $definition, $defaults, $nl);
   setup_cmdl_run_type($opts, $nl_flags, $definition, $defaults, $nl);
@@ -639,31 +634,6 @@ sub setup_cmdl_maxpft {
     my @valid_values   = $definition->get_valid_values( $var );
     $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
   }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_cmdl_glc_nec {
-  my ($opts, $nl_flags, $definition, $defaults, $nl) = @_;
-
-  my $val;
-  my $var = "glc_nec";
-
-  if ( $opts->{$var} ne "default" ) {
-    $val = $opts->{$var};
-  } else {
-    $val = $defaults->get_value($var);
-  }
-
-  $nl_flags->{'glc_nec'} = $val;
-  $opts->{'glc_nec'} = $val;
-  my $group = $definition->get_group_name($var);
-  $nl->set_variable_value($group, $var, $val);
-  if (  ! $definition->is_valid_value( $var, $val ) ) {
-    my @valid_values   = $definition->get_valid_values( $var );
-    $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
-  }
-  $log->verbose_message("Glacier number of elevation classes is $val");
 }
 
 #-------------------------------------------------------------------------------
@@ -1078,18 +1048,6 @@ sub setup_logic_glacier {
   #
   my ($opts, $nl_flags, $definition, $defaults, $nl, $envxml_ref, $physv) = @_;
 
-  my $var = "maxpatch_glcmec";
-  add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var, 'val'=>$nl_flags->{'glc_nec'} );
-
-  my $val = $nl->get_value($var);
-  if ( $val != $nl_flags->{'glc_nec'} ) {
-    $log->fatal_error("$var set to $val does NOT agree with -glc_nec argument of $nl_flags->{'glc_nec'} (set with GLC_NEC env variable)");
-  }
-
-  if ( $nl_flags->{'glc_nec'} < 1 ) {
-     $log->fatal_error("For clm4_5 and later, GLC_NEC must be at least 1.");
-  }
-
   add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'glc_snow_persistence_max_days');
 
   add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'glacier_region_behavior');
@@ -1153,7 +1111,6 @@ sub setup_logic_demand {
   $settings{'sim_year_range'} = $nl_flags->{'sim_year_range'};
   $settings{'mask'}           = $nl_flags->{'mask'};
   $settings{'rcp'}            = $nl_flags->{'rcp'};
-  $settings{'glc_nec'}        = $nl_flags->{'glc_nec'};
   # necessary for demand to be set correctly
 
   my $demand = $nl->get_value('clm_demand');
@@ -1208,8 +1165,7 @@ sub setup_logic_surface_dataset {
 
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fsurdat',
               'hgrid'=>$nl_flags->{'res'},
-              'sim_year'=>$nl_flags->{'sim_year'},
-              'glc_nec'=>$nl_flags->{'glc_nec'});
+              'sim_year'=>$nl_flags->{'sim_year'});
   
   # MML: try and add my own namelist variable for mml_surdat forcing file
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'mml_surdat');
@@ -1270,7 +1226,7 @@ sub setup_logic_initial_conditions {
     } else {
        delete( $settings{'sim_year'} );
     }
-    foreach my $item ( "mask", "maxpft", "glc_nec" ) {
+    foreach my $item ( "mask", "maxpft" ) {
        $settings{$item}    = $nl_flags->{$item};
     }
     if ($opts->{'ignore_ic_year'}) {
@@ -1313,7 +1269,6 @@ sub setup_logic_initial_conditions {
 
              add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, "init_interp_attributes",
                         'sim_year'=>$settings{'sim_year'},
-                        'glc_nec'=>$nl_flags->{'glc_nec'},
                         'nofail'=>1 );
              my $attributes_string = remove_leading_and_trailing_quotes($nl->get_value("init_interp_attributes"));
              foreach my $pair ( split( /\s/, $attributes_string) ) {

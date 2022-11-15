@@ -40,7 +40,7 @@ contains
     ! CLM initialization first phase 
     !
     ! !USES:
-    use clm_varpar       , only: clm_varpar_init, natpft_lb, natpft_ub, cft_lb, cft_ub, maxpatch_glcmec
+    use clm_varpar       , only: clm_varpar_init, natpft_lb, natpft_ub, cft_lb, cft_ub
     use clm_varcon       , only: clm_varcon_init
     use landunit_varcon  , only: landunit_varcon_init, max_lunit
     use clm_varctl       , only: fsurdat, fatmlndfrc, noland, version, mml_surdat  
@@ -151,8 +151,8 @@ contains
     allocate (wt_nat_patch (begg:endg, natpft_lb:natpft_ub ))
     allocate (wt_cft       (begg:endg, cft_lb:cft_ub       ))
     allocate (fert_cft     (begg:endg, cft_lb:cft_ub       ))
-    allocate (wt_glc_mec  (begg:endg, maxpatch_glcmec))
-    allocate (topo_glc_mec(begg:endg, maxpatch_glcmec))
+    allocate (wt_glc_mec  (begg:endg, 10))
+    allocate (topo_glc_mec(begg:endg, 10))
 
     ! Read surface dataset and set up subgrid weight arrays
     

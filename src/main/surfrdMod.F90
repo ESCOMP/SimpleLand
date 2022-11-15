@@ -435,7 +435,7 @@ contains
     ! as soil color and percent sand and clay
     !
     ! !USES:
-    use clm_varpar      , only : maxpatch_glcmec, nlevurb
+    use clm_varpar      , only : nlevurb
     use landunit_varcon , only : isturb_MIN, isturb_MAX, istdlak, istwet, istice_mec
     use clm_instur      , only : wt_lunit, urban_valid, wt_glc_mec, topo_glc_mec
     !
@@ -524,8 +524,8 @@ contains
 
     ! Read glacier info
 
-    call check_dim(ncid, 'nglcec',   maxpatch_glcmec   )
-    call check_dim(ncid, 'nglcecp1', maxpatch_glcmec+1 )
+    call check_dim(ncid, 'nglcec',   10)
+    call check_dim(ncid, 'nglcecp1', 11)
 
     call ncd_io(ncid=ncid, varname='PCT_GLC_MEC', flag='read', data=wt_glc_mec, &
          dim1name=grlnd, readvar=readvar)
