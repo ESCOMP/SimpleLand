@@ -163,15 +163,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
      Antarctica: remains_ice -->
 <glacier_region_ice_runoff_behavior>'melted','melted','remains_ice','remains_ice'</glacier_region_ice_runoff_behavior>
 
-<!-- This parameter is tied (in a scientific sense) to h2osno_max: For large
-     values of h2osno_max, glc_snow_persistence_max_days should be 0; for small
-     values of h2osno_max, glc_snow_persistence_max_days should be non-zero. For
-     simplicity, we tie the defaults for both of these options to the overall
-     CLM phys version, rather than having some intermediate option that controls
-     the defaults for both h2osno_max and glc_snow_persistence_max_days. -->
-<glc_snow_persistence_max_days phys="clm5_0" >0</glc_snow_persistence_max_days>
-<glc_snow_persistence_max_days phys="clm4_5" >7300</glc_snow_persistence_max_days>
-
 <!-- ================================================================== -->
 <!-- The default filenames are given relative to the root directory
      for the CLM2 data in the CESM distribution -->

@@ -267,17 +267,6 @@ Allowed values are:
 Only applies when melt_non_icesheet_ice_runoff is .true.
 </entry>
 
-<entry id="glc_snow_persistence_max_days" type="integer" category="clm_physics"
-       group="clm_inparm" valid_values="" >
-Number of days before one considers the perennially snow-covered point 'land ice'
-(and thus capable of generating a positive surface mass balance for the glacier model).
-This is meant to compensate for the fact that, with small values of h2osno_max,
-the onset of a snow-capped state (and thus conversion to land ice) can occur in an
-unrealistically short amount of time.
-Thus, in general, large values of h2osno_max should have glc_snow_persistence_max_days = 0;
-small values of h2osno_max should have glc_snow_persistence_max_days > 0.
-</entry>
-
 <entry id="dtime" type="real"  category="clm_physics" 
        group="clm_inparm" valid_values="">
 Time step (seconds)

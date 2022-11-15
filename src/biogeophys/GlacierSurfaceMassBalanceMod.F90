@@ -12,7 +12,6 @@ module GlacierSurfaceMassBalanceMod
   use decompMod      , only : bounds_type
   use clm_varcon     , only : spval, secspday
   use clm_varpar     , only : nlevgrnd
-  use clm_varctl     , only : glc_snow_persistence_max_days
   use clm_time_manager, only : get_step_size
   use landunit_varcon, only : istice_mec
   use ColumnType     , only : col                
@@ -297,9 +296,7 @@ contains
        c = filter_do_smb_c(fc)
        l = col%landunit(c)
        g = col%gridcell(c)
-       ! In the following, we convert glc_snow_persistence_max_days to r8 to avoid overflow
-       if ( (snow_persistence(c) >= (real(glc_snow_persistence_max_days, r8) * secspday)) &
-            .or. lun%itype(l) == istice_mec) then
+       if (snow_persistence(c) >= 0._r8 .or. lun%itype(l) == istice_mec) then
           qflx_glcice_frz(c) = qflx_snwcp_ice(c)
        else
           qflx_glcice_frz(c) = 0._r8

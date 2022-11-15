@@ -175,10 +175,6 @@ module clm_varctl
   ! true => CLM glacier area & topography changes dynamically 
   logical , public :: glc_do_dynglacier = .false.           
 
-  ! number of days before one considers the perennially snow-covered point 'land ice'
-  integer , public :: glc_snow_persistence_max_days = 7300  
-
-  !
   !----------------------------------------------------------
   ! single column control variables
   !----------------------------------------------------------

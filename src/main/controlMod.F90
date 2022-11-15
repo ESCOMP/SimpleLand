@@ -31,7 +31,7 @@ module controlMod
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
-  use clm_varctl                       , only: create_crop_landunit, glc_snow_persistence_max_days
+  use clm_varctl                       , only: create_crop_landunit
   use clm_varctl                       , only: subgridflag, nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: create_crop_landunit
@@ -160,7 +160,6 @@ contains
 
     ! Glacier_mec info
     namelist /clm_inparm/ &    
-         glc_snow_persistence_max_days, &
          nlevsno, h2osno_max, int_snow_max, n_melt_glcmec
 
     ! Other options
@@ -425,9 +424,6 @@ contains
     call mpi_bcast (h2osno_max, 1, MPI_REAL8, 0, mpicom, ier)
     call mpi_bcast (int_snow_max, 1, MPI_REAL8, 0, mpicom, ier)
     call mpi_bcast (n_melt_glcmec, 1, MPI_REAL8, 0, mpicom, ier)
-
-    ! glacier_mec variables
-    call mpi_bcast (glc_snow_persistence_max_days, 1, MPI_INTEGER, 0, mpicom, ier)
 
     ! history file variables
     call mpi_bcast (hist_empty_htapes, 1, MPI_LOGICAL, 0, mpicom, ier)
