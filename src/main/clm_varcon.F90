@@ -148,9 +148,6 @@ module clm_varcon
   ! isotope ratio (13c/[12c+13c]) for C4 photosynthesis
   real(r8), parameter :: c4_r2 = c4_r1/(1._r8 + c4_r1)
 
-  real(r8) :: h2osno_max   = -999.0_r8            ! max allowed snow thickness (mm H2O)
-  real(r8) :: int_snow_max = -999.0_r8            ! limit applied to integrated snowfall when determining changes in snow-covered fraction during melt (mm H2O)
-
   integer, private :: i  ! loop index
 
  !real(r8), parameter :: nitrif_n2o_loss_frac = 0.02_r8  ! fraction of N lost as N2O in nitrification (Parton et al., 2001)

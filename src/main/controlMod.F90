@@ -17,7 +17,6 @@ module controlMod
   use abortutils                       , only: endrun
   use spmdMod                          , only: masterproc
   use decompMod                        , only: clump_pproc
-  use clm_varcon                       , only: h2osno_max, int_snow_max
   use clm_varpar                       , only: maxpatch_pft, numrad, nlevsno
   use histFileMod                      , only: max_tapes, max_namlen 
   use histFileMod                      , only: hist_empty_htapes, hist_dov2xy, hist_avgflag_pertape, hist_type1d_pertape 
@@ -31,10 +30,8 @@ module controlMod
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
-  use clm_varctl                       , only: create_crop_landunit
   use clm_varctl                       , only: subgridflag, nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
-  use clm_varctl                       , only: create_crop_landunit
   use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
@@ -159,14 +156,13 @@ contains
          co2_type
 
     ! Glacier_mec info
-    namelist /clm_inparm/ &    
-         nlevsno, h2osno_max, int_snow_max
+    namelist /clm_inparm/ nlevsno
 
     ! Other options
 
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
-         create_crop_landunit, nsegspc, co2_ppmv, override_nsrest, &
+         nsegspc, co2_ppmv, override_nsrest, &
          soil_layerstruct, subgridflag
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
@@ -177,9 +173,7 @@ contains
     namelist /clm_inparm/ use_noio
 
     ! Items not really needed, but do need to be properly set as they are used
-    namelist / clm_inparm/ &
-               create_crop_landunit,   &
-               single_column
+    namelist / clm_inparm/ single_column
 
     character(len=256) :: fsnowaging, fsnowoptics
     namelist /clm_inparm/ fsnowaging, fsnowoptics
@@ -281,7 +275,7 @@ contains
           nfix_timeconst = 0._r8
        end if
 
-       ! If nlevsno, h2osno_max, int_snow_max are equal to their junk
+       ! If nlevsno are equal to their junk
        ! default value, then they were not specified by the user namelist and we generate
        ! an error message. Also check nlevsno for bounds.
        if (nlevsno < 3 .or. nlevsno > 12)  then
@@ -289,17 +283,6 @@ contains
           call endrun(msg=' ERROR: invalid value for nlevsno in CLM namelist. '//&
                errMsg(sourcefile, __LINE__))
        endif
-       if (h2osno_max <= 0.0_r8) then
-          write(iulog,*)'ERROR: h2osno_max = ',h2osno_max,' is not supported, must be greater than 0.0.'
-          call endrun(msg=' ERROR: invalid value for h2osno_max in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
-       if (int_snow_max <= 0.0_r8) then
-          write(iulog,*)'ERROR: int_snow_max = ',int_snow_max,' is not supported, must be greater than 0.0.'
-          call endrun(msg=' ERROR: invalid value for int_snow_max in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
-
     endif   ! end of if-masterproc if-block
 
     ! ----------------------------------------------------------------------
@@ -398,9 +381,6 @@ contains
 	! mml input file vars for simple model
 	call mpi_bcast (mml_surdat,  len(mml_surdat),   MPI_CHARACTER, 0, mpicom, ier)
 	
-    ! Landunit generation
-    call mpi_bcast(create_crop_landunit, 1, MPI_LOGICAL, 0, mpicom, ier)
-
     ! max number of plant functional types in naturally vegetated landunit
     call mpi_bcast(maxpatch_pft, 1, MPI_LOGICAL, 0, mpicom, ier)
 
@@ -416,8 +396,6 @@ contains
 
     ! snow pack variables
     call mpi_bcast (nlevsno, 1, MPI_INTEGER, 0, mpicom, ier)
-    call mpi_bcast (h2osno_max, 1, MPI_REAL8, 0, mpicom, ier)
-    call mpi_bcast (int_snow_max, 1, MPI_REAL8, 0, mpicom, ier)
 
     ! history file variables
     call mpi_bcast (hist_empty_htapes, 1, MPI_LOGICAL, 0, mpicom, ier)
@@ -492,9 +470,6 @@ contains
        write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
     end if
     write(iulog,*) '   Number of snow layers =', nlevsno
-    write(iulog,*) '   Max snow depth (mm) =', h2osno_max
-    write(iulog,*) '   Limit applied to integrated snowfall when determining changes in'
-    write(iulog,*) '       snow-covered fraction during melt (mm) =', int_snow_max
 
     if (nsrest == nsrStartup) then
        if (finidat /= ' ') then

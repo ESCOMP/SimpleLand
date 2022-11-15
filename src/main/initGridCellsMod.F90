@@ -412,7 +412,6 @@ contains
     use landunit_varcon , only : istcrop, istsoil
     use subgridMod      , only : subgrid_get_info_crop, crop_patch_exists
     use clm_varpar      , only : maxpatch_pft, cft_lb, cft_ub
-    use clm_varctl      , only : create_crop_landunit
     !
     ! !ARGUMENTS:
     integer , intent(in)    :: ltype             ! landunit type
@@ -440,16 +439,7 @@ contains
 
        ! Note that we cannot simply use the 'ltype' argument to set itype here,
        ! because ltype will always indicate istcrop
-       if ( create_crop_landunit )then
-          my_ltype = ltype    ! Will always be istcrop
-          if ( ltype /= istcrop )then
-             write(iulog,*)' create_crop_landunit on and ltype is not istcrop: ', ltype
-             call endrun(msg=errMsg(sourcefile, __LINE__))
-          end if
-       else
-          my_ltype = istsoil
-       end if
-
+       my_ltype = ltype    ! Will always be istcrop
        call add_landunit(li=li, gi=gi, ltype=my_ltype, wtgcell=wtlunit2gcell)
        
        ! Set column and patch properties for this landunit 

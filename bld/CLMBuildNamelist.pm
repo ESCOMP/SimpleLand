@@ -875,7 +875,6 @@ sub process_namelist_inline_logic {
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
   setup_logic_glacier($opts, $nl_flags, $definition, $defaults, $nl,  $envxml_ref, $physv);
   setup_logic_params_file($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_create_crop_landunit($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_soilstate($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_demand($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_surface_dataset($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
@@ -886,11 +885,6 @@ sub process_namelist_inline_logic {
   # namelist group: atm2lnd_inparm
   #########################################
   setup_logic_atm_forcing($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
-  #########################################
-  # namelist group: lnd2atm_inparm
-  #########################################
-  setup_logic_lnd2atm($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
   ##################################
   # namelist group: bgc_shared
@@ -911,11 +905,6 @@ sub process_namelist_inline_logic {
   # namelist group: soil_resis_inparm #
   #############################################
   setup_logic_soil_resis($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
-  #############################################
-  # namelist group: canopyhydrology_inparm #
-  #############################################
-  setup_logic_canopyhydrology($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
   #######################################################################
   # namelist groups: clm_hydrology1_inparm and clm_soilhydrology_inparm #
@@ -1066,16 +1055,6 @@ sub setup_logic_params_file {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_create_crop_landunit {
-  # Create crop land unit
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  my $var = 'create_crop_landunit';
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var );
-}
-
-#-------------------------------------------------------------------------------
-
 sub error_if_set {
    # do a fatal_error and exit if any of the input variable names are set
    my ($nl, $error, @list) = @_;
@@ -1085,7 +1064,6 @@ sub error_if_set {
       }
    }
 }
-
 
 #-------------------------------------------------------------------------------
 
@@ -1369,17 +1347,6 @@ sub setup_logic_soil_resis {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_canopyhydrology {
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'interception_fraction' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'maximum_leaf_wetted_fraction' );
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'use_clm5_fpi' );
-}
-
-#-------------------------------------------------------------------------------
-
 sub setup_logic_snowpack {
   #
   # Snowpack related options
@@ -1388,25 +1355,6 @@ sub setup_logic_snowpack {
 
   if ($physv->as_long() >= $physv->as_long("clm4_5")) {
     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'nlevsno');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'h2osno_max');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'int_snow_max');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'wind_dependent_snow_density');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'snow_overburden_compaction_method');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'lotmp_snowdensity_method');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'upplim_destruct_metamorph');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fresh_snw_rds_max');
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'reset_snow');
-
-    if (remove_leading_and_trailing_quotes($nl->get_value('snow_overburden_compaction_method')) eq 'Vionnet2012') {
-       # overburden_compress_tfactor isn't used if we're using the Vionnet2012
-       # snow overburden compaction method, so make sure the user hasn't tried
-       # to set it
-       if (defined($nl->get_value('overburden_compress_tfactor'))) {
-          $log->fatal_error('overburden_compress_tfactor is set, but does not apply when using snow_overburden_compaction_method=Vionnet2012');
-       }
-    } else {
-       add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'overburden_compress_tfactor');
-    }
   }
 }
 
@@ -1441,19 +1389,6 @@ sub setup_logic_atm_forcing {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_lnd2atm {
-   #
-   # Options related to fields sent to atmosphere
-   #
-   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-   if ($physv->as_long() >= $physv->as_long("clm4_5")) {
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'melt_non_icesheet_ice_runoff');
-   }
-}
-
-#-------------------------------------------------------------------------------
-
 sub write_output_files {
   my ($opts, $nl_flags, $defaults, $nl, $physv) = @_;
 
@@ -1471,7 +1406,7 @@ sub write_output_files {
 
   # CLM component
   my @groups = qw(clm_inparm 
-                 lai_streams atm2lnd_inparm lnd2atm_inparm 
+                 lai_streams atm2lnd_inparm
                  finidat_consistency_checks 
                  clm_initinterp_inparm 
                  soilwater_movement_inparm rooting_profile_inparm

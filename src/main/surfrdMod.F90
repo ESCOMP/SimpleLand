@@ -303,7 +303,6 @@ contains
     !    o real % abundance PFTs (as a percent of vegetated area)
     !
     ! !USES:
-    use clm_varctl  , only : create_crop_landunit
     use fileutils   , only : getfil
     use domainMod   , only : domain_type, domain_init, domain_clean
     use clm_instur  , only : wt_lunit, topo_glc_mec
@@ -692,7 +691,6 @@ contains
     ! Determine weight arrays for non-dynamic landuse mode
     !
     ! !USES:
-    use clm_varctl      , only : create_crop_landunit
     use clm_varpar      , only : natpft_lb, natpft_ub, natpft_size, cft_size, cft_lb
     use clm_instur      , only : wt_lunit, wt_nat_patch, wt_cft, fert_cft
     use landunit_varcon , only : istsoil, istcrop
@@ -736,15 +734,7 @@ contains
 
     ! Check the file format for CFT's and handle accordingly
     call ncd_inqdid(ncid, 'cft', dimid, cft_dim_exists)
-    if ( cft_dim_exists .and. create_crop_landunit )then
-       call surfrd_cftformat( ncid, begg, endg, wt_cft, cft_size, natpft_size )  ! Format where CFT's is read in a seperate landunit
-    else if ( (.not. cft_dim_exists) .and. (.not. create_crop_landunit) )then
-       if ( masterproc ) write(iulog,*) "WARNING: The PFT format is an unsupported format that will be removed in th future!"
-       call surfrd_pftformat( begg, endg, ncid )                                 ! Format where crop is part of the natural veg. landunit
-    else if ( cft_dim_exists .and. .not. create_crop_landunit )then
-       if ( masterproc ) write(iulog,*) "WARNING: New CFT-based format surface datasets should be run with create_crop_landunit=T"
-       call endrun( msg=' ERROR: New format surface datasets require create_crop_landunit TRUE'//errMsg(sourcefile, __LINE__))
-    end if
+    call surfrd_cftformat( ncid, begg, endg, wt_cft, cft_size, natpft_size )  ! Format where CFT's is read in a seperate landunit
 
     ! Do some checking
     

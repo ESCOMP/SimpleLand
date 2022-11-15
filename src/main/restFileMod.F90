@@ -18,7 +18,6 @@ module restFileMod
   use clm_instMod      , only : clm_instRest
   use histFileMod      , only : hist_restart_ncd
   use clm_varctl       , only : iulog
-  use clm_varctl       , only : create_crop_landunit
   use clm_varcon       , only : nameg, namel, namec, namep, nameCohort
   use ncdio_pio        , only : file_desc_t, ncd_pio_createfile, ncd_pio_openfile, ncd_global
   use ncdio_pio        , only : ncd_pio_closefile, ncd_defdim, ncd_putatt, ncd_enddef, check_dim
@@ -545,7 +544,6 @@ contains
     call ncd_putatt(ncid, NCD_GLOBAL, 'surface_dataset', trim(fsurdat))
     call ncd_putatt(ncid, NCD_GLOBAL, 'title', 'CLM Restart information')
 
-    call restFile_add_flag_metadata(ncid, create_crop_landunit, 'create_crop_landunit')
     ! BACKWARDS_COMPATIBILITY(wjs, 2017-12-13) created_glacier_mec_landunits is always
     ! true now. However, we can't remove the read of this field from init_interp until we
     ! can reliably assume that all initial conditions files that might be used in

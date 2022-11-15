@@ -18,18 +18,10 @@ module lnd2atmType
   implicit none
   private
 
-  type, public :: lnd2atm_params_type
-     ! true => ice runoff generated from non-glacier columns and glacier columns outside
-     ! icesheet regions is converted to liquid, with an appropriate sensible heat flux
-     logical, public :: melt_non_icesheet_ice_runoff
-  end type lnd2atm_params_type
-
   ! ----------------------------------------------------
   ! land -> atmosphere variables structure
   !----------------------------------------------------
   type, public :: lnd2atm_type
-     type(lnd2atm_params_type) :: params
-
      ! lnd->atm
      real(r8), pointer :: t_rad_grc          (:)   => null() ! radiative temperature (Kelvin)
      ! MML check tech note for examples on how to calculate this; use MO theory
@@ -71,43 +63,17 @@ module lnd2atmType
    contains
 
      procedure, public  :: Init
-     procedure, private :: ReadNamelist
      procedure, private :: InitAllocate 
      procedure, private :: InitHistory  
 
   end type lnd2atm_type
   !------------------------------------------------------------------------
 
-  interface lnd2atm_params_type
-     module procedure lnd2atm_params_constructor
-  end interface lnd2atm_params_type
-
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
   !------------------------------------------------------------------------
 
 contains
-
-  !-----------------------------------------------------------------------
-  function lnd2atm_params_constructor(melt_non_icesheet_ice_runoff) &
-       result(params)
-    !
-    ! !DESCRIPTION:
-    ! Creates a new instance of lnd2atm_params_type
-    !
-    ! !ARGUMENTS:
-    type(lnd2atm_params_type) :: params  ! function result
-    logical, intent(in) :: melt_non_icesheet_ice_runoff
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'lnd2atm_params_type'
-    !-----------------------------------------------------------------------
-
-    params%melt_non_icesheet_ice_runoff = melt_non_icesheet_ice_runoff
-
-  end function lnd2atm_params_constructor
-
 
   !------------------------------------------------------------------------
   subroutine Init(this, bounds, NLFilename)
@@ -117,7 +83,6 @@ contains
     character(len=*), intent(in) :: NLFilename ! Namelist filename
 
     call this%InitAllocate(bounds)
-    call this%ReadNamelist(NLFilename)
     call this%InitHistory(bounds)
     
   end subroutine Init
@@ -175,69 +140,6 @@ contains
   end subroutine InitAllocate
 
   !-----------------------------------------------------------------------
-  subroutine ReadNamelist(this, NLFilename)
-    !
-    ! !DESCRIPTION:
-    ! Read the lnd2atm namelist
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    class(lnd2atm_type), intent(inout) :: this
-    !
-    ! !LOCAL VARIABLES:
-
-    ! temporary variables corresponding to the components of lnd2atm_params_type
-    logical :: melt_non_icesheet_ice_runoff
-
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-    character(len=*), parameter :: nmlname = 'lnd2atm_inparm'
-
-    character(len=*), parameter :: subname = 'ReadNamelist'
-    !-----------------------------------------------------------------------
-
-    namelist /lnd2atm_inparm/ melt_non_icesheet_ice_runoff
-
-    ! Initialize namelist variables to defaults
-    melt_non_icesheet_ice_runoff = .false.
-
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=lnd2atm_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR could NOT find "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast(melt_non_icesheet_ice_runoff, mpicom)
-
-    if (masterproc) then
-       write(iulog,*)
-       write(iulog,*) nmlname, ' settings:'
-       write(iulog,nml=lnd2atm_inparm)
-       write(iulog,*) ' '
-    end if
-
-    this%params = lnd2atm_params_type( &
-         melt_non_icesheet_ice_runoff = melt_non_icesheet_ice_runoff)
-
-  end subroutine ReadNamelist
-
-  !-----------------------------------------------------------------------
   subroutine InitHistory(this, bounds)
     !
     ! !USES:
@@ -262,12 +164,6 @@ contains
               &(includes corrections for land use change, rain/snow conversion and conversion of ice runoff to liquid)', &
          ptr_lnd=this%eflx_sh_tot_grc)
 
-    this%eflx_sh_ice_to_liq_col(begc:endc) = 0._r8
-    call hist_addfld1d (fname='FSH_RUNOFF_ICE_TO_LIQ', units='W/m^2', &
-         avgflag='A', &
-         long_name='sensible heat flux generated from conversion of ice runoff to liquid', &
-         ptr_col=this%eflx_sh_ice_to_liq_col)
-
     this%qflx_rofliq_grc(begg:endg) = 0._r8
     call hist_addfld1d (fname='QRUNOFF_TO_COUPLER',  units='mm/s',  &
          avgflag='A', &
@@ -279,19 +175,6 @@ contains
          avgflag='A', &
          long_name='total ice runoff sent to coupler (includes corrections for land use change)', &
          ptr_lnd=this%qflx_rofice_grc)
-
-    this%qflx_liq_from_ice_col(begc:endc) = 0._r8
-    call hist_addfld1d (fname='QRUNOFF_ICE_TO_LIQ', units='mm/s', &
-         avgflag='A', &
-         long_name='liquid runoff from converted ice runoff', &
-         ptr_col=this%qflx_liq_from_ice_col, default='inactive')
-
-    this%net_carbon_exchange_grc(begg:endg) = spval
-    call hist_addfld1d(fname='FCO2', units='kgCO2/m2/s', &
-         avgflag='A', &
-         long_name='CO2 flux to atmosphere (+ to atm)', &
-         ptr_lnd=this%net_carbon_exchange_grc, &
-         default='inactive')
 
   end subroutine InitHistory
 

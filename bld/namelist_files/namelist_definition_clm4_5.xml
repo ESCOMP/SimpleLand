@@ -87,11 +87,6 @@ over-productive.
     ALL            = Supplemental Nitrogen is active for all vegetation types
 </entry>
 
-<entry id="create_crop_landunit" type="logical" category="clm_physics"
-       group="clm_inparm" valid_values="" >
-If TRUE, separate the vegetated landunit into a crop landunit and a natural vegetation landunit
-</entry>
-
 <entry id="soil_layerstruct" type="char*16" category="clm_physics"
        group="clm_inparm" valid_values="10SL_3.5m,23SL_3.5m,49SL_10m,20SL_8.5m" >
 10SL_3.5m    = standard CLM4 and CLM4.5 version
@@ -159,21 +154,6 @@ Slope of free living Nitrogen fixation with annual ET
 <entry id="freelivfix_intercept" type="real" category="clm_physics"
        group="mineral_nitrogen_dynamics" >
 Intercept of free living Nitrogen fixation with zero annual ET
-</entry>
-
-<entry id="interception_fraction" type="real" category="clm_physics"
-       group="clm_canopyhydrology_inparm" valid_values="" >
-Fraction of intercepted precipitation
-</entry>
-
-<entry id="use_clm5_fpi" type="logical" category="clm_physics"
-       group="clm_canopyhydrology_inparm" valid_values="" >
-If TRUE use clm5 equation for fraction of intercepted precipitation
-</entry>
-
-<entry id="maximum_leaf_wetted_fraction" type="real" category="clm_physics"
-       group="clm_canopyhydrology_inparm" valid_values="" >
-Maximum fraction of leaf that may be wet prior to drip occuring
 </entry>
 
 <entry id="soilwater_movement_method" type="integer" category="clm_physics"
@@ -767,16 +747,6 @@ Only relevant if repartition_rain_snow is .true.
 <!-- Namelist items controlling fields sent to atmosphere                                      -->
 <!-- ========================================================================================  -->
 
-<entry id="melt_non_icesheet_ice_runoff" type="logical" category="clm_physics"
-       group="lnd2atm_inparm" valid_values="" >
-If TRUE, ice runoff generated from non-glacier columns and glacier columns outside icesheet regions
-is converted to liquid, with an appropriate sensible heat flux.
-That is, the atmosphere (rather than the ocean) melts the ice.
-(Exception: ice runoff generated to ensure conservation with dynamic landunits remains as ice.)
-</entry>
-
-<!-- ========================================================================================  -->
-
 <entry id="diri" type="char*256" category="datm"
        group="modelio" valid_values="">
 datm input directory
@@ -994,78 +964,6 @@ and pct_nat_pft read from the surface dataset.
        group="clm_inparm" valid_values="3,4,5,6,7,8,9,10,11,12" >
 Number of snow layers.
 Values less than 5 are mainly useful for testing, and should not be used for science.
-</entry>
-
-<entry id="h2osno_max" type="real" category="clm_physics"
-       group="clm_inparm" valid_values="" >
-Maximum snow depth in mm H2O equivalent. Additional mass gains will be capped when this depth 
-is exceeded.
-Changes in this value should possibly be accompanied by changes in:
-- nlevsno: larger values of h2osno_max should be accompanied by increases in nlevsno
-- glc_snow_persistence_max_days: large values of h2osno_max should generally have
-  glc_snow_persistence_max_days = 0; small values of h2osno_max should generally have
-  glc_snow_persistence_max_days > 0.
-</entry>
-
-<entry id="int_snow_max" type="real" category="clm_physics"
-       group="clm_inparm" valid_values="" >
-Limit applied to integrated snowfall when determining changes in snow-covered fraction during melt
-(mm H2O)
-</entry>
-
-<entry id="wind_dependent_snow_density" type="logical" category="clm_physics"
-       group="clm_snowhydrology_inparm" valid_values="" >
-If TRUE, the density of new snow depends on wind speed, and there is also
-wind-dependent snow compaction.
-</entry>
-
-<entry id="snow_overburden_compaction_method" type="char*64" category="clm_physics"
-       group="clm_snowhydrology_inparm"
-       valid_values="Vionnet2012,Anderson1976">
-Method used to compute snow overburden compaction
-Anderson1976 -- older method, default in CLM45
-Vionnet2012 --- newer method, default in CLM50
-</entry>
-
-<entry id="lotmp_snowdensity_method" type="char*25" category="clm_physics"
-       group="clm_snowhydrology_inparm"    valid_values="Slater2017,TruncatedAnderson1976" >
-Snow density method to use for low temperatures (below -15C)
-TruncatedAnderson1976 -- Truncate the Anderson-1976 equation at the value for -15C
-Slater2017 ------------- Use equation from Slater that increases snow density for very cold temperatures  (Arctic, Antarctic)
-</entry>
-
-<entry id="upplim_destruct_metamorph" type="real" category="clm_physics"
-       group="clm_snowhydrology_inparm"   >
-Upper Limit on Destructive Metamorphism Compaction [kg/m3]
-</entry>
-
-<entry id="overburden_compress_Tfactor" type="real" category="clm_physics"
-       group="clm_snowhydrology_inparm"   >
-Snow compaction overburden exponential factor (1/K)
-Not used for snow_overburden_compaction_method=Vionnet2012
-</entry>
-
-<entry id="min_wind_snowcompact" type="real" category="clm_physics"
-       group="clm_snowhydrology_inparm"   >
-Minimum wind speed tht results in compaction (m/s)
-</entry>
-
-<entry id="fresh_snw_rds_max" type="real" category="clm_physics"
-       group="aerosol"   >
-maximum warm (at freezing) fresh snow effective radius [microns]
-</entry>
-
-<entry id="reset_snow" type="logical" category="clm_physics"
-       group="clm_snowhydrology_inparm"   >
-If set to .true., then reset the snow pack over non-glacier columns to a small value.
-This is useful when transitioning from a spinup under one set of atmospheric forcings
-to a run under a different set of atmospheric forcings: By resetting too-large snow packs,
-we make it more likely that points will remain only seasonally snow-covered under the new
-atmospheric forcings. (This is particularly true in a coupled run, where starting with a
-too-large snow pack can cool the atmosphere, thus maintaining the too-large snow pack.)
-
-WARNING: Setting this to .true. will break water conservation for approximately the first
-day of the new run. This is by design: The excess snow is completely removed from the system.
 </entry>
 
 <!-- ========================================================================================  -->

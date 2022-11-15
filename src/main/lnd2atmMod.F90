@@ -155,7 +155,6 @@ contains
     SHR_ASSERT_ALL((ubound(net_carbon_exchange_grc) == (/bounds%endg/)), errMsg(sourcefile, __LINE__))
 
     call handle_ice_runoff(bounds, waterflux_inst, glc_behavior, &
-         melt_non_icesheet_ice_runoff = lnd2atm_inst%params%melt_non_icesheet_ice_runoff, &
          qflx_ice_runoff_col = qflx_ice_runoff_col(bounds%begc:bounds%endc), &
          qflx_liq_from_ice_col = lnd2atm_inst%qflx_liq_from_ice_col(bounds%begc:bounds%endc), &
          eflx_sh_ice_to_liq_col = lnd2atm_inst%eflx_sh_ice_to_liq_col(bounds%begc:bounds%endc))
@@ -334,7 +333,6 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine handle_ice_runoff(bounds, waterflux_inst, glc_behavior, &
-       melt_non_icesheet_ice_runoff, &
        qflx_ice_runoff_col, qflx_liq_from_ice_col, eflx_sh_ice_to_liq_col)
     !
     ! !DESCRIPTION:
@@ -366,7 +364,6 @@ contains
     type(bounds_type), intent(in) :: bounds
     type(waterflux_type), intent(in) :: waterflux_inst
     type(glc_behavior_type), intent(in) :: glc_behavior
-    logical, intent(in) :: melt_non_icesheet_ice_runoff
     real(r8), intent(out) :: qflx_ice_runoff_col( bounds%begc: ) ! total column-level ice runoff (mm H2O /s)
     real(r8), intent(out) :: qflx_liq_from_ice_col( bounds%begc: ) ! liquid runoff from converted ice runoff (mm H2O /s)
     real(r8), intent(out) :: eflx_sh_ice_to_liq_col( bounds%begc: ) ! sensible heat flux generated from the ice to liquid conversion (W/m2) (+ to atm)
@@ -392,7 +389,6 @@ contains
        end if
     end do
 
-    if (melt_non_icesheet_ice_runoff) then
        do c = bounds%begc, bounds%endc
           if (col%active(c)) then
              l = col%landunit(c)
@@ -417,7 +413,6 @@ contains
              end if
           end if
        end do
-    end if
 
   end subroutine handle_ice_runoff
 

@@ -69,19 +69,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <precip_repartition_glc_all_snow_t phys="clm5_0">-2.</precip_repartition_glc_all_snow_t>
 <precip_repartition_glc_all_rain_t phys="clm5_0">0.</precip_repartition_glc_all_rain_t>
 
-<!-- lnd2atm defaults -->
-<melt_non_icesheet_ice_runoff phys="clm4_5">.false.</melt_non_icesheet_ice_runoff>
-<melt_non_icesheet_ice_runoff phys="clm5_0">.true.</melt_non_icesheet_ice_runoff>
-
-<!-- Canopy hydrology namelist defaults -->
-<use_clm5_fpi phys="clm5_0">.true.</use_clm5_fpi>
-<interception_fraction phys="clm5_0">1.0</interception_fraction>
-<maximum_leaf_wetted_fraction phys="clm5_0">0.05</maximum_leaf_wetted_fraction>
-
-<use_clm5_fpi phys="clm4_5">.false.</use_clm5_fpi>
-<interception_fraction phys="clm4_5">0.25</interception_fraction>
-<maximum_leaf_wetted_fraction phys="clm4_5">1.0</maximum_leaf_wetted_fraction>
-
 <!-- Soilwater movement namelist defaults -->
 <soilwater_movement_method phys="clm4_5">0</soilwater_movement_method>
 <soilwater_movement_method phys="clm5_0">1</soilwater_movement_method>
@@ -101,31 +88,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- Snow pack settings-->
 <nlevsno phys="clm5_0" >12</nlevsno>
 <nlevsno phys="clm4_5" >5</nlevsno>
-<h2osno_max phys="clm5_0" >10000.0</h2osno_max>
-<h2osno_max phys="clm4_5" >1000.0</h2osno_max>
-
-<int_snow_max phys="clm5_0">2000.</int_snow_max>
-<!-- For clm4_5, make this effectively unlimited -->
-<int_snow_max phys="clm4_5">1.e30</int_snow_max>
-
-<wind_dependent_snow_density phys="clm5_0" >.true.</wind_dependent_snow_density>
-<wind_dependent_snow_density phys="clm4_5" >.false.</wind_dependent_snow_density>
-
-<snow_overburden_compaction_method phys="clm5_0">'Vionnet2012'</snow_overburden_compaction_method>
-<snow_overburden_compaction_method phys="clm4_5">'Anderson1976'</snow_overburden_compaction_method>
-
-<lotmp_snowdensity_method phys="clm5_0">'Slater2017'</lotmp_snowdensity_method>
-<lotmp_snowdensity_method phys="clm4_5">'TruncatedAnderson1976'</lotmp_snowdensity_method>
-
-<upplim_destruct_metamorph   phys="clm4_5">100.d00</upplim_destruct_metamorph>
-<upplim_destruct_metamorph   phys="clm5_0">175.d00</upplim_destruct_metamorph>
-
-<fresh_snw_rds_max phys="clm4_5">54.526d00</fresh_snw_rds_max>
-<fresh_snw_rds_max phys="clm5_0">204.526d00</fresh_snw_rds_max>
-
-<overburden_compress_tfactor>0.08d00</overburden_compress_tfactor>
-
-<reset_snow>.false.</reset_snow>
 
 <!-- Default glacier behavior is:
      Mountain glaciers: single_at_atm_topo
@@ -609,9 +571,6 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <lai_mapalgo  hgrid="5x5_amazon"          >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_brazil"          >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="5x5_amazon"          >nn</lai_mapalgo>
-
-<!-- Create crop on a separate land-unit -->
-<create_crop_landunit>.true.</create_crop_landunit>
 
 <!-- =========================================  -->
 <!-- Performance issues                         -->

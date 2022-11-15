@@ -7,7 +7,7 @@ module clm_varpar
   ! !USES:
   use shr_kind_mod , only: r8 => shr_kind_r8
   use spmdMod      , only: masterproc
-  use clm_varctl   , only: iulog, create_crop_landunit
+  use clm_varctl   , only: iulog
   use clm_varctl   , only: soil_layerstruct
 
   !
@@ -94,13 +94,8 @@ contains
     ! crops if create_crop_landunit=false), and (2) CFTs on the crop landunit (no elements
     ! if create_crop_landunit=false)
 
-    if (create_crop_landunit) then
-       natpft_size = (numpft + 1) - numcft    ! note that numpft doesn't include bare ground -- thus we add 1
-       cft_size    = numcft
-    else
-       natpft_size = numpft + 1               ! note that numpft doesn't include bare ground -- thus we add 1
-       cft_size    = 0
-    end if
+    natpft_size = (numpft + 1) - numcft    ! note that numpft doesn't include bare ground -- thus we add 1
+    cft_size    = numcft
 
     natpft_lb = 0
     natpft_ub = natpft_lb + natpft_size - 1

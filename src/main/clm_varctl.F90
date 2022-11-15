@@ -114,17 +114,6 @@ module clm_varctl
   character(len=fname_len), public :: finidat_interp_dest   = 'finidat_interp_dest.nc'     
 
   !----------------------------------------------------------
-  ! Crop & Irrigation logic
-  !----------------------------------------------------------
-
-  ! true => separate crop landunit is not created by default
-  logical, public :: create_crop_landunit = .false.     
-  
-  !----------------------------------------------------------
-  ! Other subgrid logic
-  !----------------------------------------------------------
-
-  !----------------------------------------------------------
   ! BGC logic and datasets
   !----------------------------------------------------------
 
