@@ -30,7 +30,6 @@ module controlMod
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
-  use clm_varctl                       , only: nfix_timeconst
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: single_column
   !
@@ -265,14 +264,6 @@ contains
                    errMsg(sourcefile, __LINE__))
            end if
            call clm_varctl_set( nsrest_in=override_nsrest )
-       end if
-
-       ! If nfix_timeconst is equal to the junk default value, then it was not specified
-       ! by the user namelist and we need to assign it the correct default value. If the 
-       ! user specified it in the namelist, we leave it alone.
-
-       if (nfix_timeconst == -1.2345_r8) then
-          nfix_timeconst = 0._r8
        end if
 
        ! If nlevsno are equal to their junk

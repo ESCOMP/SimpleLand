@@ -40,7 +40,7 @@ contains
     use clm_varpar          , only : numpft, numrad
     use clm_varpar          , only : nlevsoi, nlevgrnd, nlevlak, nlevsoifl, nlayer, nlayert, nlevurb, nlevsno
     use clm_varcon          , only : zsoi, dzsoi, zisoi, spval
-    use clm_varcon          , only : secspday, pc, mu, denh2o, denice, grlnd
+    use clm_varcon          , only : secspday, denh2o, denice, grlnd
     use clm_varctl          , only : iulog, fsurdat, paramfile, soil_layerstruct
     use landunit_varcon     , only : istdlak, istwet, istsoil, istcrop, istice_mec
     use column_varcon       , only : icol_road_perv, icol_road_imperv 

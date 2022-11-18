@@ -12,7 +12,7 @@
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
     <options>
-      <option name="wallclock">01:20:00</option>
+      <option name="wallclock">02:00:00</option>
       <option name="comment">Longer smoke test with SOM for CAM5</option>
     </options>
   </test>

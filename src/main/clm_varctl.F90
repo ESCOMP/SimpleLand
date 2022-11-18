@@ -11,8 +11,6 @@ module clm_varctl
   ! !PUBLIC MEMBER FUNCTIONS:
   implicit none
   public :: clm_varctl_set    ! Set variables
-  public :: cnallocate_carbon_only_set
-  public :: cnallocate_carbon_only
   !
   private
   save
@@ -123,21 +121,6 @@ module clm_varctl
   ! used to override an error check on reading in restart files
   logical, public :: override_bgc_restart_mismatch_dump = .false. 
 
-  ! Set in CNAllocationInit (TODO - had to move it here to avoid circular dependency)
-  logical, private:: carbon_only      
-
-  ! Set in CNNDynamicsInit 
-  ! NOTE (mvertens, 2014-9 had to move it here to avoid confusion when carbon data types
-  ! wehre split - TODO - should move it our of this module) 
-  ! NOTE(bandre, 2013-10) according to Charlie Koven, nfix_timeconst
-  ! is currently used as a flag and rate constant. 
-  ! Rate constant: time over which to exponentially relax the npp flux for N fixation term
-  ! (days) time over which to exponentially relax the npp flux for N fixation term
-  ! flag: (if  <=  0. or  >=  365; use old annual method). 
-  ! Default value is junk that should always be overwritten by the namelist or init function!
-  !
-  real(r8), public :: nfix_timeconst = -1.2345_r8 
-
   !----------------------------------------------------------
   ! Physics
   !----------------------------------------------------------
@@ -240,16 +223,5 @@ contains
     if ( present(hostname_in     ) ) hostname      = hostname_in
 
   end subroutine clm_varctl_set
-
-  ! Set module carbon_only flag
-  subroutine cnallocate_carbon_only_set(carbon_only_in)
-    logical, intent(in) :: carbon_only_in
-    carbon_only = carbon_only_in
-  end subroutine cnallocate_carbon_only_set
-
-  ! Get module carbon_only flag
-  logical function CNAllocate_Carbon_only()
-    cnallocate_carbon_only = carbon_only
-  end function CNAllocate_Carbon_only
 
 end module clm_varctl

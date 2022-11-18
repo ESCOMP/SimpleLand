@@ -14,9 +14,6 @@ module clm_varcon
                            SHR_CONST_PDB, SHR_CONST_PI, SHR_CONST_CDAY,       &
                            SHR_CONST_RGAS, SHR_CONST_PSTD,                    &
                            SHR_CONST_MWDAIR, SHR_CONST_MWWV
-  use clm_varpar   , only: numrad, nlevgrnd, nlevlak
-  use clm_varpar   , only: nlayer
-  
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -41,10 +38,7 @@ module clm_varcon
   ! Initialize physical constants
   !------------------------------------------------------------------
 
-  real(r8), parameter :: n_melt=0.7                         ! fsca shape parameter
-  real(r8), parameter :: e_ice=6.0                          ! soil ice impedance factor
   real(r8), parameter :: pc = 0.4                           ! threshold probability
-  real(r8), parameter :: mu = 0.13889                       ! connectivity exponent 
   real(r8), parameter :: secsphr = 3600._r8                 ! Seconds in an hour
   integer,  parameter :: isecsphr = int(secsphr)            ! Integer seconds in an hour
   integer,  parameter :: isecspmin= 60                      ! Integer seconds in a minute
@@ -87,9 +81,6 @@ module clm_varcon
   real(r8), public, parameter :: secspday= SHR_CONST_CDAY   ! Seconds per day
   integer,  public, parameter :: isecspday= secspday        ! Integer seconds per day
 
-  integer, public, parameter  :: fun_period  = 1            ! A FUN parameter, and probably needs to be changed for testing
-  real(r8),public, parameter  :: smallValue  = 1.e-12_r8    ! A small values used by FUN
-
   ! ------------------------------------------------------------------------
   ! Special value flags
   ! ------------------------------------------------------------------------
@@ -110,49 +101,12 @@ module clm_varcon
   ! ------------------------------------------------------------------------
 
   real(r8) :: zlnd = 0.01_r8        ! Roughness length for soil [m]
-  real(r8) :: zsno = 0.0024_r8      ! Roughness length for snow [m]
-  real(r8) :: csoilc = 0.004_r8     ! Drag coefficient for soil under canopy [-]
-  real(r8) :: capr   = 0.34_r8      ! Tuning factor to turn first layer T into surface T
-  real(r8) :: cnfac  = 0.5_r8       ! Crank Nicholson factor between 0 and 1
-  real(r8) :: ssi    = 0.033_r8     ! Irreducible water saturation of snow
-  real(r8) :: wimp   = 0.05_r8      ! Water impremeable if porosity less than wimp
   real(r8) :: pondmx = 0.0_r8       ! Ponding depth (mm)
-  real(r8) :: pondmx_urban = 1.0_r8 ! Ponding depth for urban roof and impervious road (mm)
-
-  real(r8) :: thk_bedrock = 3.0_r8  ! thermal conductivity of 'typical' saturated granitic rock 
-                                    ! (Clauser and Huenges, 1995)(W/m/K)
-  real(r8) :: csol_bedrock = 2.0e6_r8 ! vol. heat capacity of granite/sandstone  J/(m3 K)(Shabbir, 2000) !scs
   real(r8), parameter :: zmin_bedrock = 0.4_r8 ! minimum soil depth [m]
 
   real(r8), parameter :: aquifer_water_baseline = 5000._r8 ! baseline value for water in the unconfined aquifer [mm]
 
-  !!! C13
-  real(r8), parameter :: preind_atm_del13c = -6.0   ! preindustrial value for atmospheric del13C
-  real(r8), parameter :: preind_atm_ratio = SHR_CONST_PDB + (preind_atm_del13c * SHR_CONST_PDB)/1000.0  ! 13C/12C
-
-   ! typical del13C for C3 photosynthesis (permil, relative to PDB)
-  real(r8), parameter :: c3_del13c = -28._r8
-
-  ! typical del13C for C4 photosynthesis (permil, relative to PDB)
-  real(r8), parameter :: c4_del13c = -13._r8
-
-  ! isotope ratio (13c/12c) for C3 photosynthesis
-  real(r8), parameter :: c3_r1 = SHR_CONST_PDB + ((c3_del13c*SHR_CONST_PDB)/1000._r8)
-
-  ! isotope ratio (13c/[12c+13c]) for C3 photosynthesis
-  real(r8), parameter :: c3_r2 = c3_r1/(1._r8 + c3_r1)
-
-  ! isotope ratio (13c/12c) for C4 photosynthesis  
-  real(r8), parameter :: c4_r1 = SHR_CONST_PDB + ((c4_del13c*SHR_CONST_PDB)/1000._r8)
-
-  ! isotope ratio (13c/[12c+13c]) for C4 photosynthesis
-  real(r8), parameter :: c4_r2 = c4_r1/(1._r8 + c4_r1)
-
   integer, private :: i  ! loop index
-
- !real(r8), parameter :: nitrif_n2o_loss_frac = 0.02_r8  ! fraction of N lost as N2O in nitrification (Parton et al., 2001)
-  real(r8), parameter :: nitrif_n2o_loss_frac = 6.e-4_r8 ! fraction of N lost as N2O in nitrification (Li et al., 2000)
-  real(r8), parameter :: frac_minrlztn_to_no3 = 0.2_r8   ! fraction of N mineralized that is dieverted to the nitrification stream (Parton et al., 2001)
 
   !------------------------------------------------------------------
   ! Set subgrid names
@@ -167,15 +121,6 @@ module clm_varcon
   character(len=16), parameter :: nameCohort = 'cohort'   ! name of cohorts (ED specific)
 
   !------------------------------------------------------------------
-  ! Initialize miscellaneous radiation constants
-  !------------------------------------------------------------------
-
-  real(r8) :: betads  = 0.5_r8            ! two-stream parameter betad for snow
-  real(r8) :: betais  = 0.5_r8            ! two-stream parameter betai for snow
-  real(r8) :: omegas(numrad)           ! two-stream parameter omega for snow by band
-  data (omegas(i),i=1,numrad) /0.8_r8, 0.4_r8/
-
-  !------------------------------------------------------------------
   ! Soil depths are constants for now; lake depths can vary by gridcell
   ! zlak and dzlak correspond to the default 50 m lake depth.
   ! The values for the following arrays are set in routine iniTimeConst
@@ -186,8 +131,6 @@ module clm_varcon
   real(r8), allocatable :: zsoi(:)         !soil z  (layers)
   real(r8), allocatable :: dzsoi(:)        !soil dz (thickness)
   real(r8), allocatable :: zisoi(:)        !soil zi (interfaces)
-  integer , allocatable :: nlvic(:)        !number of CLM layers in each VIC layer (#)
-  real(r8), allocatable :: dzvic(:)        !soil dz (thickness) of each VIC layer
   real(r8) ,allocatable :: zsoifl(:)       !original soil midpoint (used in interpolation of sand and clay)
   real(r8) ,allocatable :: zisoifl(:)      !original soil interface depth (used in interpolation of sand and clay)
   real(r8) ,allocatable :: dzsoifl(:)      !original soil thickness  (used in interpolation of sand and clay)
@@ -216,8 +159,6 @@ contains
     allocate( zsoi(1:nlevgrnd                ))
     allocate( dzsoi(1:nlevgrnd               ))
     allocate( zisoi(0:nlevgrnd               ))
-    allocate( nlvic(1:nlayer                 ))
-    allocate( dzvic(1:nlayer                 ))
     allocate( zsoifl(1:nlevsoifl             ))
     allocate( zisoifl(0:nlevsoifl            ))
     allocate( dzsoifl(1:nlevsoifl            ))

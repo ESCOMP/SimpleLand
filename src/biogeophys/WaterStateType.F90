@@ -523,7 +523,7 @@ contains
     use column_varcon   , only : icol_road_perv
     use column_varcon   , only : icol_road_imperv
     use clm_varcon      , only : denice, denh2o, spval, sb, bdsno 
-    use clm_varcon      , only : zlnd, tfrz, spval, pc
+    use clm_varcon      , only : zlnd, tfrz, spval
     use clm_varctl      , only : fsurdat, iulog
     use spmdMod         , only : masterproc
     use abortutils      , only : endrun

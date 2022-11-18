@@ -35,16 +35,10 @@ contains
     ! !USES:
     use shr_const_mod   , only : shr_const_pi
     use shr_spfn_mod    , only : shr_spfn_erf
-    use abortutils      , only : endrun
-    use clm_varctl      , only : fsurdat, paramfile, iulog, soil_layerstruct
-    use clm_varpar      , only : nlevsoifl, toplev_equalspace 
-    use clm_varpar      , only : nlevsoi, nlevgrnd, nlevsno, nlevlak, nlevurb, nlayer, nlayert 
-    use clm_varcon      , only : zsoi, dzsoi, zisoi, spval, nlvic, dzvic, pc, grlnd
+    use clm_varpar      , only : nlevsoi
+    use clm_varcon      , only : spval, pc
     use clm_varcon      , only : aquifer_water_baseline
-    use landunit_varcon , only : istwet, istsoil, istdlak, istcrop, istice_mec
     use column_varcon   , only : icol_road_perv
-    use fileutils       , only : getfil
-    use ncdio_pio       , only : file_desc_t, ncd_io, ncd_pio_openfile, ncd_pio_closefile
     !
     ! !ARGUMENTS:
     type(bounds_type)        , intent(in)    :: bounds                                    
@@ -52,29 +46,10 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer            :: p,c,j,l,g,lev,nlevs 
-    integer            :: ivic,ivicstrt,ivicend   
-    real(r8)           :: maxslope, slopemax, minslope
-    real(r8)           :: d, fd, dfdd, slope0,slopebeta
-    real(r8) ,pointer  :: tslope(:)  
-    logical            :: readvar 
-    type(file_desc_t)  :: ncid        
-    character(len=256) :: locfn       
+    real(r8)           :: d, fd, dfdd
     real(r8)           :: clay,sand        ! temporaries
-    real(r8)           :: om_frac          ! organic matter fraction
-    real(r8)           :: organic_max      ! organic matter (kg/m3) where soil is assumed to act like peat 
-    real(r8) ,pointer  :: b2d        (:)   ! read in - VIC b  
-    real(r8) ,pointer  :: ds2d       (:)   ! read in - VIC Ds 
-    real(r8) ,pointer  :: dsmax2d    (:)   ! read in - VIC Dsmax 
-    real(r8) ,pointer  :: ws2d       (:)   ! read in - VIC Ws 
     real(r8), pointer  :: sandcol    (:,:) ! column level sand fraction for calculating VIC parameters
     real(r8), pointer  :: claycol    (:,:) ! column level clay fraction for calculating VIC parameters
-    real(r8), pointer  :: om_fraccol (:,:) ! column level organic matter fraction for calculating VIC parameters
-    real(r8) ,pointer  :: sand3d     (:,:) ! read in - soil texture: percent sand 
-    real(r8) ,pointer  :: clay3d     (:,:) ! read in - soil texture: percent clay 
-    real(r8) ,pointer  :: organic3d  (:,:) ! read in - organic matter: kg/m3 
-    real(r8) ,pointer  :: zisoifl    (:)   ! original soil interface depth 
-    real(r8) ,pointer  :: zsoifl     (:)   ! original soil midpoint 
-    real(r8) ,pointer  :: dzsoifl    (:)   ! original soil thickness 
     !-----------------------------------------------------------------------
     ! -----------------------------------------------------------------
     ! Initialize frost table
@@ -164,13 +139,7 @@ contains
     ! !LOCAL VARIABLES:
     real(r8) :: om_watsat    = 0.9_r8             ! porosity of organic soil
     real(r8) :: om_hksat     = 0.1_r8             ! saturated hydraulic conductivity of organic soil [mm/s]
-    real(r8) :: om_tkm       = 0.25_r8            ! thermal conductivity of organic soil (Farouki, 1986) [W/m/K]
-    real(r8) :: om_sucsat    = 10.3_r8            ! saturated suction for organic matter (Letts, 2000)
-    real(r8) :: om_csol      = 2.5_r8             ! heat capacity of peat soil *10^6 (J/K m3) (Farouki, 1986)
-    real(r8) :: om_tkd       = 0.05_r8            ! thermal conductivity of dry organic soil (Farouki, 1981)
-    real(r8) :: om_b         = 2.7_r8             ! Clapp Hornberger paramater for oragnic soil (Letts, 2000)
     real(r8) :: om_expt      = 3._r8+2._r8*2.7_r8 ! soil expt for VIC        
-    real(r8) :: csol_bedrock = 2.0e6_r8           ! vol. heat capacity of granite/sandstone  J/(m3 K)(Shabbir, 2000)
     real(r8) :: pc           = 0.5_r8             ! percolation threshold
     real(r8) :: pcbeta       = 0.139_r8           ! percolation exponent
     real(r8) :: xksat                             ! maximum hydraulic conductivity of soil [mm/s]
