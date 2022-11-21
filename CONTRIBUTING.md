@@ -4,9 +4,9 @@ We recommend that you first open an issue (https://github.com/escomp/ctsm/issues
 discuss the changes or additions that you propose. You should also contact some of the responsible 
 individuals for SLIM and run by the changes with them.
 
-Erik Kluzek -- Software Engineering (erik@ucar.edu)
-Marysa Lague -- Originator (marysa.lague@usask.ca)
-Isla Simpson -- Principal Investigator (simpson@ucar.edu)
+Erik Kluzek -- Software Engineering (erik@ucar.edu)  
+Marysa Lague -- Originator (marysa.lague@usask.ca)  
+Isla Simpson -- Principal Investigator (simpson@ucar.edu)  
 
 Use the help from the wiki below to setup a fork and personal branch in GitHub to put your developments
 on and keep up to date with the master branch of SLIM. Once the changes are sufficiently advanced you
