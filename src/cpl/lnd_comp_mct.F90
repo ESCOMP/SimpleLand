@@ -42,7 +42,7 @@ contains
     use shr_kind_mod     , only : shr_kind_cl
     use abortutils       , only : endrun
     use clm_time_manager , only : get_nstep, get_step_size, set_timemgr_init, set_nextsw_cday
-    use clm_initializeMod, only : initialize1, initialize2, lnd2atm_inst, lnd2glc_inst
+    use clm_initializeMod, only : initialize1, initialize2, lnd2atm_inst
     use clm_varctl       , only : finidat,single_column, clm_varctl_set, iulog, noland
     use clm_varctl       , only : inst_index, inst_suffix, inst_name
     use controlMod       , only : control_setNL
@@ -246,7 +246,7 @@ contains
 
     ! Create land export state 
 
-    call lnd_export(bounds, lnd2atm_inst, lnd2glc_inst, l2x_l%rattr)
+    call lnd_export(bounds, lnd2atm_inst, l2x_l%rattr)
     !write(iulog,*)'MML back from lnd_export'
 
     ! Fill in infodata settings
@@ -289,7 +289,7 @@ contains
     !
     ! !USES:
     use shr_kind_mod    ,  only : r8 => shr_kind_r8
-    use clm_initializeMod, only : lnd2atm_inst, atm2lnd_inst, lnd2glc_inst, glc2lnd_inst
+    use clm_initializeMod, only : lnd2atm_inst, atm2lnd_inst, glc2lnd_inst
     use clm_driver      ,  only : clm_drv
     use clm_time_manager,  only : get_curr_date, get_nstep, get_curr_calday, get_step_size
     use clm_time_manager,  only : advance_timestep, set_nextsw_cday,update_rad_dtime
@@ -455,7 +455,7 @@ contains
        ! Create l2x_l export state - add river runoff input to l2x_l if appropriate
        !write(*,*)'MML export l2x_l'
        call t_startf ('lc_lnd_export')
-       call lnd_export(bounds, lnd2atm_inst, lnd2glc_inst, l2x_l%rattr)
+       call lnd_export(bounds, lnd2atm_inst, l2x_l%rattr)
        call t_stopf ('lc_lnd_export')
 
        ! Advance clm time step

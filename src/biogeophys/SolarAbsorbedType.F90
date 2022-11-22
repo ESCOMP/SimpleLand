@@ -142,11 +142,6 @@ contains
          avgflag='A', long_name='absorbed solar radiation', &
          ptr_patch=this%fsa_patch, c2l_scale_type='urbanf', default='inactive')
 
-    call hist_addfld1d (fname='FSA_ICE', units='W/m^2',  &
-         avgflag='A', long_name='absorbed solar radiation (ice landunits only)', &
-         ptr_patch=this%fsa_patch, c2l_scale_type='urbanf', l2g_scale_type='ice', &
-         default='inactive')
-
     this%fsr_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSR', units='W/m^2',  &
          avgflag='A', long_name='reflected solar radiation', &
@@ -156,36 +151,10 @@ contains
          avgflag='A', long_name='upwelling shortwave radiation', &
          ptr_patch=this%fsr_patch, c2l_scale_type='urbanf', default='inactive')
 
-    call hist_addfld1d (fname='FSR_ICE', units='W/m^2',  &
-         avgflag='A', long_name='reflected solar radiation (ice landunits only)', &
-         ptr_patch=this%fsr_patch, c2l_scale_type='urbanf', l2g_scale_type='ice', &
-         default='inactive')
-
-    this%sabg_lyr_patch(begp:endp,-nlevsno+1:0) = spval
-    data2dptr => this%sabg_lyr_patch(:,-nlevsno+1:0)
-    call hist_addfld2d (fname='SNO_ABS', units='W/m^2', type2d='levsno',  &
-         avgflag='A', long_name='Absorbed solar radiation in each snow layer', &
-         ptr_patch=data2dptr, no_snow_behavior=no_snow_normal, default='inactive')
-
-    call hist_addfld2d (fname='SNO_ABS_ICE', units='W/m^2', type2d='levsno',  &
-         avgflag='A', long_name='Absorbed solar radiation in each snow layer (ice landunits only)', &
-         ptr_patch=data2dptr, no_snow_behavior=no_snow_normal, &
-         l2g_scale_type='ice', default='inactive')
-
-    this%sabv_patch(begp:endp) = spval
-    call hist_addfld1d (fname='SABV', units='W/m^2',  &
-         avgflag='A', long_name='solar rad absorbed by veg', &
-         ptr_patch=this%sabv_patch, c2l_scale_type='urbanf', default='inactive')
-
     this%sabg_patch(begp:endp) = spval
     call hist_addfld1d (fname='SABG', units='W/m^2',  &
          avgflag='A', long_name='solar rad absorbed by ground', &
          ptr_patch=this%sabg_patch, c2l_scale_type='urbanf', default='inactive')
-
-    this%sabg_pen_patch(begp:endp) = spval
-    call hist_addfld1d (fname='SABG_PEN', units='watt/m^2',  &
-         avgflag='A', long_name='Rural solar rad penetrating top soil or snow layer', &
-         ptr_patch=this%sabg_pen_patch, set_spec=spval, default='inactive')
 
      ! Currently needed by lake code - TODO should not be here
     this%fsds_nir_d_patch(begp:endp) = spval
@@ -217,11 +186,6 @@ contains
     call hist_addfld1d (fname='FSRNDLN', units='W/m^2',  &
          avgflag='A', long_name='direct nir reflected solar radiation at local noon', &
          ptr_patch=this%fsr_nir_d_ln_patch, c2l_scale_type='urbanf', default='inactive')
-
-    this%sub_surf_abs_SW_patch(begp:endp) = spval
-    call hist_addfld1d (fname='SNOINTABS', units='-', &
-         avgflag='A', long_name='Fraction of incoming solar absorbed by lower snow layers', &
-         ptr_patch=this%sub_surf_abs_SW_patch, set_lake=spval, set_urb=spval, default='inactive')
 
   end subroutine InitHistory
 

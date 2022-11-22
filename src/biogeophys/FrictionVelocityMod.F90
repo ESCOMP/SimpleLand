@@ -176,15 +176,6 @@ contains
          avgflag='A', long_name='10-m wind', &
          ptr_patch=this%u10_clm_patch, default='inactive')
 
-    call hist_addfld1d (fname='U10_ICE', units='m/s',  &
-         avgflag='A', long_name='10-m wind (ice landunits only)', &
-         ptr_patch=this%u10_clm_patch, l2g_scale_type='ice', default='inactive')
-
-    this%u10_patch(begp:endp) = spval
-    call hist_addfld1d (fname='U10_DUST', units='m/s', &
-         avgflag='A', long_name='10-m wind for dust model', &
-         ptr_patch=this%u10_patch, default='inactive')
-
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------

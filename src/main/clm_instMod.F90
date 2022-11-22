@@ -34,7 +34,6 @@ module clm_instMod
   use UrbanParamsType                 , only : urbanparams_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
-  use lnd2glcMod                      , only : lnd2glc_type 
   use glc2lndMod                      , only : glc2lnd_type
   use glcBehaviorMod                  , only : glc_behavior_type
   use TopoMod                         , only : topo_type
@@ -68,7 +67,6 @@ module clm_instMod
   type(atm2lnd_type)                      :: atm2lnd_inst
   type(glc2lnd_type)                      :: glc2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
-  type(lnd2glc_type)                      :: lnd2glc_inst
   type(glc_behavior_type), target         :: glc_behavior
   type(topo_type)                         :: topo_inst
 
@@ -155,7 +153,6 @@ contains
     call lnd2atm_inst%Init( bounds, NLFilename )
 
     call glc2lnd_inst%Init( bounds, glc_behavior )
-    call lnd2glc_inst%Init( bounds )
 
     ! Initialization of public data types
 

@@ -318,10 +318,6 @@ contains
          avgflag='A', long_name='storage heat flux (includes snowmelt)', &
          ptr_patch=this%eflx_soil_grnd_patch, c2l_scale_type='urbanf', &
          default = 'inactive')
-    this%eflx_sh_veg_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSH_V', units='W/m^2',  &
-         avgflag='A', long_name='sensible heat from veg', &
-         ptr_patch=this%eflx_sh_veg_patch, set_lake=0._r8, c2l_scale_type='urbanf', default='inactive')
 
     this%eflx_sh_grnd_patch(begp:endp) = spval
     call hist_addfld1d (fname='FSH_G', units='W/m^2',  &
@@ -355,11 +351,6 @@ contains
          ptr_patch=this%netrad_patch, c2l_scale_type='urbanf', &
          default='inactive')
 
-    this%eflx_grnd_lake_patch(begp:endp) = spval
-    call hist_addfld1d (fname='EFLX_GRND_LAKE', units='W/m^2', &
-         avgflag='A', long_name='net heat flux into lake/snow surface, excluding light transmission', &
-         ptr_patch=this%eflx_grnd_lake_patch, set_nolake=spval, default='inactive')
-
     this%dgnetdT_patch(begp:endp) = spval
     call hist_addfld1d (fname='DGNETDT', units='W/m^2/K', &
          avgflag='A', long_name='derivative of net ground heat flux wrt soil temp', &
@@ -379,21 +370,6 @@ contains
     call hist_addfld1d (fname='TAUY', units='kg/m/s^2',  &
          avgflag='A', long_name='meridional surface stress', &
          ptr_patch=this%tauy_patch, default='inactive')
-
-    this%btran_patch(begp:endp) = spval
-    call hist_addfld1d (fname='BTRAN', units='unitless',  &
-         avgflag='A', long_name='transpiration beta factor', &
-         ptr_patch=this%btran_patch, set_lake=spval, set_urb=spval, default='inactive')
-
-    this%btran_min_patch(begp:endp) = spval
-    call hist_addfld1d (fname='BTRANMN', units='unitless',  &
-         avgflag='A', long_name='daily minimum of transpiration beta factor', &
-         ptr_patch=this%btran_min_patch, set_lake=spval, set_urb=spval, default='inactive')
-
-    this%btran2_patch(begp:endp) = spval
-    call hist_addfld1d (fname='BTRAN2', units='unitless',  &
-         avgflag='A', long_name='root zone soil wetness factor', &
-         ptr_patch=this%btran2_patch, set_lake=spval, set_urb=spval, default='inactive')
 
     this%errsoi_col(begc:endc) = spval
     call hist_addfld1d (fname='ERRSOI',  units='W/m^2',  &

@@ -199,11 +199,6 @@ contains
          avgflag='A', long_name='soil matric potential (vegetated landunits only)', &
          ptr_col=this%smp_l_col, set_spec=spval, l2g_scale_type='veg', default='inactive')
 
-       this%root_conductance_patch(begp:endp,:) = spval
-       call hist_addfld2d (fname='KROOT', units='1/s', type2d='levsoi', &
-          avgflag='A', long_name='root conductance each soil layer', &
-          ptr_patch=this%root_conductance_patch, default='inactive')
-
        this%soil_conductance_patch(begp:endp,:) = spval
        call hist_addfld2d (fname='KSOIL', units='1/s', type2d='levsoi', &
           avgflag='A', long_name='soil conductance in each soil layer', &
@@ -234,11 +229,6 @@ contains
     call hist_addfld1d (fname='SOILRESIS',  units='s/m',  &
          avgflag='A', long_name='soil resistance to evaporation', &
          ptr_col=this%soilresis_col, default='inactive')
-
-    this%dsl_col(begc:endc) = spval
-    call hist_addfld1d (fname='DSL',  units='mm',  &
-         avgflag='A', long_name='dry surface layer thickness', &
-         ptr_col=this%dsl_col, default='inactive')
 
   end subroutine InitHistory
 

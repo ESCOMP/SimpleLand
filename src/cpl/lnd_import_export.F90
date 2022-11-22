@@ -4,7 +4,6 @@ module lnd_import_export
   use abortutils   , only: endrun
   use decompmod    , only: bounds_type
   use lnd2atmType  , only: lnd2atm_type
-  use lnd2glcMod   , only: lnd2glc_type
   use atm2lndType  , only: atm2lnd_type
   use glc2lndMod   , only: glc2lnd_type 
   use clm_cpl_indices
@@ -249,7 +248,7 @@ contains
 
   !===============================================================================
 
-  subroutine lnd_export( bounds, lnd2atm_inst, lnd2glc_inst, l2x)
+  subroutine lnd_export( bounds, lnd2atm_inst, l2x)
 
     !---------------------------------------------------------------------------
     ! !DESCRIPTION:
@@ -268,7 +267,6 @@ contains
     implicit none
     type(bounds_type) , intent(in)    :: bounds  ! bounds
     type(lnd2atm_type), intent(inout) :: lnd2atm_inst ! clm land to atmosphere exchange data type
-    type(lnd2glc_type), intent(inout) :: lnd2glc_inst ! clm land to atmosphere exchange data type
     real(r8)          , intent(out)   :: l2x(:,:)! land to coupler export state on land grid
     !
     ! !LOCAL VARIABLES:
@@ -334,14 +332,6 @@ contains
 
        ! ice  sent individually to coupler
        l2x(index_l2x_Flrl_rofi,i) = lnd2atm_inst%qflx_rofice_grc(g)
-
-       ! glc coupling
-       ! We could avoid setting these fields if glc_present is .false.
-       do num = 0,10
-          l2x(index_l2x_Sl_tsrf(num),i)   = lnd2glc_inst%tsrf_grc(g,num)
-          l2x(index_l2x_Sl_topo(num),i)   = lnd2glc_inst%topo_grc(g,num)
-          l2x(index_l2x_Flgl_qice(num),i) = lnd2glc_inst%qice_grc(g,num)
-       end do
 
        ! Check if any output sent to the coupler is NaN
        if ( any(isnan(l2x(:,i))) )then

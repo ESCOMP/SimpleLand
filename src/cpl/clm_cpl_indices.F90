@@ -51,11 +51,6 @@ module clm_cpl_indices
   integer, public ::index_l2x_Fall_flxdst3    ! dust flux size bin 3    
   integer, public ::index_l2x_Fall_flxdst4    ! dust flux size bin 4
 
-  ! In the following, index 0 is bare land, other indices are glc elevation classes
-  integer, allocatable, public ::index_l2x_Sl_tsrf(:)   ! glc MEC temperature
-  integer, allocatable, public ::index_l2x_Sl_topo(:)   ! glc MEC topo height
-  integer, allocatable, public ::index_l2x_Flgl_qice(:) ! glc MEC ice flux
-
   integer, public ::index_x2l_Sa_methane
   integer, public ::index_l2x_Fall_methane
 
@@ -246,9 +241,6 @@ contains
 
     ! Create coupling fields for all glc elevation classes (1:glc_nec) plus bare land
     ! (index 0).
-    allocate(index_l2x_Sl_tsrf(0:10))
-    allocate(index_l2x_Sl_topo(0:10))
-    allocate(index_l2x_Flgl_qice(0:10))
     allocate(index_x2l_Sg_ice_covered(0:10))
     allocate(index_x2l_Sg_topo(0:10))
     allocate(index_x2l_Flgg_hflx(0:10))
@@ -262,13 +254,6 @@ contains
        index_x2l_Sg_topo(num)   = mct_avect_indexra(x2l,trim(name))
        name = 'Flgg_hflx' // nec_str
        index_x2l_Flgg_hflx(num) = mct_avect_indexra(x2l,trim(name))
-
-       name = 'Sl_tsrf' // nec_str
-       index_l2x_Sl_tsrf(num)   = mct_avect_indexra(l2x,trim(name))
-       name = 'Sl_topo' // nec_str
-       index_l2x_Sl_topo(num)   = mct_avect_indexra(l2x,trim(name))
-       name = 'Flgl_qice' // nec_str
-       index_l2x_Flgl_qice(num) = mct_avect_indexra(l2x,trim(name))
     end do
 
     call mct_aVect_clean(x2l)

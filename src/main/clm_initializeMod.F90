@@ -454,22 +454,6 @@ contains
     end if
 
     !------------------------------------------------------------       
-    ! Initialize sno export state to send to glc
-    !------------------------------------------------------------       
-
-    !$OMP PARALLEL DO PRIVATE (nc, bounds_clump)
-    do nc = 1,nclumps
-       call get_clump_bounds(nc, bounds_clump)
-
-       call t_startf('init_lnd2glc')
-       call lnd2glc_inst%update_lnd2glc(bounds_clump,       &
-            filter(nc)%num_do_smb_c, filter(nc)%do_smb_c,   &
-            temperature_inst, topo_inst)
-       call t_stopf('init_lnd2glc')
-    end do
-    !$OMP END PARALLEL DO
-
-    !------------------------------------------------------------       
     ! Deallocate wt_nat_patch
     !------------------------------------------------------------       
 

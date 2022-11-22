@@ -60,7 +60,6 @@ Module SoilHydrologyType
 
      ! Private routines
      procedure, private :: InitAllocate
-     procedure, private :: InitHistory
      procedure, private :: InitCold
      procedure, private :: ReadNL
 
@@ -81,7 +80,6 @@ contains
 
     call this%ReadNL(NLFilename)
     call this%InitAllocate(bounds) 
-    call this%InitHistory(bounds)
     call this%InitCold(bounds)
 
   end subroutine Init
@@ -143,46 +141,6 @@ contains
     allocate(this%ice_col           (begc:endc,nlayert))         ; this%ice_col           (:,:)   = nan
 
   end subroutine InitAllocate
-
-  !------------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !USES:
-    use histFileMod    , only : hist_addfld1d
-    !
-    ! !ARGUMENTS:
-    class(soilhydrology_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer           :: begc, endc
-    integer           :: begg, endg
-    !------------------------------------------------------------------------
-
-    begc = bounds%begc; endc= bounds%endc
-    begg = bounds%begg; endg= bounds%endg
-
-    this%wa_col(begc:endc) = spval
-    call hist_addfld1d (fname='WA',  units='mm',  &
-         avgflag='A', long_name='water in the unconfined aquifer (vegetated landunits only)', &
-         ptr_col=this%wa_col, l2g_scale_type='veg', default='inactive')
-
-    this%qcharge_col(begc:endc) = spval
-    call hist_addfld1d (fname='QCHARGE',  units='mm/s',  &
-         avgflag='A', long_name='aquifer recharge rate (vegetated landunits only)', &
-         ptr_col=this%qcharge_col, l2g_scale_type='veg', default='inactive')
-
-    this%fcov_col(begc:endc) = spval
-    call hist_addfld1d (fname='FCOV',  units='unitless',  &
-         avgflag='A', long_name='fractional impermeable area', &
-         ptr_col=this%fcov_col, l2g_scale_type='veg', default='inactive')
-
-    this%fsat_col(begc:endc) = spval
-    call hist_addfld1d (fname='FSAT',  units='unitless',  &
-         avgflag='A', long_name='fractional area with water table at surface', &
-         ptr_col=this%fsat_col, l2g_scale_type='veg', default='inactive')
-
-  end subroutine InitHistory
 
   !-----------------------------------------------------------------------
   subroutine InitCold(this, bounds)

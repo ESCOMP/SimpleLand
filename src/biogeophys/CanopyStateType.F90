@@ -55,7 +55,6 @@ module CanopyStateType
 
      procedure, public  :: Init         
      procedure, private :: InitAllocate 
-     procedure, private :: InitHistory  
      procedure, private :: InitCold     
 
   end type CanopyState_type
@@ -73,7 +72,6 @@ contains
     type(bounds_type), intent(in) :: bounds  
 
     call this%InitAllocate(bounds)
-    call this%InitHistory(bounds)
     call this%InitCold(bounds)
 
   end subroutine Init
@@ -125,44 +123,6 @@ contains
     allocate(this%dleaf_patch              (begp:endp))           ; this%dleaf_patch              (:)   = nan
 
   end subroutine InitAllocate
-
-  !-----------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !USES:
-    use histFileMod   , only: hist_addfld1d, hist_addfld2d
-    !
-    ! !ARGUMENTS:
-    class(canopystate_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer :: begc, endc
-    integer :: begp, endp
-    real(r8), pointer :: data2dptr(:,:), data1dptr(:) ! temp. pointers for slicing larger arrays
-    !---------------------------------------------------------------------
-
-    begp = bounds%begp; endp= bounds%endp
-    begc = bounds%begc; endc= bounds%endc
-
-    ! Allow active layer fields to be optionally output even if not running CN
-
-       this%alt_col(begc:endc) = spval
-       call hist_addfld1d (fname='ALT', units='m', &
-            avgflag='A', long_name='current active layer thickness', &
-            ptr_col=this%alt_col, default='inactive')
-
-       this%altmax_col(begc:endc) = spval
-       call hist_addfld1d (fname='ALTMAX', units='m', &
-            avgflag='A', long_name='maximum annual active layer thickness', &
-            ptr_col=this%altmax_col, default='inactive')
-
-       this%altmax_lastyear_col(begc:endc) = spval
-       call hist_addfld1d (fname='ALTMAX_LASTYEAR', units='m', &
-            avgflag='A', long_name='maximum prior year active layer thickness', &
-            ptr_col=this%altmax_lastyear_col, default='inactive')
-
-  end subroutine InitHistory
 
   !-----------------------------------------------------------------------
   subroutine InitCold(this, bounds)
