@@ -14,10 +14,9 @@
 
   <!-- Descriptions of all the different valid configurations for different model versions -->
   <description modifier_mode="1">
-    <desc lnd="CLM45[%SP][%BGC]" >clm4.5:</desc>
-    <desc lnd="CLM50[%SP][%BGC]" >clm5.0:</desc>
-    <desc option="SP"            >Satellite phenology:</desc>
-    <desc option="BGC"           >BGC (vert. resol. CN and methane):</desc>
+    <desc lnd="CLM45[%SP]">clm4.5:</desc>
+    <desc lnd="CLM50[%SP]">clm5.0:</desc>
+    <desc option="SP"     >Satellite phenology:</desc>
   </description>
 
   <entry id="COMP_LND">
@@ -70,10 +69,7 @@
     <default_value></default_value>
     <values>
       <value compset="_CLM45%[^_]*SP"		 >-bgc sp</value>
-      <value compset="_CLM45%[^_]*BGC"		 >-bgc bgc</value>
-
       <value compset="_CLM50%[^_]*SP"		 >-bgc sp</value>
-      <value compset="_CLM50%[^_]*BGC"		 >-bgc bgc</value>
     </values>
     <group>run_component_clm</group>
     <file>env_run.xml</file>
@@ -86,8 +82,6 @@
     <default_value>constant</default_value>
     <values>
       <value compset="_CAM"     >diagnostic</value>
-      <value compset="_BGC%BDRD"   >diagnostic</value>
-      <value compset="_BGC%BPRP"   >prognostic</value>
       <value compset="HIST.*_DATM" >diagnostic</value>
     </values>
     <group>run_component_clm</group>

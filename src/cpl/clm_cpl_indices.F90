@@ -51,7 +51,6 @@ module clm_cpl_indices
   integer, public ::index_l2x_Fall_flxdst3    ! dust flux size bin 3    
   integer, public ::index_l2x_Fall_flxdst4    ! dust flux size bin 4
 
-  integer, public ::index_x2l_Sa_methane
   integer, public ::index_l2x_Fall_methane
 
   integer, public :: nflds_l2x = 0
@@ -200,8 +199,6 @@ contains
     index_x2l_Sa_shum       = mct_avect_indexra(x2l,'Sa_shum')
     index_x2l_Sa_co2prog    = mct_avect_indexra(x2l,'Sa_co2prog',perrwith='quiet')
     index_x2l_Sa_co2diag    = mct_avect_indexra(x2l,'Sa_co2diag',perrwith='quiet')
-
-    index_x2l_Sa_methane    = mct_avect_indexra(x2l,'Sa_methane',perrWith='quiet')
 
     index_x2l_Flrr_volr     = mct_avect_indexra(x2l,'Flrr_volr')
     index_x2l_Flrr_volrmch  = mct_avect_indexra(x2l,'Flrr_volrmch')

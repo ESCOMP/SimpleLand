@@ -5,7 +5,6 @@ module lnd_import_export
   use decompmod    , only: bounds_type
   use lnd2atmType  , only: lnd2atm_type
   use atm2lndType  , only: atm2lnd_type
-  use glc2lndMod   , only: glc2lnd_type 
   use clm_cpl_indices
   !
   implicit none
@@ -14,7 +13,7 @@ module lnd_import_export
 contains
 
   !===============================================================================
-  subroutine lnd_import( bounds, x2l, atm2lnd_inst, glc2lnd_inst)
+  subroutine lnd_import( bounds, x2l, atm2lnd_inst)
 
     !---------------------------------------------------------------------------
     ! !DESCRIPTION:
@@ -33,7 +32,6 @@ contains
     type(bounds_type)  , intent(in)    :: bounds   ! bounds
     real(r8)           , intent(in)    :: x2l(:,:) ! driver import state to land model
     type(atm2lnd_type) , intent(inout) :: atm2lnd_inst      ! clm internal input data type
-    type(glc2lnd_type) , intent(inout) :: glc2lnd_inst      ! clm internal input data type
     !
     ! !LOCAL VARIABLES:
     integer  :: g,i,k,nstep,ier      ! indices, number of steps, and error code

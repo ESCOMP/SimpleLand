@@ -11,7 +11,6 @@ module TopoMod
   use PatchType      , only : patch
   use ColumnType     , only : col
   use LandunitType   , only : lun
-  use glc2lndMod     , only : glc2lnd_type
   use glcBehaviorMod , only : glc_behavior_type
   use landunit_varcon, only : istice_mec
   use filterColMod   , only : filter_col_type, col_filter_from_logical_array_active_only
@@ -190,7 +189,7 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine UpdateTopo(this, bounds, num_icemecc, filter_icemecc, &
-       glc2lnd_inst, glc_behavior, atm_topo)
+       glc_behavior, atm_topo)
     !
     ! !DESCRIPTION:
     ! Update topographic heights
@@ -205,7 +204,6 @@ contains
     type(bounds_type)       , intent(in)    :: bounds
     integer                 , intent(in)    :: num_icemecc       ! number of points in filter_icemecc
     integer                 , intent(in)    :: filter_icemecc(:) ! col filter for ice_mec
-    type(glc2lnd_type)      , intent(in)    :: glc2lnd_inst
     type(glc_behavior_type) , intent(in)    :: glc_behavior
     real(r8)                , intent(in)    :: atm_topo( bounds%begg: ) ! atmosphere topographic height [m]
     !

@@ -24,7 +24,6 @@ module lnd2atmMod
   use WaterFluxType        , only : waterflux_type
   use WaterstateType       , only : waterstate_type
   use glcBehaviorMod       , only : glc_behavior_type
-  use glc2lndMod           , only : glc2lnd_type
   use ColumnType           , only : col
   use LandunitType         , only : lun
   use GridcellType         , only : grc                

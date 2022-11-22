@@ -289,7 +289,7 @@ contains
     !
     ! !USES:
     use shr_kind_mod    ,  only : r8 => shr_kind_r8
-    use clm_initializeMod, only : lnd2atm_inst, atm2lnd_inst, glc2lnd_inst
+    use clm_initializeMod, only : lnd2atm_inst, atm2lnd_inst
     use clm_driver      ,  only : clm_drv
     use clm_time_manager,  only : get_curr_date, get_nstep, get_curr_calday, get_step_size
     use clm_time_manager,  only : advance_timestep, set_nextsw_cday,update_rad_dtime
@@ -400,8 +400,7 @@ contains
     call t_startf ('lc_lnd_import')
     call lnd_import( bounds, &
          x2l = x2l_l%rattr, &
-         atm2lnd_inst = atm2lnd_inst, &
-         glc2lnd_inst = glc2lnd_inst)
+         atm2lnd_inst = atm2lnd_inst)
     call t_stopf ('lc_lnd_import')
 
     ! Loop over time steps in coupling interval
