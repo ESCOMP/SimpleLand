@@ -308,11 +308,6 @@ If TRUE, write diagnostic of global radiative temperature written to CLM log fil
 Toggle to turn all history output completely OFF (possibly used for testing)
 </entry>
 
-<entry id="maxpatch_pft" type="integer" category="physics"
-       group="clm_inparm" valid_values="" value="17">
-Max number of plant functional types in naturally vegetated landunit.
-</entry>
-
 <!--             -->
 <!-- mkghg       -->
 <!--             -->
@@ -320,34 +315,6 @@ Max number of plant functional types in naturally vegetated landunit.
        input_pathname="abs" group="clmexp" valid_values="" >
 Historical greenhouse gas concentrations from CAM, only used
 by getco2_historical.ncl
-</entry>
-
-<!--                                                   -->
-<!-- files needed for tools/ncl_scripts                -->
-<!--                                                   -->
-<entry id="faerdep" type="char*256"  category="tools" 
-       input_pathname="abs" group="clmexp" valid_values="" >
-Aerosol deposition file name (only used for aerdepregrid.ncl)
-</entry>
-
-<entry id="f_fracdata" type="char*256" category="tools"
-       input_pathname="abs" group="domain_nl" valid_values="" >
-Full pathname of CLM fraction dataset (only used for mkdatadomain).
-</entry>
-
-<entry id="f_griddata" type="char*256" category="tools"
-       input_pathname="abs" group="domain_nl" valid_values="" >
-Full pathname of CLM grid dataset (only used for mkdatadomain).
-</entry>
-
-<entry id="f_domain" type="char*256" category="tools"
-       input_pathname="abs" group="domain_nl" valid_values="" >
-Full pathname of output domain dataset (only used for mkdatadomain).
-</entry>
-
-<entry id="dtype" type="char*5" category="tools"
-       group="domain_nl" valid_values="datm,docn" >
-Type of domain file to create (ocean or atmosphere) (only used for mkdatadomain)
 </entry>
 
 <!-- ========================================================================================  -->

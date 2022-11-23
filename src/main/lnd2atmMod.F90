@@ -39,7 +39,6 @@ module lnd2atmMod
 
   !
   ! !PRIVATE MEMBER FUNCTIONS:
-  private :: handle_ice_runoff
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -150,11 +149,6 @@ contains
     !------------------------------------------------------------------------
 
     SHR_ASSERT_ALL((ubound(net_carbon_exchange_grc) == (/bounds%endg/)), errMsg(sourcefile, __LINE__))
-
-    call handle_ice_runoff(bounds, waterflux_inst, glc_behavior, &
-         qflx_ice_runoff_col = qflx_ice_runoff_col(bounds%begc:bounds%endc), &
-         qflx_liq_from_ice_col = lnd2atm_inst%qflx_liq_from_ice_col(bounds%begc:bounds%endc), &
-         eflx_sh_ice_to_liq_col = lnd2atm_inst%eflx_sh_ice_to_liq_col(bounds%begc:bounds%endc))
 
     !----------------------------------------------------
     ! lnd -> atm
@@ -321,91 +315,5 @@ contains
     enddo
 
   end subroutine lnd2atm
-
-  !-----------------------------------------------------------------------
-  subroutine handle_ice_runoff(bounds, waterflux_inst, glc_behavior, &
-       qflx_ice_runoff_col, qflx_liq_from_ice_col, eflx_sh_ice_to_liq_col)
-    !
-    ! !DESCRIPTION:
-    ! Take column-level ice runoff and divide it between (a) ice runoff, and (b) liquid
-    ! runoff with a compensating negative sensible heat flux.
-    !
-    ! The rationale here is: Ice runoff is largely meant to represent a crude
-    ! parameterization of iceberg calving. Iceberg calving is mainly appropriate in
-    ! regions where an ice sheet terminates at the land-ocean boundary. Elsewhere, in
-    ! reality, we expect most ice runoff to flow downstream and melt before it reaches the
-    ! ocean. Furthermore, sending ice runoff directly to the ocean can lead to runaway sea
-    ! ice growth in some regions (around the Canadian archipelago, and possibly in more
-    ! wide-spread regions of the Arctic Ocean); melting this ice before it reaches the
-    ! ocean avoids this problem.
-    !
-    ! If the river model were able to melt ice, then we might not need this routine.
-    !
-    ! Note that this routine does NOT handle ice runoff generated via the dynamic
-    ! landunits adjustment fluxes (i.e., the fluxes that compensate for a difference in
-    ! ice content between the pre- and post-dynamic landunit areas). This is partly
-    ! because those gridcell-level dynamic landunits adjustment fluxes do not fit well
-    ! with this column-based infrastructure, and partly because either method of handling
-    ! these fluxes (i.e., sending an ice runoff or sending a liquid runoff with a
-    ! negative sensible heat flux) seems equally justifiable.
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    type(bounds_type), intent(in) :: bounds
-    type(waterflux_type), intent(in) :: waterflux_inst
-    type(glc_behavior_type), intent(in) :: glc_behavior
-    real(r8), intent(out) :: qflx_ice_runoff_col( bounds%begc: ) ! total column-level ice runoff (mm H2O /s)
-    real(r8), intent(out) :: qflx_liq_from_ice_col( bounds%begc: ) ! liquid runoff from converted ice runoff (mm H2O /s)
-    real(r8), intent(out) :: eflx_sh_ice_to_liq_col( bounds%begc: ) ! sensible heat flux generated from the ice to liquid conversion (W/m2) (+ to atm)
-
-    !
-    ! !LOCAL VARIABLES:
-    integer :: c, l, g
-    logical :: do_conversion
-
-    character(len=*), parameter :: subname = 'handle_ice_runoff'
-    !-----------------------------------------------------------------------
-
-    SHR_ASSERT_ALL((ubound(qflx_ice_runoff_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(qflx_liq_from_ice_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(eflx_sh_ice_to_liq_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-
-    do c = bounds%begc, bounds%endc
-       if (col%active(c)) then
-          qflx_ice_runoff_col(c) = waterflux_inst%qflx_ice_runoff_snwcp_col(c) + &
-               waterflux_inst%qflx_ice_runoff_xs_col(c)
-          qflx_liq_from_ice_col(c) = 0._r8
-          eflx_sh_ice_to_liq_col(c) = 0._r8
-       end if
-    end do
-
-       do c = bounds%begc, bounds%endc
-          if (col%active(c)) then
-             l = col%landunit(c)
-             g = col%gridcell(c)
-             do_conversion = .false.
-             if (lun%itype(l) /= istice_mec) then
-                do_conversion = .true.
-             else  ! istice_mec
-                if (glc_behavior%ice_runoff_melted_grc(g)) then
-                   do_conversion = .true.
-                else
-                   do_conversion = .false.
-                end if
-             end if
-             if (do_conversion) then
-                ! ice to liquid absorbs energy, so results in a negative heat flux to atm
-                ! Note that qflx_ice_runoff_col is in mm H2O/s, which is the same as kg
-                ! m-2 s-1, so we can simply multiply by hfus.
-                eflx_sh_ice_to_liq_col(c) = -qflx_ice_runoff_col(c) * hfus
-                qflx_liq_from_ice_col(c) = qflx_ice_runoff_col(c)
-                qflx_ice_runoff_col(c) = 0._r8
-             end if
-          end if
-       end do
-
-  end subroutine handle_ice_runoff
-
 
 end module lnd2atmMod

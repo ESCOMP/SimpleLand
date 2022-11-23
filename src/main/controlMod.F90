@@ -17,7 +17,7 @@ module controlMod
   use abortutils                       , only: endrun
   use spmdMod                          , only: masterproc
   use decompMod                        , only: clump_pproc
-  use clm_varpar                       , only: maxpatch_pft, numrad, nlevsno
+  use clm_varpar                       , only: numrad, nlevsno
   use histFileMod                      , only: max_tapes, max_namlen 
   use histFileMod                      , only: hist_empty_htapes, hist_dov2xy, hist_avgflag_pertape, hist_type1d_pertape 
   use histFileMod                      , only: hist_nhtfrq, hist_ndens, hist_mfilt, hist_fincl1, hist_fincl2, hist_fincl3
@@ -165,10 +165,6 @@ contains
          soil_layerstruct
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
-
-    ! max number of plant functional types in naturally vegetated landunit
-    namelist /clm_inparm/ maxpatch_pft
-
     namelist /clm_inparm/ use_noio
 
     ! Items not really needed, but do need to be properly set as they are used
@@ -372,9 +368,6 @@ contains
 	! mml input file vars for simple model
 	call mpi_bcast (mml_surdat,  len(mml_surdat),   MPI_CHARACTER, 0, mpicom, ier)
 	
-    ! max number of plant functional types in naturally vegetated landunit
-    call mpi_bcast(maxpatch_pft, 1, MPI_LOGICAL, 0, mpicom, ier)
-
     call mpi_bcast (co2_type, len(co2_type), MPI_CHARACTER, 0, mpicom, ier)
 
     ! physics variables
@@ -496,7 +489,6 @@ contains
        write(iulog,*) '   Namelist not checked for agreement with initial run.'
        write(iulog,*) '   Surface data set and reference date should not differ from initial run'
     end if
-    write(iulog,*) '   maxpatch_pft         = ',maxpatch_pft
     write(iulog,*) '   nsegspc              = ',nsegspc
 
   end subroutine control_print

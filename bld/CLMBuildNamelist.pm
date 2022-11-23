@@ -616,16 +616,6 @@ sub setup_cmdl_maxpft {
     $log->warning("running with maxpft NOT equal to $maxpatchpft is " .
             "NOT validated / scientifically supported." );
   }
-  $log->verbose_message("Using $nl_flags->{'maxpft'} for maxpft.");
-
-  $var = "maxpatch_pft";
-  $val = $nl_flags->{'maxpft'};
-  my $group = $definition->get_group_name($var);
-  $nl->set_variable_value($group, $var, $val);
-  if (  ! $definition->is_valid_value( $var, $val ) ) {
-    my @valid_values   = $definition->get_valid_values( $var );
-    $log->fatal_error("$var has a value ($val) that is NOT valid. Valid values are: @valid_values");
-  }
 }
 
 #-------------------------------------------------------------------------------
