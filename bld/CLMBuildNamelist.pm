@@ -998,7 +998,6 @@ sub setup_logic_glacier {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $envxml_ref, $physv) = @_;
 
   add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'glacier_region_behavior');
-  add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'glacier_region_melt_behavior');
 }
 
 #-------------------------------------------------------------------------------

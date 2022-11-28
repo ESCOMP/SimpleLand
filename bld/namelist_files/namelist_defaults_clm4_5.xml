@@ -62,13 +62,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
      Antarctica: multiple -->
 <glacier_region_behavior>'single_at_atm_topo','virtual','virtual','multiple'</glacier_region_behavior>
 
-<!-- Default glacier melt behavior is:
-     Mountain glaciers: remains_in_place
-     Greenland - inside CISM grid but outside Greenland itself: replaced_by_ice
-     Greenland itself: replaced_by_ice
-     Antarctica: replaced_by_ice -->
-<glacier_region_melt_behavior>'remains_in_place','replaced_by_ice','replaced_by_ice','replaced_by_ice'</glacier_region_melt_behavior>
-
 <!-- ================================================================== -->
 <!-- The default filenames are given relative to the root directory
      for the CLM2 data in the CESM distribution -->
