@@ -195,7 +195,7 @@ contains
     !$OMP PARALLEL DO PRIVATE (nc, bounds_clump)
     do nc = 1, nclumps
        call get_clump_bounds(nc, bounds_clump)
-       call reweight_wrapup(bounds_clump, glc_behavior)
+       call reweight_wrapup(bounds_clump)
     end do
     !$OMP END PARALLEL DO
 
