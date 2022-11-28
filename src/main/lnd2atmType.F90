@@ -164,18 +164,6 @@ contains
               &(includes corrections for land use change, rain/snow conversion and conversion of ice runoff to liquid)', &
          ptr_lnd=this%eflx_sh_tot_grc)
 
-    this%qflx_rofliq_grc(begg:endg) = 0._r8
-    call hist_addfld1d (fname='QRUNOFF_TO_COUPLER',  units='mm/s',  &
-         avgflag='A', &
-         long_name='total liquid runoff sent to coupler (includes corrections for land use change)', &
-         ptr_lnd=this%qflx_rofliq_grc)
-
-    this%qflx_rofice_grc(begg:endg) = 0._r8
-    call hist_addfld1d (fname='QRUNOFF_ICE_TO_COUPLER',  units='mm/s',  &
-         avgflag='A', &
-         long_name='total ice runoff sent to coupler (includes corrections for land use change)', &
-         ptr_lnd=this%qflx_rofice_grc)
-
   end subroutine InitHistory
 
 end module lnd2atmType

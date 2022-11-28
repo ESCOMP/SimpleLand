@@ -154,8 +154,7 @@ module glcBehaviorMod
 
   ! !PRIVATE MEMBER DATA:
 
-  ! Longest name allowed for glacier_region_behavior, glacier_region_melt_behavior and
-  ! glacier_region_ice_runoff_behavior
+  ! Longest name allowed for glacier_region_behavior, glacier_region_melt_behavior
   integer, parameter :: max_behavior_name_len = 32
 
   ! Smallest and largest allowed values for a glacier region ID
@@ -191,7 +190,6 @@ contains
     integer, allocatable :: glacier_region_map(:)
     character(len=max_behavior_name_len) :: glacier_region_behavior(min_glacier_region_id:max_glacier_region_id)
     character(len=max_behavior_name_len) :: glacier_region_melt_behavior(min_glacier_region_id:max_glacier_region_id)
-    character(len=max_behavior_name_len) :: glacier_region_ice_runoff_behavior(min_glacier_region_id:max_glacier_region_id)
 
     character(len=*), parameter :: subname = 'Init'
     !-----------------------------------------------------------------------
@@ -199,18 +197,17 @@ contains
     allocate(glacier_region_map(begg:endg))
     call this%read_surface_dataset(begg, endg, glacier_region_map(begg:endg))
     call this%read_namelist(NLFilename, glacier_region_behavior, &
-         glacier_region_melt_behavior, glacier_region_ice_runoff_behavior)
+         glacier_region_melt_behavior)
 
     call this%InitFromInputs(begg, endg, &
          glacier_region_map(begg:endg), glacier_region_behavior, &
-         glacier_region_melt_behavior, glacier_region_ice_runoff_behavior)
+         glacier_region_melt_behavior)
 
   end subroutine Init
 
   !-----------------------------------------------------------------------
   subroutine InitFromInputs(this, begg, endg, &
-       glacier_region_map, glacier_region_behavior_str, glacier_region_melt_behavior_str, &
-       glacier_region_ice_runoff_behavior_str)
+       glacier_region_map, glacier_region_behavior_str, glacier_region_melt_behavior_str)
     !
     ! !DESCRIPTION:
     ! Initialize a glc_behavior_type object given a map of glacier region IDs and an
@@ -246,13 +243,6 @@ contains
     ! - 'remains_in_place'
     character(len=*), intent(in) :: glacier_region_melt_behavior_str(min_glacier_region_id:)
 
-    ! string giving treatment of ice runoff for each glacier region ID
-    ! allowed values are:
-    ! - 'remains_ice'
-    ! - 'melted'
-    character(len=*), intent(in) :: glacier_region_ice_runoff_behavior_str(min_glacier_region_id:)
-
-    !
     ! !LOCAL VARIABLES:
     ! whether each glacier region ID is present in the glacier_region_map
     logical :: glacier_region_present(min_glacier_region_id:max_glacier_region_id)
@@ -263,14 +253,10 @@ contains
     ! integer codes corresponding to glacier_region_melt_behavior_str
     integer :: glacier_region_melt_behavior(min_glacier_region_id:max_glacier_region_id)
 
-    ! integer codes corresponding to glacier_region_ice_runoff_behavior_str
-    integer :: glacier_region_ice_runoff_behavior(min_glacier_region_id:max_glacier_region_id)
-
     integer :: g
     integer :: my_id
     integer :: my_behavior
     integer :: my_melt_behavior
-    integer :: my_ice_runoff_behavior
 
     ! possible glacier_region_behavior codes
     integer, parameter :: BEHAVIOR_MULTIPLE = 1
@@ -286,7 +272,7 @@ contains
     integer, parameter :: ICE_RUNOFF_BEHAVIOR_MELTED = 2
 
     ! value indicating that a behavior code has not been set (for glacier_region_behavior,
-    ! glacier_region_melt_behavior or glacier_region_ice_runoff_behavior)
+    ! glacier_region_melt_behavior)
     integer, parameter :: BEHAVIOR_UNSET = -1
 
     character(len=*), parameter :: subname = 'InitFromInputs'
@@ -300,7 +286,6 @@ contains
 
     call translate_glacier_region_behavior
     call translate_glacier_region_melt_behavior
-    call translate_glacier_region_ice_runoff_behavior
 
     call this%InitAllocate(begg, endg)
 
@@ -308,12 +293,10 @@ contains
        my_id = glacier_region_map(g)
        my_behavior = glacier_region_behavior(my_id)
        my_melt_behavior = glacier_region_melt_behavior(my_id)
-       my_ice_runoff_behavior = glacier_region_ice_runoff_behavior(my_id)
 
        ! This should only happen due to a programming error, not due to a user input error
        SHR_ASSERT(my_behavior /= BEHAVIOR_UNSET, errMsg(sourcefile, __LINE__))
        SHR_ASSERT(my_melt_behavior /= BEHAVIOR_UNSET, errMsg(sourcefile, __LINE__))
-       SHR_ASSERT(my_ice_runoff_behavior /= BEHAVIOR_UNSET, errMsg(sourcefile, __LINE__))
 
        if (my_behavior == BEHAVIOR_VIRTUAL) then
           this%has_virtual_columns_grc(g) = .true.
@@ -327,11 +310,7 @@ contains
           this%melt_replaced_by_ice_grc(g) = .true.
        end if
 
-       if (my_ice_runoff_behavior == ICE_RUNOFF_BEHAVIOR_MELTED) then
-          this%ice_runoff_melted_grc(g) = .true.
-       else
-          this%ice_runoff_melted_grc(g) = .false.
-       end if
+       this%ice_runoff_melted_grc(g) = .false.
 
        ! For now, allow_multiple_columns_grc is simply the opposite of
        ! collapse_to_atm_topo_grc. However, we maintain the separate
@@ -442,38 +421,7 @@ contains
       end do
     end subroutine translate_glacier_region_melt_behavior
 
-    subroutine translate_glacier_region_ice_runoff_behavior
-      integer :: i
-
-      do i = min_glacier_region_id, max_glacier_region_id
-         glacier_region_ice_runoff_behavior(i) = BEHAVIOR_UNSET
-
-         if (glacier_region_present(i)) then
-            SHR_ASSERT_ALL((ubound(glacier_region_ice_runoff_behavior_str) >= (/i/)), errMsg(sourcefile, __LINE__))
-
-            select case (glacier_region_ice_runoff_behavior_str(i))
-            case ('remains_ice')
-               glacier_region_ice_runoff_behavior(i) = ICE_RUNOFF_BEHAVIOR_REMAINS_ICE
-            case('melted')
-               glacier_region_ice_runoff_behavior(i) = ICE_RUNOFF_BEHAVIOR_MELTED
-            case (behavior_str_unset)
-               write(iulog,*) ' ERROR: glacier_region_ice_runoff_behavior not specified for ID ', i
-               write(iulog,*) 'You probably need to extend the glacier_region_ice_runoff_behavior namelist array'
-               call endrun(msg=' ERROR: glacier_region_ice_runoff_behavior not specified for ID '// &
-                    errMsg(sourcefile, __LINE__))
-            case default
-               write(iulog,*) ' ERROR: Unknown glacier_region_ice_runoff_behavior for ID ', i
-               write(iulog,*) glacier_region_ice_runoff_behavior_str(i)
-               write(iulog,*) 'Allowable values are: remains_ice, melted'
-               call endrun(msg=' ERROR: Unknown glacier_region_ice_runoff_behavior'// &
-                    errMsg(sourcefile, __LINE__))
-            end select
-         end if
-      end do
-    end subroutine translate_glacier_region_ice_runoff_behavior
-
   end subroutine InitFromInputs
-
 
   !-----------------------------------------------------------------------
   subroutine InitSetDirectly(this, begg, endg, &
@@ -581,7 +529,7 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine read_namelist(NLFilename, glacier_region_behavior, &
-       glacier_region_melt_behavior, glacier_region_ice_runoff_behavior)
+       glacier_region_melt_behavior)
     !
     ! !DESCRIPTION:
     ! Read local namelist items
@@ -599,8 +547,6 @@ contains
          glacier_region_behavior(min_glacier_region_id:max_glacier_region_id)
     character(len=max_behavior_name_len), intent(out) :: &
          glacier_region_melt_behavior(min_glacier_region_id:max_glacier_region_id)
-    character(len=max_behavior_name_len), intent(out) :: &
-         glacier_region_ice_runoff_behavior(min_glacier_region_id:max_glacier_region_id)
     !
     ! !LOCAL VARIABLES:
     integer :: unitn     ! unit for namelist file
@@ -610,13 +556,11 @@ contains
     !-----------------------------------------------------------------------
 
     namelist /clm_glacier_behavior/ &
-         glacier_region_behavior, glacier_region_melt_behavior, &
-         glacier_region_ice_runoff_behavior
+         glacier_region_behavior, glacier_region_melt_behavior
 
     ! Initialize options to default values
     glacier_region_behavior(:) = behavior_str_unset
     glacier_region_melt_behavior(:) = behavior_str_unset
-    glacier_region_ice_runoff_behavior(:) = behavior_str_unset
 
     if (masterproc) then
        unitn = getavu()
@@ -637,7 +581,6 @@ contains
 
     call shr_mpi_bcast(glacier_region_behavior, mpicom)
     call shr_mpi_bcast(glacier_region_melt_behavior, mpicom)
-    call shr_mpi_bcast(glacier_region_ice_runoff_behavior, mpicom)
 
     if (masterproc) then
        write(iulog,*) ' '

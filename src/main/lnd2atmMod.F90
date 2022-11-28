@@ -139,7 +139,6 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer  :: c, g  ! indices
-    real(r8) :: qflx_ice_runoff_col(bounds%begc:bounds%endc) ! total column-level ice runoff
     real(r8) :: eflx_sh_ice_to_liq_grc(bounds%begg:bounds%endg) ! sensible heat flux generated from the ice to liquid conversion, averaged to gridcell
     real(r8), parameter :: amC   = 12.0_r8 ! Atomic mass number for Carbon
     real(r8), parameter :: amO   = 16.0_r8 ! Atomic mass number for Oxygen
@@ -292,14 +291,6 @@ contains
          waterflux_inst%qflx_drain_perched_col (bounds%begc:bounds%endc), &
          lnd2atm_inst%qflx_rofliq_drain_perched_grc(bounds%begg:bounds%endg), &
          c2l_scale_type= 'urbanf', l2g_scale_type='unity' )
-
-    call c2g( bounds, &
-         qflx_ice_runoff_col(bounds%begc:bounds%endc),  &
-         lnd2atm_inst%qflx_rofice_grc(bounds%begg:bounds%endg),  & 
-         c2l_scale_type= 'urbanf', l2g_scale_type='unity' )
-    do g = bounds%begg, bounds%endg
-       lnd2atm_inst%qflx_rofice_grc(g) = lnd2atm_inst%qflx_rofice_grc(g) - waterflux_inst%qflx_ice_dynbal_grc(g)          
-    enddo
 
     ! calculate total water storage for history files
     ! first set tws to gridcell total endwb

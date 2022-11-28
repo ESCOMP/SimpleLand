@@ -73,13 +73,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
      Antarctica: replaced_by_ice -->
 <glacier_region_melt_behavior>'remains_in_place','replaced_by_ice','replaced_by_ice','replaced_by_ice'</glacier_region_melt_behavior>
 
-<!-- Default glacier ice runoff behavior is:
-     Mountain glaciers: melted
-     Greenland - inside CISM grid but outside Greenland itself: melted
-     Greenland itself: remains_ice
-     Antarctica: remains_ice -->
-<glacier_region_ice_runoff_behavior>'melted','melted','remains_ice','remains_ice'</glacier_region_ice_runoff_behavior>
-
 <!-- ================================================================== -->
 <!-- The default filenames are given relative to the root directory
      for the CLM2 data in the CESM distribution -->
