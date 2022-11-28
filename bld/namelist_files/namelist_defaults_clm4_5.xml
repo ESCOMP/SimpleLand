@@ -30,10 +30,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- CO2 type -->
 <co2_type>constant</co2_type>
 
-<!-- Soil state settings -->
-<soil_layerstruct phys="clm5_0">20SL_8.5m</soil_layerstruct>
-<soil_layerstruct phys="clm4_5">10SL_3.5m</soil_layerstruct>
-
 <!-- atm2lnd defaults -->
 <repartition_rain_snow phys="clm5_0">.true.</repartition_rain_snow>
 <repartition_rain_snow phys="clm4_5">.false.</repartition_rain_snow>

@@ -77,13 +77,6 @@ Type of CO2 feedback.
     diagnostic = use the diagnostic value sent from the atmosphere
 </entry>
 
-
-<entry id="soil_layerstruct" type="char*16" category="clm_physics"
-       group="clm_inparm" valid_values="10SL_3.5m,23SL_3.5m,49SL_10m,20SL_8.5m" >
-10SL_3.5m    = standard CLM4 and CLM4.5 version
-23SL_3.5m    = more vertical layers for permafrost simulations 
-</entry>
-
 <entry id="glacier_region_behavior" type="char*32(10)" category="clm_physics"
        group="clm_glacier_behavior"
        valid_values="multiple,virtual,single_at_atm_topo" >

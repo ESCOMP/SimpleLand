@@ -41,7 +41,7 @@ contains
     use clm_varpar          , only : nlevsoi, nlevgrnd, nlevlak, nlevsoifl, nlayer, nlayert, nlevurb, nlevsno
     use clm_varcon          , only : zsoi, dzsoi, zisoi, spval
     use clm_varcon          , only : secspday, denh2o, denice, grlnd
-    use clm_varctl          , only : iulog, fsurdat, paramfile, soil_layerstruct
+    use clm_varctl          , only : iulog, fsurdat, paramfile
     use landunit_varcon     , only : istdlak, istwet, istsoil, istcrop, istice_mec
     use column_varcon       , only : icol_road_perv, icol_road_imperv 
     use fileutils           , only : getfil
@@ -281,27 +281,6 @@ contains
        else
 
           do lev = 1,nlevgrnd
-             ! DML - this if statement could probably be removed and just the
-             ! top part used for all soil layer structures
-             if ( soil_layerstruct /= '10SL_3.5m' )then ! apply soil texture from 10 layer input dataset 
-                if (lev .eq. 1) then
-                   clay = clay3d(g,1)
-                   sand = sand3d(g,1)
-                   om_frac = 0._r8
-                else if (lev <= nlevsoi) then
-                   do j = 1,nlevsoifl-1
-                      if (zisoi(lev) >= zisoifl(j) .AND. zisoi(lev) < zisoifl(j+1)) then
-                         clay = clay3d(g,j+1)
-                         sand = sand3d(g,j+1)
-                         om_frac = 0._r8
-                      endif
-                   end do
-                else
-                   clay = clay3d(g,nlevsoifl)
-                   sand = sand3d(g,nlevsoifl)
-                   om_frac = 0._r8
-                endif
-             else
                 if (lev <= nlevsoi) then ! duplicate clay and sand values from 10th soil layer
                    clay = clay3d(g,lev)
                    sand = sand3d(g,lev)
@@ -311,7 +290,6 @@ contains
                    sand = sand3d(g,nlevsoi)
                    om_frac = 0._r8
                 endif
-             end if
 
              if (lun%itype(l) == istdlak) then
 

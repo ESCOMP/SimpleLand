@@ -8,9 +8,7 @@ module clm_varpar
   use shr_kind_mod , only: r8 => shr_kind_r8
   use spmdMod      , only: masterproc
   use clm_varctl   , only: iulog
-  use clm_varctl   , only: soil_layerstruct
 
-  !
   ! !PUBLIC TYPES:
   implicit none
   save
@@ -101,22 +99,8 @@ contains
 
     nlevsoifl   =  10
     nlevurb     =  5
-    if ( masterproc ) write(iulog, *) 'soil_layerstruct varpar ',soil_layerstruct
-    if ( soil_layerstruct == '10SL_3.5m' ) then
-       nlevsoi     =  nlevsoifl
-       nlevgrnd    =  15
-    else if ( soil_layerstruct == '23SL_3.5m' ) then 
-       nlevsoi     =  8  + nlev_equalspace
-       nlevgrnd    =  15 + nlev_equalspace
-    else if ( soil_layerstruct == '49SL_10m' ) then
-      nlevsoi     =  49 ! 10x10 + 9x100 + 30x300 = 1e4mm = 10m
-!       nlevsoi     =  29 ! 10x10 + 9x100 + 10x300 = 4e3mm = 4m
-       nlevgrnd    =  nlevsoi+5
-    else if ( soil_layerstruct == '20SL_8.5m' ) then
-      nlevsoi     =  20 
-      nlevgrnd    =  nlevsoi+5
-    endif
-    if ( masterproc ) write(iulog, *) 'soil_layerstruct varpar ',soil_layerstruct,nlevsoi,nlevgrnd
+    nlevsoi     =  nlevsoifl
+    nlevgrnd    =  15
 
     nlevlak     =  10     ! number of lake layers
 

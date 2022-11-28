@@ -28,7 +28,7 @@ module controlMod
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
   use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
-  use clm_varctl                       , only: wrtdia, co2_ppmv, soil_layerstruct, nsegspc, rpntdir, rpntfil
+  use clm_varctl                       , only: wrtdia, co2_ppmv, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
   use clm_varctl                       , only: clm_varctl_set
   use clm_varctl                       , only: single_column
@@ -161,8 +161,7 @@ contains
 
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
-         nsegspc, co2_ppmv, override_nsrest, &
-         soil_layerstruct
+         nsegspc, co2_ppmv, override_nsrest
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
     namelist /clm_inparm/ use_noio
@@ -375,7 +374,6 @@ contains
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (co2_ppmv, 1, MPI_REAL8,0, mpicom, ier)
-    call mpi_bcast (soil_layerstruct,len(soil_layerstruct), MPI_CHARACTER, 0, mpicom, ier)
 
     ! snow pack variables
     call mpi_bcast (nlevsno, 1, MPI_INTEGER, 0, mpicom, ier)
@@ -478,7 +476,6 @@ contains
        write(iulog,*) '   CO2 volume mixing ratio                = ', co2_type
     end if
 
-    write(iulog,*) '   soil layer structure = ', soil_layerstruct
     if (nsrest == nsrContinue) then
        write(iulog,*) 'restart warning:'
        write(iulog,*) '   Namelist not checked for agreement with initial run.'
