@@ -21,65 +21,21 @@ module WaterfluxType
 
      ! water fluxes are in units or mm/s
 
-     real(r8), pointer :: qflx_prec_grnd_patch     (:)   ! patch water onto ground including canopy runoff [kg/(m2 s)]
-     real(r8), pointer :: qflx_prec_grnd_col       (:)   ! col water onto ground including canopy runoff [kg/(m2 s)]
-     real(r8), pointer :: qflx_rain_grnd_patch     (:)   ! patch rain on ground after interception (mm H2O/s) [+]
-     real(r8), pointer :: qflx_rain_grnd_col       (:)   ! col rain on ground after interception (mm H2O/s) [+]
-     real(r8), pointer :: qflx_evap_soi_patch      (:)   ! patch soil evaporation (mm H2O/s) (+ = to atm)
-     real(r8), pointer :: qflx_evap_soi_col        (:)   ! col soil evaporation (mm H2O/s) (+ = to atm)
-     real(r8), pointer :: qflx_evap_veg_patch      (:)   ! patch vegetation evaporation (mm H2O/s) (+ = to atm)
-     real(r8), pointer :: qflx_evap_veg_col        (:)   ! col vegetation evaporation (mm H2O/s) (+ = to atm)
-     real(r8), pointer :: qflx_evap_can_patch      (:)   ! patch evaporation from leaves and stems (mm H2O/s) (+ = to atm)
-     real(r8), pointer :: qflx_evap_can_col        (:)   ! col evaporation from leaves and stems (mm H2O/s) (+ = to atm)
      real(r8), pointer :: qflx_evap_tot_patch      (:)   ! patch pft_qflx_evap_soi + pft_qflx_evap_veg + qflx_tran_veg
-     real(r8), pointer :: qflx_evap_tot_col        (:)   ! col col_qflx_evap_soi + col_qflx_evap_veg + qflx_tran_veg
-     real(r8), pointer :: qflx_evap_grnd_patch     (:)   ! patch ground surface evaporation rate (mm H2O/s) [+]
-     real(r8), pointer :: qflx_evap_grnd_col       (:)   ! col ground surface evaporation rate (mm H2O/s) [+]
-     real(r8), pointer :: qflx_phs_neg_col         (:)   ! col sum of negative hydraulic redistribution fluxes (mm H2O/s) [+]
 
-     ! In the snow capping parametrization excess mass above h2osno_max is removed.  A breakdown of mass into liquid 
-     ! and solid fluxes is done, these are represented by qflx_snwcp_liq_col and qflx_snwcp_ice_col. 
-     real(r8), pointer :: qflx_snwcp_liq_col       (:)   ! col excess liquid h2o due to snow capping (outgoing) (mm H2O /s)
-     real(r8), pointer :: qflx_snwcp_ice_col       (:)   ! col excess solid h2o due to snow capping (outgoing) (mm H2O /s)
-     real(r8), pointer :: qflx_snwcp_discarded_liq_col(:) ! col excess liquid h2o due to snow capping, which we simply discard in order to reset the snow pack (mm H2O /s)
-     real(r8), pointer :: qflx_snwcp_discarded_ice_col(:) ! col excess solid h2o due to snow capping, which we simply discard in order to reset the snow pack (mm H2O /s)
-
-     real(r8), pointer :: qflx_tran_veg_patch      (:)   ! patch vegetation transpiration (mm H2O/s) (+ = to atm)
-     real(r8), pointer :: qflx_tran_veg_col        (:)   ! col vegetation transpiration (mm H2O/s) (+ = to atm)
-     real(r8), pointer :: qflx_prec_intr_patch     (:)   ! patch interception of precipitation [mm/s]
-     real(r8), pointer :: qflx_prec_intr_col       (:)   ! col interception of precipitation [mm/s]
-
-     real(r8), pointer :: qflx_ev_snow_patch       (:)   ! patch evaporation heat flux from snow       (mm H2O/s) [+ to atm]
-     real(r8), pointer :: qflx_ev_snow_col         (:)   ! col evaporation heat flux from snow         (mm H2O/s) [+ to atm]
-     real(r8), pointer :: qflx_ev_soil_patch       (:)   ! patch evaporation heat flux from soil       (mm H2O/s) [+ to atm]
-     real(r8), pointer :: qflx_ev_soil_col         (:)   ! col evaporation heat flux from soil         (mm H2O/s) [+ to atm]
-     real(r8), pointer :: qflx_ev_h2osfc_patch     (:)   ! patch evaporation heat flux from soil       (mm H2O/s) [+ to atm]
-     real(r8), pointer :: qflx_ev_h2osfc_col       (:)   ! col evaporation heat flux from soil         (mm H2O/s) [+ to atm]
-
-     real(r8), pointer :: qflx_adv_col             (:,:) ! col advective flux across different soil layer interfaces [mm H2O/s] [+ downward]
-     real(r8), pointer :: qflx_rootsoi_col         (:,:) ! col root and soil water exchange [mm H2O/s] [+ into root]
-     real(r8), pointer :: qflx_infl_col            (:)   ! col infiltration (mm H2O /s)
      real(r8), pointer :: qflx_surf_col            (:)   ! col surface runoff (mm H2O /s)
      real(r8), pointer :: qflx_drain_col           (:)   ! col sub-surface runoff (mm H2O /s)
-     real(r8), pointer :: qflx_top_soil_col        (:)   ! col net water input into soil from top (mm/s)
-     real(r8), pointer :: qflx_h2osfc_to_ice_col   (:)   ! col conversion of h2osfc to ice
      real(r8), pointer :: qflx_h2osfc_surf_col     (:)   ! col surface water runoff
      real(r8), pointer :: qflx_drain_perched_col   (:)   ! col sub-surface runoff from perched wt (mm H2O /s)
-     real(r8), pointer :: qflx_deficit_col         (:)   ! col water deficit to keep non-negative liquid water content (mm H2O)   
-     real(r8), pointer :: qflx_floodc_col          (:)   ! col flood water flux at column level
-     real(r8), pointer :: qflx_sl_top_soil_col     (:)   ! col liquid water + ice from layer above soil to top soil layer or sent to qflx_qrgwl (mm H2O/s)
      real(r8), pointer :: qflx_qrgwl_col           (:)   ! col qflx_surf at glaciers, wetlands, lakes
      real(r8), pointer :: qflx_runoff_col          (:)   ! col total runoff (qflx_drain+qflx_surf+qflx_qrgwl) (mm H2O /s)
-     real(r8), pointer :: qflx_drain_vr_col        (:,:) ! col liquid water losted as drainage (m /time step)
 
-     ! Dynamic land cover change
      real(r8), pointer :: qflx_liq_dynbal_grc      (:)   ! grc liq dynamic land cover change conversion runoff flux
 
    contains
  
      procedure, public  :: Init
      procedure, private :: InitAllocate 
-     procedure, private :: InitHistory  
      procedure, private :: InitCold     
      procedure, public  :: InitAccVars
      procedure, public  :: UpdateAccVars
@@ -96,7 +52,6 @@ contains
     type(bounds_type), intent(in)    :: bounds  
 
     call this%InitAllocate(bounds) ! same as "call initAllocate_type(hydro, bounds)"
-    call this%InitHistory(bounds)
     call this%InitCold(bounds)
 
   end subroutine Init
@@ -123,128 +78,19 @@ contains
     begc = bounds%begc; endc= bounds%endc
     begg = bounds%begg; endg= bounds%endg
 
-    allocate(this%qflx_prec_intr_patch     (begp:endp))              ; this%qflx_prec_intr_patch     (:)   = nan
-    allocate(this%qflx_prec_grnd_patch     (begp:endp))              ; this%qflx_prec_grnd_patch     (:)   = nan
-    allocate(this%qflx_rain_grnd_patch     (begp:endp))              ; this%qflx_rain_grnd_patch     (:)   = nan
-    allocate(this%qflx_tran_veg_patch      (begp:endp))              ; this%qflx_tran_veg_patch      (:)   = nan
-
-    allocate(this%qflx_prec_intr_col       (begc:endc))              ; this%qflx_prec_intr_col       (:)   = nan
-    allocate(this%qflx_prec_grnd_col       (begc:endc))              ; this%qflx_prec_grnd_col       (:)   = nan
-    allocate(this%qflx_rain_grnd_col       (begc:endc))              ; this%qflx_rain_grnd_col       (:)   = nan
-    allocate(this%qflx_snwcp_liq_col       (begc:endc))              ; this%qflx_snwcp_liq_col       (:)   = nan
-    allocate(this%qflx_snwcp_ice_col       (begc:endc))              ; this%qflx_snwcp_ice_col       (:)   = nan
-    allocate(this%qflx_snwcp_discarded_liq_col(begc:endc))           ; this%qflx_snwcp_discarded_liq_col(:) = nan
-    allocate(this%qflx_snwcp_discarded_ice_col(begc:endc))           ; this%qflx_snwcp_discarded_ice_col(:) = nan
-    allocate(this%qflx_tran_veg_col        (begc:endc))              ; this%qflx_tran_veg_col        (:)   = nan
-    allocate(this%qflx_evap_veg_col        (begc:endc))              ; this%qflx_evap_veg_col        (:)   = nan
-    allocate(this%qflx_evap_can_col        (begc:endc))              ; this%qflx_evap_can_col        (:)   = nan
-    allocate(this%qflx_evap_soi_col        (begc:endc))              ; this%qflx_evap_soi_col        (:)   = nan
-    allocate(this%qflx_evap_tot_col        (begc:endc))              ; this%qflx_evap_tot_col        (:)   = nan
-    allocate(this%qflx_evap_grnd_col       (begc:endc))              ; this%qflx_evap_grnd_col       (:)   = nan
-    allocate(this%qflx_evap_veg_patch      (begp:endp))              ; this%qflx_evap_veg_patch      (:)   = nan
-    allocate(this%qflx_evap_can_patch      (begp:endp))              ; this%qflx_evap_can_patch      (:)   = nan
-    allocate(this%qflx_evap_soi_patch      (begp:endp))              ; this%qflx_evap_soi_patch      (:)   = nan
     allocate(this%qflx_evap_tot_patch      (begp:endp))              ; this%qflx_evap_tot_patch      (:)   = nan
-    allocate(this%qflx_evap_grnd_patch     (begp:endp))              ; this%qflx_evap_grnd_patch     (:)   = nan
-    allocate(this%qflx_phs_neg_col         (begc:endc))              ; this%qflx_phs_neg_col       (:)   = nan
 
-    allocate( this%qflx_ev_snow_patch      (begp:endp))              ; this%qflx_ev_snow_patch       (:)   = nan
-    allocate( this%qflx_ev_snow_col        (begc:endc))              ; this%qflx_ev_snow_col         (:)   = nan
-    allocate( this%qflx_ev_soil_patch      (begp:endp))              ; this%qflx_ev_soil_patch       (:)   = nan
-    allocate( this%qflx_ev_soil_col        (begc:endc))              ; this%qflx_ev_soil_col         (:)   = nan
-    allocate( this%qflx_ev_h2osfc_patch    (begp:endp))              ; this%qflx_ev_h2osfc_patch     (:)   = nan
-    allocate( this%qflx_ev_h2osfc_col      (begc:endc))              ; this%qflx_ev_h2osfc_col       (:)   = nan
-
-    allocate(this%qflx_drain_vr_col      (begc:endc,1:nlevsoi))      ; this%qflx_drain_vr_col        (:,:) = nan
-    allocate(this%qflx_adv_col             (begc:endc,0:nlevsoi))    ; this%qflx_adv_col             (:,:) = nan
-    allocate(this%qflx_rootsoi_col         (begc:endc,1:nlevsoi))    ; this%qflx_rootsoi_col         (:,:) = nan
-    allocate(this%qflx_infl_col            (begc:endc))              ; this%qflx_infl_col            (:)   = nan
     allocate(this%qflx_surf_col            (begc:endc))              ; this%qflx_surf_col            (:)   = nan
     allocate(this%qflx_drain_col           (begc:endc))              ; this%qflx_drain_col           (:)   = nan
-    allocate(this%qflx_top_soil_col        (begc:endc))              ; this%qflx_top_soil_col        (:)   = nan
-    allocate(this%qflx_h2osfc_to_ice_col   (begc:endc))              ; this%qflx_h2osfc_to_ice_col   (:)   = nan
     allocate(this%qflx_h2osfc_surf_col     (begc:endc))              ; this%qflx_h2osfc_surf_col     (:)   = nan
     allocate(this%qflx_qrgwl_col           (begc:endc))              ; this%qflx_qrgwl_col           (:)   = nan
     allocate(this%qflx_drain_perched_col   (begc:endc))              ; this%qflx_drain_perched_col   (:)   = nan
-    allocate(this%qflx_deficit_col         (begc:endc))              ; this%qflx_deficit_col         (:)   = nan
-    allocate(this%qflx_floodc_col          (begc:endc))              ; this%qflx_floodc_col          (:)   = nan
-    allocate(this%qflx_sl_top_soil_col     (begc:endc))              ; this%qflx_sl_top_soil_col     (:)   = nan
     allocate(this%qflx_runoff_col          (begc:endc))              ; this%qflx_runoff_col          (:)   = nan
 
     allocate(this%qflx_liq_dynbal_grc      (begg:endg))              ; this%qflx_liq_dynbal_grc      (:)   = nan
 
   end subroutine InitAllocate
 
-  !------------------------------------------------------------------------
-  subroutine InitHistory(this, bounds)
-    !
-    ! !USES:
-    use histFileMod , only : hist_addfld1d, hist_addfld2d, no_snow_normal
-    !
-    ! !ARGUMENTS:
-    class(waterflux_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer           :: begp, endp
-    integer           :: begc, endc
-    integer           :: begg, endg
-    character(10)     :: active
-    real(r8), pointer :: data2dptr(:,:), data1dptr(:) ! temp. pointers for slicing larger arrays
-    !------------------------------------------------------------------------
-
-    begp = bounds%begp; endp= bounds%endp
-    begc = bounds%begc; endc= bounds%endc
-    begg = bounds%begg; endg= bounds%endg
-
-    this%qflx_top_soil_col(begc:endc) = spval
-    call hist_addfld1d (fname='QTOPSOIL',  units='mm/s',  &
-         avgflag='A', long_name='water input to surface', &
-         ptr_col=this%qflx_top_soil_col, c2l_scale_type='urbanf', default='inactive')
-
-    this%qflx_infl_col(begc:endc) = spval
-    call hist_addfld1d (fname='QINFL',  units='mm/s',  &
-         avgflag='A', long_name='infiltration', &
-         ptr_col=this%qflx_infl_col, c2l_scale_type='urbanf', default='inactive')
-
-    this%qflx_surf_col(begc:endc) = spval
-    call hist_addfld1d (fname='QOVER',  units='mm/s',  &
-         avgflag='A', long_name='surface runoff', &
-         ptr_col=this%qflx_surf_col, c2l_scale_type='urbanf', default='inactive')
-
-    this%qflx_drain_col(begc:endc) = spval
-    call hist_addfld1d (fname='QDRAI',  units='mm/s',  &
-         avgflag='A', long_name='sub-surface drainage', &
-         ptr_col=this%qflx_drain_col, c2l_scale_type='urbanf', default='inactive')
-
-    this%qflx_runoff_col(begc:endc) = spval
-    call hist_addfld1d (fname='QRUNOFF',  units='mm/s',  &
-         avgflag='A', &
-         long_name='total liquid runoff not including correction for land use change', &
-         ptr_col=this%qflx_runoff_col, c2l_scale_type='urbanf', default='inactive')
-
-    this%qflx_evap_soi_patch(begp:endp) = spval
-    call hist_addfld1d (fname='QSOIL', units='mm/s',  &
-         avgflag='A', long_name= 'Ground evaporation (soil/snow evaporation + soil/snow sublimation - dew)', &
-         ptr_patch=this%qflx_evap_soi_patch, c2l_scale_type='urbanf', default='inactive')
-
-    call hist_addfld1d (fname='QSNOEVAP', units='mm/s',  &
-         avgflag='A', long_name='evaporation from snow', &
-         ptr_patch=this%qflx_tran_veg_patch, set_lake=0._r8, c2l_scale_type='urbanf', default='inactive')
-
-    this%qflx_evap_grnd_patch(begp:endp) = spval
-    call hist_addfld1d (fname='QFLX_EVAP_GRND', units='mm H2O/s', &
-         avgflag='A', long_name='ground surface evaporation', &
-         ptr_patch=this%qflx_evap_grnd_patch, default='inactive', c2l_scale_type='urbanf')
-
-    this%qflx_h2osfc_surf_col(begc:endc) = spval
-    call hist_addfld1d (fname='QH2OSFC',  units='mm/s',  &
-         avgflag='A', long_name='surface water runoff', &
-         ptr_col=this%qflx_h2osfc_surf_col, default='inactive')
-
-  end subroutine InitHistory
-  
-  
   !-----------------------------------------------------------------------
     !
      subroutine InitAccVars (this, bounds)
@@ -256,7 +102,6 @@ contains
     !
     ! !USES 
     use accumulMod       , only : extract_accum_field
-    use clm_time_manager , only : get_nstep
     !
     ! !ARGUMENTS:
     class(waterflux_type) :: this
@@ -264,28 +109,19 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer  :: begc, endc
-    integer  :: nstep
     integer  :: ier
     real(r8), pointer :: rbufslp(:)  ! temporary
     !---------------------------------------------------------------------
     begc = bounds%begc; endc = bounds%endc
-
-    ! Allocate needed dynamic memory for single level patch field
     allocate(rbufslp(begc:endc), stat=ier)
-
-    ! Determine time step
-    nstep = get_nstep()
-
     deallocate(rbufslp)
 
   end subroutine InitAccVars
-  
   
   !-----------------------------------------------------------------------
   subroutine UpdateAccVars (this, bounds)
     !
     ! USES
-    use clm_time_manager, only : get_nstep
     use accumulMod      , only : update_accum_field, extract_accum_field
     !
     ! !ARGUMENTS:
@@ -293,60 +129,29 @@ contains
     type(bounds_type)      , intent(in) :: bounds  
     !
     ! !LOCAL VARIABLES:
-    integer :: g,c,p                     ! indices
-    integer :: dtime                     ! timestep size [seconds]
-    integer :: nstep                     ! timestep number
+    integer :: g                         ! indices
     integer :: ier                       ! error status
     integer :: begc, endc
     real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
     !---------------------------------------------------------------------
 
     begc = bounds%begc; endc = bounds%endc
-
-    nstep = get_nstep()
-
-    ! Allocate needed dynamic memory for single level patch field
-
     allocate(rbufslp(begc:endc), stat=ier)
-    
-    do c = begc,endc
-       rbufslp(c) = this%qflx_evap_tot_col(c)
-    end do
-
     deallocate(rbufslp)
     
   end subroutine UpdateAccVars
 
-
   !-----------------------------------------------------------------------
   subroutine InitCold(this, bounds)
-    !
-    ! !USES:
-    use landunit_varcon, only : istsoil, istcrop
     !
     ! !ARGUMENTS:
     class(waterflux_type) :: this
     type(bounds_type) , intent(in) :: bounds
-    !
-    ! !LOCAL VARIABLES:
-    integer :: p,c,l
     !-----------------------------------------------------------------------
 
-    this%qflx_evap_grnd_patch(bounds%begp:bounds%endp) = 0.0_r8
-    this%qflx_evap_grnd_col(bounds%begc:bounds%endc) = 0.0_r8
-
-    this%qflx_phs_neg_col(bounds%begc:bounds%endc)   = 0.0_r8
-
     this%qflx_h2osfc_surf_col(bounds%begc:bounds%endc) = 0._r8
-
-    ! needed for CNNLeaching 
-    do c = bounds%begc, bounds%endc
-       l = col%landunit(c)
-       if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
-          this%qflx_drain_col(c) = 0._r8
-          this%qflx_surf_col(c)  = 0._r8
-       end if
-    end do
+    this%qflx_drain_col(bounds%begc:bounds%endc) = 0._r8
+    this%qflx_surf_col(bounds%begc:bounds%endc)  = 0._r8
 
   end subroutine InitCold
 
