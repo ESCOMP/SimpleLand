@@ -21,7 +21,6 @@ module clm_instMod
   ! Definition of component types 
   !-----------------------------------------
 
-  use CanopyStateType                 , only : canopystate_type
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
   use SoilHydrologyType               , only : soilhydrology_type  
@@ -52,7 +51,6 @@ module clm_instMod
   !-----------------------------------------
 
   ! Physics types 
-  type(canopystate_type)                  :: canopystate_inst
   type(energyflux_type)                   :: energyflux_inst
   type(frictionvel_type)                  :: frictionvel_inst
   type(soilstate_type)                    :: soilstate_inst
@@ -153,8 +151,6 @@ contains
     ! Initialization of public data types
 
     call temperature_inst%Init(bounds)
-
-    call canopystate_inst%Init(bounds)
 
     call soilstate_inst%Init(bounds)
     call SoilStateInitTimeConst(bounds, soilstate_inst, nlfilename) ! sets hydraulic and thermal soil properties

@@ -14,14 +14,12 @@ module clm_driver
   use clm_time_manager       , only : get_nstep
   use spmdMod                , only : masterproc, mpicom
   use decompMod              , only : get_proc_clumps, get_clump_bounds, get_proc_bounds, bounds_type
-  use filterMod              , only : filter_inactive_and_active
   use histFileMod            , only : hist_update_hbuf, hist_htapes_wrapup
   use restFileMod            , only : restFile_write, restFile_filename
   use abortutils             , only : endrun
   !
   use perf_mod				! MML: this is where t_startf and t_stopf are 
   !
-  use clm_instMod            , only : temperature_inst, canopystate_inst
   use clm_instMod            , only : soilstate_inst
   use clm_instMod            , only : atm2lnd_inst, lnd2atm_inst
 
