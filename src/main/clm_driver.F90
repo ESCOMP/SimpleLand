@@ -19,8 +19,6 @@ module clm_driver
   use restFileMod            , only : restFile_write, restFile_filename
   use abortutils             , only : endrun
   !
-  use ActiveLayerMod         , only : alt_calc
-  !
   use perf_mod				! MML: this is where t_startf and t_stopf are 
   !
   use clm_instMod            , only : temperature_inst, canopystate_inst
@@ -99,19 +97,6 @@ contains
     !$OMP PARALLEL DO PRIVATE (nc,bounds_clump)
     do nc = 1,nclumps
        call get_clump_bounds(nc, bounds_clump)
-
-       ! BUG(wjs, 2014-12-15, bugz 2107) Because of the placement of the following
-       ! routines (alt_calc ) in the driver sequence -
-       ! they are called very early in each timestep, before weights are adjusted and
-       ! filters are updated - it may be necessary for these routines to compute values
-       ! over inactive as well as active points (since some inactive points may soon
-       ! become active) - so that's what is done now. Currently, it seems to be okay to do
-       ! this, because the variables computed here seem to only depend on quantities that
-       ! are valid over inactive as well as active points.
-
-       call t_startf("decomp_vert")
-       call alt_calc(filter_inactive_and_active(nc)%num_soilc, filter_inactive_and_active(nc)%soilc, canopystate_inst) 
-       call t_stopf("decomp_vert")
     end do
     !$OMP END PARALLEL DO
 

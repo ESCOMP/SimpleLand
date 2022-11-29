@@ -40,13 +40,6 @@ module CanopyStateType
      real(r8) , pointer :: displa_patch             (:)   ! patch displacement height (m)
      real(r8) , pointer :: fsun_patch               (:)   ! patch sunlit fraction of canopy         
 
-     real(r8) , pointer :: alt_col                  (:)   ! col current depth of thaw 
-     integer  , pointer :: alt_indx_col             (:)   ! col current depth of thaw 
-     real(r8) , pointer :: altmax_col               (:)   ! col maximum annual depth of thaw 
-     real(r8) , pointer :: altmax_lastyear_col      (:)   ! col prior year maximum annual depth of thaw 
-     integer  , pointer :: altmax_indx_col          (:)   ! col maximum annual depth of thaw 
-     integer  , pointer :: altmax_lastyear_indx_col (:)   ! col prior year maximum annual depth of thaw 
-
      real(r8) , pointer :: dewmx_patch              (:)   ! patch maximum allowed dew [mm] 
      real(r8) , pointer :: dleaf_patch              (:)   ! patch characteristic leaf width (diameter) [m]
                                                           ! same as pftcon%dleaf()
@@ -112,13 +105,6 @@ contains
     allocate(this%displa_patch             (begp:endp))           ; this%displa_patch             (:)   = nan
     allocate(this%fsun_patch               (begp:endp))           ; this%fsun_patch               (:)   = nan
 
-    allocate(this%alt_col                  (begc:endc))           ; this%alt_col                  (:)   = spval     
-    allocate(this%altmax_col               (begc:endc))           ; this%altmax_col               (:)   = spval
-    allocate(this%altmax_lastyear_col      (begc:endc))           ; this%altmax_lastyear_col      (:)   = spval
-    allocate(this%alt_indx_col             (begc:endc))           ; this%alt_indx_col             (:)   = huge(1)
-    allocate(this%altmax_indx_col          (begc:endc))           ; this%altmax_indx_col          (:)   = huge(1)
-    allocate(this%altmax_lastyear_indx_col (begc:endc))           ; this%altmax_lastyear_indx_col (:)   = huge(1)
-
     allocate(this%dewmx_patch              (begp:endp))           ; this%dewmx_patch              (:)   = nan
     allocate(this%dleaf_patch              (begp:endp))           ; this%dleaf_patch              (:)   = nan
 
@@ -155,19 +141,6 @@ contains
        ! needs to be initialized to spval to avoid problems when averaging for the accum
        ! field
        this%fsun_patch(p) = spval
-    end do
-
-    do c = bounds%begc, bounds%endc
-       l = col%landunit(c)
-
-       if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
-          this%alt_col(c)               = 0._r8 !iniitialized to spval for all columns
-          this%altmax_col(c)            = 0._r8 !iniitialized to spval for all columns
-          this%altmax_lastyear_col(c)   = 0._r8 !iniitialized to spval for all columns
-          this%alt_indx_col(c)          = 0     !initiialized to huge  for all columns
-          this%altmax_indx_col(c)       = 0     !initiialized to huge  for all columns
-          this%altmax_lastyear_indx_col = 0     !initiialized to huge  for all columns
-       end if
     end do
 
   end subroutine InitCold
