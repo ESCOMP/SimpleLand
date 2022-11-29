@@ -237,8 +237,6 @@ contains
 
     call soilstate_inst%restart (bounds, ncid, flag=flag)
 
-    call waterflux_inst%restart (bounds, ncid, flag=flag)
-
     call waterstate_inst%restart (bounds, ncid, flag=flag, &
          watsat_col=soilstate_inst%watsat_col(bounds%begc:bounds%endc,:)) 
 
