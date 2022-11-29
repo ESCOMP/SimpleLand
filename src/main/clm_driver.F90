@@ -110,8 +110,7 @@ contains
        ! are valid over inactive as well as active points.
 
        call t_startf("decomp_vert")
-       call alt_calc(filter_inactive_and_active(nc)%num_soilc, filter_inactive_and_active(nc)%soilc, &
-            temperature_inst, canopystate_inst) 
+       call alt_calc(filter_inactive_and_active(nc)%num_soilc, filter_inactive_and_active(nc)%soilc, canopystate_inst) 
        call t_stopf("decomp_vert")
     end do
     !$OMP END PARALLEL DO

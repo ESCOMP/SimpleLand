@@ -118,9 +118,6 @@ module clm_varctl
   ! values of 'prognostic','diagnostic','constant'
   character(len=16), public :: co2_type = 'constant'    
 
-  ! used to override an error check on reading in restart files
-  logical, public :: override_bgc_restart_mismatch_dump = .false. 
-
   !----------------------------------------------------------
   ! Physics
   !----------------------------------------------------------
