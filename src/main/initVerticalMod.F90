@@ -251,24 +251,6 @@ contains
        endif
     enddo
 
-    if (masterproc) write(iulog,*) 'jmin_bedrock: ', jmin_bedrock
-
-    !  Determine gridcell bedrock index
-    do g = bounds%begg,bounds%endg
-       grc%nbedrock(g) = nlevsoi
-       do j = jmin_bedrock,nlevsoi 
-          if (zisoi(j-1) < zbedrock_in(g) .and. zisoi(j) >= zbedrock_in(g)) then
-             grc%nbedrock(g) = j
-          end if
-       end do
-    end do
-
-    !  Set column bedrock index
-    do c = begc, endc
-       g = col%gridcell(c)
-       col%nbedrock(c) = grc%nbedrock(g) 
-    end do
-
     deallocate(zbedrock_in)
 
     !-----------------------------------------------

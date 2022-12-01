@@ -183,18 +183,15 @@ contains
     ! Initialize time constant variables and cold start conditions 
     !
     ! !USES:
-    use shr_const_mod   , only : shr_const_pi
     use shr_log_mod     , only : errMsg => shr_log_errMsg
-    use shr_spfn_mod    , only : shr_spfn_erf
     use shr_kind_mod    , only : r8 => shr_kind_r8
     use shr_const_mod   , only : SHR_CONST_TKFRZ
-    use clm_varpar      , only : nlevsoi, nlevgrnd, nlevsno, nlevlak, nlevurb
-    use landunit_varcon , only : istwet, istsoil, istdlak, istcrop, istice_mec  
+    use clm_varpar      , only : nlevsoi, nlevgrnd, nlevsno, nlevurb
+    use landunit_varcon , only : istwet, istsoil, istcrop, istice_mec  
     use column_varcon   , only : icol_road_perv
     use column_varcon   , only : icol_road_imperv
-    use clm_varcon      , only : denice, denh2o, spval, sb, bdsno 
-    use clm_varcon      , only : zlnd, tfrz, spval
-    use clm_varctl      , only : fsurdat
+    use clm_varcon      , only : denice, denh2o, spval, bdsno 
+    use clm_varcon      , only : tfrz, spval
     use spmdMod         , only : masterproc
     use abortutils      , only : endrun
     use fileutils       , only : getfil
@@ -210,15 +207,8 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer            :: p,c,j,l,g,lev,nlevs 
-    real(r8)           :: maxslope, slopemax, minslope
-    real(r8)           :: d, fd, dfdd, slope0,slopebeta
-    real(r8) ,pointer  :: std (:)     
-    logical            :: readvar 
+    real(r8)           :: d
     type(file_desc_t)  :: ncid        
-    character(len=256) :: locfn       
-    real(r8)           :: snowbd      ! temporary calculation of snow bulk density (kg/m3)
-    real(r8)           :: fmelt       ! snowbd/100
-    integer            :: nbedrock
     !-----------------------------------------------------------------------
 
     SHR_ASSERT_ALL((ubound(h2osno_input_col)     == (/bounds%endc/))          , errMsg(sourcefile, __LINE__))
@@ -253,8 +243,7 @@ contains
             if (lun%itype(l) == istsoil .or. lun%itype(l) == istcrop) then
                nlevs = nlevgrnd
                do j = 1, nlevs
-                  nbedrock = nlevsoi
-                  if (j > nbedrock) then
+                  if (j > nlevsoi) then
                      this%h2osoi_vol_col(c,j) = 0.0_r8
                   else
                      this%h2osoi_vol_col(c,j) = 0.15_r8
