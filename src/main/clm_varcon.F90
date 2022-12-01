@@ -102,7 +102,6 @@ module clm_varcon
 
   real(r8) :: zlnd = 0.01_r8        ! Roughness length for soil [m]
   real(r8) :: pondmx = 0.0_r8       ! Ponding depth (mm)
-  real(r8), parameter :: zmin_bedrock = 0.4_r8 ! minimum soil depth [m]
 
   real(r8), parameter :: aquifer_water_baseline = 5000._r8 ! baseline value for water in the unconfined aquifer [mm]
 

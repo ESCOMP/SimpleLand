@@ -46,7 +46,6 @@ contains
 
   !------------------------------------------------------------------------
   subroutine initVertical(bounds, glc_behavior, snow_depth, thick_wall, thick_roof)
-    use clm_varcon, only : zmin_bedrock
     !
     ! !ARGUMENTS:
     type(bounds_type)   , intent(in)    :: bounds
@@ -69,7 +68,6 @@ contains
     integer               :: ier               ! error status
     real(r8)              :: scalez = 0.025_r8 ! Soil layer thickness discretization (m)
     real(r8)              :: thick_equal = 0.2
-    real(r8) ,pointer     :: zbedrock_in(:)   ! read in - z_bedrock
     real(r8) ,pointer     :: lakedepth_in(:)   ! read in - lakedepth 
     real(r8), allocatable :: zurb_wall(:,:)    ! wall (layer node depth)
     real(r8), allocatable :: zurb_roof(:,:)    ! roof (layer node depth)
@@ -80,27 +78,7 @@ contains
     real(r8)              :: depthratio        ! ratio of lake depth to standard deep lake depth 
     integer               :: begc, endc
     integer               :: begl, endl
-    integer               :: jmin_bedrock
 
-    ! Possible values for levgrnd_class. The important thing is that, for a given column,
-    ! layers that are fundamentally different (e.g., soil vs bedrock) have different
-    ! values. This information is used in the vertical interpolation in init_interp.
-    !
-    ! IMPORTANT: These values should not be changed lightly. e.g., try to avoid changing
-    ! the values assigned to LEVGRND_CLASS_STANDARD, LEVGRND_CLASS_DEEP_BEDROCK, etc.  The
-    ! problem with changing these is that init_interp expects that layers with a value of
-    ! (e.g.) 1 on the source file correspond to layers with a value of 1 on the
-    ! destination file. So if you change the values of these constants, you either need to
-    ! adequately inform users of this change, or build in some translation mechanism in
-    ! init_interp (such as via adding more metadata to the restart file on the meaning of
-    ! these different values).
-    !
-    ! The distinction between "shallow" and "deep" bedrock is not made explicitly
-    ! elsewhere. But, since these classes have somewhat different behavior, they are
-    ! distinguished explicitly here.
-    integer, parameter :: LEVGRND_CLASS_STANDARD        = 1
-    integer, parameter :: LEVGRND_CLASS_DEEP_BEDROCK    = 2
-    integer, parameter :: LEVGRND_CLASS_SHALLOW_BEDROCK = 3
     !------------------------------------------------------------------------
 
     begc = bounds%begc; endc= bounds%endc
@@ -237,23 +215,6 @@ contains
     end if
 
     !-----------------------------------------------
-    ! Set index defining depth to bedrock
-    !-----------------------------------------------
-
-    allocate(zbedrock_in(bounds%begg:bounds%endg))
-    zbedrock_in(:) = zisoi(nlevsoi)
-
-    !  determine minimum index of minimum soil depth
-    jmin_bedrock = 3
-    do j = 3,nlevsoi 
-       if (zisoi(j-1) < zmin_bedrock .and. zisoi(j) >= zmin_bedrock) then
-          jmin_bedrock = j
-       endif
-    enddo
-
-    deallocate(zbedrock_in)
-
-    !-----------------------------------------------
     ! Set lake levels and layers (no interfaces)
     !-----------------------------------------------
 
@@ -336,29 +297,6 @@ contains
           col%dz(c,1:nlevgrnd) = dzsoi(1:nlevgrnd)
        end if
     end do
-
-    ! ------------------------------------------------------------------------
-    ! Set classes of layers
-    ! ------------------------------------------------------------------------
-
-    do c = bounds%begc, bounds%endc
-       l = col%landunit(c)
-       col%levgrnd_class(c, 1:nlevgrnd) = LEVGRND_CLASS_STANDARD
-    end do
-
-    do j = 1, nlevgrnd
-       do c = bounds%begc, bounds%endc
-          if (col%z(c,j) == spval) then
-             col%levgrnd_class(c,j) = ispval
-          end if
-       end do
-    end do
-
-    !-----------------------------------------------
-    ! Set cold-start values for snow levels, snow layers and snow interfaces 
-    !-----------------------------------------------
-
-    !call InitSnowLayers(bounds, snow_depth(bounds%begc:bounds%endc))
 
     !-----------------------------------------------
     ! Read in topographic index and slope

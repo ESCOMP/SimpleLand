@@ -2636,17 +2636,6 @@ contains
               long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
               imissing_value=ispval, ifill_value=ispval)
        end if
-       if (ldomain%isgrid2d) then
-          call ncd_defvar(varname='pftmask' , xtype=ncd_int, &
-              dim1name='lon', dim2name='lat', &
-              long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       else
-          call ncd_defvar(varname='pftmask' , xtype=ncd_int, &
-              dim1name=grlnd, &
-              long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       end if
 
     else if (mode == 'write') then
 

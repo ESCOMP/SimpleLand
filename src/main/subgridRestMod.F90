@@ -302,11 +302,6 @@ contains
          long_name='column active flag (1=active, 0=inactive)', units=' ',          &
          interpinic_flag='skip', readvar=readvar, data=icarr)
 
-    call restartvar(ncid=ncid, flag=flag, varname='LEVGRND_CLASS', xtype=ncd_int,   &
-         dim1name='column', dim2name='levgrnd', switchdim=.true.,                   &
-         long_name='class in which each layer falls', units=' ',                    &
-         interpinic_flag='skip', readvar=readvar, data=col%levgrnd_class)
-
     allocate(temp2d_r(bounds%begc:bounds%endc, 1:nlevgrnd))
     temp2d_r(bounds%begc:bounds%endc, 1:nlevgrnd) = col%z(bounds%begc:bounds%endc, 1:nlevgrnd)
     call restartvar(ncid=ncid, flag=flag, varname='COL_Z', xtype=ncd_double,  & 
@@ -411,17 +406,6 @@ contains
          dim1name='pft',                                                          &
          long_name='pft active flag (1=active, 0=inactive)', units='',            &
          interpinic_flag='skip', readvar=readvar, data=iparr)
-
-    allocate(temp2d_i(bounds%begp:bounds%endp, 1:nlevgrnd))
-    do p=bounds%begp,bounds%endp
-       c = patch%column(p)
-       temp2d_i(p, 1:nlevgrnd) = col%levgrnd_class(c, 1:nlevgrnd)
-    end do
-    call restartvar(ncid=ncid, flag=flag, varname='LEVGRND_CLASS_p', xtype=ncd_int, &
-         dim1name='pft', dim2name='levgrnd', switchdim=.true., &
-         long_name='class in which each layer falls, patch-level', units=' ', &
-         interpinic_flag='skip', readvar=readvar, data=temp2d_i)
-    deallocate(temp2d_i)
 
     allocate(temp2d_r(bounds%begp:bounds%endp, 1:nlevgrnd))
     do p=bounds%begp,bounds%endp
