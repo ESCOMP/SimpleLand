@@ -23,7 +23,6 @@ module clm_instMod
 
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
-  use SoilHydrologyType               , only : soilhydrology_type  
   use SoilStateType                   , only : soilstate_type
   use SolarAbsorbedType               , only : solarabs_type
   use SurfaceAlbedoType               , only : surfalb_type
@@ -41,7 +40,6 @@ module clm_instMod
   use PatchType                       , only : patch                
   !
   use SoilStateInitTimeConstMod       , only : SoilStateInitTimeConst
-  use SoilHydrologyInitTimeConstMod   , only : SoilHydrologyInitTimeConst
   !
   implicit none
   public   ! By default everything is public 
@@ -54,7 +52,6 @@ module clm_instMod
   type(energyflux_type)                   :: energyflux_inst
   type(frictionvel_type)                  :: frictionvel_inst
   type(soilstate_type)                    :: soilstate_inst
-  type(soilhydrology_type)                :: soilhydrology_inst
   type(solarabs_type)                     :: solarabs_inst
   type(surfalb_type)                      :: surfalb_inst
   type(temperature_type)                  :: temperature_inst
@@ -171,9 +168,6 @@ contains
 
     call frictionvel_inst%Init(bounds)
 
-    call soilhydrology_inst%Init(bounds, nlfilename)
-    call SoilHydrologyInitTimeConst(bounds, soilhydrology_inst) ! sets time constant properties
-
     call solarabs_inst%Init(bounds)
 
     call surfalb_inst%Init(bounds)
@@ -230,8 +224,6 @@ contains
     call energyflux_inst%restart (bounds, ncid, flag=flag)
 
     call frictionvel_inst% restart (bounds, ncid, flag=flag)
-
-    call soilhydrology_inst%restart (bounds, ncid, flag=flag)
 
     call temperature_inst%restart (bounds, ncid, flag=flag)
 

@@ -155,8 +155,7 @@ contains
        call hist_htapes_wrapup( rstwr, nlend, bounds_proc,                    &
             soilstate_inst%watsat_col(bounds_proc%begc:bounds_proc%endc, 1:), &
             soilstate_inst%sucsat_col(bounds_proc%begc:bounds_proc%endc, 1:), &
-            soilstate_inst%bsw_col(bounds_proc%begc:bounds_proc%endc, 1:),    &
-            soilstate_inst%hksat_col(bounds_proc%begc:bounds_proc%endc, 1:))
+            soilstate_inst%bsw_col(bounds_proc%begc:bounds_proc%endc, 1:))
 
        !write(iulog,*)'MML: back from wrapup, yet we are still running'
 

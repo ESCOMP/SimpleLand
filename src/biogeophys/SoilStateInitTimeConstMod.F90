@@ -169,9 +169,6 @@ contains
        if ( any( sand3d(g,:)+clay3d(g,:) == 0.0_r8 ) )then
           call endrun(msg='after setting, found points sum to zero'//errMsg(sourcefile, __LINE__)) 
        end if
-
-       soilstate_inst%sandfrac_patch(p) = sand3d(g,1)/100.0_r8
-       soilstate_inst%clayfrac_patch(p) = clay3d(g,1)/100.0_r8
     end do
 
     ! Read fmax
@@ -232,24 +229,12 @@ contains
           do lev = 1,nlevgrnd
              soilstate_inst%bsw_col(c,lev)    = spval
              soilstate_inst%watsat_col(c,lev) = spval
-             soilstate_inst%watfc_col(c,lev)  = spval
-             soilstate_inst%hksat_col(c,lev)  = spval
              soilstate_inst%sucsat_col(c,lev) = spval
-             soilstate_inst%watdry_col(c,lev) = spval 
-             soilstate_inst%watopt_col(c,lev) = spval 
              soilstate_inst%bd_col(c,lev)     = spval 
              if (lev <= nlevsoi) then
                 soilstate_inst%cellsand_col(c,lev) = spval
                 soilstate_inst%cellclay_col(c,lev) = spval
-                soilstate_inst%cellorg_col(c,lev)  = spval
              end if
-          end do
-
-          do lev = 1,nlevgrnd
-             soilstate_inst%tkmg_col(c,lev)   = spval
-             soilstate_inst%tksatu_col(c,lev) = spval
-             soilstate_inst%tkdry_col(c,lev)  = spval
-             soilstate_inst%csol_col(c,lev)= spval
           end do
 
        else if (lun%urbpoi(l) .and. (col%itype(c) /= icol_road_perv) .and. (col%itype(c) /= icol_road_imperv) )then
@@ -257,25 +242,13 @@ contains
           ! Urban Roof, sunwall, shadewall properties set to special value
           do lev = 1,nlevgrnd
              soilstate_inst%watsat_col(c,lev) = spval
-             soilstate_inst%watfc_col(c,lev)  = spval
              soilstate_inst%bsw_col(c,lev)    = spval
-             soilstate_inst%hksat_col(c,lev)  = spval
              soilstate_inst%sucsat_col(c,lev) = spval
-             soilstate_inst%watdry_col(c,lev) = spval 
-             soilstate_inst%watopt_col(c,lev) = spval 
              soilstate_inst%bd_col(c,lev) = spval 
              if (lev <= nlevsoi) then
                 soilstate_inst%cellsand_col(c,lev) = spval
                 soilstate_inst%cellclay_col(c,lev) = spval
-                soilstate_inst%cellorg_col(c,lev)  = spval
              end if
-          end do
-
-          do lev = 1,nlevgrnd
-             soilstate_inst%tkmg_col(c,lev)   = spval
-             soilstate_inst%tksatu_col(c,lev) = spval
-             soilstate_inst%tkdry_col(c,lev)  = spval
-             soilstate_inst%csol_col(c,lev)   = spval
           end do
 
        else
@@ -296,7 +269,6 @@ contains
                 if (lev <= nlevsoi) then
                    soilstate_inst%cellsand_col(c,lev) = sand
                    soilstate_inst%cellclay_col(c,lev) = clay
-                   soilstate_inst%cellorg_col(c,lev)  = om_frac*organic_max
                 end if
 
              else if (lun%itype(l) /= istdlak) then  ! soil columns of both urban and non-urban types
@@ -308,7 +280,6 @@ contains
                 if (lev <= nlevsoi) then
                    soilstate_inst%cellsand_col(c,lev) = sand
                    soilstate_inst%cellclay_col(c,lev) = clay
-                   soilstate_inst%cellorg_col(c,lev)  = om_frac*organic_max
                 end if
 
                 ! TODO slevis: Temporary during dismantling for SLIM
@@ -347,40 +318,8 @@ contains
                 else
                    uncon_hksat = 0._r8
                 end if
-                soilstate_inst%hksat_col(c,lev)  = uncon_frac*uncon_hksat + (perc_frac*om_frac)*om_hksat
-
-                soilstate_inst%tkmg_col(c,lev)   = tkm ** (1._r8- soilstate_inst%watsat_col(c,lev))           
-
-                soilstate_inst%tksatu_col(c,lev) = soilstate_inst%tkmg_col(c,lev)*0.57_r8**soilstate_inst%watsat_col(c,lev)
-
-                soilstate_inst%tkdry_col(c,lev)  = ((0.135_r8*soilstate_inst%bd_col(c,lev) + 64.7_r8) / &
-                     (2.7e3_r8 - 0.947_r8*soilstate_inst%bd_col(c,lev)))*(1._r8-om_frac) + om_tkd*om_frac  
-
-                soilstate_inst%csol_col(c,lev)   = ((1._r8-om_frac)*(2.128_r8*sand+2.385_r8*clay) / (sand+clay) + &
-                     om_csol*om_frac)*1.e6_r8  ! J/(m3 K)
-
-                soilstate_inst%watdry_col(c,lev) = soilstate_inst%watsat_col(c,lev) * &
-                     (316230._r8/soilstate_inst%sucsat_col(c,lev)) ** (-1._r8/soilstate_inst%bsw_col(c,lev)) 
-                soilstate_inst%watopt_col(c,lev) = soilstate_inst%watsat_col(c,lev) * &
-                     (158490._r8/soilstate_inst%sucsat_col(c,lev)) ** (-1._r8/soilstate_inst%bsw_col(c,lev)) 
-
-                !! added by K.Sakaguchi for beta from Lee and Pielke, 1992
-                ! water content at field capacity, defined as hk = 0.1 mm/day
-                ! used eqn (7.70) in CLM3 technote with k = 0.1 (mm/day) / secspday (day/sec)
-                soilstate_inst%watfc_col(c,lev) = soilstate_inst%watsat_col(c,lev) * &
-                     (0.1_r8 / (soilstate_inst%hksat_col(c,lev)*secspday))**(1._r8/(2._r8*soilstate_inst%bsw_col(c,lev)+3._r8))
              end if
           end do
-
-          ! Urban pervious and impervious road
-          if (col%itype(c) == icol_road_imperv) then
-             ! Impervious road layers -- same as above except set watdry and watopt as missing
-             do lev = 1,nlevgrnd
-                soilstate_inst%watdry_col(c,lev) = spval 
-                soilstate_inst%watopt_col(c,lev) = spval 
-             end do
-          end if
-
        end if
     end do
 
@@ -441,38 +380,9 @@ contains
              else
                 uncon_hksat = 0._r8
              end if
-
-             soilstate_inst%hksat_col(c,lev)  = uncon_frac*uncon_hksat + (perc_frac*om_frac)*om_hksat_lake
-             soilstate_inst%tkmg_col(c,lev)   = tkm ** (1._r8- soilstate_inst%watsat_col(c,lev))
-             soilstate_inst%tksatu_col(c,lev) = soilstate_inst%tkmg_col(c,lev)*0.57_r8**soilstate_inst%watsat_col(c,lev)
-             soilstate_inst%tkdry_col(c,lev)  = ((0.135_r8*bd + 64.7_r8) / (2.7e3_r8 - 0.947_r8*bd))*(1._r8-om_frac) + &
-                                       om_tkd * om_frac
-             soilstate_inst%csol_col(c,lev)   = ((1._r8-om_frac)*(2.128_r8*sand+2.385_r8*clay) / (sand+clay) +   &
-                                       om_csol * om_frac)*1.e6_r8  ! J/(m3 K)
-             soilstate_inst%watdry_col(c,lev) = soilstate_inst%watsat_col(c,lev) &
-                  * (316230._r8/soilstate_inst%sucsat_col(c,lev)) ** (-1._r8/soilstate_inst%bsw_col(c,lev))
-             soilstate_inst%watopt_col(c,lev) = soilstate_inst%watsat_col(c,lev) &
-                  * (158490._r8/soilstate_inst%sucsat_col(c,lev)) ** (-1._r8/soilstate_inst%bsw_col(c,lev))
-
-             !! added by K.Sakaguchi for beta from Lee and Pielke, 1992
-             ! water content at field capacity, defined as hk = 0.1 mm/day
-             ! used eqn (7.70) in CLM3 technote with k = 0.1 (mm/day) / (# seconds/day)
-             soilstate_inst%watfc_col(c,lev) = soilstate_inst%watsat_col(c,lev) * (0.1_r8 / &
-                  (soilstate_inst%hksat_col(c,lev)*secspday))**(1._r8/(2._r8*soilstate_inst%bsw_col(c,lev)+3._r8))
           end do
        endif
 
-    end do
-
-    ! --------------------------------------------------------------------
-    ! Initialize threshold soil moisture and mass fracion of clay limited to 0.20
-    ! --------------------------------------------------------------------
-
-    do c = begc,endc
-       g = col%gridcell(c)
-
-       soilstate_inst%gwc_thr_col(c) = 0.17_r8 + 0.14_r8 * clay3d(g,1) * 0.01_r8
-       soilstate_inst%mss_frc_cly_vld_col(c) = min(clay3d(g,1) * 0.01_r8, 0.20_r8)
     end do
 
     ! --------------------------------------------------------------------
