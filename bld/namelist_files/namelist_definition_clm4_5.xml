@@ -443,16 +443,6 @@ Simulation years you can look for in initial condition files (finidat) if interp
 </entry>
 
 <!-- ========================================================================================  -->
-<!-- namelist elements associated with the Hydrology1Mod                                       -->
-<!-- ========================================================================================  -->
-
-<entry id="h2osfcflag" type="integer" category="clm_physics"
-       group="clm_soilhydrology_inparm" valid_values="0,1" >
-If surface water is active or not
-(deprecated -- will be removed)
-</entry>
-
-<!-- ========================================================================================  -->
 <!-- Namelist options related to finidat consistency checks                                    -->
 <!-- ========================================================================================  -->
 

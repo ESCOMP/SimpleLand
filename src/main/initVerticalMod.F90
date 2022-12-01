@@ -17,7 +17,7 @@ module initVerticalMod
   use clm_varpar        , only : nlevsoi, nlevsoifl, nlevurb 
   use clm_varctl        , only : fsurdat, iulog
   use clm_varcon        , only : zlak, dzlak, zsoi, dzsoi, zisoi, spval, ispval, grlnd 
-  use column_varcon     , only : icol_roof, icol_sunwall, icol_shadewall, is_hydrologically_active
+  use column_varcon     , only : icol_roof, icol_sunwall, icol_shadewall
   use landunit_varcon   , only : istdlak, istice_mec
   use fileutils         , only : getfil
   use LandunitType      , only : lun                
@@ -60,14 +60,11 @@ contains
     logical               :: readvar 
     integer               :: dimid             ! dimension id
     character(len=256)    :: locfn             ! local filename
-    real(r8) ,pointer     :: std (:)           ! read in - topo_std 
-    real(r8) ,pointer     :: tslope (:)        ! read in - topo_slope 
     real(r8)              :: slope0            ! temporary
     real(r8)              :: slopebeta         ! temporary
     real(r8)              :: slopemax          ! temporary
     integer               :: ier               ! error status
     real(r8)              :: scalez = 0.025_r8 ! Soil layer thickness discretization (m)
-    real(r8)              :: thick_equal = 0.2
     real(r8) ,pointer     :: lakedepth_in(:)   ! read in - lakedepth 
     real(r8), allocatable :: zurb_wall(:,:)    ! wall (layer node depth)
     real(r8), allocatable :: zurb_roof(:,:)    ! roof (layer node depth)
@@ -296,62 +293,6 @@ contains
           col%zi(c,0:nlevgrnd) = zisoi(0:nlevgrnd)
           col%dz(c,1:nlevgrnd) = dzsoi(1:nlevgrnd)
        end if
-    end do
-
-    !-----------------------------------------------
-    ! Read in topographic index and slope
-    !-----------------------------------------------
-
-    allocate(tslope(bounds%begg:bounds%endg))
-    call ncd_io(ncid=ncid, varname='SLOPE', flag='read', data=tslope, dim1name=grlnd, readvar=readvar)
-    if (.not. readvar) then
-       call shr_sys_abort(' ERROR: TOPOGRAPHIC SLOPE NOT on surfdata file'//&
-            errMsg(sourcefile, __LINE__)) 
-    end if
-    do c = begc,endc
-       g = col%gridcell(c)
-       ! check for near zero slopes, set minimum value
-       col%topo_slope(c) = max(tslope(g), 0.2_r8)
-    end do
-    deallocate(tslope)
-
-    allocate(std(bounds%begg:bounds%endg))
-    call ncd_io(ncid=ncid, varname='STD_ELEV', flag='read', data=std, dim1name=grlnd, readvar=readvar)
-    if (.not. readvar) then
-       call shr_sys_abort(' ERROR: TOPOGRAPHIC STDdev (STD_ELEV) NOT on surfdata file'//&
-            errMsg(sourcefile, __LINE__)) 
-    end if
-    do c = begc,endc
-       g = col%gridcell(c)
-       ! Topographic variables
-       col%topo_std(c) = std(g)
-    end do
-    deallocate(std)
-
-    !-----------------------------------------------
-    ! SCA shape function defined
-    !-----------------------------------------------
-
-    do c = begc,endc
-       l = col%landunit(c)
-       g = col%gridcell(c)
-
-       if (lun%itype(l)==istice_mec .and. glc_behavior%allow_multiple_columns_grc(g)) then
-          ! ice_mec columns already account for subgrid topographic variability through
-          ! their use of multiple elevation classes; thus, to avoid double-accounting for
-          ! topographic variability in these columns, we ignore topo_std and use a fixed
-          ! value of n_melt.
-          col%n_melt(c) = 10._r8
-       else
-          col%n_melt(c) = 200.0/max(10.0_r8, col%topo_std(c))
-       end if
-
-       ! microtopographic parameter, units are meters (try smooth function of slope)
-
-       slopebeta = 3._r8
-       slopemax = 0.4_r8
-       slope0 = slopemax**(-1._r8/slopebeta)
-       col%micro_sigma(c) = (col%topo_slope(c) + slope0)**(-slopebeta)
     end do
 
     call ncd_pio_closefile(ncid)

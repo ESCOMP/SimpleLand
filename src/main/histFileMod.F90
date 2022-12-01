@@ -2126,10 +2126,6 @@ contains
     character(len=*),parameter :: varnames(nflds) = (/ &
                                                         'ZSOI  ', &
                                                         'DZSOI '  &
-!                                                       'WATSAT', &
-!                                                       'SUCSAT', &
-!                                                       'BSW   ', &
-!                                                       'HKSAT '  &
                                                     /)
     real(r8), pointer :: histil(:,:)      ! temporary
     real(r8), pointer :: histol(:,:)

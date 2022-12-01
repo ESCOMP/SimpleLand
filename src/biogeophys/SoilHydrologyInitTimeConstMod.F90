@@ -71,51 +71,14 @@ contains
                 soilhydrology_inst%wa_col(c)  = spval
                 soilhydrology_inst%zwt_col(c) = spval
              end if
-             ! initialize frost_table, zwt_perched
-             soilhydrology_inst%zwt_perched_col(c) = spval
-             soilhydrology_inst%frost_table_col(c) = spval
           else
              ! Note that the following hard-coded constants (on the next two lines) seem
              ! implicitly related to aquifer_water_baseline
              soilhydrology_inst%wa_col(c)  = 4000._r8
              soilhydrology_inst%zwt_col(c) = (25._r8 + col%zi(c,nlevsoi)) - soilhydrology_inst%wa_col(c)/0.2_r8 /1000._r8  ! One meter below soil column
-             ! initialize frost_table, zwt_perched to bottom of soil column
-             soilhydrology_inst%zwt_perched_col(c) = col%zi(c,nlevsoi)
-             soilhydrology_inst%frost_table_col(c) = col%zi(c,nlevsoi)
           end if
        end if
     end do
-
-    associate(micro_sigma => col%micro_sigma)
-      do c = bounds%begc, bounds%endc
-         
-         ! determine h2osfc threshold ("fill & spill" concept)
-         ! set to zero for no h2osfc (w/frac_infclust =large)
-         
-         soilhydrology_inst%h2osfc_thresh_col(c) = 0._r8
-         if (micro_sigma(c) > 1.e-6_r8 .and. (soilhydrology_inst%h2osfcflag /= 0)) then
-            d = 0.0
-            do p = 1,4
-               fd   = 0.5*(1.0_r8+shr_spfn_erf(d/(micro_sigma(c)*sqrt(2.0)))) - pc
-               dfdd = exp(-d**2/(2.0*micro_sigma(c)**2))/(micro_sigma(c)*sqrt(2.0*shr_const_pi))
-               d    = d - fd/dfdd
-            enddo
-            soilhydrology_inst%h2osfc_thresh_col(c) = 0.5*d*(1.0_r8+shr_spfn_erf(d/(micro_sigma(c)*sqrt(2.0)))) + &
-                 micro_sigma(c)/sqrt(2.0*shr_const_pi)*exp(-d**2/(2.0*micro_sigma(c)**2))         
-            soilhydrology_inst%h2osfc_thresh_col(c) = 1.e3_r8 * soilhydrology_inst%h2osfc_thresh_col(c) !convert to mm from meters
-         else
-            soilhydrology_inst%h2osfc_thresh_col(c) = 0._r8
-         endif
-
-         if (soilhydrology_inst%h2osfcflag == 0) then 
-            soilhydrology_inst%h2osfc_thresh_col(c) = 0._r8    ! set to zero for no h2osfc (w/frac_infclust =large)
-         endif
-
-         ! set decay factor
-         soilhydrology_inst%hkdepth_col(c) = 1._r8/2.5_r8
-
-      end do
-    end associate
 
   end subroutine SoilhydrologyInitTimeConst
 
@@ -153,18 +116,6 @@ contains
     real(r8) :: om_fracvic(1:nlayert)             ! temporary, weighted averaged organic matter fract for VIC layers
     integer  :: i, j                              ! indices
     !-------------------------------------------------------------------------------------------
-
-    ! soilhydrology_inst%depth_col(:,:)           Output: layer depth of upper layer(m) 
-    ! soilhydrology_inst%vic_clm_fract_col(:,:,:) Output: fraction of VIC layers in CLM layers
-    ! soilhydrology_inst%c_param_col(:)           Output: baseflow exponent (Qb)
-    ! soilhydrology_inst%expt_col(:,:)            Output: pore-size distribution related paramter(Q12)
-    ! soilhydrology_inst%ksat_col(:,:)            Output: Saturated hydrologic conductivity (mm/s)
-    ! soilhydrology_inst%phi_s_col(:,:)           Output: soil moisture dissusion parameter
-    ! soilhydrology_inst%porosity_col(:,:)        Output: soil porosity
-    ! soilhydrology_inst%max_moist_col(:,:)       Output: maximum soil moisture (ice + liq)
-
-    !  map parameters between VIC layers and CLM layers
-    soilhydrology_inst%c_param_col(c) = 2._r8
 
     ! map the CLM layers to VIC layers 
     do i = 1, nlayer      
@@ -221,16 +172,6 @@ contains
        else
           uncon_hksat = 0._r8
        end if
-
-       soilhydrology_inst%ksat_col(c,i)  = &
-            uncon_frac*uncon_hksat + (perc_frac*om_fracvic(i))*om_hksat
-
-       soilhydrology_inst%max_moist_col(c,i) = &
-            soilhydrology_inst%porosity_col(c,i) * soilhydrology_inst%depth_col(c,i) * 1000._r8 !in mm!
-
-       soilhydrology_inst%phi_s_col(c,i) = &
-            -(exp((1.54_r8 - 0.0095_r8*sandvic(i) + &
-            0.0063_r8*(100.0_r8-sandvic(i)-clayvic(i)))*log(10.0_r8))*9.8e-5_r8)
 
     end do ! end of loop over layers
 
