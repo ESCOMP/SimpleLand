@@ -83,11 +83,6 @@ contains
        lnd2atm_inst%h2osno_grc(g) = lnd2atm_inst%h2osno_grc(g)/1000._r8
     end do
 
-    call c2g(bounds, nlevgrnd, &
-         waterstate_inst%h2osoi_vol_col (bounds%begc:bounds%endc, :), &
-         lnd2atm_inst%h2osoi_vol_grc    (bounds%begg:bounds%endg, :), &
-         c2l_scale_type= 'urbanf', l2g_scale_type='unity')
-
     call p2g(bounds, numrad, &
          surfalb_inst%albd_patch (bounds%begp:bounds%endp, :), &
          lnd2atm_inst%albd_grc   (bounds%begg:bounds%endg, :), &
