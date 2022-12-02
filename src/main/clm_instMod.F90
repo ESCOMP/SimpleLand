@@ -73,23 +73,17 @@ contains
   subroutine clm_instInit(bounds)
     !
     ! !USES: 
-    use clm_varpar                         , only : nlevsno, numpft
-    use controlMod                         , only : nlfilename, fsurdat
-    use domainMod                          , only : ldomain
+    use clm_varpar                         , only : nlevsno
     use initVerticalMod                    , only : initVertical
-    use accumulMod                         , only : print_accum_fields 
-    use decompMod                          , only : get_proc_bounds
     !
     ! !ARGUMENTS    
     type(bounds_type), intent(in) :: bounds  ! processor bounds
     !
     ! !LOCAL VARIABLES:
     integer               :: c,l,g
-    integer               :: nclumps,nc
     integer               :: begp, endp
     integer               :: begc, endc
     integer               :: begl, endl
-    type(bounds_type)     :: bounds_clump
     real(r8), allocatable :: h2osno_col(:)
     real(r8), allocatable :: snow_depth_col(:)
 
@@ -150,7 +144,7 @@ contains
     call temperature_inst%Init(bounds)
 
     call soilstate_inst%Init(bounds)
-    call SoilStateInitTimeConst(bounds, soilstate_inst, nlfilename) ! sets hydraulic and thermal soil properties
+    call SoilStateInitTimeConst(bounds, soilstate_inst) ! sets hydraulic and thermal soil properties
 
     call waterstate_inst%Init(bounds,         &
          h2osno_col(begc:endc),                    &
@@ -201,22 +195,14 @@ contains
     !
     ! !USES:
     use ncdio_pio       , only : file_desc_t
-    use decompMod       , only : get_proc_bounds, get_proc_clumps, get_clump_bounds
-
     !
     ! !DESCRIPTION:
     ! Define/write/read CLM restart file.
     !
     ! !ARGUMENTS:
     type(bounds_type) , intent(in)    :: bounds          
-    
     type(file_desc_t) , intent(inout) :: ncid ! netcdf id
     character(len=*)  , intent(in)    :: flag ! 'define', 'write', 'read' 
-
-    ! Local variables
-    integer                           :: nc, nclumps
-    type(bounds_type)                 :: bounds_clump
-
     !-----------------------------------------------------------------------
 
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
