@@ -54,31 +54,6 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer            :: p, lev, c, l, g, j            ! indices
-    real(r8)           :: om_frac                       ! organic matter fraction
-    real(r8)           :: om_tkm         = 0.25_r8      ! thermal conductivity of organic soil (Farouki, 1986) [W/m/K]
-    real(r8)           :: om_watsat_lake = 0.9_r8       ! porosity of organic soil
-    real(r8)           :: om_hksat_lake  = 0.1_r8       ! saturated hydraulic conductivity of organic soil [mm/s]
-    real(r8)           :: om_sucsat_lake = 10.3_r8      ! saturated suction for organic matter (Letts, 2000)
-    real(r8)           :: om_b_lake      = 2.7_r8       ! Clapp Hornberger paramater for oragnic soil (Letts, 2000) (lake)
-    real(r8)           :: om_watsat                     ! porosity of organic soil
-    real(r8)           :: om_hksat                      ! saturated hydraulic conductivity of organic soil [mm/s]
-    real(r8)           :: om_sucsat                     ! saturated suction for organic matter (mm)(Letts, 2000)
-    real(r8)           :: om_csol        = 2.5_r8       ! heat capacity of peat soil *10^6 (J/K m3) (Farouki, 1986)
-    real(r8)           :: om_tkd         = 0.05_r8      ! thermal conductivity of dry organic soil (Farouki, 1981)
-    real(r8)           :: om_b                          ! Clapp Hornberger paramater for oragnic soil (Letts, 2000)
-    real(r8)           :: zsapric        = 0.5_r8       ! depth (m) that organic matter takes on characteristics of sapric peat
-    real(r8)           :: pcalpha        = 0.5_r8       ! percolation threshold
-    real(r8)           :: pcbeta         = 0.139_r8     ! percolation exponent
-    real(r8)           :: pc_lake        = 0.5_r8       ! percolation threshold
-    real(r8)           :: perc_frac                     ! "percolating" fraction of organic soil
-    real(r8)           :: perc_norm                     ! normalize to 1 when 100% organic soil
-    real(r8)           :: uncon_hksat                   ! series conductivity of mineral/organic soil
-    real(r8)           :: uncon_frac                    ! fraction of "unconnected" soil
-    real(r8)           :: bd                            ! bulk density of dry soil material [kg/m^3]
-    real(r8)           :: tkm                           ! mineral conductivity
-    real(r8)           :: xksat                         ! maximum hydraulic conductivity of soil [mm/s]
-    real(r8)           :: clay,sand                     ! temporaries
-    real(r8)           :: organic_max                   ! organic matter (kg/m3) where soil is assumed to act like peat
     integer            :: dimid                         ! dimension id
     logical            :: readvar 
     type(file_desc_t)  :: ncid                          ! netcdf id
@@ -86,8 +61,6 @@ contains
     real(r8) ,pointer  :: zisoifl (:)                   ! Output: [real(r8) (:)]  original soil interface depth 
     real(r8) ,pointer  :: dzsoifl (:)                   ! Output: [real(r8) (:)]  original soil thickness 
     real(r8) ,pointer  :: gti (:)                       ! read in - fmax 
-    real(r8) ,pointer  :: sand3d (:,:)                  ! read in - soil texture: percent sand (needs to be a pointer for use in ncdio)
-    real(r8) ,pointer  :: clay3d (:,:)                  ! read in - soil texture: percent clay (needs to be a pointer for use in ncdio)
     character(len=256) :: locfn                         ! local filename
     integer            :: begp, endp
     integer            :: begc, endc
@@ -119,57 +92,15 @@ contains
     end do
 
     ! --------------------------------------------------------------------
-    ! dynamic memory allocation
-    ! --------------------------------------------------------------------
-
-    allocate(sand3d(begg:endg,nlevsoifl))
-    allocate(clay3d(begg:endg,nlevsoifl))
-
-    ! Determine organic_max from parameter file
-
-    call getfil (paramfile, locfn, 0)
-    call ncd_pio_openfile (ncid, trim(locfn), 0)
-    call ncd_io(ncid=ncid, varname='organic_max', flag='read', data=organic_max, readvar=readvar)
-    if ( .not. readvar ) call endrun(msg=' ERROR: organic_max not on param file'//errMsg(sourcefile, __LINE__))
-    call ncd_pio_closefile(ncid)
-
-    ! --------------------------------------------------------------------
     ! Read surface dataset
     ! --------------------------------------------------------------------
 
     if (masterproc) then
-       write(iulog,*) 'Attempting to read soil color, sand and clay boundary data .....'
+       write(iulog,*) 'Attempting to read soil color boundary data .....'
     end if
 
     call getfil (fsurdat, locfn, 0)
     call ncd_pio_openfile (ncid, locfn, 0)
-
-    ! Read in sand and clay data
-
-    call ncd_io(ncid=ncid, varname='PCT_SAND', flag='read', data=sand3d, dim1name=grlnd, readvar=readvar)
-    if (.not. readvar) then
-       call endrun(msg=' ERROR: PCT_SAND NOT on surfdata file'//errMsg(sourcefile, __LINE__)) 
-    end if
-
-    call ncd_io(ncid=ncid, varname='PCT_CLAY', flag='read', data=clay3d, dim1name=grlnd, readvar=readvar)
-    if (.not. readvar) then
-       call endrun(msg=' ERROR: PCT_CLAY NOT on surfdata file'//errMsg(sourcefile, __LINE__)) 
-    end if
-
-    do p = begp,endp
-       g = patch%gridcell(p)
-       if ( sand3d(g,1)+clay3d(g,1) == 0.0_r8 )then
-          if ( any( sand3d(g,:)+clay3d(g,:) /= 0.0_r8 ) )then
-             call endrun(msg='found depth points that do NOT sum to zero when surface does'//&
-                  errMsg(sourcefile, __LINE__)) 
-          end if
-          sand3d(g,:) = 1.0_r8
-          clay3d(g,:) = 1.0_r8
-       end if
-       if ( any( sand3d(g,:)+clay3d(g,:) == 0.0_r8 ) )then
-          call endrun(msg='after setting, found points sum to zero'//errMsg(sourcefile, __LINE__)) 
-       end if
-    end do
 
     ! Read fmax
 
@@ -227,14 +158,7 @@ contains
        if (lun%itype(l)==istwet .or. lun%itype(l)==istice_mec) then
 
           do lev = 1,nlevgrnd
-             soilstate_inst%bsw_col(c,lev)    = spval
              soilstate_inst%watsat_col(c,lev) = spval
-             soilstate_inst%sucsat_col(c,lev) = spval
-             soilstate_inst%bd_col(c,lev)     = spval 
-             if (lev <= nlevsoi) then
-                soilstate_inst%cellsand_col(c,lev) = spval
-                soilstate_inst%cellclay_col(c,lev) = spval
-             end if
           end do
 
        else if (lun%urbpoi(l) .and. (col%itype(c) /= icol_road_perv) .and. (col%itype(c) /= icol_road_imperv) )then
@@ -242,87 +166,20 @@ contains
           ! Urban Roof, sunwall, shadewall properties set to special value
           do lev = 1,nlevgrnd
              soilstate_inst%watsat_col(c,lev) = spval
-             soilstate_inst%bsw_col(c,lev)    = spval
-             soilstate_inst%sucsat_col(c,lev) = spval
-             soilstate_inst%bd_col(c,lev) = spval 
-             if (lev <= nlevsoi) then
-                soilstate_inst%cellsand_col(c,lev) = spval
-                soilstate_inst%cellclay_col(c,lev) = spval
-             end if
           end do
 
        else
 
           do lev = 1,nlevgrnd
-                if (lev <= nlevsoi) then ! duplicate clay and sand values from 10th soil layer
-                   clay = clay3d(g,lev)
-                   sand = sand3d(g,lev)
-                   om_frac = 0._r8
-                else
-                   clay = clay3d(g,nlevsoi)
-                   sand = sand3d(g,nlevsoi)
-                   om_frac = 0._r8
-                endif
-
-             if (lun%itype(l) == istdlak) then
-
-                if (lev <= nlevsoi) then
-                   soilstate_inst%cellsand_col(c,lev) = sand
-                   soilstate_inst%cellclay_col(c,lev) = clay
-                end if
-
-             else if (lun%itype(l) /= istdlak) then  ! soil columns of both urban and non-urban types
-
-                if (lun%urbpoi(l)) then
-                   om_frac = 0._r8 ! No organic matter for urban
-                end if
-
-                if (lev <= nlevsoi) then
-                   soilstate_inst%cellsand_col(c,lev) = sand
-                   soilstate_inst%cellclay_col(c,lev) = clay
-                end if
-
+             if (lun%itype(l) /= istdlak) then  ! soil columns of both urban and non-urban types
                 ! TODO slevis: Temporary during dismantling for SLIM
                 soilstate_inst%watsat_col(c,lev) = 1._r8
-                soilstate_inst%bsw_col(c,lev) = 1._r8
-                soilstate_inst%sucsat_col(c,lev) = 1._r8
-                xksat = 1._r8
-
-                om_watsat         = max(0.93_r8 - 0.1_r8   *(zsoi(lev)/zsapric), 0.83_r8)
-                om_b              = min(2.7_r8  + 9.3_r8   *(zsoi(lev)/zsapric), 12.0_r8)
-                om_sucsat         = min(10.3_r8 - 0.2_r8   *(zsoi(lev)/zsapric), 10.1_r8)
-                om_hksat          = max(0.28_r8 - 0.2799_r8*(zsoi(lev)/zsapric), xksat)
-
-                soilstate_inst%bd_col(c,lev)        = (1._r8 - soilstate_inst%watsat_col(c,lev))*2.7e3_r8 
-                soilstate_inst%watsat_col(c,lev)    = (1._r8 - om_frac) * soilstate_inst%watsat_col(c,lev) + om_watsat*om_frac
-                tkm                                 = (1._r8-om_frac) * (8.80_r8*sand+2.92_r8*clay)/(sand+clay)+om_tkm*om_frac ! W/(m K)
-                soilstate_inst%bsw_col(c,lev)       = (1._r8-om_frac) * (2.91_r8 + 0.159_r8*clay) + om_frac*om_b   
-                soilstate_inst%sucsat_col(c,lev)    = (1._r8-om_frac) * soilstate_inst%sucsat_col(c,lev) + om_sucsat*om_frac  
-                soilstate_inst%hksat_min_col(c,lev) = xksat
-
-                ! perc_frac is zero unless perf_frac greater than percolation threshold
-                if (om_frac > pcalpha) then
-                   perc_norm=(1._r8 - pcalpha)**(-pcbeta)
-                   perc_frac=perc_norm*(om_frac - pcalpha)**pcbeta
-                else
-                   perc_frac=0._r8
-                endif
-
-                ! uncon_frac is fraction of mineral soil plus fraction of "nonpercolating" organic soil
-                uncon_frac=(1._r8-om_frac)+(1._r8-perc_frac)*om_frac
-
-                ! uncon_hksat is series addition of mineral/organic conductivites
-                if (om_frac < 1._r8) then
-                   uncon_hksat=uncon_frac/((1._r8-om_frac)/xksat &
-                        +((1._r8-perc_frac)*om_frac)/om_hksat)
-                else
-                   uncon_hksat = 0._r8
-                end if
              end if
           end do
        end if
     end do
 
+    ! TODO slevis: Temporary while dismantling for SLIM
     ! --------------------------------------------------------------------
     ! Set soil hydraulic and thermal properties: lake
     ! --------------------------------------------------------------------
@@ -330,66 +187,17 @@ contains
     do c = begc, endc
        g = col%gridcell(c)
        l = col%landunit(c)
-
        if (lun%itype(l)==istdlak) then
-
           do lev = 1,nlevgrnd
-             if ( lev <= nlevsoi )then
-                clay    =  soilstate_inst%cellclay_col(c,lev)
-                sand    =  soilstate_inst%cellsand_col(c,lev)
-                om_frac =  0._r8
-             else
-                clay    = soilstate_inst%cellclay_col(c,nlevsoi)
-                sand    = soilstate_inst%cellsand_col(c,nlevsoi)
-                om_frac = 0.0_r8
-             end if
-
-             soilstate_inst%watsat_col(c,lev) = 0.489_r8 - 0.00126_r8*sand
-
-             soilstate_inst%bsw_col(c,lev)    = 2.91 + 0.159*clay
-
-             soilstate_inst%sucsat_col(c,lev) = 10._r8 * ( 10._r8**(1.88_r8-0.0131_r8*sand) )
-
-             bd = (1._r8-soilstate_inst%watsat_col(c,lev))*2.7e3_r8
-
-             soilstate_inst%watsat_col(c,lev) = (1._r8 - om_frac)*soilstate_inst%watsat_col(c,lev) + om_watsat_lake * om_frac
-
-             tkm = (1._r8-om_frac)*(8.80_r8*sand+2.92_r8*clay)/(sand+clay) + om_tkm * om_frac ! W/(m K)
-
-             soilstate_inst%bsw_col(c,lev)    = (1._r8-om_frac)*(2.91_r8 + 0.159_r8*clay) + om_frac * om_b_lake
-
-             soilstate_inst%sucsat_col(c,lev) = (1._r8-om_frac)*soilstate_inst%sucsat_col(c,lev) + om_sucsat_lake * om_frac
-
-             xksat = 0.0070556 *( 10.**(-0.884+0.0153*sand) ) ! mm/s
-
-             ! perc_frac is zero unless perf_frac greater than percolation threshold
-             if (om_frac > pc_lake) then
-                perc_norm = (1._r8 - pc_lake)**(-pcbeta)
-                perc_frac = perc_norm*(om_frac - pc_lake)**pcbeta
-             else
-                perc_frac = 0._r8
-             endif
-
-             ! uncon_frac is fraction of mineral soil plus fraction of "nonpercolating" organic soil
-             uncon_frac = (1._r8-om_frac) + (1._r8-perc_frac)*om_frac
-
-             ! uncon_hksat is series addition of mineral/organic conductivites
-             if (om_frac < 1._r8) then
-                xksat = 0.0070556 *( 10.**(-0.884+0.0153*sand) ) ! mm/s
-                uncon_hksat = uncon_frac/((1._r8-om_frac)/xksat + ((1._r8-perc_frac)*om_frac)/om_hksat_lake)
-             else
-                uncon_hksat = 0._r8
-             end if
+             soilstate_inst%watsat_col(c,lev) = 0.489_r8
           end do
        endif
-
     end do
 
     ! --------------------------------------------------------------------
     ! Deallocate memory
     ! --------------------------------------------------------------------
 
-    deallocate(sand3d, clay3d)
     deallocate(zisoifl, zsoifl, dzsoifl)
 
   end subroutine SoilStateInitTimeConst

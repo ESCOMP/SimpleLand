@@ -2086,8 +2086,7 @@ contains
   end subroutine htape_add_ctype_metadata
 
   !-----------------------------------------------------------------------
-  subroutine htape_timeconst3D(t, &
-       bounds, watsat_col, sucsat_col, bsw_col, mode)
+  subroutine htape_timeconst3D(t, bounds, mode)
     !
     ! !DESCRIPTION:
     ! Write time constant 3D variables to history tapes.
@@ -2105,9 +2104,7 @@ contains
     ! !ARGUMENTS:
     integer           , intent(in) :: t    ! tape index
     type(bounds_type) , intent(in) :: bounds           
-    real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: sucsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: bsw_col( bounds%begc:,1: ) 
+!   real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
     character(len=*)  , intent(in) :: mode ! 'define' or 'write'
     !
     ! !LOCAL VARIABLES:
@@ -2135,9 +2132,7 @@ contains
                                                       /)
     !-----------------------------------------------------------------------
 
-    SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(sucsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(bsw_col)    == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
+!   SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
 
     !-------------------------------------------------------------------------------
     !***      Non-time varying 3D fields                    ***
@@ -2153,14 +2148,6 @@ contains
              long_name='soil depth'; units = 'm'
           else if (ifld == 2) then
              long_name='soil thickness'; units = 'm'
-!         else if (ifld == 3) then
-!            long_name='saturated soil water content (porosity)';  units = 'mm3/mm3'
-!         else if (ifld == 4) then
-!            long_name='saturated soil matric potential'; units = 'mm'
-!         else if (ifld == 5) then
-!            long_name='slope of soil water retention curve'; units = 'unitless'
-!         else if (ifld == 6) then
-!            long_name='saturated hydraulic conductivity'; units = 'mm s-1'
           else
              call endrun(msg=' ERROR: bad 3D time-constant field index'//errMsg(sourcefile, __LINE__))
           end if
@@ -3114,8 +3101,7 @@ contains
   end subroutine hfields_1dinfo
 
   !-----------------------------------------------------------------------
-  subroutine hist_htapes_wrapup( rstwr, nlend, bounds, &
-       watsat_col, sucsat_col, bsw_col)
+  subroutine hist_htapes_wrapup( rstwr, nlend, bounds)
     !
     ! !DESCRIPTION:
     ! Write history tape(s)
@@ -3147,9 +3133,7 @@ contains
     logical, intent(in) :: rstwr    ! true => write restart file this step
     logical, intent(in) :: nlend    ! true => end of run on this step
     type(bounds_type) , intent(in) :: bounds           
-    real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: sucsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: bsw_col( bounds%begc:,1: ) 
+!   real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
     !
     ! !LOCAL VARIABLES:
     integer :: t                          ! tape index
@@ -3173,9 +3157,7 @@ contains
     character(len=*),parameter :: subname = 'hist_htapes_wrapup'
     !-----------------------------------------------------------------------
 
-    SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(sucsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(bsw_col)    == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
+!   SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
 
     ! get current step
 
@@ -3245,36 +3227,29 @@ contains
              ! Define time-constant field variables
              call htape_timeconst(t, mode='define')
 
-             !write(iulog,*)'MML define 3D'
-             ! Define 3D time-constant field variables only to first primary tape
-             if ( do_3Dtconst .and. t == 1 ) then
-                call htape_timeconst3D(t, &
-                     bounds, watsat_col, sucsat_col, bsw_col, mode='define')
-                TimeConst3DVars_Filename = trim(locfnh(t))
-             end if
+!            ! Define 3D time-constant field variables only to first primary tape
+!            if ( do_3Dtconst .and. t == 1 ) then
+!               call htape_timeconst3D(t, bounds, watsat_col, mode='define')
+!               TimeConst3DVars_Filename = trim(locfnh(t))
+!            end if
 
-             !write(iulog,*)'MML define model field vars'
              ! Define model field variables
              call hfields_write(t, mode='define')
 
-             !write(iulog,*)'MML run away'
              ! Exit define model
              call ncd_enddef(nfid(t))
              call t_stopf('hist_htapes_wrapup_define')
           endif
 
-          !write(iulog,*)'MML before htape_teimconst'
           call t_startf('hist_htapes_wrapup_tconst')
           ! Write time constant history variables
           call htape_timeconst(t, mode='write')
 
-          !write(iulog,*)'MML write 3D time const'
-          ! Write 3D time constant history variables only to first primary tape
-          if ( do_3Dtconst .and. t == 1 .and. tape(t)%ntimes == 1 )then
-             call htape_timeconst3D(t, &
-                  bounds, watsat_col, sucsat_col, bsw_col, mode='write')
-             do_3Dtconst = .false.
-          end if
+!         ! Write 3D time constant history variables only to first primary tape
+!         if ( do_3Dtconst .and. t == 1 .and. tape(t)%ntimes == 1 )then
+!            call htape_timeconst3D(t, bounds, watsat_col, mode='write')
+!            do_3Dtconst = .false.
+!         end if
 
           if (masterproc) then
              write(iulog,*)
