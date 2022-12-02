@@ -213,8 +213,6 @@ contains
 
     call temperature_inst%restart (bounds, ncid, flag=flag)
 
-    call soilstate_inst%restart (bounds, ncid, flag=flag)
-
     call waterstate_inst%restart (bounds, ncid, flag=flag, &
          watsat_col=soilstate_inst%watsat_col(bounds%begc:bounds%endc,:)) 
 
