@@ -101,8 +101,6 @@ module clm_varctl
   ! Interpolation of finidat if requested
   !----------------------------------------------------------
 
-  logical, public :: bound_h2osoi = .true. ! for debugging 
-
   ! If finidat_interp_source is non-blank and finidat is blank then interpolation will be
   ! done from finidat_interp_source to finidat_interp_dest. Note that
   ! finidat_interp_source is not read in directly from the namelist - rather, it is set

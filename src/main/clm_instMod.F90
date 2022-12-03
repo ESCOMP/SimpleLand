@@ -23,7 +23,6 @@ module clm_instMod
 
   use EnergyFluxType                  , only : energyflux_type
   use FrictionVelocityMod             , only : frictionvel_type
-  use SoilStateType                   , only : soilstate_type
   use SolarAbsorbedType               , only : solarabs_type
   use SurfaceAlbedoType               , only : surfalb_type
   use TemperatureType                 , only : temperature_type
@@ -39,8 +38,6 @@ module clm_instMod
   use ColumnType                      , only : col                
   use PatchType                       , only : patch                
   !
-  use SoilStateInitTimeConstMod       , only : SoilStateInitTimeConst
-  !
   implicit none
   public   ! By default everything is public 
   !
@@ -51,7 +48,6 @@ module clm_instMod
   ! Physics types 
   type(energyflux_type)                   :: energyflux_inst
   type(frictionvel_type)                  :: frictionvel_inst
-  type(soilstate_type)                    :: soilstate_inst
   type(solarabs_type)                     :: solarabs_inst
   type(surfalb_type)                      :: surfalb_inst
   type(temperature_type)                  :: temperature_inst
@@ -143,13 +139,9 @@ contains
 
     call temperature_inst%Init(bounds)
 
-    call soilstate_inst%Init(bounds)
-    call SoilStateInitTimeConst(bounds, soilstate_inst) ! sets hydraulic and thermal soil properties
-
     call waterstate_inst%Init(bounds,         &
          h2osno_col(begc:endc),                    &
          snow_depth_col(begc:endc),                &
-         soilstate_inst%watsat_col(begc:endc, 1:), &
          temperature_inst%t_soisno_col(begc:endc, -nlevsno+1:) )
 
     call waterflux_inst%Init(bounds)
@@ -213,8 +205,7 @@ contains
 
     call temperature_inst%restart (bounds, ncid, flag=flag)
 
-    call waterstate_inst%restart (bounds, ncid, flag=flag, &
-         watsat_col=soilstate_inst%watsat_col(bounds%begc:bounds%endc,:)) 
+    call waterstate_inst%restart (bounds, ncid, flag=flag)
 
     call surfalb_inst%restart (bounds, ncid, flag=flag)
 

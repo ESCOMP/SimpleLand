@@ -20,7 +20,6 @@ module clm_driver
   !
   use perf_mod				! MML: this is where t_startf and t_stopf are 
   !
-  use clm_instMod            , only : soilstate_inst
   use clm_instMod            , only : atm2lnd_inst, lnd2atm_inst
 
   ! MML: add use simple land model module
