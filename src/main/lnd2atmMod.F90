@@ -287,19 +287,6 @@ contains
          lnd2atm_inst%qflx_rofliq_drain_perched_grc(bounds%begg:bounds%endg), &
          c2l_scale_type= 'urbanf', l2g_scale_type='unity' )
 
-    ! calculate total water storage for history files
-    ! first set tws to gridcell total endwb
-    ! second add river storage as gridcell average depth (1.e-3 converts [m3/km2] to [mm])
-    ! TODO - this was in BalanceCheckMod - not sure where it belongs?
-
-    call c2g( bounds, &
-         waterstate_inst%endwb_col(bounds%begc:bounds%endc), &
-         waterstate_inst%tws_grc  (bounds%begg:bounds%endg), &
-         c2l_scale_type= 'urbanf', l2g_scale_type='unity' )
-    do g = bounds%begg, bounds%endg
-       waterstate_inst%tws_grc(g) = waterstate_inst%tws_grc(g) + atm2lnd_inst%volr_grc(g) / grc%area(g) * 1.e-3_r8
-    enddo
-
   end subroutine lnd2atm
 
 end module lnd2atmMod

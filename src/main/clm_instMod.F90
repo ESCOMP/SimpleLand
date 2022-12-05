@@ -141,8 +141,7 @@ contains
 
     call waterstate_inst%Init(bounds,         &
          h2osno_col(begc:endc),                    &
-         snow_depth_col(begc:endc),                &
-         temperature_inst%t_soisno_col(begc:endc, -nlevsno+1:) )
+         snow_depth_col(begc:endc))
 
     call waterflux_inst%Init(bounds)
 
@@ -171,13 +170,7 @@ contains
     ! the step size is needed. 
 
     call t_startf('init_accflds')
-
     call atm2lnd_inst%InitAccBuffer(bounds)
-
-    call temperature_inst%InitAccBuffer(bounds)
-    
-    call energyflux_inst%InitAccBuffer(bounds)
-
     call t_stopf('init_accflds')
 
   end subroutine clm_instInit

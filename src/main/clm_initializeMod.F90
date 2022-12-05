@@ -436,11 +436,7 @@ contains
 
     ! The following is called for both initial and restart runs and must
     ! must be called after the restart file is read 
-
     call atm2lnd_inst%initAccVars(bounds_proc)
-    call temperature_inst%initAccVars(bounds_proc)
-    call waterflux_inst%initAccVars(bounds_proc)
-    call energyflux_inst%initAccVars(bounds_proc)
 
     !------------------------------------------------------------       
     ! Determine gridcell averaged properties to send to atm

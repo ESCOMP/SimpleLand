@@ -37,8 +37,6 @@ module WaterfluxType
      procedure, public  :: Init
      procedure, private :: InitAllocate 
      procedure, private :: InitCold     
-     procedure, public  :: InitAccVars
-     procedure, public  :: UpdateAccVars
 
   end type waterflux_type
   !------------------------------------------------------------------------
@@ -90,56 +88,6 @@ contains
     allocate(this%qflx_liq_dynbal_grc      (begg:endg))              ; this%qflx_liq_dynbal_grc      (:)   = nan
 
   end subroutine InitAllocate
-
-  !-----------------------------------------------------------------------
-    !
-     subroutine InitAccVars (this, bounds)
-    ! !DESCRIPTION:
-    ! Initialize module variables that are associated with
-    ! time accumulated fields. This routine is called for both an initial run
-    ! and a restart run (and must therefore must be called after the restart file 
-    ! is read in and the accumulation buffer is obtained)
-    !
-    ! !USES 
-    use accumulMod       , only : extract_accum_field
-    !
-    ! !ARGUMENTS:
-    class(waterflux_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer  :: begc, endc
-    integer  :: ier
-    real(r8), pointer :: rbufslp(:)  ! temporary
-    !---------------------------------------------------------------------
-    begc = bounds%begc; endc = bounds%endc
-    allocate(rbufslp(begc:endc), stat=ier)
-    deallocate(rbufslp)
-
-  end subroutine InitAccVars
-  
-  !-----------------------------------------------------------------------
-  subroutine UpdateAccVars (this, bounds)
-    !
-    ! USES
-    use accumulMod      , only : update_accum_field, extract_accum_field
-    !
-    ! !ARGUMENTS:
-    class(waterflux_type)                 :: this
-    type(bounds_type)      , intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g                         ! indices
-    integer :: ier                       ! error status
-    integer :: begc, endc
-    real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
-    !---------------------------------------------------------------------
-
-    begc = bounds%begc; endc = bounds%endc
-    allocate(rbufslp(begc:endc), stat=ier)
-    deallocate(rbufslp)
-    
-  end subroutine UpdateAccVars
 
   !-----------------------------------------------------------------------
   subroutine InitCold(this, bounds)
