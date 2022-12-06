@@ -22,10 +22,8 @@ module clm_instMod
   !-----------------------------------------
 
   use EnergyFluxType                  , only : energyflux_type
-  use SolarAbsorbedType               , only : solarabs_type
   use SurfaceAlbedoType               , only : surfalb_type
   use TemperatureType                 , only : temperature_type
-  use WaterFluxType                   , only : waterflux_type
   use WaterStateType                  , only : waterstate_type
   use UrbanParamsType                 , only : urbanparams_type
   use atm2lndType                     , only : atm2lnd_type
@@ -46,11 +44,9 @@ module clm_instMod
 
   ! Physics types 
   type(energyflux_type)                   :: energyflux_inst
-  type(solarabs_type)                     :: solarabs_inst
   type(surfalb_type)                      :: surfalb_inst
   type(temperature_type)                  :: temperature_inst
   type(urbanparams_type)                  :: urbanparams_inst
-  type(waterflux_type)                    :: waterflux_inst
   type(waterstate_type)                   :: waterstate_inst
   type(atm2lnd_type)                      :: atm2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
@@ -134,14 +130,7 @@ contains
     call waterstate_inst%Init(bounds,         &
          h2osno_col(begc:endc))
 
-    call waterflux_inst%Init(bounds)
-
-    ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) Without the following assignment, the
-    ! assertion in energyflux_inst%Init fails with pgi 14.7 on yellowstone, presumably due
-    ! to a compiler bug.
     call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc))
-
-    call solarabs_inst%Init(bounds)
 
     call surfalb_inst%Init(bounds)
 

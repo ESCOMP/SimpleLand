@@ -18,10 +18,9 @@ module initVerticalMod
   use clm_varctl        , only : fsurdat, iulog
   use clm_varcon        , only : zlak, dzlak, zsoi, dzsoi, zisoi, spval, ispval, grlnd 
   use column_varcon     , only : icol_roof, icol_sunwall, icol_shadewall
-  use landunit_varcon   , only : istdlak, istice_mec
+  use landunit_varcon   , only : istdlak
   use fileutils         , only : getfil
   use LandunitType      , only : lun                
-  use GridcellType      , only : grc                
   use ColumnType        , only : col                
   use glcBehaviorMod    , only : glc_behavior_type
   use abortUtils        , only : endrun    

@@ -17,10 +17,8 @@ module lnd2atmMod
   use lnd2atmType          , only : lnd2atm_type
   use atm2lndType          , only : atm2lnd_type
   use EnergyFluxType       , only : energyflux_type
-  use SolarAbsorbedType    , only : solarabs_type
   use SurfaceAlbedoType    , only : surfalb_type
   use TemperatureType      , only : temperature_type
-  use WaterFluxType        , only : waterflux_type
   use WaterstateType       , only : waterstate_type
   use glcBehaviorMod       , only : glc_behavior_type
   use ColumnType           , only : col
