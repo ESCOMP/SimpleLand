@@ -266,45 +266,6 @@ Toggle to turn all history output completely OFF (possibly used for testing)
 </entry>
 
 <!-- ========================================================================================  -->
-<!-- Namelist items controlling atmospheric forcings                                           -->
-<!-- ========================================================================================  -->
-
-<entry id="repartition_rain_snow" type="logical" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-If TRUE, repartition rain/snow from atmosphere based on temperature.
-</entry>
-
-<entry id="lapse_rate" type="real" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-Surface temperature lapse rate (K m-1)
-A positive value means a decrease in temperature with increasing height
-</entry>
-
-<entry id="precip_repartition_glc_all_snow_t" type="real" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-Temperature below which all precipitation falls as snow, for glacier columns (deg C)
-Only relevant if repartition_rain_snow is .true.
-</entry>
-
-<entry id="precip_repartition_glc_all_rain_t" type="real" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-Temperature above which all precipitation falls as rain, for glacier columns (deg C)
-Only relevant if repartition_rain_snow is .true.
-</entry>
-
-<entry id="precip_repartition_nonglc_all_snow_t" type="real" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-Temperature below which all precipitation falls as snow, for non-glacier columns (deg C)
-Only relevant if repartition_rain_snow is .true.
-</entry>
-
-<entry id="precip_repartition_nonglc_all_rain_t" type="real" category="clm_physics"
-       group="atm2lnd_inparm" valid_values="" >
-Temperature above which all precipitation falls as rain, for non-glacier columns (deg C)
-Only relevant if repartition_rain_snow is .true.
-</entry>
-
-<!-- ========================================================================================  -->
 <!-- Namelist items controlling fields sent to atmosphere                                      -->
 <!-- ========================================================================================  -->
 

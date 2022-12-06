@@ -308,7 +308,7 @@ contains
     !
     ! !LOCAL VARIABLES:
 
-    character(len=*), parameter :: subname = 'InitForTesting'
+    character(len=*), parameter :: subname = 'InitSetDirectly'
     !-----------------------------------------------------------------------
 
     SHR_ASSERT_ALL((ubound(collapse_to_atm_topo) == (/endg/)), errMsg(sourcefile, __LINE__))

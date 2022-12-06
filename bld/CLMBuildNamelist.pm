@@ -862,11 +862,6 @@ sub process_namelist_inline_logic {
   setup_logic_initial_conditions($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_snowpack($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
-  #########################################
-  # namelist group: atm2lnd_inparm
-  #########################################
-  setup_logic_atm_forcing($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
-
   ##################################
   # namelist group: bgc_shared
   ##################################
@@ -1243,35 +1238,6 @@ sub setup_logic_snowpack {
   if ($physv->as_long() >= $physv->as_long("clm4_5")) {
     add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'nlevsno');
   }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_atm_forcing {
-   #
-   # Options related to atmospheric forcings
-   #
-   my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-   if ($physv->as_long() >= $physv->as_long("clm4_5")) {
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'repartition_rain_snow');
-      add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'lapse_rate');
-
-      my $var;
-
-      foreach $var ("precip_repartition_glc_all_snow_t",
-                    "precip_repartition_glc_all_rain_t",
-                    "precip_repartition_nonglc_all_snow_t",
-                    "precip_repartition_nonglc_all_rain_t") {
-         if ( &value_is_true($nl->get_value("repartition_rain_snow")) ){
-            add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var);
-         } else {
-            if (defined($nl->get_value($var))) {
-               $log->fatal_error("$var can only be set if repartition_rain_snow is true");
-            }
-         }
-      }
-   }
 }
 
 #-------------------------------------------------------------------------------
