@@ -21,7 +21,6 @@ module TemperatureType
      ! Temperatures
      real(r8), pointer :: t_soisno_col (:,:) ! col soil temperature (Kelvin)  (-nlevsno+1:nlevgrnd) 
      real(r8), pointer :: t_grnd_col   (:)   ! col ground temperature (Kelvin)
-     real(r8), pointer :: t_ref2m_patch(:)   ! patch 2 m height surface air temperature (Kelvin)
 
    contains
 
@@ -68,21 +67,14 @@ contains
     type(bounds_type), intent(in) :: bounds  
     !
     ! !LOCAL VARIABLES:
-    integer :: begp, endp
     integer :: begc, endc
-    integer :: begl, endl
-    integer :: begg, endg
     !------------------------------------------------------------------------
 
-    begp = bounds%begp; endp= bounds%endp
     begc = bounds%begc; endc= bounds%endc
-    begl = bounds%begl; endl= bounds%endl
-    begg = bounds%begg; endg= bounds%endg
 
     ! Temperatures
     allocate(this%t_soisno_col (begc:endc,-nlevsno+1:nlevgrnd))  ; this%t_soisno_col             (:,:) = nan
     allocate(this%t_grnd_col   (begc:endc))                      ; this%t_grnd_col               (:)   = nan
-    allocate(this%t_ref2m_patch(begp:endp))                      ; this%t_ref2m_patch            (:)   = nan
 
   end subroutine InitAllocate
 
@@ -165,14 +157,6 @@ contains
          end if
       end do
 
-      ! Set t_ref2m
-
-      do p = bounds%begp, bounds%endp
-         c = patch%column(p)
-         l = patch%landunit(p)
-         this%t_ref2m_patch(p) = 283._r8
-      end do
-
     end associate
 
   end subroutine InitCold
@@ -209,12 +193,6 @@ contains
          dim1name='column', &
          long_name='ground temperature', units='K', &
          interpinic_flag='interp', readvar=readvar, data=this%t_grnd_col)
-
-    call restartvar(ncid=ncid, flag=flag, varname='T_REF2M', xtype=ncd_double,  &
-         dim1name='pft', &
-         long_name='2m height surface air temperature', units='K', &
-         interpinic_flag='interp', readvar=readvar, data=this%t_ref2m_patch)
-    if (flag=='read' .and. .not. readvar) call endrun(msg=errMsg(sourcefile, __LINE__))
 
   end subroutine Restart
 

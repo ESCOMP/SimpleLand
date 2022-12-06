@@ -79,20 +79,16 @@ contains
     integer               :: begc, endc
     integer               :: begl, endl
     real(r8), allocatable :: h2osno_col(:)
-    real(r8), allocatable :: snow_depth_col(:)
-
-    integer :: dummy_to_make_pgi_happy
     !----------------------------------------------------------------------
 
-    ! Note: h2osno_col and snow_depth_col are initialized as local variable 
-    ! since they are needed to initialize vertical data structures  
+    ! Note: h2osno_col initialized as local variable 
+    ! since needed to initialize vertical data structures  
 
     begp = bounds%begp; endp = bounds%endp 
     begc = bounds%begc; endc = bounds%endc 
     begl = bounds%begl; endl = bounds%endl
 
     allocate (h2osno_col(begc:endc))
-    allocate (snow_depth_col(begc:endc))
 
     ! snow water
     do c = begc,endc
@@ -113,7 +109,6 @@ contains
        else
           h2osno_col(c) = 0._r8
        endif
-       snow_depth_col(c)  = h2osno_col(c) / bdsno
     end do
 
     ! Initialize urban constants
@@ -124,7 +119,6 @@ contains
 
     call initVertical(bounds,               &
          glc_behavior, &
-         snow_depth_col(begc:endc),              &
          urbanparams_inst%thick_wall(begl:endl), &
          urbanparams_inst%thick_roof(begl:endl))
 
@@ -138,15 +132,13 @@ contains
     call temperature_inst%Init(bounds)
 
     call waterstate_inst%Init(bounds,         &
-         h2osno_col(begc:endc),                    &
-         snow_depth_col(begc:endc))
+         h2osno_col(begc:endc))
 
     call waterflux_inst%Init(bounds)
 
     ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) Without the following assignment, the
     ! assertion in energyflux_inst%Init fails with pgi 14.7 on yellowstone, presumably due
     ! to a compiler bug.
-    dummy_to_make_pgi_happy = ubound(temperature_inst%t_grnd_col, 1)
     call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc))
 
     call solarabs_inst%Init(bounds)
@@ -156,7 +148,6 @@ contains
     call topo_inst%Init(bounds)
 
     deallocate (h2osno_col)
-    deallocate (snow_depth_col)
 
     ! ------------------------------------------------------------------------
     ! Initialize accumulated fields

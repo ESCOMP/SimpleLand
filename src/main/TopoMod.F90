@@ -196,9 +196,6 @@ contains
     !
     ! Should be called each time step.
     !
-    ! Should be called after glc2lndMod:update_glc2lnd_fracs, and before
-    ! atm2lndMod:downscale_forcings
-    !
     ! !ARGUMENTS:
     class(topo_type)        , intent(inout) :: this
     type(bounds_type)       , intent(in)    :: bounds

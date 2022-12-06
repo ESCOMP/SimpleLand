@@ -39,7 +39,6 @@ module lnd2atmType
      real(r8), pointer :: tauy_grc           (:)   => null() ! wind stress: n-s (kg/m/s**2)
      real(r8), pointer :: eflx_lh_tot_grc    (:)   => null() ! total latent HF (W/m**2)  [+ to atm]
      real(r8), pointer :: eflx_sh_tot_grc    (:)   => null() ! total sensible HF (W/m**2) [+ to atm]
-     real(r8), pointer :: eflx_sh_precip_conversion_grc(:) => null() ! sensible HF from precipitation conversion (W/m**2) [+ to atm]
      real(r8), pointer :: eflx_sh_ice_to_liq_col(:) => null() ! sensible HF generated from conversion of ice runoff to liquid (W/m**2) [+ to atm]
      real(r8), pointer :: eflx_lwrad_out_grc (:)   => null() ! IR (longwave) radiation (W/m**2)
      real(r8), pointer :: qflx_evap_tot_grc  (:)   => null() ! qflx_evap_soi + qflx_evap_can + qflx_tran_veg
@@ -118,7 +117,6 @@ contains
     allocate(this%tauy_grc           (begg:endg))            ; this%tauy_grc           (:)   =ival
     allocate(this%eflx_lwrad_out_grc (begg:endg))            ; this%eflx_lwrad_out_grc (:)   =ival
     allocate(this%eflx_sh_tot_grc    (begg:endg))            ; this%eflx_sh_tot_grc    (:)   =ival
-    allocate(this%eflx_sh_precip_conversion_grc(begg:endg))  ; this%eflx_sh_precip_conversion_grc(:) = ival
     allocate(this%eflx_sh_ice_to_liq_col(begc:endc))         ; this%eflx_sh_ice_to_liq_col(:) = ival
     allocate(this%eflx_lh_tot_grc    (begg:endg))            ; this%eflx_lh_tot_grc    (:)   =ival
     allocate(this%qflx_evap_tot_grc  (begg:endg))            ; this%qflx_evap_tot_grc  (:)   =ival

@@ -45,12 +45,11 @@ module initVerticalMod
 contains
 
   !------------------------------------------------------------------------
-  subroutine initVertical(bounds, glc_behavior, snow_depth, thick_wall, thick_roof)
+  subroutine initVertical(bounds, glc_behavior, thick_wall, thick_roof)
     !
     ! !ARGUMENTS:
     type(bounds_type)   , intent(in)    :: bounds
     type(glc_behavior_type), intent(in) :: glc_behavior
-    real(r8)            , intent(in)    :: snow_depth(bounds%begc:)
     real(r8)            , intent(in)    :: thick_wall(bounds%begl:)
     real(r8)            , intent(in)    :: thick_roof(bounds%begl:)
     !
@@ -81,7 +80,6 @@ contains
     begc = bounds%begc; endc= bounds%endc
     begl = bounds%begl; endl= bounds%endl
 
-    SHR_ASSERT_ALL((ubound(snow_depth)  == (/endc/)), errMsg(sourcefile, __LINE__))
     SHR_ASSERT_ALL((ubound(thick_wall)  == (/endl/)), errMsg(sourcefile, __LINE__))
     SHR_ASSERT_ALL((ubound(thick_roof)  == (/endl/)), errMsg(sourcefile, __LINE__))
 
