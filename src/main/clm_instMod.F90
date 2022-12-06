@@ -22,7 +22,6 @@ module clm_instMod
   !-----------------------------------------
 
   use EnergyFluxType                  , only : energyflux_type
-  use FrictionVelocityMod             , only : frictionvel_type
   use SolarAbsorbedType               , only : solarabs_type
   use SurfaceAlbedoType               , only : surfalb_type
   use TemperatureType                 , only : temperature_type
@@ -47,7 +46,6 @@ module clm_instMod
 
   ! Physics types 
   type(energyflux_type)                   :: energyflux_inst
-  type(frictionvel_type)                  :: frictionvel_inst
   type(solarabs_type)                     :: solarabs_inst
   type(surfalb_type)                      :: surfalb_inst
   type(temperature_type)                  :: temperature_inst
@@ -151,8 +149,6 @@ contains
     dummy_to_make_pgi_happy = ubound(temperature_inst%t_grnd_col, 1)
     call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc))
 
-    call frictionvel_inst%Init(bounds)
-
     call solarabs_inst%Init(bounds)
 
     call surfalb_inst%Init(bounds)
@@ -193,8 +189,6 @@ contains
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
 
     call energyflux_inst%restart (bounds, ncid, flag=flag)
-
-    call frictionvel_inst% restart (bounds, ncid, flag=flag)
 
     call temperature_inst%restart (bounds, ncid, flag=flag)
 
