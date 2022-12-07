@@ -51,13 +51,10 @@ module atm2lndType
      real(r8), pointer :: forc_rh_grc                   (:)   => null() ! atmospheric relative humidity (%)
      real(r8), pointer :: forc_psrf_grc                 (:)   => null() ! surface pressure (Pa)
      real(r8), pointer :: forc_pco2_grc                 (:)   => null() ! CO2 partial pressure (Pa)
-     real(r8), pointer :: forc_pco2_240_patch           (:)   => null() ! 10-day mean CO2 partial pressure (Pa)
      real(r8), pointer :: forc_solad_grc                (:,:) => null() ! direct beam radiation (numrad) (vis=forc_sols , nir=forc_soll )
      real(r8), pointer :: forc_solai_grc                (:,:) => null() ! diffuse radiation (numrad) (vis=forc_solsd, nir=forc_solld)
      real(r8), pointer :: forc_solar_grc                (:)   => null() ! incident solar radiation
-     real(r8), pointer :: forc_pc13o2_grc               (:)   => null() ! C13O2 partial pressure (Pa)
      real(r8), pointer :: forc_po2_grc                  (:)   => null() ! O2 partial pressure (Pa)
-     real(r8), pointer :: forc_po2_240_patch            (:)   => null() ! 10-day mean O2 partial pressure (Pa)
      real(r8), pointer :: forc_aer_grc                  (:,:) => null() ! aerosol deposition array
 
      real(r8), pointer :: forc_t_not_downscaled_grc     (:)   => null() ! not downscaled atm temperature (Kelvin)       
@@ -65,7 +62,6 @@ module atm2lndType
      real(r8), pointer :: forc_q_not_downscaled_grc     (:)   => null() ! not downscaled atm specific humidity (kg/kg)  
      			! MML: I think this is the q I need to check if the negative LH is too big. 
      real(r8), pointer :: forc_pbot_not_downscaled_grc  (:)   => null() ! not downscaled atm pressure (Pa)   
-     real(r8), pointer :: forc_pbot240_downscaled_patch (:)   => null() ! 10-day mean downscaled atm pressure (Pa)           
      real(r8), pointer :: forc_rho_not_downscaled_grc   (:)   => null() ! not downscaled atm density (kg/m**3)                      
      real(r8), pointer :: forc_rain_not_downscaled_grc  (:)   => null() ! not downscaled atm rain rate [mm/s]                       
      real(r8), pointer :: forc_snow_not_downscaled_grc  (:)   => null() ! not downscaled atm snow rate [mm/s]                       
@@ -241,31 +237,11 @@ module atm2lndType
 	
 	 
 	! ------------------------------------------------------------------------------------
-	
-	 	 
-     ! atm->lnd downscaled
-     real(r8), pointer :: forc_t_downscaled_col         (:)   => null() ! downscaled atm temperature (Kelvin)
-     real(r8), pointer :: forc_th_downscaled_col        (:)   => null() ! downscaled atm potential temperature (Kelvin)
-     real(r8), pointer :: forc_q_downscaled_col         (:)   => null() ! downscaled atm specific humidity (kg/kg)
-     real(r8), pointer :: forc_pbot_downscaled_col      (:)   => null() ! downscaled atm pressure (Pa)
-     real(r8), pointer :: forc_rho_downscaled_col       (:)   => null() ! downscaled atm density (kg/m**3)
-     real(r8), pointer :: forc_lwrad_downscaled_col     (:)   => null() ! downscaled atm downwrd IR longwave radiation (W/m**2)
 
      !  rof->lnd
      real(r8), pointer :: forc_flood_grc                (:)   => null() ! rof flood (mm/s)
      real(r8), pointer :: volr_grc                      (:)   => null() ! rof volr total volume (m3)
      real(r8), pointer :: volrmch_grc                   (:)   => null() ! rof volr main channel (m3)
-
-     ! anomaly forcing
-     real(r8), pointer :: af_precip_grc                 (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_uwind_grc                  (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_vwind_grc                  (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_tbot_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_pbot_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_shum_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_swdn_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_lwdn_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: bc_precip_grc                 (:)   => null() ! anomaly forcing - add bias correction
 
      ! time averaged quantities
      real(r8) , pointer :: fsd240_patch                 (:)   => null() ! patch 240hr average of direct beam radiation 
@@ -343,7 +319,6 @@ contains
     allocate(this%forc_solad_grc                (begg:endg,numrad)) ; this%forc_solad_grc                (:,:) = ival
     allocate(this%forc_solai_grc                (begg:endg,numrad)) ; this%forc_solai_grc                (:,:) = ival
     allocate(this%forc_solar_grc                (begg:endg))        ; this%forc_solar_grc                (:)   = ival
-    allocate(this%forc_pc13o2_grc               (begg:endg))        ; this%forc_pc13o2_grc               (:)   = ival
     allocate(this%forc_po2_grc                  (begg:endg))        ; this%forc_po2_grc                  (:)   = ival
     allocate(this%forc_aer_grc                  (begg:endg,14))     ; this%forc_aer_grc                  (:,:) = ival
 
@@ -494,30 +469,10 @@ contains
 	
 	! ---------------------------------------
 
-    
-    ! atm->lnd downscaled
-    allocate(this%forc_t_downscaled_col         (begc:endc))        ; this%forc_t_downscaled_col         (:)   = ival
-    allocate(this%forc_q_downscaled_col         (begc:endc))        ; this%forc_q_downscaled_col         (:)   = ival
-    allocate(this%forc_pbot_downscaled_col      (begc:endc))        ; this%forc_pbot_downscaled_col      (:)   = ival
-    allocate(this%forc_th_downscaled_col        (begc:endc))        ; this%forc_th_downscaled_col        (:)   = ival
-    allocate(this%forc_rho_downscaled_col       (begc:endc))        ; this%forc_rho_downscaled_col       (:)   = ival
-    allocate(this%forc_lwrad_downscaled_col     (begc:endc))        ; this%forc_lwrad_downscaled_col     (:)   = ival
-
     ! rof->lnd
     allocate(this%forc_flood_grc                (begg:endg))        ; this%forc_flood_grc                (:)   = ival
     allocate(this%volr_grc                      (begg:endg))        ; this%volr_grc                      (:)   = ival
     allocate(this%volrmch_grc                   (begg:endg))        ; this%volrmch_grc                   (:)   = ival
-
-    ! anomaly forcing
-    allocate(this%bc_precip_grc                 (begg:endg))        ; this%bc_precip_grc                 (:)   = ival
-    allocate(this%af_precip_grc                 (begg:endg))        ; this%af_precip_grc                 (:)   = ival
-    allocate(this%af_uwind_grc                  (begg:endg))        ; this%af_uwind_grc                  (:)   = ival
-    allocate(this%af_vwind_grc                  (begg:endg))        ; this%af_vwind_grc                  (:)   = ival
-    allocate(this%af_tbot_grc                   (begg:endg))        ; this%af_tbot_grc                   (:)   = ival
-    allocate(this%af_pbot_grc                   (begg:endg))        ; this%af_pbot_grc                   (:)   = ival
-    allocate(this%af_shum_grc                   (begg:endg))        ; this%af_shum_grc                   (:)   = ival
-    allocate(this%af_swdn_grc                   (begg:endg))        ; this%af_swdn_grc                   (:)   = ival
-    allocate(this%af_lwdn_grc                   (begg:endg))        ; this%af_lwdn_grc                   (:)   = ival
 
     allocate(this%fsd240_patch                  (begp:endp))        ; this%fsd240_patch                  (:)   = nan
 
@@ -591,30 +546,6 @@ contains
          avgflag='A', long_name='atmospheric air temperature received from atmosphere (pre-downscaling)', &
          ptr_gcell=this%forc_t_not_downscaled_grc, default='inactive')
 
-    this%forc_t_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='TBOT', units='K',  &
-         avgflag='A', long_name='atmospheric air temperature (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_t_downscaled_col)
-    call hist_addfld1d (fname='Tair', units='K', &
-         avgflag='A', long_name='atmospheric air temperature (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_t_downscaled_col, default='inactive')
-
-    this%forc_pbot_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='PBOT', units='Pa',  &
-         avgflag='A', long_name='atmospheric pressure at surface (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_pbot_downscaled_col)
-    call hist_addfld1d (fname='PSurf', units='Pa',  &
-         avgflag='A', long_name='atmospheric pressure at surface (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_pbot_downscaled_col, default='inactive')
-
-    this%forc_lwrad_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='FLDS', units='W/m^2',  &
-         avgflag='A', long_name='atmospheric longwave radiation (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_lwrad_downscaled_col)
-    call hist_addfld1d (fname='LWdown', units='W/m^2',  &
-         avgflag='A', long_name='atmospheric longwave radiation (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_lwrad_downscaled_col, default='inactive')
-
     this%forc_rain_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='RAIN_FROM_ATM', units='mm/s',  &
          avgflag='A', long_name='atmospheric rain received from atmosphere (pre-repartitioning)', &
@@ -624,23 +555,6 @@ contains
     call hist_addfld1d (fname='SNOW_FROM_ATM', units='mm/s',  &
          avgflag='A', long_name='atmospheric snow received from atmosphere (pre-repartitioning)', &
          ptr_lnd=this%forc_snow_not_downscaled_grc)
-
-    this%forc_th_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='THBOT', units='K',  &
-         avgflag='A', long_name='atmospheric air potential temperature (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_th_downscaled_col)
-         
-!	! MML: 2016.01.14 Try and add a new history field variable equal to 2TBOT
-!	! (just to see if it will print)
-!	this%forc_2t_not_downscaled_grc(begg:endg) = spval
-!    call hist_addfld1d (fname='T2BOT', units='K',  &
-!         avgflag='A', long_name='2x atmospheric air temperature MML Test', &
-!         ptr_lnd=this%forc_2t_not_downscaled_grc)
-	
-    this%forc_q_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='QBOT', units='kg/kg',  &
-         avgflag='A', long_name='atmospheric specific humidity (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_q_downscaled_col)
 
     !-----------------------------------------------------------------------
     ! MML: 2016.01.14 Simple Land Energy and Hydrology variables (gridscale)
@@ -1694,7 +1608,6 @@ contains
     deallocate(this%forc_solad_grc)
     deallocate(this%forc_solai_grc)
     deallocate(this%forc_solar_grc)
-    deallocate(this%forc_pc13o2_grc)
     deallocate(this%forc_po2_grc)
     deallocate(this%forc_aer_grc)
 
@@ -1708,29 +1621,10 @@ contains
     deallocate(this%forc_rain_not_downscaled_grc)
     deallocate(this%forc_snow_not_downscaled_grc)
     
-    ! atm->lnd downscaled
-    deallocate(this%forc_t_downscaled_col)
-    deallocate(this%forc_q_downscaled_col)
-    deallocate(this%forc_pbot_downscaled_col)
-    deallocate(this%forc_th_downscaled_col)
-    deallocate(this%forc_rho_downscaled_col)
-    deallocate(this%forc_lwrad_downscaled_col)
-
     ! rof->lnd
     deallocate(this%forc_flood_grc)
     deallocate(this%volr_grc)
     deallocate(this%volrmch_grc)
-
-    ! anomaly forcing
-    deallocate(this%bc_precip_grc)
-    deallocate(this%af_precip_grc)
-    deallocate(this%af_uwind_grc)
-    deallocate(this%af_vwind_grc)
-    deallocate(this%af_tbot_grc)
-    deallocate(this%af_pbot_grc)
-    deallocate(this%af_shum_grc)
-    deallocate(this%af_swdn_grc)
-    deallocate(this%af_lwdn_grc)
 
     deallocate(this%fsd240_patch)
     
