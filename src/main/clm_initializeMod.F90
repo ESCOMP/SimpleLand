@@ -12,7 +12,7 @@ module clm_initializeMod
   use clm_varctl      , only : nsrest, nsrStartup, nsrContinue, nsrBranch
   use clm_varctl      , only : is_cold_start, is_interpolated_start
   use clm_varctl      , only : iulog
-  use clm_instur      , only : wt_lunit, urban_valid, wt_nat_patch, wt_cft, fert_cft, wt_glc_mec, topo_glc_mec
+  use clm_instur      , only : wt_lunit, urban_valid, wt_nat_patch, wt_cft, wt_glc_mec, topo_glc_mec
   use perf_mod        , only : t_startf, t_stopf
   use ncdio_pio       , only : file_desc_t
   use GridcellType    , only : grc           ! instance     
@@ -150,7 +150,6 @@ contains
     allocate (urban_valid  (begg:endg                      ))
     allocate (wt_nat_patch (begg:endg, natpft_lb:natpft_ub ))
     allocate (wt_cft       (begg:endg, cft_lb:cft_ub       ))
-    allocate (fert_cft     (begg:endg, cft_lb:cft_ub       ))
     allocate (wt_glc_mec  (begg:endg, 10))
     allocate (topo_glc_mec(begg:endg, 10))
 
@@ -462,7 +461,7 @@ contains
     ! initialize2 because it is used to initialize other variables; now it can be
     ! deallocated
 
-    deallocate(topo_glc_mec, fert_cft)
+    deallocate(topo_glc_mec)
 
     !------------------------------------------------------------       
     ! Write log output for end of initialization

@@ -222,7 +222,7 @@ contains
     ! !USES
     use clm_instur, only : wt_lunit, wt_nat_patch
     use subgridMod, only : subgrid_get_info_natveg
-    use clm_varpar, only : numpft, natpft_lb, natpft_ub
+    use clm_varpar, only : natpft_lb, natpft_ub
     !
     ! !ARGUMENTS:
     integer , intent(in)    :: ltype             ! landunit type

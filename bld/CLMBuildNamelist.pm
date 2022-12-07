@@ -856,16 +856,11 @@ sub process_namelist_inline_logic {
   setup_logic_delta_time($opts, $nl_flags, $definition, $defaults, $nl);
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
   setup_logic_glacier($opts, $nl_flags, $definition, $defaults, $nl,  $envxml_ref, $physv);
-  setup_logic_params_file($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_demand($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_surface_dataset($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_initial_conditions($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_snowpack($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
-  ##################################
-  # namelist group: bgc_shared
-  ##################################
-  setup_logic_bgc_shared($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 }
 
 #-------------------------------------------------------------------------------
@@ -993,17 +988,6 @@ sub setup_logic_glacier {
   my ($opts, $nl_flags, $definition, $defaults, $nl, $envxml_ref, $physv) = @_;
 
   add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'glacier_region_behavior');
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_params_file {
-  # get param data. For 4_0, pft-physiology, for 4_5 old
-  # pft-physiology was used but now now includes CN and BGC century
-  # parameters.
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'paramfile', 'phys'=>$nl_flags->{'phys'});
-
 }
 
 #-------------------------------------------------------------------------------
@@ -1222,13 +1206,6 @@ sub setup_logic_initial_conditions {
 
 #-------------------------------------------------------------------------------
 
-sub setup_logic_bgc_shared {
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-}
-
-#-------------------------------------------------------------------------------
-
 sub setup_logic_snowpack {
   #
   # Snowpack related options
@@ -1263,7 +1240,7 @@ sub write_output_files {
                  finidat_consistency_checks 
                  clm_initinterp_inparm 
                  soilwater_movement_inparm rooting_profile_inparm
-                 soil_resis_inparm bgc_shared 
+                 soil_resis_inparm
                  clmu_inparm clm_soilstate_inparm 
                  clm_soilhydrology_inparm
                  clm_glacier_behavior);

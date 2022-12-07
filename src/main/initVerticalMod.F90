@@ -13,7 +13,6 @@ module initVerticalMod
   use decompMod         , only : bounds_type
   use spmdMod           , only : masterproc
   use clm_varpar        , only : nlevsno, nlevgrnd, nlevlak
-  use clm_varpar        , only : toplev_equalspace, nlev_equalspace
   use clm_varpar        , only : nlevsoi, nlevsoifl, nlevurb 
   use clm_varctl        , only : fsurdat, iulog
   use clm_varcon        , only : zlak, dzlak, zsoi, dzsoi, zisoi, spval, ispval, grlnd 

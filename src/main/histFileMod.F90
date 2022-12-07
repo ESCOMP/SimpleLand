@@ -14,7 +14,7 @@ module histFileMod
   use abortutils     , only : endrun
   use clm_varctl     , only : iulog
   use clm_varcon     , only : spval, ispval
-  use clm_varcon     , only : grlnd, nameg, namel, namec, namep, nameCohort
+  use clm_varcon     , only : grlnd, nameg, namel, namec, namep
   use decompMod      , only : get_proc_bounds, get_proc_global, bounds_type
   use GridcellType   , only : grc                
   use LandunitType   , only : lun                
@@ -1849,10 +1849,10 @@ contains
     ! wrapper calls to define the history file contents.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, nlevurb, numrad, nlevcan, nlevsoi
+    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, nlevurb, numrad, nlevsoi
     use clm_varpar      , only : natpft_size
     use landunit_varcon , only : max_lunit
-    use clm_varctl      , only : caseid, ctitle, fsurdat, finidat, paramfile
+    use clm_varctl      , only : caseid, ctitle, fsurdat, finidat
     use clm_varctl      , only : version, hostname, username, conventions, source
     use domainMod       , only : ldomain
     use fileutils       , only : get_filename
@@ -1970,8 +1970,6 @@ contains
        str = get_filename(finidat)
     endif
     call ncd_putatt(lnfid, ncd_global, 'Initial_conditions_dataset', trim(str))
-    str = get_filename(paramfile)
-    call ncd_putatt(lnfid, ncd_global, 'PFT_physiological_constants_dataset', trim(str))
 
     ! Define dimensions.
     ! Time is an unlimited dimension. Character string is treated as an array of characters.
@@ -2000,7 +1998,6 @@ contains
     call ncd_defdim(lnfid, 'numrad' , numrad , dimid)
     call ncd_defdim(lnfid, 'levsno' , nlevsno , dimid)
     call ncd_defdim(lnfid, 'ltype', max_lunit, dimid)
-    call ncd_defdim(lnfid, 'nlevcan',nlevcan, dimid)
     call htape_add_ltype_metadata(lnfid)
     call htape_add_ctype_metadata(lnfid)
     call ncd_defdim(lnfid, 'natpft', natpft_size, dimid)
@@ -4466,7 +4463,7 @@ contains
     ! initial or branch run to initialize the actual history tapes.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevcan, nlevsoi
+    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevsoi
     use clm_varpar      , only : natpft_size, cft_size
     use landunit_varcon , only : max_lunit
     !
@@ -4564,8 +4561,6 @@ contains
        num2d = 11
     case ('levsno')
        num2d = nlevsno
-    case ('nlevcan')
-        num2d = nlevcan 
     ! MML: adding my own 
     case ('mml_lev')
     	num2d = 10 !mml_nsoi ! mml_dim ! mml_nsoi not defined in this subroutine, so hard coding until I get more clever...

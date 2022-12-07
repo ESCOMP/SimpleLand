@@ -96,15 +96,6 @@ module clm_varcon
   ! Keep this negative to avoid conflicts with possible valid values
   integer , public, parameter :: ispval = -9999             ! special value for int data
 
-  ! ------------------------------------------------------------------------
-  ! These are tunable constants from clm2_3
-  ! ------------------------------------------------------------------------
-
-  real(r8) :: zlnd = 0.01_r8        ! Roughness length for soil [m]
-  real(r8) :: pondmx = 0.0_r8       ! Ponding depth (mm)
-
-  real(r8), parameter :: aquifer_water_baseline = 5000._r8 ! baseline value for water in the unconfined aquifer [mm]
-
   integer, private :: i  ! loop index
 
   !------------------------------------------------------------------
@@ -112,12 +103,10 @@ module clm_varcon
   !------------------------------------------------------------------
 
   character(len=16), parameter :: grlnd  = 'lndgrid'      ! name of lndgrid
-  character(len=16), parameter :: namea  = 'gridcellatm'  ! name of atmgrid
   character(len=16), parameter :: nameg  = 'gridcell'     ! name of gridcells
   character(len=16), parameter :: namel  = 'landunit'     ! name of landunits
   character(len=16), parameter :: namec  = 'column'       ! name of columns
   character(len=16), parameter :: namep  = 'pft'          ! name of patches
-  character(len=16), parameter :: nameCohort = 'cohort'   ! name of cohorts (ED specific)
 
   !------------------------------------------------------------------
   ! Soil depths are constants for now; lake depths can vary by gridcell
@@ -144,7 +133,7 @@ contains
     ! MUST be called  after clm_varpar_init.
     !
     ! !USES:
-    use clm_varpar, only: nlevgrnd, nlevlak, nlevsoifl, nlayer
+    use clm_varpar, only: nlevgrnd, nlevlak, nlevsoifl
     !
     ! !ARGUMENTS:
     implicit none

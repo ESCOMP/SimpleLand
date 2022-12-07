@@ -15,8 +15,6 @@ module clm_varpar
 
   ! Note - model resolution is read in from the surface dataset
 
-  integer, parameter :: nlev_equalspace   = 15
-  integer, parameter :: toplev_equalspace =  6
   integer            :: nlevsoi               ! number of hydrologically active soil layers
   integer            :: nlevsoifl             ! number of soil layers on input file
   integer            :: nlevgrnd              ! number of ground layers 
@@ -25,15 +23,12 @@ module clm_varpar
   integer            :: nlevlak               ! number of lake layers
                                               ! (includes lower layers that are biogeochemically inactive)
   integer            :: nlevsno     =  -1     ! maximum number of snow layers
-  integer, parameter :: nlevcan     =   1     ! number of leaf layers in canopy layer
   !ED variables
   integer, parameter :: numrad      =   2     ! number of solar radiation bands: vis, nir
   integer, parameter :: ndst        =   4     ! number of dust size classes (BGC only)
   integer, parameter :: mxpft       =  78     ! maximum number of PFT's for any mode;
   ! FIX(RF,032414) might we set some of these automatically from reading pft-physiology?
   integer, parameter :: numveg      =  16     ! number of veg types (without specific crop)
-  integer, parameter :: nlayer      =   3     ! number of VIC soil layer --Added by AWang
-  integer            :: nlayert               ! number of VIC soil layer + 3 lower thermal layers
 
   integer :: numpft      = mxpft   ! actual # of pfts (without bare)
   integer :: numcft      =  64     ! actual # of crops (includes unused CFTs that are merged into other CFTs)

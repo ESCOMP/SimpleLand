@@ -18,7 +18,7 @@ module restFileMod
   use clm_instMod      , only : clm_instRest
   use histFileMod      , only : hist_restart_ncd
   use clm_varctl       , only : iulog
-  use clm_varcon       , only : nameg, namel, namec, namep, nameCohort
+  use clm_varcon       , only : nameg, namel, namec, namep
   use ncdio_pio        , only : file_desc_t, ncd_pio_createfile, ncd_pio_openfile, ncd_global
   use ncdio_pio        , only : ncd_pio_closefile, ncd_defdim, ncd_putatt, ncd_enddef, check_dim
   use ncdio_pio        , only : check_att, ncd_getatt
@@ -481,7 +481,7 @@ contains
     use clm_time_manager     , only : get_nstep
     use clm_varctl           , only : caseid, ctitle, version, username, hostname, fsurdat
     use clm_varctl           , only : conventions, source
-    use clm_varpar           , only : numrad, nlevlak, nlevsno, nlevgrnd, nlevurb, nlevcan
+    use clm_varpar           , only : numrad, nlevlak, nlevsno, nlevgrnd, nlevurb
     use decompMod            , only : get_proc_global
     !
     ! !ARGUMENTS:
@@ -510,7 +510,6 @@ contains
     call ncd_defdim(ncid , namel      , numl           ,  dimid)
     call ncd_defdim(ncid , namec      , numc           ,  dimid)
     call ncd_defdim(ncid , namep      , nump           ,  dimid)
-    call ncd_defdim(ncid , nameCohort , numCohort      ,  dimid)
 
     call ncd_defdim(ncid , 'levgrnd' , nlevgrnd       ,  dimid)
     call ncd_defdim(ncid , 'levurb'  , nlevurb        ,  dimid)
@@ -519,7 +518,6 @@ contains
     call ncd_defdim(ncid , 'levsno1' , nlevsno+1      ,  dimid)
     call ncd_defdim(ncid , 'levtot'  , nlevsno+nlevgrnd, dimid)
     call ncd_defdim(ncid , 'numrad'  , numrad         ,  dimid)
-    call ncd_defdim(ncid , 'levcan'  , nlevcan        ,  dimid)
     call ncd_defdim(ncid , 'string_length', 64        ,  dimid)
 	
 	! mml add my soil dimension

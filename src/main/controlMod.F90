@@ -26,7 +26,7 @@ module controlMod
   use initInterpMod                    , only: initInterp_readnl
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
-  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, paramfile, nrevsn
+  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, nrevsn
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
@@ -126,9 +126,7 @@ contains
 
     ! Input datasets
 
-    namelist /clm_inparm/  &
-         fsurdat, &
-         paramfile
+    namelist /clm_inparm/ fsurdat
 
 	! MML Input datasets for simple model
     namelist /clm_inparm/ &
@@ -168,10 +166,6 @@ contains
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ single_column
-
-    character(len=256) :: fsnowaging, fsnowoptics
-    namelist /clm_inparm/ fsnowaging, fsnowoptics
-
 
     ! ----------------------------------------------------------------------
     ! Default values
@@ -362,7 +356,6 @@ contains
     call mpi_bcast (finidat_interp_dest, len(finidat_interp_dest), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (fsurdat, len(fsurdat), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (fatmlndfrc,len(fatmlndfrc),MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (paramfile, len(paramfile) , MPI_CHARACTER, 0, mpicom, ier)
 
 	! mml input file vars for simple model
 	call mpi_bcast (mml_surdat,  len(mml_surdat),   MPI_CHARACTER, 0, mpicom, ier)
@@ -434,7 +427,6 @@ contains
     write(iulog,*) '    use_noio = ', use_noio
 
     write(iulog,*) 'input data files:'
-    write(iulog,*) '   PFT physiology and parameters file = ',trim(paramfile)
     if (fsurdat == ' ') then
        write(iulog,*) '   fsurdat, surface dataset not set'
     else
