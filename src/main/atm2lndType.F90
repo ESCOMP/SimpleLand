@@ -249,8 +249,6 @@ module atm2lndType
      real(r8), pointer :: forc_q_downscaled_col         (:)   => null() ! downscaled atm specific humidity (kg/kg)
      real(r8), pointer :: forc_pbot_downscaled_col      (:)   => null() ! downscaled atm pressure (Pa)
      real(r8), pointer :: forc_rho_downscaled_col       (:)   => null() ! downscaled atm density (kg/m**3)
-     real(r8), pointer :: forc_rain_downscaled_col      (:)   => null() ! downscaled atm rain rate [mm/s]
-     real(r8), pointer :: forc_snow_downscaled_col      (:)   => null() ! downscaled atm snow rate [mm/s]
      real(r8), pointer :: forc_lwrad_downscaled_col     (:)   => null() ! downscaled atm downwrd IR longwave radiation (W/m**2)
 
      !  rof->lnd
@@ -270,19 +268,7 @@ module atm2lndType
      real(r8), pointer :: bc_precip_grc                 (:)   => null() ! anomaly forcing - add bias correction
 
      ! time averaged quantities
-     real(r8) , pointer :: fsd24_patch                  (:)   => null() ! patch 24hr average of direct beam radiation 
      real(r8) , pointer :: fsd240_patch                 (:)   => null() ! patch 240hr average of direct beam radiation 
-     real(r8) , pointer :: fsi24_patch                  (:)   => null() ! patch 24hr average of diffuse beam radiation 
-     real(r8) , pointer :: fsi240_patch                 (:)   => null() ! patch 240hr average of diffuse beam radiation 
-     real(r8) , pointer :: prec365_col                  (:)   => null() ! col 365-day running mean of tot. precipitation (see comment in UpdateAccVars regarding why this is col-level despite other prec accumulators being patch-level)
-     real(r8) , pointer :: prec60_patch                 (:)   => null() ! patch 60-day running mean of tot. precipitation (mm/s) 
-     real(r8) , pointer :: prec10_patch                 (:)   => null() ! patch 10-day running mean of tot. precipitation (mm/s) 
-     real(r8) , pointer :: rh30_patch                   (:)   => null() ! patch 30-day running mean of relative humidity 
-     real(r8) , pointer :: prec24_patch                 (:)   => null() ! patch 24-hour running mean of tot. precipitation (mm/s) 
-     real(r8) , pointer :: rh24_patch                   (:)   => null() ! patch 24-hour running mean of relative humidity
-     real(r8) , pointer :: wind24_patch                 (:)   => null() ! patch 24-hour running mean of wind
-     real(r8) , pointer :: t_mo_patch                   (:)   => null() ! patch 30-day average temperature (Kelvin)
-     real(r8) , pointer :: t_mo_min_patch               (:)   => null() ! patch annual min of t_mo (Kelvin)
 
    contains
 
@@ -516,8 +502,6 @@ contains
     allocate(this%forc_th_downscaled_col        (begc:endc))        ; this%forc_th_downscaled_col        (:)   = ival
     allocate(this%forc_rho_downscaled_col       (begc:endc))        ; this%forc_rho_downscaled_col       (:)   = ival
     allocate(this%forc_lwrad_downscaled_col     (begc:endc))        ; this%forc_lwrad_downscaled_col     (:)   = ival
-    allocate(this%forc_rain_downscaled_col      (begc:endc))        ; this%forc_rain_downscaled_col      (:)   = ival
-    allocate(this%forc_snow_downscaled_col      (begc:endc))        ; this%forc_snow_downscaled_col      (:)   = ival
 
     ! rof->lnd
     allocate(this%forc_flood_grc                (begg:endg))        ; this%forc_flood_grc                (:)   = ival
@@ -535,16 +519,7 @@ contains
     allocate(this%af_swdn_grc                   (begg:endg))        ; this%af_swdn_grc                   (:)   = ival
     allocate(this%af_lwdn_grc                   (begg:endg))        ; this%af_lwdn_grc                   (:)   = ival
 
-    allocate(this%fsd24_patch                   (begp:endp))        ; this%fsd24_patch                   (:)   = nan
     allocate(this%fsd240_patch                  (begp:endp))        ; this%fsd240_patch                  (:)   = nan
-    allocate(this%fsi24_patch                   (begp:endp))        ; this%fsi24_patch                   (:)   = nan
-    allocate(this%fsi240_patch                  (begp:endp))        ; this%fsi240_patch                  (:)   = nan
-    allocate(this%prec10_patch                  (begp:endp))        ; this%prec10_patch                  (:)   = nan
-    allocate(this%prec60_patch                  (begp:endp))        ; this%prec60_patch                  (:)   = nan
-    allocate(this%rh30_patch                    (begp:endp))        ; this%rh30_patch                    (:)   = nan 
-    allocate(this%prec365_col                   (begc:endc))        ; this%prec365_col                   (:)   = nan
-    allocate(this%t_mo_patch                    (begp:endp))        ; this%t_mo_patch               (:)   = nan
-    allocate(this%t_mo_min_patch                (begp:endp))        ; this%t_mo_min_patch           (:)   = spval ! TODO - initialize this elsewhere
 
   end subroutine InitAllocate
 
@@ -576,29 +551,10 @@ contains
 	
 	!write(iulog,*)  'MML trying write h0 - start'
 	
-    this%forc_flood_grc(begg:endg) = spval
-    call hist_addfld1d (fname='QFLOOD',  units='mm/s',  &
-         avgflag='A', long_name='runoff from river flooding', &
-         ptr_lnd=this%forc_flood_grc)
-
-    this%volr_grc(begg:endg) = spval
-    call hist_addfld1d (fname='VOLR',  units='m3',  &
-         avgflag='A', long_name='river channel total water storage', &
-         ptr_lnd=this%volr_grc)
-
-    this%volrmch_grc(begg:endg) = spval
-    call hist_addfld1d (fname='VOLRMCH',  units='m3',  &
-         avgflag='A', long_name='river channel main channel water storage', &
-         ptr_lnd=this%volrmch_grc)
-
     this%forc_wind_grc(begg:endg) = spval
     call hist_addfld1d (fname='WIND', units='m/s',  &
          avgflag='A', long_name='atmospheric wind velocity magnitude', &
          ptr_lnd=this%forc_wind_grc)
-    ! Rename of WIND for Urban intercomparision project
-    call hist_addfld1d (fname='Wind', units='m/s',  &
-         avgflag='A', long_name='atmospheric wind velocity magnitude', &
-         ptr_gcell=this%forc_wind_grc, default = 'inactive')
 
     this%forc_hgt_grc(begg:endg) = spval
     call hist_addfld1d (fname='ZBOT', units='m',  &
@@ -669,19 +625,6 @@ contains
          avgflag='A', long_name='atmospheric snow received from atmosphere (pre-repartitioning)', &
          ptr_lnd=this%forc_snow_not_downscaled_grc)
 
-    this%forc_rain_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='RAIN', units='mm/s',  &
-         avgflag='A', long_name='atmospheric rain, after rain/snow repartitioning based on temperature', &
-         ptr_col=this%forc_rain_downscaled_col)
-    call hist_addfld1d (fname='Rainf', units='mm/s',  &
-         avgflag='A', long_name='atmospheric rain, after rain/snow repartitioning based on temperature', &
-         ptr_col=this%forc_rain_downscaled_col, default='inactive')
-
-    this%forc_snow_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='SNOW', units='mm/s',  &
-         avgflag='A', long_name='atmospheric snow, after rain/snow repartitioning based on temperature', &
-         ptr_col=this%forc_snow_downscaled_col)
-
     this%forc_th_downscaled_col(begc:endc) = spval
     call hist_addfld1d (fname='THBOT', units='K',  &
          avgflag='A', long_name='atmospheric air potential temperature (downscaled to columns in glacier regions)', &
@@ -698,12 +641,7 @@ contains
     call hist_addfld1d (fname='QBOT', units='kg/kg',  &
          avgflag='A', long_name='atmospheric specific humidity (downscaled to columns in glacier regions)', &
          ptr_col=this%forc_q_downscaled_col)
-    ! Rename of QBOT for Urban intercomparison project
-    call hist_addfld1d (fname='Qair', units='kg/kg',  &
-         avgflag='A', long_name='atmospheric specific humidity (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_q_downscaled_col, default='inactive')
 
-        
     !-----------------------------------------------------------------------
     ! MML: 2016.01.14 Simple Land Energy and Hydrology variables (gridscale)
     
@@ -1252,28 +1190,6 @@ contains
 	! End MML simple land model added variables
 	!-----------------------------------------------------------------------
 
-
-    ! Time averaged quantities
-    this%fsi24_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSI24', units='K',  &
-         avgflag='A', long_name='indirect radiation (last 24hrs)', &
-         ptr_patch=this%fsi24_patch, default='inactive')
-
-    this%fsi240_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSI240', units='K',  &
-         avgflag='A', long_name='indirect radiation (last 240hrs)', &
-         ptr_patch=this%fsi240_patch, default='inactive')
-
-    this%fsd24_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSD24', units='K',  &
-         avgflag='A', long_name='direct radiation (last 24hrs)', &
-         ptr_patch=this%fsd24_patch, default='inactive')
-
-    this%fsd240_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSD240', units='K',  &
-         avgflag='A', long_name='direct radiation (last 240hrs)', &
-         ptr_patch=this%fsd240_patch, default='inactive')
-
   end subroutine InitHistory
 
 !-----------------------------------------------------------------------
@@ -1482,24 +1398,9 @@ contains
     type(bounds_type), intent(in) :: bounds  
     !---------------------------------------------------------------------
 
-    this%fsd24_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSD24', units='W/m2',                                             &
-         desc='24hr average of direct solar radiation',  accum_type='runmean', accum_period=-1,    &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
     this%fsd240_patch(bounds%begp:bounds%endp) = spval
     call init_accum_field (name='FSD240', units='W/m2',                                            &
          desc='240hr average of direct solar radiation',  accum_type='runmean', accum_period=-10,  &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    this%fsi24_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSI24', units='W/m2',                                             &
-         desc='24hr average of diffuse solar radiation',  accum_type='runmean', accum_period=-1,   &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
-
-    this%fsi240_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSI240', units='W/m2',                                            &
-         desc='240hr average of diffuse solar radiation',  accum_type='runmean', accum_period=-10, &
          subgrid_type='pft', numlev=1, init_value=0._r8)
 
   end subroutine InitAccBuffer
@@ -1523,15 +1424,12 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer  :: begp, endp
-    integer  :: begc, endc
     integer  :: nstep
     integer  :: ier
     real(r8), pointer :: rbufslp(:)  ! temporary
-    real(r8), pointer :: rbufslc(:)  ! temporary
     !---------------------------------------------------------------------
 
     begp = bounds%begp; endp = bounds%endp
-    begc = bounds%begc; endc = bounds%endc
 
     ! Allocate needed dynamic memory for single level patch field
     allocate(rbufslp(begp:endp), stat=ier)
@@ -1540,31 +1438,14 @@ contains
        call endrun(msg="InitAccVars allocation error for rbufslp"//&
             errMsg(sourcefile, __LINE__))
     endif
-    ! Allocate needed dynamic memory for single level col field
-    allocate(rbufslc(begc:endc), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)' in '
-       call endrun(msg="InitAccVars allocation error for rbufslc"//&
-            errMsg(sourcefile, __LINE__))
-    endif
 
     ! Determine time step
     nstep = get_nstep()
 
-    call extract_accum_field ('FSD24', rbufslp, nstep)
-    this%fsd24_patch(begp:endp) = rbufslp(begp:endp)
-
     call extract_accum_field ('FSD240', rbufslp, nstep)
     this%fsd240_patch(begp:endp) = rbufslp(begp:endp)
 
-    call extract_accum_field ('FSI24', rbufslp, nstep)
-    this%fsi24_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('FSI240', rbufslp, nstep)
-    this%fsi240_patch(begp:endp) = rbufslp(begp:endp)
-
     deallocate(rbufslp)
-    deallocate(rbufslc)
 
   end subroutine InitAccVars
 
@@ -1581,17 +1462,13 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer :: g,c,p                     ! indices
-    integer :: dtime                     ! timestep size [seconds]
     integer :: nstep                     ! timestep number
     integer :: ier                       ! error status
     integer :: begp, endp
-    integer :: begc, endc
     real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
-    real(r8), pointer :: rbufslc(:)      ! temporary single level - column level
     !---------------------------------------------------------------------
 
     begp = bounds%begp; endp = bounds%endp
-    begc = bounds%begc; endc = bounds%endc
 
     nstep = get_nstep()
 
@@ -1599,12 +1476,6 @@ contains
     allocate(rbufslp(begp:endp), stat=ier)
     if (ier/=0) then
        write(iulog,*)'UpdateAccVars allocation error for rbufslp'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-    ! Allocate needed dynamic memory for single level col field
-    allocate(rbufslc(begc:endc), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)'UpdateAccVars allocation error for rbufslc'
        call endrun(msg=errMsg(sourcefile, __LINE__))
     endif
 
@@ -1615,29 +1486,8 @@ contains
     end do
     call update_accum_field  ('FSD240', rbufslp               , nstep)
     call extract_accum_field ('FSD240', this%fsd240_patch     , nstep)
-    call update_accum_field  ('FSD24' , rbufslp               , nstep)
-    call extract_accum_field ('FSD24' , this%fsd24_patch      , nstep)
-
-    ! Accumulate and extract forc_solai24 & forc_solai240 
-    do p = begp,endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_solai_grc(g,1)
-    end do
-    call update_accum_field  ('FSI24' , rbufslp               , nstep)
-    call extract_accum_field ('FSI24' , this%fsi24_patch      , nstep)
-    call update_accum_field  ('FSI240', rbufslp               , nstep)
-    call extract_accum_field ('FSI240', this%fsi240_patch     , nstep)
-
-    ! Precipitation accumulators
-
-    do p = begp,endp
-       c = patch%column(p)
-       rbufslp(p) = this%forc_rain_downscaled_col(c) + this%forc_snow_downscaled_col(c)
-       rbufslc(c) = this%forc_rain_downscaled_col(c) + this%forc_snow_downscaled_col(c)
-    end do
 
     deallocate(rbufslp)
-    deallocate(rbufslc)
 
   end subroutine UpdateAccVars
 
@@ -1865,8 +1715,6 @@ contains
     deallocate(this%forc_th_downscaled_col)
     deallocate(this%forc_rho_downscaled_col)
     deallocate(this%forc_lwrad_downscaled_col)
-    deallocate(this%forc_rain_downscaled_col)
-    deallocate(this%forc_snow_downscaled_col)
 
     ! rof->lnd
     deallocate(this%forc_flood_grc)
@@ -1884,15 +1732,7 @@ contains
     deallocate(this%af_swdn_grc)
     deallocate(this%af_lwdn_grc)
 
-    deallocate(this%fsd24_patch)
     deallocate(this%fsd240_patch)
-    deallocate(this%fsi24_patch)
-    deallocate(this%fsi240_patch)
-    deallocate(this%prec10_patch)
-    deallocate(this%prec60_patch)
-    deallocate(this%prec365_col)
-    deallocate(this%t_mo_patch)
-    deallocate(this%t_mo_min_patch)
     
     ! MML: deallocate mml vars:
     
