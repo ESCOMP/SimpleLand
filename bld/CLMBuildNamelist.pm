@@ -1236,19 +1236,9 @@ sub write_output_files {
 
   # CLM component
   my @groups = qw(clm_inparm 
-                 lai_streams atm2lnd_inparm
                  finidat_consistency_checks 
                  clm_initinterp_inparm 
-                 soilwater_movement_inparm rooting_profile_inparm
-                 soil_resis_inparm
-                 clmu_inparm clm_soilstate_inparm 
-                 clm_soilhydrology_inparm
                  clm_glacier_behavior);
-
- if ( $physv->as_long() >= $physv->as_long("clm4_5") ) {
-   push @groups, "cn_general";
-   push @groups, "clm_canopy_inparm";
- }
 
   my $outfile;
   $outfile = "$opts->{'dir'}/lnd_in";

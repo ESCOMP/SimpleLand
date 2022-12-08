@@ -75,11 +75,10 @@ module lnd2atmType
 contains
 
   !------------------------------------------------------------------------
-  subroutine Init(this, bounds, NLFilename)
+  subroutine Init(this, bounds)
 
     class(lnd2atm_type) :: this
     type(bounds_type), intent(in) :: bounds  
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
 
     call this%InitAllocate(bounds)
     call this%InitHistory(bounds)
@@ -148,11 +147,9 @@ contains
     type(bounds_type), intent(in) :: bounds  
     !
     ! !LOCAL VARIABLES:
-    integer  :: begc, endc
     integer  :: begg, endg
     !---------------------------------------------------------------------
 
-    begc = bounds%begc; endc = bounds%endc
     begg = bounds%begg; endg = bounds%endg
 
     this%eflx_sh_tot_grc(begg:endg) = 0._r8

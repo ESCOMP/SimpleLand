@@ -414,16 +414,6 @@ and pct_pft read from the surface dataset. This check is only done for a NON-tra
 </entry>
 
 <!-- ========================================================================================  -->
-<!-- Namelist options related to dynpft consistency checks                                     -->
-<!-- ========================================================================================  -->
-
-<entry id="check_dynpft_consistency" type="logical" category="datasets"
-       group="dynpft_consistency_checks" valid_values="" >
-If TRUE (which is the default), check consistency between pct_nat_pft on the flanduse_timeseries file
-and pct_nat_pft read from the surface dataset.
-</entry>
-
-<!-- ========================================================================================  -->
 <!-- Namelist options related to the snow pack                                                 -->
 <!-- ========================================================================================  -->
 

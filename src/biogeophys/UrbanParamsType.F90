@@ -10,7 +10,7 @@ module UrbanParamsType
   use abortutils   , only : endrun
   use decompMod    , only : bounds_type
   use clm_varctl   , only : iulog, fsurdat
-  use clm_varcon   , only : namel, grlnd, spval
+  use clm_varcon   , only : grlnd
   use LandunitType , only : lun                
   !
   implicit none
@@ -36,7 +36,6 @@ module UrbanParamsType
      real(r8), pointer     :: thick_wall          (:)   ! lun total thickness of urban wall (m)
      real(r8), pointer     :: thick_roof          (:)   ! lun total thickness of urban roof (m)
 
-
    contains
 
      procedure, public :: Init 
@@ -61,8 +60,6 @@ contains
     !
     ! !USES:
     use shr_infnan_mod  , only : nan => shr_infnan_nan, assignment(=)
-    use clm_varpar      , only : nlevgrnd, nlevurb
-    use clm_varpar      , only : nlevsoi, nlevgrnd
     use landunit_varcon , only : isturb_MIN
     !
     ! !ARGUMENTS:
@@ -70,31 +67,22 @@ contains
     type(bounds_type)      , intent(in)    :: bounds  
     !
     ! !LOCAL VARIABLES:
-    integer             :: j,l,c,p,g       ! indices
-    integer             :: nc,fl,ib        ! indices 
-    integer             :: dindx           ! urban density type index
-    integer             :: ier             ! error status
-    integer		:: begl, endl
-    integer		:: begc, endc
-    integer		:: begp, endp
-    integer             :: begg, endg
+    integer :: l,c,g  ! indices
+    integer :: dindx  ! urban density type index
+    integer :: begl, endl
+    integer :: begg, endg
     !---------------------------------------------------------------------
 
-    begp = bounds%begp; endp = bounds%endp
-    begc = bounds%begc; endc = bounds%endc
     begl = bounds%begl; endl = bounds%endl
     begg = bounds%begg; endg = bounds%endg
 
     ! Allocate urbanparams data structure
-
-    if ( nlevurb > 0 )then
-    end if
     allocate(this%thick_wall          (begl:endl))          ; this%thick_wall          (:)   = nan
     allocate(this%thick_roof          (begl:endl))          ; this%thick_roof          (:)   = nan
 
     ! Initialize time constant urban variables
 
-    do l = bounds%begl,bounds%endl
+    do l = begl,endl
 
        ! "0" refers to urban wall/roof surface and "nlevsoi" refers to urban wall/roof bottom
        if (lun%urbpoi(l)) then

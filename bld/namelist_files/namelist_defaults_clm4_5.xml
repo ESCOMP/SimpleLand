@@ -478,8 +478,6 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <flanduse_timeseries hgrid="ne30np4"       rcp="2.6" sim_year_range="1850-2100"
  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
-<stream_fldfilename_lai hgrid="360x720cru"       >lnd/clm2/lai_streams/MODISPFTLAI_0.5x0.5_c140711.nc</stream_fldfilename_lai>
-
 <lai_mapalgo>bilinear</lai_mapalgo>
 
 <lai_mapalgo  hgrid="1x1_brazil"          >nn</lai_mapalgo>

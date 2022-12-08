@@ -267,11 +267,10 @@ module atm2lndType
 contains
 
   !------------------------------------------------------------------------
-  subroutine Init(this, bounds, NLFilename)
+  subroutine Init(this, bounds)
 
     class(atm2lnd_type) :: this
     type(bounds_type), intent(in) :: bounds
-    character(len=*), intent(in) :: NLFilename ! namelist filename
 
     call this%InitAllocate(bounds)
     call this%InitHistory(bounds)

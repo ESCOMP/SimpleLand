@@ -8,9 +8,9 @@ module clm_instMod
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use decompMod       , only : bounds_type
   use clm_varcon      , only : bdsno
+  use clm_varctl      , only : iulog
   use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
-  use controlMod      , only : NLFilename
 
   !-----------------------------------------
   ! Constants
@@ -120,15 +120,14 @@ contains
 
     ! Initialize clm->drv and drv->clm data structures
 
-    call atm2lnd_inst%Init( bounds, NLFilename )
-    call lnd2atm_inst%Init( bounds, NLFilename )
+    call atm2lnd_inst%Init(bounds)
+    call lnd2atm_inst%Init(bounds)
 
     ! Initialization of public data types
 
     call temperature_inst%Init(bounds)
 
-    call waterstate_inst%Init(bounds,         &
-         h2osno_col(begc:endc))
+    call waterstate_inst%Init(bounds, h2osno_col(begc:endc))
 
     call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc))
 

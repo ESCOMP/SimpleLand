@@ -464,6 +464,10 @@ contains
     integer, parameter :: urban_invalid_region = 0   ! urban_region_id indicating invalid point
 !-----------------------------------------------------------------------
 
+    ! TODO slevis SLIM: Attempted to not read special landunits, leave their
+    ! wt_lunit = 0, and remove calls to check_sums and check_weights that were
+    ! triggered. Outcome was an error in the sea-ice model:
+    ! "ice_therm_mushy solver failure"
     allocate(pctgla(begg:endg))
     allocate(pctlak(begg:endg))
     allocate(pctwet(begg:endg))

@@ -93,6 +93,11 @@ contains
          lnd2atm_inst%eflx_lwrad_out_grc      (bounds%begg:bounds%endg), &
          p2c_scale_type='unity', c2l_scale_type= 'urbanf', l2g_scale_type='unity')
 
+    ! TODO slevis SLIM: Eliminating next assignment returns error:
+    ! Longwave down is <= 0, while eliminating and then changing the
+    ! initialization of t_rad_grc to tfrz in lnd2atmType works but changes
+    ! answers throughout, including in MML variables. See
+    ! /glade/scratch/slevis/ERS_D_Ld60.f19_g16.H_MML_2000_CAM5.cheyenne_gnu.clm-global_uniform_g16_SOM.C.20221207_111523_9gqwvp/ERS_D_Ld60.f19_g16.H_MML_2000_CAM5.cheyenne_gnu.clm-global_uniform_g16_SOM.C.20221207_111523_9gqwvp.clm2.h0.0001-03-02-00000.nc.cprnc.out
     do g = bounds%begg,bounds%endg
        lnd2atm_inst%t_rad_grc(g) = sqrt(sqrt(lnd2atm_inst%eflx_lwrad_out_grc(g)/sb))
     end do

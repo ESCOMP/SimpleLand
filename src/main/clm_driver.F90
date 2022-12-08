@@ -90,7 +90,6 @@ contains
     call get_proc_bounds(bounds_proc)
     nclumps = get_proc_clumps()
 
-! MML: I think I need this bit
     !$OMP PARALLEL DO PRIVATE (nc,bounds_clump)
     do nc = 1,nclumps
        call get_clump_bounds(nc, bounds_clump)
