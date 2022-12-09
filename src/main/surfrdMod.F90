@@ -14,8 +14,7 @@ module surfrdMod
   use landunit_varcon , only : numurbl
   use clm_varcon      , only : grlnd
   use clm_varctl      , only : iulog, scmlat, scmlon, single_column
-  use clm_varctl      , only : use_cndv, use_crop
-  use surfrdUtilsMod  , only : check_sums_equal_1, collapse_crop_types
+  use surfrdUtilsMod  , only : check_sums_equal_1
   use ncdio_pio       , only : file_desc_t, var_desc_t, ncd_pio_openfile, ncd_pio_closefile
   use ncdio_pio       , only : ncd_io, check_var, ncd_inqfdims, check_dim, ncd_inqdid
   use pio
@@ -33,7 +32,6 @@ module surfrdMod
   ! !PRIVATE MEMBER FUNCTIONS:
   private :: surfrd_special             ! Read the special landunits
   private :: surfrd_veg_all             ! Read all of the vegetated landunits
-  private :: surfrd_veg_dgvm            ! Read vegetated landunits for DGVM mode
   private :: surfrd_pftformat           ! Read crop pfts in file format where they are part of the vegetated land unit
   private :: surfrd_cftformat           ! Read crop pfts in file format where they are on their own landunit
   !
@@ -305,7 +303,6 @@ contains
     !    o real % abundance PFTs (as a percent of vegetated area)
     !
     ! !USES:
-    use clm_varctl  , only : create_crop_landunit
     use fileutils   , only : getfil
     use domainMod   , only : domain_type, domain_init, domain_clean
     use clm_instur  , only : wt_lunit, topo_glc_mec
@@ -418,10 +415,6 @@ contains
 
     call surfrd_veg_all(begg, endg, ncid, ldomain%ns)
 
-    if (use_cndv) then
-       call surfrd_veg_dgvm(begg, endg)
-    end if
-
     call ncd_pio_closefile(ncid)
 
     call check_sums_equal_1(wt_lunit, begg, 'wt_lunit', subname)
@@ -441,10 +434,9 @@ contains
     ! as soil color and percent sand and clay
     !
     ! !USES:
-    use clm_varpar      , only : maxpatch_glcmec, nlevurb
+    use clm_varpar      , only : nlevurb
     use landunit_varcon , only : isturb_MIN, isturb_MAX, istdlak, istwet, istice_mec
     use clm_instur      , only : wt_lunit, urban_valid, wt_glc_mec, topo_glc_mec
-    use UrbanParamsType , only : CheckUrban
     !
     ! !ARGUMENTS:
     integer          , intent(in)    :: begg, endg 
@@ -472,6 +464,10 @@ contains
     integer, parameter :: urban_invalid_region = 0   ! urban_region_id indicating invalid point
 !-----------------------------------------------------------------------
 
+    ! TODO slevis SLIM: Attempted to not read special landunits, leave their
+    ! wt_lunit = 0, and remove calls to check_sums and check_weights that were
+    ! triggered. Outcome was an error in the sea-ice model:
+    ! "ice_therm_mushy solver failure"
     allocate(pctgla(begg:endg))
     allocate(pctlak(begg:endg))
     allocate(pctwet(begg:endg))
@@ -531,8 +527,8 @@ contains
 
     ! Read glacier info
 
-    call check_dim(ncid, 'nglcec',   maxpatch_glcmec   )
-    call check_dim(ncid, 'nglcecp1', maxpatch_glcmec+1 )
+    call check_dim(ncid, 'nglcec',   10)
+    call check_dim(ncid, 'nglcecp1', 11)
 
     call ncd_io(ncid=ncid, varname='PCT_GLC_MEC', flag='read', data=wt_glc_mec, &
          dim1name=grlnd, readvar=readvar)
@@ -582,8 +578,6 @@ contains
 
     end do
 
-    call CheckUrban(begg, endg, pcturb(begg:endg,:), subname)
-
     deallocate(pctgla,pctlak,pctwet,pcturb,pcturb_tot,urban_region_id,pctspec)
 
   end subroutine surfrd_special
@@ -595,7 +589,7 @@ contains
     !     Handle generic crop types for file format where they are on their own
     !     crop landunit and read in as Crop Function Types.
     ! !USES:
-    use clm_instur      , only : fert_cft, wt_nat_patch
+    use clm_instur      , only : wt_nat_patch
     use clm_varpar      , only : cft_size, cft_lb, natpft_lb
     ! !ARGUMENTS:
     implicit none
@@ -622,18 +616,6 @@ contains
             dim1name=grlnd, readvar=readvar)
     if (.not. readvar) call endrun( msg=' ERROR: PCT_CFT NOT on surfdata file'//errMsg(sourcefile, __LINE__)) 
 
-    if ( cft_size > 0 )then
-       call ncd_io(ncid=ncid, varname='CONST_FERTNITRO_CFT', flag='read', data=fert_cft, &
-               dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          if ( masterproc ) &
-                write(iulog,*) ' WARNING: CONST_FERTNITRO_CFT NOT on surfdata file zero out'
-          fert_cft = 0.0_r8
-       end if
-    else
-       fert_cft = 0.0_r8
-    end if
-
     allocate( array2D(begg:endg,1:natpft_size) )
     call ncd_io(ncid=ncid, varname='PCT_NAT_PFT', flag='read', data=array2D, &
          dim1name=grlnd, readvar=readvar)
@@ -650,7 +632,7 @@ contains
     !     Handle generic crop types for file format where they are part of the
     !     natural vegetation landunit.
     ! !USES:
-    use clm_instur      , only : fert_cft, wt_nat_patch
+    use clm_instur      , only : wt_nat_patch
     use clm_varpar      , only : natpft_size, cft_size, natpft_lb
     ! !ARGUMENTS:
     implicit none
@@ -678,15 +660,6 @@ contains
                ' must also have a separate crop landunit, and vice versa)'//&
                errMsg(sourcefile, __LINE__))
     end if
-    call ncd_io(ncid=ncid, varname='CONST_FERTNITRO_CFT', flag='read', data=fert_cft, &
-            dim1name=grlnd, readvar=readvar)
-    if (readvar) then
-       call endrun( msg= ' ERROR: unexpectedly found CONST_FERTNITRO_CFT on dataset when cft_size=0'// &
-               ' (if the surface dataset has a separate crop landunit, then the code'// &
-               ' must also have a separate crop landunit, and vice versa)'//&
-               errMsg(sourcefile, __LINE__))
-    end if
-    fert_cft = 0.0_r8
 
     call ncd_io(ncid=ncid, varname='PCT_NAT_PFT', flag='read', data=wt_nat_patch, &
          dim1name=grlnd, readvar=readvar)
@@ -701,11 +674,9 @@ contains
     ! Determine weight arrays for non-dynamic landuse mode
     !
     ! !USES:
-    use clm_varctl      , only : create_crop_landunit, use_fates
     use clm_varpar      , only : natpft_lb, natpft_ub, natpft_size, cft_size, cft_lb
-    use clm_instur      , only : wt_lunit, wt_nat_patch, wt_cft, fert_cft
+    use clm_instur      , only : wt_lunit, wt_nat_patch, wt_cft
     use landunit_varcon , only : istsoil, istcrop
-    use surfrdUtilsMod  , only : convert_cft_to_pft
     !
     ! !ARGUMENTS:
     implicit none
@@ -746,25 +717,7 @@ contains
 
     ! Check the file format for CFT's and handle accordingly
     call ncd_inqdid(ncid, 'cft', dimid, cft_dim_exists)
-    if ( cft_dim_exists .and. create_crop_landunit )then
-       call surfrd_cftformat( ncid, begg, endg, wt_cft, cft_size, natpft_size )  ! Format where CFT's is read in a seperate landunit
-    else if ( (.not. cft_dim_exists) .and. (.not. create_crop_landunit) )then
-       if ( masterproc ) write(iulog,*) "WARNING: The PFT format is an unsupported format that will be removed in th future!"
-       call surfrd_pftformat( begg, endg, ncid )                                 ! Format where crop is part of the natural veg. landunit
-    else if ( cft_dim_exists .and. .not. create_crop_landunit )then
-       if ( masterproc ) write(iulog,*) "WARNING: New CFT-based format surface datasets should be run with create_crop_landunit=T"
-       if ( use_fates ) then
-          if ( masterproc ) write(iulog,*) "WARNING: When fates is on we allow new CFT based surface datasets ", &
-                                           "to be used with create_crop_land FALSE"
-          cftsize = 2
-          allocate(array2D(begg:endg,cft_lb:cftsize-1+cft_lb))
-          call surfrd_cftformat( ncid, begg, endg, array2D, cftsize, natpft_size-cftsize ) ! Read crops in as CFT's
-          call convert_cft_to_pft( begg, endg, cftsize, array2D )                          ! Convert from CFT to natural veg. landunit
-          deallocate(array2D)
-       else
-          call endrun( msg=' ERROR: New format surface datasets require create_crop_landunit TRUE'//errMsg(sourcefile, __LINE__))
-       end if
-    end if
+    call surfrd_cftformat( ncid, begg, endg, wt_cft, cft_size, natpft_size )  ! Format where CFT's is read in a seperate landunit
 
     ! Do some checking
     
@@ -784,36 +737,6 @@ contains
     wt_nat_patch(begg:endg,:)   = wt_nat_patch(begg:endg,:) / 100._r8
     call check_sums_equal_1(wt_nat_patch, begg, 'wt_nat_patch', subname)
 
-    ! Collapse crop landunits down when prognostic crops are on
-    if (use_crop) then
-       call collapse_crop_types(wt_cft(begg:endg, :), fert_cft(begg:endg, :), begg, endg, verbose=.true.)
-    end if
-
   end subroutine surfrd_veg_all
-
-  !-----------------------------------------------------------------------
-  subroutine surfrd_veg_dgvm(begg, endg)
-    !
-    ! !DESCRIPTION:
-    ! Determine weights for CNDV mode.
-    !
-    ! !USES:
-    use pftconMod , only : noveg
-    use clm_instur, only : wt_nat_patch
-    !
-    ! !ARGUMENTS:
-    integer, intent(in) :: begg, endg  
-    !
-    ! !LOCAL VARIABLES:
-    character(len=*), parameter :: subname = 'surfrd_veg_dgvm'
-    !-----------------------------------------------------------------------
-
-    ! Bare ground gets 100% weight; all other natural patches are zeroed out
-    wt_nat_patch(begg:endg, :)     = 0._r8
-    wt_nat_patch(begg:endg, noveg) = 1._r8
-
-    call check_sums_equal_1(wt_nat_patch, begg, 'wt_nat_patch', subname)
-
-  end subroutine surfrd_veg_dgvm
 
 end module surfrdMod

@@ -30,162 +30,9 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- CO2 type -->
 <co2_type>constant</co2_type>
 
-<!-- Default Biogeochemistry mode -->
-<bgc_mode >sp</bgc_mode>
-
-<!-- Albedo for glaciers -->
-<albice phys="clm5_0">0.50,0.30</albice>
-<albice phys="clm4_5">0.60,0.40</albice>
-
-<!-- Default urban air conditioning/heating and wasteheat -->
-<urban_hac phys="clm5_0" >ON_WASTEHEAT</urban_hac>
-<urban_hac phys="clm4_5" >ON</urban_hac>
-
-<building_temp_method phys="clm5_0">1</building_temp_method>
-<building_temp_method phys="clm4_5">0</building_temp_method>
-
-<!-- Default urban traffic flux -->
-<urban_traffic>.false.</urban_traffic>
-
-<!-- Soil state settings -->
-<organic_frac_squared phys="clm4_5" >.true.</organic_frac_squared>
-<organic_frac_squared phys="clm5_0" >.false.</organic_frac_squared>
-
-<soil_layerstruct phys="clm5_0">20SL_8.5m</soil_layerstruct>
-<soil_layerstruct phys="clm4_5">10SL_3.5m</soil_layerstruct>
-
-<use_bedrock phys="clm5_0" use_fates =".true.">.false.</use_bedrock>
-<use_bedrock phys="clm5_0" vichydro ="1"      >.false.</use_bedrock>
-<use_bedrock phys="clm5_0">.true.</use_bedrock>
-<use_bedrock phys="clm4_5">.false.</use_bedrock>
-
-
-<!-- Rooting profile namelist defaults -->
-<rooting_profile_method_water  phys="clm5_0">1</rooting_profile_method_water>
-<rooting_profile_method_water  phys="clm4_5">0</rooting_profile_method_water>
-
-<rooting_profile_method_carbon phys="clm5_0">1</rooting_profile_method_carbon>
-<rooting_profile_method_carbon phys="clm4_5">1</rooting_profile_method_carbon>
-
-<!-- Soil evaporative resistance namelist defaults -->
-<soil_resis_method phys="clm5_0">1</soil_resis_method>
-<soil_resis_method phys="clm4_5">0</soil_resis_method>
-
-<!-- atm2lnd defaults -->
-<repartition_rain_snow phys="clm5_0">.true.</repartition_rain_snow>
-<repartition_rain_snow phys="clm4_5">.false.</repartition_rain_snow>
-
-<glcmec_downscale_longwave>.true.</glcmec_downscale_longwave>
-
-<!-- Pritchard et al. (GRL, 35, 2008) use 0.006 -->
-<lapse_rate>0.006</lapse_rate>
-
-<!-- Based on Van Tricht et al. (2016, TC) Figure 6, doi:10.5194/tc-10-2379-2016 -->
-<lapse_rate_longwave>0.032</lapse_rate_longwave>
-
-<longwave_downscaling_limit>0.5</longwave_downscaling_limit>
-
-<precip_repartition_nonglc_all_snow_t>0.</precip_repartition_nonglc_all_snow_t>
-<precip_repartition_nonglc_all_rain_t>2.</precip_repartition_nonglc_all_rain_t>
-<!-- For CLM45, we used the same rain-snow partitioning for glaciers as for other landunits -->
-<precip_repartition_glc_all_snow_t phys="clm4_5">0.</precip_repartition_glc_all_snow_t>
-<precip_repartition_glc_all_rain_t phys="clm4_5">2.</precip_repartition_glc_all_rain_t>
-<!-- For CLM5, we assume rain at somewhat cooler temperatures. The main
-     motivation is to increase glacier melt, which otherwise is too low in
-     CESM2. The physical justification is that the 0 - 2 C ramp used elsewhere
-     makes sense for typical atmospheric profiles; but over glaciers, inversions
-     are more common, so it is more reasonable to expect rain despite
-     below-freezing near-surface temperatures. -->
-<precip_repartition_glc_all_snow_t phys="clm5_0">-2.</precip_repartition_glc_all_snow_t>
-<precip_repartition_glc_all_rain_t phys="clm5_0">0.</precip_repartition_glc_all_rain_t>
-
-<!-- lnd2atm defaults -->
-<melt_non_icesheet_ice_runoff phys="clm4_5">.false.</melt_non_icesheet_ice_runoff>
-<melt_non_icesheet_ice_runoff phys="clm5_0">.true.</melt_non_icesheet_ice_runoff>
-
-<!-- Canopy hydrology namelist defaults -->
-<use_clm5_fpi phys="clm5_0">.true.</use_clm5_fpi>
-<interception_fraction phys="clm5_0">1.0</interception_fraction>
-<maximum_leaf_wetted_fraction phys="clm5_0">0.05</maximum_leaf_wetted_fraction>
-
-<use_clm5_fpi phys="clm4_5">.false.</use_clm5_fpi>
-<interception_fraction phys="clm4_5">0.25</interception_fraction>
-<maximum_leaf_wetted_fraction phys="clm4_5">1.0</maximum_leaf_wetted_fraction>
-
-<!-- Soilwater movement namelist defaults -->
-<soilwater_movement_method phys="clm4_5">0</soilwater_movement_method>
-<soilwater_movement_method phys="clm5_0">1</soilwater_movement_method>
-
-<upper_boundary_condition phys="clm4_5" >1</upper_boundary_condition>
-<upper_boundary_condition phys="clm5_0" >1</upper_boundary_condition>
-
-<lower_boundary_condition soilwater_movement_method="0"                       >4</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" use_bedrock=".true."  >2</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" use_bedrock=".false." >2</lower_boundary_condition>
-<lower_boundary_condition soilwater_movement_method="1" use_bedrock=".false." vichydro="1" >3</lower_boundary_condition>
-
-<dtmin>60.</dtmin>      
-<verySmall>1.e-8</verySmall>
-<xTolerUpper>1.e-1</xTolerUpper> 
-<xTolerLower>1.e-2</xTolerLower> 
-<expensive>42</expensive>
-<inexpensive>1</inexpensive>
-<flux_calculation>1</flux_calculation>
-
-<!-- Irrigation namelist defaults -->
-<irrig_min_lai>0.0</irrig_min_lai>
-<irrig_start_time>21600</irrig_start_time>
-<irrig_length>14400</irrig_length>
-<irrig_target_smp>-3400.</irrig_target_smp>  <!-- -3400 is a standard value for field capacity -->
-<irrig_depth>0.6</irrig_depth>
-<irrig_threshold_fraction phys="clm5_0">1.0</irrig_threshold_fraction>
-<irrig_threshold_fraction phys="clm4_5">0.5</irrig_threshold_fraction>
-<irrig_river_volume_threshold>0.1</irrig_river_volume_threshold>
-
-<!--  River storage derived lake evaporation and irrigation limitation  -->
-<limit_irrigation_if_rof_enabled phys="clm5_0">.false.</limit_irrigation_if_rof_enabled>
-<limit_irrigation_if_rof_enabled              >.false.</limit_irrigation_if_rof_enabled>
-
-<!-- Snow veg treatment -->
-<snowveg_flag phys="clm4_5" >OFF</snowveg_flag>
-<snowveg_flag phys="clm5_0" >ON_RAD</snowveg_flag>
-
 <!-- Snow pack settings-->
 <nlevsno phys="clm5_0" >12</nlevsno>
 <nlevsno phys="clm4_5" >5</nlevsno>
-<h2osno_max phys="clm5_0" >10000.0</h2osno_max>
-<h2osno_max phys="clm4_5" >1000.0</h2osno_max>
-
-<int_snow_max phys="clm5_0">2000.</int_snow_max>
-<!-- For clm4_5, make this effectively unlimited -->
-<int_snow_max phys="clm4_5">1.e30</int_snow_max>
-
-<n_melt_glcmec phys="clm5_0">10.0d00</n_melt_glcmec>
-<n_melt_glcmec phys="clm4_5">10.0</n_melt_glcmec>
-
-<wind_dependent_snow_density phys="clm5_0" >.true.</wind_dependent_snow_density>
-<wind_dependent_snow_density phys="clm4_5" >.false.</wind_dependent_snow_density>
-
-<snow_overburden_compaction_method phys="clm5_0">'Vionnet2012'</snow_overburden_compaction_method>
-<snow_overburden_compaction_method phys="clm4_5">'Anderson1976'</snow_overburden_compaction_method>
-
-<lotmp_snowdensity_method phys="clm5_0">'Slater2017'</lotmp_snowdensity_method>
-<lotmp_snowdensity_method phys="clm4_5">'TruncatedAnderson1976'</lotmp_snowdensity_method>
-
-<upplim_destruct_metamorph   phys="clm4_5">100.d00</upplim_destruct_metamorph>
-<upplim_destruct_metamorph   phys="clm5_0">175.d00</upplim_destruct_metamorph>
-
-<fresh_snw_rds_max phys="clm4_5">54.526d00</fresh_snw_rds_max>
-<fresh_snw_rds_max phys="clm5_0">204.526d00</fresh_snw_rds_max>
-
-<overburden_compress_tfactor>0.08d00</overburden_compress_tfactor>
-
-<reset_snow>.false.</reset_snow>
-<reset_snow_glc>.false.</reset_snow_glc>
-<!-- Set default reset_snow_glc_ela value to very large so that, by
-     default, all glacier columns will be reset if reset_snow_glc is set
-     to .true. -->
-<reset_snow_glc_ela>1.e9</reset_snow_glc_ela>
 
 <!-- Default glacier behavior is:
      Mountain glaciers: single_at_atm_topo
@@ -194,116 +41,11 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
      Antarctica: multiple -->
 <glacier_region_behavior>'single_at_atm_topo','virtual','virtual','multiple'</glacier_region_behavior>
 
-<!-- Default glacier melt behavior is:
-     Mountain glaciers: remains_in_place
-     Greenland - inside CISM grid but outside Greenland itself: replaced_by_ice
-     Greenland itself: replaced_by_ice
-     Antarctica: replaced_by_ice -->
-<glacier_region_melt_behavior>'remains_in_place','replaced_by_ice','replaced_by_ice','replaced_by_ice'</glacier_region_melt_behavior>
-
-<!-- Default glacier ice runoff behavior is:
-     Mountain glaciers: melted
-     Greenland - inside CISM grid but outside Greenland itself: melted
-     Greenland itself: remains_ice
-     Antarctica: remains_ice -->
-<glacier_region_ice_runoff_behavior>'melted','melted','remains_ice','remains_ice'</glacier_region_ice_runoff_behavior>
-
-<!-- This parameter is tied (in a scientific sense) to h2osno_max: For large
-     values of h2osno_max, glc_snow_persistence_max_days should be 0; for small
-     values of h2osno_max, glc_snow_persistence_max_days should be non-zero. For
-     simplicity, we tie the defaults for both of these options to the overall
-     CLM phys version, rather than having some intermediate option that controls
-     the defaults for both h2osno_max and glc_snow_persistence_max_days. -->
-<glc_snow_persistence_max_days phys="clm5_0" >0</glc_snow_persistence_max_days>
-<glc_snow_persistence_max_days phys="clm4_5" >7300</glc_snow_persistence_max_days>
-
 <!-- ================================================================== -->
 <!-- The default filenames are given relative to the root directory
      for the CLM2 data in the CESM distribution -->
 <!-- Plant function types (relative to {csmdata}) -->
-<paramfile phys="clm5_0">lnd/clm2/paramdata/clm5_params.c171117.nc</paramfile>
-<paramfile phys="clm4_5">lnd/clm2/paramdata/clm_params.c170913.nc</paramfile>
 
-<!-- ================================================================== -->
-<!-- FATES default parameter file                                       -->
-<!-- ================================================================== -->
-
-<fates_paramfile>lnd/clm2/paramdata/fates_params_2troppftclones.c171018.nc</fates_paramfile>
-
-<!-- ========================================================================================  -->
-<!-- clm 5.0 BGC nitrogen model                                                                -->
-<!-- ========================================================================================  -->
-<use_flexibleCN phys="clm5_0" use_cn=".true.">.true.</use_flexibleCN>
-<use_flexibleCN phys="clm5_0"                >.false.</use_flexibleCN>
-<use_flexibleCN phys="clm4_5"                >.false.</use_flexibleCN>
-
-<!-- LUNA model: Leaf Utilization of Nitrogen for Assimilation -->
-<use_luna phys="clm5_0"  >.true.</use_luna>
-<use_luna phys="clm5_0" use_fates=".true." >.false.</use_luna>
-<use_luna phys="clm4_5"  >.false.</use_luna>
-
-<!-- Flexible CN options -->
-<MM_Nuptake_opt             use_flexibleCN=".true." >.true.</MM_Nuptake_opt>
-<downreg_opt                use_flexibleCN=".true." >.false.</downreg_opt>
-<plant_ndemand_opt          use_flexibleCN=".true." >3</plant_ndemand_opt>
-<substrate_term_opt         use_flexibleCN=".true." >.true.</substrate_term_opt>
-<nscalar_opt                use_flexibleCN=".true." >.true.</nscalar_opt>
-<temp_scalar_opt            use_flexibleCN=".true." >.true.</temp_scalar_opt>
-<CNratio_floating           use_flexibleCN=".true." >.true.</CNratio_floating>
-<reduce_dayl_factor         use_flexibleCN=".true." >.false.</reduce_dayl_factor>
-<vcmax_opt                  use_flexibleCN=".true." >3</vcmax_opt>
-<CN_residual_opt            use_flexibleCN=".true." >1</CN_residual_opt>
-<CN_partition_opt           use_flexibleCN=".true." >1</CN_partition_opt>
-<CN_evergreen_phenology_opt use_flexibleCN=".true." >1</CN_evergreen_phenology_opt>
-<carbon_resp_opt            use_flexibleCN=".true." use_fun=".false.">1</carbon_resp_opt>
-<carbon_resp_opt            use_flexibleCN=".true." use_fun=".true." >0</carbon_resp_opt>
-
-
-<!-- LUNA options -->
-<!-- lnc_opt determines how nitrogen is made available for luna -->
-<!-- lnc_opt true means use leaf-N from BGC model -->
-<!-- lnc_opt false means base on LAI and CN ratio from parameter file -->
-<lnc_opt use_cn=".true."   >.true.</lnc_opt>
-<lnc_opt use_cn=".false."  >.false.</lnc_opt>
-
-<use_fertilizer>.false.</use_fertilizer>
-<use_fertilizer use_crop=".true." phys="clm4_5">.true.</use_fertilizer>
-<use_fertilizer use_crop=".true." phys="clm5_0">.true.</use_fertilizer>
-
-<jmaxb1 use_luna=".true." phys="clm5_0">0.093563</jmaxb1>
-
-<use_grainproduct>.false.</use_grainproduct>
-<use_grainproduct use_crop=".true." phys="clm4_5">.false.</use_grainproduct> <!-- 1-year grain product pool default to off for clm45 if crop is turned on -->
-<use_grainproduct use_crop=".true." phys="clm5_0">.true.</use_grainproduct> <!-- 1-year grain product pool default to on for clm50 if crop is turned on -->
-
-<initial_seed_at_planting use_crop=".true." phys="clm5_0">3.d00</initial_seed_at_planting>
-<initial_seed_at_planting use_crop=".true." phys="clm4_5">1.d00</initial_seed_at_planting>
-
-
-<!-- turnover time modifications    -->
-<decomp_depth_efolding phys="clm4_5">0.5</decomp_depth_efolding>
-<decomp_depth_efolding phys="clm5_0">10.0</decomp_depth_efolding>
-
-<!-- use additional stress deciduous onset trigger    -->
-<constrain_stress_deciduous_onset phys="clm4_5">.false.</constrain_stress_deciduous_onset>
-<constrain_stress_deciduous_onset phys="clm5_0">.true.</constrain_stress_deciduous_onset>
-
-<!-- dynamic roots -->
-<use_dynroot phys="clm4_5">.false.</use_dynroot>
-<use_dynroot phys="clm5_0" bgc_mode="sp">.false.</use_dynroot>
-<use_dynroot phys="clm5_0" bgc_mode="cn">.false.</use_dynroot>
-<use_dynroot phys="clm5_0" bgc_mode="fates">.false.</use_dynroot>
-<use_dynroot phys="clm5_0" bgc_mode="bgc">.false.</use_dynroot>
-
-<!-- Guardrail for ensuring leaf-Nitrogen doesn't go too small or negative on updates -->
-<use_nguardrail phys="clm4_5"                 >.false.</use_nguardrail>
-<use_nguardrail phys="clm5_0" use_cn=".false.">.false.</use_nguardrail>
-<use_nguardrail phys="clm5_0" use_cn=".true." >.true.</use_nguardrail>
-
-<!-- Plant hydraulic stress -->
-<use_hydrstress phys="clm4_5"                 >.false.</use_hydrstress>
-<use_hydrstress phys="clm5_0" use_fates=".true." >.false.</use_hydrstress>
-<use_hydrstress phys="clm5_0" use_fates=".false.">.true.</use_hydrstress>
 <!--
 
      Initial condition files to use and or interpolate from
@@ -317,9 +59,9 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <init_interp_sim_years>1850,2000</init_interp_sim_years>
 
 <!-- Interpolate from an initial condition file at startup? -->
-<use_init_interp  use_cndv=".false." use_fates=".false." sim_year="1850">.true.</use_init_interp>
-<use_init_interp  use_cndv=".false." use_fates=".false." sim_year="2000">.true.</use_init_interp>
-<use_init_interp                                                        >.false.</use_init_interp>
+<use_init_interp sim_year="1850">.true.</use_init_interp>
+<use_init_interp sim_year="2000">.true.</use_init_interp>
+<use_init_interp                >.false.</use_init_interp>
 
 <!--
   Set attributes to find specific matching finidat files below
@@ -327,40 +69,41 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
   set up. If more finidat files are added you may need to add more of these.
   Or one specific file will be chosen over another.
 -->
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm4_5_GSWP3v1"
->hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.false. irrigate=.false. glc_nec=10
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_GSWP3v1"
+>hgrid=0.9x1.25 maxpft=17 mask=gx1v6 
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm4_5_CRUv7"
->hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.false. irrigate=.false. glc_nec=10
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_CRUv7"
+>hgrid=0.9x1.25 maxpft=17 mask=gx1v6 
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm4_5_cam6.0"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v7 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm4_5_cam6.0"
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v7 
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_GSWP3v1"
->hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.false. use_nitrif_denitrif=.false. use_vertsoilc=.false. use_crop=.false. irrigate=.true. glc_nec=10
+<!--
+  Which is correct? The next or the previous one?
+-->
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_GSWP3v1"
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v6 
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_GSWP3v1"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_CRUv7"
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v6 
+</init_interp_attributes>
+<!--
+  Which is correct? The next or the previous one?
+-->
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_CRUv7"
+>hgrid=0.9x1.25 maxpft=17 mask=gx1v6 
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_CRUv7"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
+<init_interp_attributes sim_year="1850" lnd_tuning_mode="clm5_0_cam6.0"
+>hgrid=0.9x1.25 maxpft=79 mask=gx1v7 
 </init_interp_attributes>
 
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_CRUv7"
->hgrid=0.9x1.25 maxpft=17 mask=gx1v6 use_cn=.false. use_nitrif_denitrif=.false. use_vertsoilc=.false. use_crop=.false. irrigate=.true. glc_nec=10
-</init_interp_attributes>
-
-<init_interp_attributes sim_year="1850" use_cndv=".false." use_fates=".false." lnd_tuning_mode="clm5_0_cam6.0"
->hgrid=0.9x1.25 maxpft=79 mask=gx1v7 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.false. glc_nec=10
-</init_interp_attributes>
-
-<init_interp_attributes sim_year="2000" use_cndv=".false." use_fates=".false."
->hgrid=1.9x2.5 maxpft=79 mask=gx1v6 use_cn=.true. use_nitrif_denitrif=.true. use_vertsoilc=.true. use_crop=.true. irrigate=.true. glc_nec=10
+<init_interp_attributes sim_year="2000" 
+>hgrid=1.9x2.5 maxpft=79 mask=gx1v6 
 </init_interp_attributes>
 
 <!-- MML 2 degree resolution -->
@@ -375,62 +118,62 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
                            (if it will work on an exact match, leave use_init_interp off)
 -->
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".false."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" 
          lnd_tuning_mode="clm4_5_GSWP3v1"
 >lnd/clm2/initdata_map/clmi.I1850Clm45BgcGs.0901-01-01.0.9x1.25_gx1v6_simyr1850_c180204.nc
 </finidat>
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".false."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" 
          lnd_tuning_mode="clm4_5_CRUv7"
 >lnd/clm2/initdata_map/clmi.I1850Clm45BgcCruGs.1101-01-01.0.9x1.25_gx1v6_simyr1850_c180204.nc
 </finidat>
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7" use_cn=".true." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" 
          lnd_tuning_mode="clm4_5_cam6.0"
 >lnd/clm2/initdata_map/clmi.B1850.0161-01-01.0.9x1.25_gx1v7_simyr1850_c180130.nc
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".false." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".false." use_vertsoilc=".false." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".true."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_GSWP3v1"
 >lnd/clm2/initdata_map/clmi.I1850Clm50Sp.0181-01-01.0.9x1.25_gx1v6_simyr1850_c171214.nc
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false." use_init_interp=".true."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" use_init_interp=".true."
          lnd_tuning_mode="clm5_0_GSWP3v1"
 >lnd/clm2/initdata_map/clmi.I1850Clm50BgcCrop.1366-01-01.0.9x1.25_gx1v6_simyr1850_c171213.nc
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v6"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_CRUv7"
 >lnd/clm2/initdata_map/clmi.I1850Clm50BgcCropCru.1526-01-01.0.9x1.25_gx1v6_simyr1850_c180109.nc
 </finidat>
 
 
-<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7" use_cn=".true." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".false."
+<finidat hgrid="0.9x1.25"  maxpft="79"  mask="gx1v7"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_cam6.0"
 >lnd/clm2/initdata_map/clmi.B1850.0161-01-01.0.9x1.25_gx1v7_simyr1850_c180130.nc
 </finidat>
 
-<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6" use_cn=".false." use_cndv=".false." use_fates=".false."
-         ic_ymd="18500101" use_nitrif_denitrif=".false." use_vertsoilc=".false." sim_year="1850"
-         ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".true."
+<finidat hgrid="0.9x1.25"  maxpft="17"  mask="gx1v6"
+         ic_ymd="18500101" sim_year="1850"
+         ic_tod="0" 
          lnd_tuning_mode="clm5_0_CRUv7"
 >lnd/clm2/initdata_map/clmi.I1850Clm50SpCru.1706-01-01.0.9x1.25_gx1v6_simyr1850_c180110.nc
 </finidat>
@@ -442,147 +185,115 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 -->
 
 <!-- Present day crop spinup at 2-degree with irrigation on -->
-<finidat hgrid="1.9x2.5"    maxpft="79"  mask="gx1v6" use_cn=".true." use_cndv=".false." use_fates=".false."
-         ic_ymd="20110101" use_nitrif_denitrif=".true." use_vertsoilc=".true." sim_year="2000"
-         ic_tod="0" glc_nec="10" use_crop=".true." irrigate=".true."  use_init_interp=".true."
+<finidat hgrid="1.9x2.5"    maxpft="79"  mask="gx1v6"
+         ic_ymd="20110101" sim_year="2000"
+         ic_tod="0" use_init_interp=".true."
 >lnd/clm2/initdata_map/clmi.IGM2000GSWP3CLM50BGCCROPIRR.2011-01-01.1.9x2.5_gx1v6_gl5_simyr2000_c170419.nc
 </finidat>
 
-<!-- FATES on for 2000 (MUST be an exact match - can't interpolate files for FATES -->
-<finidat hgrid="4x5"  maxpft="17"  mask="gx3v7" use_cn=".false." use_fates=".true."
-         ic_ymd="20000101"  use_nitrif_denitrif=".false." use_vertsoilc=".true." sim_year="2000"
-         ic_tod="0" glc_nec="10" use_crop=".false." irrigate=".true."
->lnd/clm2/initdata_map/clmi.I2000Clm45Fates.0121-01-01.4x5_mgx3v7_simyr2000_c180122.nc
-</finidat>
-
-<finidat hgrid="1x1_brazil"  maxpft="17"  mask="navy" use_cn=".false." use_fates=".true."
-         ic_ymd="20000101"  use_nitrif_denitrif=".false." use_vertsoilc=".true." sim_year="2000"
-         ic_tod="0" glc_nec="0" use_crop=".false." irrigate=".true."
->lnd/clm2/initdata_map/clmi.I2000Clm45Fates.0101-01-01.1x1_brazil_simyr2000_c180120.nc
-</finidat>
-
-
 <!-- for present day simulations - year 2000 -->
-<fsurdat hgrid="360x720cru"   sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="360x720cru"   sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_360x720cru_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="48x96"     sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="48x96"     sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_48x96_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
 
-<fsurdat hgrid="0.47x0.63"  sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="0.47x0.63"  sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_0.47x0.63_16pfts_Irrig_CMIP6_simyr2000_c170919.nc</fsurdat>
-<fsurdat hgrid="0.9x1.25"  sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="0.9x1.25"  sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_0.9x1.25_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="1.9x2.5"   sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="1.9x2.5"   sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="4x5"       sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="4x5"       sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_4x5_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="10x15"     sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="10x15"     sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_10x15_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
 
-<fsurdat hgrid="ne120np4"    sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="ne120np4"    sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_ne120np4_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="ne30np4"     sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="ne30np4"     sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_ne30np4_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="ne16np4"     sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="ne16np4"     sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_ne16np4_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
 
-<fsurdat hgrid="5x5_amazon"    sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="5x5_amazon"    sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_5x5_amazon_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_brazil"    sim_year="2000" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="1x1_brazil"    sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
 
 <!-- Needed for SCAM (Single Column Atmosphere Model) -->
-<fsurdat hgrid="64x128"      sim_year="2000" use_crop=".false." irrigate=".true."
+<fsurdat hgrid="64x128"      sim_year="2000" 
 >lnd/clm2/surfdata_map/surfdata_64x128_16pfts_Irrig_CMIP6_simyr2000_c170824.nc</fsurdat>
 
 <!-- Crop surface datasets -->
-<fsurdat hgrid="0.47x0.63"  sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="0.47x0.63"  sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_0.47x0.63_78pfts_CMIP6_simyr2000_c170919.nc</fsurdat>
-<fsurdat hgrid="0.9x1.25"  sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="0.9x1.25"  sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_0.9x1.25_78pfts_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="1.9x2.5"   sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="1.9x2.5"   sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_1.9x2.5_78pfts_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="0.125x0.125"  sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="0.125x0.125"  sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_0.125x0.125_mp24_simyr2000_c150114.nc</fsurdat>
-<fsurdat hgrid="10x15"     sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="10x15"     sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_10x15_78pfts_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="4x5"       sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="4x5"       sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_4x5_78pfts_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="1x1_numaIA"       sim_year="2000" use_crop=".true." >
-lnd/clm2/surfdata_map/surfdata_1x1_numaIA_78pfts_CMIP6_simyr2000_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_smallvilleIA" sim_year="2000" use_crop=".true." >
-lnd/clm2/surfdata_map/surfdata_1x1_smallvilleIA_78pfts_CMIP6_simyr2000_c171214.nc</fsurdat>
 
-<fsurdat hgrid="ne120np4"    sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="ne120np4"    sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="ne30np4"     sim_year="2000" use_crop=".true.">
+<fsurdat hgrid="ne30np4"     sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_ne30np4_78pfts_CMIP6_simyr2000_c170824.nc</fsurdat>
-<fsurdat hgrid="ne16np4"     sim_year="2000" use_crop=".true." >
+<fsurdat hgrid="ne16np4"     sim_year="2000" >
 lnd/clm2/surfdata_map/surfdata_ne16np4_78pfts_CMIP6_simyr2000_c170824.nc</fsurdat>
 
-<!-- 100% Urban single-point datasets (only for sim-year=2000) -->
-<fsurdat hgrid="1x1_camdenNJ"        sim_year="2000" use_crop=".false." irrigate=".true.">
-lnd/clm2/surfdata_map/surfdata_1x1_camdenNJ_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_vancouverCAN"    sim_year="2000" use_crop=".false." irrigate=".true.">
-lnd/clm2/surfdata_map/surfdata_1x1_vancouverCAN_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_mexicocityMEX"   sim_year="2000" use_crop=".false." irrigate=".true.">
-lnd/clm2/surfdata_map/surfdata_1x1_mexicocityMEX_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_urbanc_alpha"    sim_year="2000" use_crop=".false." irrigate=".true.">
-lnd/clm2/surfdata_map/surfdata_1x1_urbanc_alpha_16pfts_Irrig_CMIP6_simyr2000_c171214.nc</fsurdat>
-
 <!-- for pre-industrial simulations - year 1850 without crop -->
-<fsurdat hgrid="360x720cru"   sim_year="1850" use_crop=".false." irrigate=".true." >
+<fsurdat hgrid="360x720cru"   sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_360x720cru_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="48x96"        sim_year="1850" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="48x96"        sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_48x96_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
 
-<fsurdat hgrid="0.47x0.63"  sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="0.47x0.63"  sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_0.47x0.63_16pfts_Irrig_CMIP6_simyr1850_c170919.nc</fsurdat>
-<fsurdat hgrid="0.9x1.25"     sim_year="1850" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="0.9x1.25"     sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_0.9x1.25_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="1.9x2.5"      sim_year="1850" use_crop=".false." >
+<fsurdat hgrid="1.9x2.5"      sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_1.9x2.5_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="10x15"        sim_year="1850" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="10x15"        sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_10x15_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="4x5"          sim_year="1850" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="4x5"          sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_4x5_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
 
-<fsurdat hgrid="1x1_brazil"    sim_year="1850" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="1x1_brazil"    sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_1x1_brazil_16pfts_Irrig_CMIP6_simyr1850_c171214.nc</fsurdat>
 
 
-<fsurdat hgrid="ne120np4"     sim_year="1850" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="ne120np4"     sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_ne120np4_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="ne30np4"      sim_year="1850" use_crop=".false." irrigate=".true.">
+<fsurdat hgrid="ne30np4"      sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_ne30np4_16pfts_Irrig_CMIP6_simyr1850_c170824.nc</fsurdat>
 
 <!-- pre-industrial with crop -->
-<fsurdat hgrid="360x720cru"   sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="360x720cru"   sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_360x720cru_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="48x96"        sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="48x96"        sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_48x96_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
 
-<fsurdat hgrid="0.47x0.63"  sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="0.47x0.63"  sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_0.47x0.63_78pfts_CMIP6_simyr1850_c170919.nc</fsurdat>
-<fsurdat hgrid="0.9x1.25"  sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="0.9x1.25"  sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_0.9x1.25_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="1.9x2.5"   sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="1.9x2.5"   sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_1.9x2.5_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="10x15"     sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="10x15"     sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_10x15_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="4x5"       sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="4x5"       sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_4x5_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="1x1_smallvilleIA" sim_year="1850" use_crop=".true." >
-lnd/clm2/surfdata_map/surfdata_1x1_smallvilleIA_78pfts_CMIP6_simyr1850_c171214.nc</fsurdat>
-<fsurdat hgrid="1x1_numaIA"       sim_year="1850" use_crop=".true." >
-lnd/clm2/surfdata_map/surfdata_1x1_numaIA_78pfts_CMIP6_simyr1850_c170917.nc</fsurdat>
 
-<fsurdat hgrid="1x1_brazil"    sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="1x1_brazil"    sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_1x1_brazil_78pfts_CMIP6_simyr1850_c171214.nc</fsurdat>
 
-<fsurdat hgrid="ne30np4"      sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="ne30np4"      sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_ne30np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
-<fsurdat hgrid="ne120np4"     sim_year="1850" use_crop=".true." >
+<fsurdat hgrid="ne120np4"     sim_year="1850" >
 lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurdat>
 
 <!-- Dynamic PFT surface datasets (relative to {csmdata}) -->
@@ -591,247 +302,188 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
      dataset (arbitrarily, RCP8.5) for the historical period, because all of the
      RCP datasets contain the 1850-2000 period as well as the future period. -->
 
-<flanduse_timeseries hgrid="0.47x0.63"      sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_0.47x0.63_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c171025.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="360x720cru"    sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="0.9x1.25"      sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="1.9x2.5"       sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="10x15"         sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="4x5"           sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="48x96"         sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="0.47x0.63"      sim_year_range="1850-2000" 
+>lnd/clm2/surfdata_map/landuse.timeseries_0.47x0.63_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c171025.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="360x720cru"    sim_year_range="1850-2000" 
+>lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="0.9x1.25"      sim_year_range="1850-2000" 
+>lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="1.9x2.5"       sim_year_range="1850-2000" 
+>lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="10x15"         sim_year_range="1850-2000" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="4x5"           sim_year_range="1850-2000" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="48x96"         sim_year_range="1850-2000" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
-<flanduse_timeseries hgrid="1x1_brazil"    sim_year_range="1850-2000" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="1x1_brazil"    sim_year_range="1850-2000" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
-<flanduse_timeseries hgrid="ne120np4"      sim_year_range="1850-2000"  irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="ne30np4"       sim_year_range="1850-2000"  irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne120np4"      sim_year_range="1850-2000"  
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne30np4"       sim_year_range="1850-2000"  
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <!-- Dynamic PFT surface datasets for crop -->
 
 <flanduse_timeseries hgrid="360x720cru"    sim_year_range="1850-2000"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="0.9x1.25"      sim_year_range="1850-2000"
- use_crop=".true."   >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="1.9x2.5"       sim_year_range="1850-2000"
- use_crop=".true."   >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="10x15"         sim_year_range="1850-2000"
- use_crop=".true."   >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="4x5"           sim_year_range="1850-2000"
- use_crop=".true."   >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="48x96"         sim_year_range="1850-2000"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <flanduse_timeseries hgrid="1x1_brazil"    sim_year_range="1850-2000"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="1x1_numaIA"    sim_year_range="1850-2000"
- use_crop=".true."   >lnd/clm2/surfdata_map/landuse.timeseries_1x1_numaIA_hist_78pfts_CMIP6_simyr1850-2015_c170917.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <flanduse_timeseries hgrid="ne120np4"      sim_year_range="1850-2000" 
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne30np4"       sim_year_range="1850-2000" 
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-
-<!-- Note that this transient file only goes up to year 1855.
-     This is sufficient for testing purposes, but could cause problems if you try to run beyond 1855. -->
-<flanduse_timeseries hgrid="1x1_smallvilleIA" sim_year_range="1850-2000"
- use_crop=".true."   >lnd/clm2/surfdata_map/landuse.timeseries_1x1_smallvilleIA_hist_78pfts_simyr1850-1855_c160127.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <!-- Dynamic PFT surface datasets for future scenarios(relative to {csmdata}) -->
 
 <!-- Other future scenario Dynamic PFT datasets with crop off -->
-<flanduse_timeseries hgrid="360x720cru"    rcp="8.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="0.9x1.25"      rcp="8.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="1.9x2.5"       rcp="8.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="10x15"         rcp="8.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="48x96"         rcp="8.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="ne30np4"       rcp="8.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="ne120np4"      rcp="8.5" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="360x720cru"    rcp="8.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="0.9x1.25"      rcp="8.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="1.9x2.5"       rcp="8.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="10x15"         rcp="8.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="48x96"         rcp="8.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne30np4"       rcp="8.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne120np4"      rcp="8.5" sim_year_range="1850-2100"  
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
-<flanduse_timeseries hgrid="1x1_brazil"    rcp="8.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="1x1_brazil"    rcp="8.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
-<flanduse_timeseries hgrid="360x720cru"    rcp="6"   sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="0.9x1.25"      rcp="6"   sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="1.9x2.5"       rcp="6"   sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="10x15"         rcp="6"   sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="48x96"         rcp="6"   sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="ne30np4"       rcp="6"   sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="360x720cru"    rcp="6"   sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="0.9x1.25"      rcp="6"   sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="1.9x2.5"       rcp="6"   sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="10x15"         rcp="6"   sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="48x96"         rcp="6"   sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne30np4"       rcp="6"   sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
-<flanduse_timeseries hgrid="360x720cru"    rcp="4.5" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="0.9x1.25"      rcp="4.5" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="1.9x2.5"       rcp="4.5" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="10x15"         rcp="4.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="48x96"         rcp="4.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="ne120np4"      rcp="4.5" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="ne30np4"       rcp="4.5" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="360x720cru"    rcp="4.5" sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="0.9x1.25"      rcp="4.5" sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="1.9x2.5"       rcp="4.5" sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="10x15"         rcp="4.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="48x96"         rcp="4.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne120np4"      rcp="4.5" sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne30np4"       rcp="4.5" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
-<flanduse_timeseries hgrid="360x720cru"    rcp="2.6" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="0.9x1.25"      rcp="2.6" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="1.9x2.5"       rcp="2.6" sim_year_range="1850-2100"  irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="10x15"         rcp="2.6" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="48x96"         rcp="2.6" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-<flanduse_timeseries hgrid="ne30np4"       rcp="2.6" sim_year_range="1850-2100" irrigate=".true."
- use_crop=".false."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="360x720cru"    rcp="2.6" sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="0.9x1.25"      rcp="2.6" sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="1.9x2.5"       rcp="2.6" sim_year_range="1850-2100"
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="10x15"         rcp="2.6" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="48x96"         rcp="2.6" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+<flanduse_timeseries hgrid="ne30np4"       rcp="2.6" sim_year_range="1850-2100" 
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_16pfts_Irrig_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <!-- Other future scenario Dynamic PFT datasets with crop on -->
 <flanduse_timeseries hgrid="360x720cru"    rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="0.9x1.25"      rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="1.9x2.5"       rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="10x15"         rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="4x5"           rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="48x96"         rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne30np4"       rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne120np4"      rcp="8.5" sim_year_range="1850-2100" 
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <flanduse_timeseries hgrid="1x1_brazil"    rcp="8.5" sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_1x1_brazil_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <flanduse_timeseries hgrid="360x720cru"    rcp="6"   sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="0.9x1.25"      rcp="6"   sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="1.9x2.5"       rcp="6"   sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="10x15"         rcp="6"   sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="4x5"           rcp="6"   sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="48x96"         rcp="6"   sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne30np4"       rcp="6"   sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <flanduse_timeseries hgrid="360x720cru"    rcp="4.5" sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="0.9x1.25"      rcp="4.5" sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="1.9x2.5"       rcp="4.5" sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="10x15"         rcp="4.5" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="4x5"           rcp="4.5" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="48x96"         rcp="4.5" sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne120np4"      rcp="4.5" sim_year_range="1850-2100" 
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne120np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne30np4"       rcp="4.5" sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <flanduse_timeseries hgrid="360x720cru"    rcp="2.6" sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_360x720cru_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="0.9x1.25"      rcp="2.6" sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_0.9x1.25_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="1.9x2.5"       rcp="2.6" sim_year_range="1850-2100" 
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_1.9x2.5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="10x15"         rcp="2.6" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_10x15_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="4x5"           rcp="2.6" sim_year_range="1850-2100"
- use_crop=".true." >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_4x5_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="48x96"         rcp="2.6" sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
+ >lnd/clm2/surfdata_map/landuse.timeseries_48x96_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 <flanduse_timeseries hgrid="ne30np4"       rcp="2.6" sim_year_range="1850-2100"
- use_crop=".true."  >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
-
-<!-- Fixation and Uptake of Nitrogen Model (FUN2.0) -->
-<use_fun phys="clm5_0" use_cn=".true." use_nitrif_denitrif=".true.">.true.</use_fun>
-<use_fun                                                           >.false.</use_fun>
-
-<!-- Scalar of leaf respiration to vcmax (used for SP mode and with luna)-->
-<leaf_mr_vcm phys="clm5_0" >0.015d00</leaf_mr_vcm>
-<leaf_mr_vcm phys="clm4_5" >0.015d00</leaf_mr_vcm>
-
-<!-- Initial Carbon stocks for BGC -->
-<initial_Cstocks phys="clm4_5" use_cn=".true."  use_fates=".false." use_century_decomp=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>
-<initial_Cstocks phys="clm5_0" use_cn=".true."  use_fates=".false." use_century_decomp=".true." >200.0d00, 200.0d00, 200.0d00</initial_Cstocks>
-<initial_Cstocks phys="clm4_5" use_cn=".false." use_fates=".true."  use_century_decomp=".true." >20.0d00, 20.0d00, 20.0d00</initial_Cstocks>
-<initial_Cstocks phys="clm5_0" use_cn=".false." use_fates=".true."  use_century_decomp=".true." >200.0d00, 200.0d00, 200.0d00</initial_Cstocks>
-
-<initial_Cstocks_depth phys="clm5_0" use_cn=".true."   use_fates=".false." use_century_decomp=".true." >1.50d00</initial_Cstocks_depth>
-<initial_Cstocks_depth phys="clm4_5" use_cn=".true."   use_fates=".false." use_century_decomp=".true." >0.3</initial_Cstocks_depth>
-<initial_Cstocks_depth phys="clm5_0" use_cn=".false."  use_fates=".true."  use_century_decomp=".true." >1.50d00</initial_Cstocks_depth>
-<initial_Cstocks_depth phys="clm4_5" use_cn=".false."  use_fates=".true."  use_century_decomp=".true." >0.3</initial_Cstocks_depth>
-
-<initial_vegC phys="clm5_0" use_cn=".true."  mm_nuptake_opt=".true." >100.d00</initial_vegC>
-<initial_vegC phys="clm4_5" use_cn=".true."  mm_nuptake_opt=".true." >20.d00</initial_vegC>
-<initial_vegC phys="clm5_0" use_cn=".true."  mm_nuptake_opt=".false.">1.d00</initial_vegC>
-<initial_vegC phys="clm4_5" use_cn=".true."  mm_nuptake_opt=".false.">1.d00</initial_vegC>
-
-<!-- SNICAR (SNow, ICe, and Aerosol Radiative model) datasets -->
-<!--  ***********  Resolution independent:   ***********  -->
-<fsnowoptics >lnd/clm2/snicardata/snicar_optics_5bnd_c090915.nc</fsnowoptics>
-<fsnowaging  >lnd/clm2/snicardata/snicar_drdt_bst_fit_60_c070416.nc</fsnowaging>
-
-<!-- LAI streams namelist defaults -->
-<use_lai_streams        >.false.</use_lai_streams>
-<stream_year_first_lai  >2001</stream_year_first_lai>
-<stream_year_last_lai   >2013</stream_year_last_lai>
-<model_year_align_lai   >2001</model_year_align_lai>
-
-<stream_fldfilename_lai hgrid="360x720cru"       >lnd/clm2/lai_streams/MODISPFTLAI_0.5x0.5_c140711.nc</stream_fldfilename_lai>
+ >lnd/clm2/surfdata_map/landuse.timeseries_ne30np4_hist_78pfts_CMIP6_simyr1850-2015_c170824.nc</flanduse_timeseries>
 
 <lai_mapalgo>bilinear</lai_mapalgo>
 
 <lai_mapalgo  hgrid="1x1_brazil"          >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_mexicocityMEX"   >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_vancouverCAN"    >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_urbanc_alpha"    >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_camdenNJ"        >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_asphaltjungleNJ" >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="5x5_amazon"          >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="1x1_brazil"          >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_mexicocityMEX"   >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_vancouverCAN"    >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_urbanc_alpha"    >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_camdenNJ"        >nn</lai_mapalgo>
-<lai_mapalgo  hgrid="1x1_asphaltjungleNJ" >nn</lai_mapalgo>
 <lai_mapalgo  hgrid="5x5_amazon"          >nn</lai_mapalgo>
-
-<!-- Create crop on a separate land-unit -->
-<create_crop_landunit     use_fates=".false.">.true.</create_crop_landunit>
-<create_crop_landunit     use_fates=".true." >.false.</create_crop_landunit>
-
 
 <!-- =========================================  -->
 <!-- Performance issues                         -->
@@ -840,1286 +492,10 @@ lnd/clm2/surfdata_map/surfdata_ne120np4_78pfts_CMIP6_simyr1850_c170824.nc</fsurd
 <nsegspc                   >35</nsegspc>
 
 <!-- =========================================  -->
-<!-- Mapping Data                               -->
-<!-- =========================================  -->
-
-
-<!-- mapping files for 0.1x0.1 START added on Wed Jul 25 17:01:27 2012--> 
-
-<map frm_hgrid="0.1x0.1"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_0.1x0.1_nomask_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_0.5x0.5_AVHRR_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_0.5x0.5_MODIS_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_0.25x0.25_MODIS_to_0.1x0.1_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_0.5x0.5_nomask_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_10x10min_nomask_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_3x3min_MODIS_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_3x3min_MODIS-wCsp_to_0.1x0.1_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_5x5min_IGBP-GSDP_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_5x5min_ISRIC-WISE_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ORNL-Soil" to_hgrid="0.1x0.1" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.1x0.1/map_5x5min_ORNL-Soil_to_0.1x0.1_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_5x5min_nomask_to_0.1x0.1_nomask_aave_da_c120406.nc</map>
-<map frm_hgrid="ne120np4"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_ne120np4_nomask_to_0.1x0.1_nomask_aave_da_c120711.nc</map>
-<map frm_hgrid="4x5"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_4x5_nomask_to_0.1x0.1_nomask_aave_da_c120706.nc</map>
-<map frm_hgrid="1.9x2.5"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_1.9x2.5_nomask_to_0.1x0.1_nomask_aave_da_c120709.nc</map>
-<map frm_hgrid="ne240np4"    frm_lmask="nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_ne240np4_nomask_to_0.1x0.1_nomask_aave_da_c120711.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_0.9x1.25_GRDC_to_0.1x0.1_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_360x720_cruncep_to_0.1x0.1_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="0.1x0.1"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.1x0.1/map_1km-merge-10min_HYDRO1K-merge-nomask_to_0.1x0.1_nomask_aave_da_c130405.nc</map>
-
-<!-- mapping files for 0.1x0.1 END --> 
-
-<!-- mapping files for 1x1_asphaltjungleNJ START added on Thu Jul 19 13:06:18 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_0.5x0.5_AVHRR_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_0.5x0.5_MODIS_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_0.25x0.25_MODIS_to_1x1_asphaltjungleNJ_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_0.5x0.5_nomask_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_10x10min_nomask_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_3x3min_MODIS_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_3x3min_MODIS-wCsp_to_1x1_asphaltjungleNJ_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_3x3min_USGS_to_1x1_asphaltjungleNJ_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_3x3min_LandScan2004_to_1x1_asphaltjungleNJ_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_5x5min_IGBP-GSDP_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_5x5min_ISRIC-WISE_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_asphaltjungleNJ" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_5x5min_ORNL-Soil_to_1x1_asphaltjungleNJ_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_5x5min_nomask_to_1x1_asphaltjungleNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_asphaltjungleNJ" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_3x3min_GLOBE-Gardner_to_1x1_asphaltjungleNJ_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_asphaltjungleNJ" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_asphaltjungleNJ_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_0.9x1.25_GRDC_to_1x1_asphaltjungleNJ_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_360x720_cruncep_to_1x1_asphaltjungleNJ_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_asphaltjungleNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_asphaltjungleNJ/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_asphaltjungleNJ_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_asphaltjungleNJ END --> 
-
-<!-- mapping files for 1x1_brazil START added on Thu Jul 19 13:06:18 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_0.5x0.5_AVHRR_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_0.5x0.5_MODIS_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_0.25x0.25_MODIS_to_1x1_brazil_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_0.5x0.5_nomask_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_10x10min_nomask_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_3x3min_MODIS_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_3x3min_MODIS-wCsp_to_1x1_brazil_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_3x3min_USGS_to_1x1_brazil_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_3x3min_LandScan2004_to_1x1_brazil_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_5x5min_IGBP-GSDP_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_5x5min_ISRIC-WISE_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_brazil" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_brazil/map_5x5min_ORNL-Soil_to_1x1_brazil_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_5x5min_nomask_to_1x1_brazil_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_brazil" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_brazil/map_3x3min_GLOBE-Gardner_to_1x1_brazil_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_brazil" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_brazil/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_brazil_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_0.9x1.25_GRDC_to_1x1_brazil_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_360x720_cruncep_to_1x1_brazil_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_brazil"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_brazil/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_brazil_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_brazil END --> 
-
-<!-- mapping files for 1x1_camdenNJ START added on Thu Jul 19 13:06:18 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_0.5x0.5_AVHRR_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_0.5x0.5_MODIS_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_0.25x0.25_MODIS_to_1x1_camdenNJ_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_0.5x0.5_nomask_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_10x10min_nomask_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_3x3min_MODIS_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_3x3min_MODIS-wCsp_to_1x1_camdenNJ_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_3x3min_USGS_to_1x1_camdenNJ_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_3x3min_LandScan2004_to_1x1_camdenNJ_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_5x5min_IGBP-GSDP_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_5x5min_ISRIC-WISE_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_camdenNJ" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_5x5min_ORNL-Soil_to_1x1_camdenNJ_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_5x5min_nomask_to_1x1_camdenNJ_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_camdenNJ" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_3x3min_GLOBE-Gardner_to_1x1_camdenNJ_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_camdenNJ" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_camdenNJ_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_0.9x1.25_GRDC_to_1x1_camdenNJ_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_360x720_cruncep_to_1x1_camdenNJ_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_camdenNJ"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_camdenNJ/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_camdenNJ_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_camdenNJ END --> 
-
-<!-- mapping files for 1x1_mexicocityMEX START added on Thu Jul 19 13:06:18 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.5x0.5_AVHRR_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.5x0.5_MODIS_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.25x0.25_MODIS_to_1x1_mexicocityMEX_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.5x0.5_nomask_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_10x10min_nomask_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_MODIS_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_MODIS-wCsp_to_1x1_mexicocityMEX_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_USGS_to_1x1_mexicocityMEX_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_LandScan2004_to_1x1_mexicocityMEX_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_IGBP-GSDP_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_ISRIC-WISE_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_mexicocityMEX" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_ORNL-Soil_to_1x1_mexicocityMEX_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_5x5min_nomask_to_1x1_mexicocityMEX_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_mexicocityMEX" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_GLOBE-Gardner_to_1x1_mexicocityMEX_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_mexicocityMEX" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_mexicocityMEX_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_0.9x1.25_GRDC_to_1x1_mexicocityMEX_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_360x720_cruncep_to_1x1_mexicocityMEX_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_mexicocityMEX"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_mexicocityMEX/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_mexicocityMEX_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_mexicocityMEX END --> 
-
-<!-- mapping files for 1x1_numaIA START added on Thu Jul 19 13:06:18 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_0.5x0.5_AVHRR_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_0.5x0.5_MODIS_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_0.25x0.25_MODIS_to_1x1_numaIA_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_0.5x0.5_nomask_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_10x10min_nomask_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_3x3min_MODIS_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_3x3min_MODIS-wCsp_to_1x1_numaIA_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_3x3min_USGS_to_1x1_numaIA_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_3x3min_LandScan2004_to_1x1_numaIA_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_5x5min_IGBP-GSDP_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_5x5min_ISRIC-WISE_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_numaIA" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_5x5min_ORNL-Soil_to_1x1_numaIA_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_5x5min_nomask_to_1x1_numaIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_numaIA" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_3x3min_GLOBE-Gardner_to_1x1_numaIA_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_numaIA" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_numaIA_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_0.9x1.25_GRDC_to_1x1_numaIA_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_360x720_cruncep_to_1x1_numaIA_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_numaIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_numaIA/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_numaIA_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_numaIA END --> 
-
-<!-- mapping files for 1x1_smallvilleIA START added on Thu Jul 19 13:06:19 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_0.5x0.5_AVHRR_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_0.5x0.5_MODIS_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_0.25x0.25_MODIS_to_1x1_smallvilleIA_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_0.5x0.5_nomask_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_10x10min_nomask_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_3x3min_MODIS_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_3x3min_MODIS-wCsp_to_1x1_smallvilleIA_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_3x3min_USGS_to_1x1_smallvilleIA_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_3x3min_LandScan2004_to_1x1_smallvilleIA_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_5x5min_IGBP-GSDP_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_5x5min_ISRIC-WISE_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_smallvilleIA" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_5x5min_ORNL-Soil_to_1x1_smallvilleIA_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_5x5min_nomask_to_1x1_smallvilleIA_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_smallvilleIA" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_3x3min_GLOBE-Gardner_to_1x1_smallvilleIA_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_smallvilleIA" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_smallvilleIA_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_0.9x1.25_GRDC_to_1x1_smallvilleIA_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_360x720_cruncep_to_1x1_smallvilleIA_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_smallvilleIA"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_smallvilleIA/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_smallvilleIA_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_smallvilleIA END --> 
-
-<!-- mapping files for 1x1_urbanc_alpha START added on Thu Jul 19 13:06:19 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_0.5x0.5_AVHRR_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_0.5x0.5_MODIS_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_0.25x0.25_MODIS_to_1x1_urbanc_alpha_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_0.5x0.5_nomask_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_10x10min_nomask_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_3x3min_MODIS_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_3x3min_MODIS-wCsp_to_1x1_urbanc_alpha_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_3x3min_USGS_to_1x1_urbanc_alpha_nomask_aave_da_c120928.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_3x3min_LandScan2004_to_1x1_urbanc_alpha_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_5x5min_IGBP-GSDP_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_5x5min_ISRIC-WISE_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_urbanc_alpha" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_5x5min_ORNL-Soil_to_1x1_urbanc_alpha_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_5x5min_nomask_to_1x1_urbanc_alpha_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_urbanc_alpha" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_3x3min_GLOBE-Gardner_to_1x1_urbanc_alpha_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_urbanc_alpha" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_urbanc_alpha_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_0.9x1.25_GRDC_to_1x1_urbanc_alpha_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_360x720_cruncep_to_1x1_urbanc_alpha_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_urbanc_alpha"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_urbanc_alpha/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_urbanc_alpha_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_urbanc_alpha END --> 
-
-<!-- mapping files for 1x1_vancouverCAN START added on Thu Jul 19 13:06:19 2012--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.5x0.5_AVHRR_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.5x0.5_MODIS_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.25x0.25_MODIS_to_1x1_vancouverCAN_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.5x0.5_nomask_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_10x10min_nomask_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_MODIS_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_MODIS-wCsp_to_1x1_vancouverCAN_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"   to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_USGS_to_1x1_vancouverCAN_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004" to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_LandScan2004_to_1x1_vancouverCAN_nomask_aave_da_c121114.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_IGBP-GSDP_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_ISRIC-WISE_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1x1_vancouverCAN" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_ORNL-Soil_to_1x1_vancouverCAN_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_5x5min_nomask_to_1x1_vancouverCAN_nomask_aave_da_c120717.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1x1_vancouverCAN" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_GLOBE-Gardner_to_1x1_vancouverCAN_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1x1_vancouverCAN" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_3x3min_GLOBE-Gardner-mergeGIS_to_1x1_vancouverCAN_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_0.9x1.25_GRDC_to_1x1_vancouverCAN_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_360x720_cruncep_to_1x1_vancouverCAN_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1x1_vancouverCAN"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1x1_vancouverCAN/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1x1_vancouverCAN_nomask_aave_da_c130403.nc</map>
-
-<!-- mapping files for 1x1_vancouverCAN END --> 
-
-<!-- mapping files for 0.47x0.63 start --> 
-
-<map frm_hgrid="0.25x0.25"    frm_lmask="MODIS"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_0.25x0.25_MODIS_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_0.5x0.5_AVHRR_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_0.5x0.5_MODIS_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_0.9x1.25_GRDC_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="IGBPmergeICESatGIS"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_10x10min_IGBPmergeICESatGIS_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_10x10min_nomask_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_1km-merge-10min_HYDRO1K-merge-nomask_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_360x720cru_cruncep_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="GLOBE-Gardner-mergeGIS"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_3x3min_GLOBE-Gardner-mergeGIS_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="GLOBE-Gardner"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_3x3min_GLOBE-Gardner_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_3x3min_LandScan2004_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_3x3min_MODIS-wCsp_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_3x3min_USGS_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_5x5min_IGBP-GSDP_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_5x5min_ISRIC-WISE_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_5x5min_nomask_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil"  to_hgrid="0.47x0.63"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.47x0.63/map_5x5min_ORNL-Soil_to_0.47x0.63_nomask_aave_da_c170914.nc</map>
-
-<!-- mapping files for 0.47x0.63 END --> 
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="0.9x1.25" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.9x1.25/map_0.5x0.5_landuse_to_0.9x1.25_aave_da_110307.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="0.9x1.25"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.9x1.25/map_0.25x0.25_MODIS_to_0.9x1.25_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="0.9x1.25" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.9x1.25/map_0.5x0.5_lanwat_to_0.9x1.25_aave_da_110307.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_10minx10min_topo_to_0.9x1.25_aave_da_110630.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_5minx5min_soitex_to_0.9x1.25_aave_da_110722.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_5minx5min_irrig_to_0.9x1.25_aave_da_110529.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_5x5min_ISRIC-WISE_to_0.9x1.25_nomask_aave_da_c120525.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_5x5min_ORNL-Soil_to_0.9x1.25_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="0.9x1.25"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_3x3min_MODIS_to_0.9x1.25_nomask_aave_da_c120523.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="0.9x1.25"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_3x3min_MODIS-wCsp_to_0.9x1.25_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="0.9x1.25"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_3x3min_USGS_to_0.9x1.25_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_3x3min_LandScan2004_to_0.9x1.25_nomask_aave_da_c120522.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_3x3min_GLOBE-Gardner_to_0.9x1.25_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="0.9x1.25" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.9x1.25/map_3x3min_GLOBE-Gardner-mergeGIS_to_0.9x1.25_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="0.9x1.25"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.9x1.25/map_0.9x1.25_GRDC_to_0.9x1.25_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="0.9x1.25"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.9x1.25/map_360x720_cruncep_to_0.9x1.25_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="0.9x1.25"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.9x1.25/map_1km-merge-10min_HYDRO1K-merge-nomask_to_0.9x1.25_nomask_aave_da_c130405.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="1.9x2.5" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1.9x2.5/map_0.5x0.5_landuse_to_1.9x2.5_aave_da_110307.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="1.9x2.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1.9x2.5/map_0.25x0.25_MODIS_to_1.9x2.5_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="1.9x2.5" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1.9x2.5/map_0.5x0.5_lanwat_to_1.9x2.5_aave_da_110307.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_10minx10min_topo_to_1.9x2.5_aave_da_110307.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_5minx5min_soitex_to_1.9x2.5_aave_da_110307.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_5x5min_nomask_to_1.9x2.5_nomask_aave_da_c120606.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_5x5min_ISRIC-WISE_to_1.9x2.5_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_5x5min_ORNL-Soil_to_1.9x2.5_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="1.9x2.5"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_3x3min_MODIS_to_1.9x2.5_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="1.9x2.5"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_3x3min_MODIS-wCsp_to_1.9x2.5_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="1.9x2.5"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_3x3min_USGS_to_1.9x2.5_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_3x3min_LandScan2004_to_1.9x2.5_nomask_aave_da_c120522.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_3x3min_GLOBE-Gardner_to_1.9x2.5_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="1.9x2.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/1.9x2.5/map_3x3min_GLOBE-Gardner-mergeGIS_to_1.9x2.5_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="1.9x2.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1.9x2.5/map_0.9x1.25_GRDC_to_1.9x2.5_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="1.9x2.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1.9x2.5/map_360x720_cruncep_to_1.9x2.5_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="1.9x2.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/1.9x2.5/map_1km-merge-10min_HYDRO1K-merge-nomask_to_1.9x2.5_nomask_aave_da_c130405.nc</map>
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="10x15"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/10x15/map_0.5x0.5_landuse_to_10x15_aave_da_110307.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="10x15"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/10x15/map_0.25x0.25_MODIS_to_10x15_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="10x15"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/10x15/map_0.5x0.5_lanwat_to_10x15_aave_da_110307.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="10x15"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_10minx10min_topo_to_10x15_aave_da_110307.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="10x15"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_5minx5min_soitex_to_10x15_aave_da_110307.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="10x15"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_5x5min_nomask_to_10x15_nomask_aave_da_c120327.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="10x15" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_5x5min_ISRIC-WISE_to_10x15_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="10x15" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_5x5min_ORNL-Soil_to_10x15_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="10x15"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_3x3min_MODIS_to_10x15_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="10x15"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_3x3min_MODIS-wCsp_to_10x15_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="10x15"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_3x3min_USGS_to_10x15_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="10x15" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_3x3min_LandScan2004_to_10x15_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="10x15" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_3x3min_GLOBE-Gardner_to_10x15_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="10x15" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/10x15/map_3x3min_GLOBE-Gardner-mergeGIS_to_10x15_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="10x15"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/10x15/map_0.9x1.25_GRDC_to_10x15_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="10x15"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/10x15/map_360x720_cruncep_to_10x15_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="10x15"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/10x15/map_1km-merge-10min_HYDRO1K-merge-nomask_to_10x15_nomask_aave_da_c130411.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"      to_hgrid="360x720cru"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/360x720/map_0.5x0.5_MODIS_to_360x720_nomask_aave_da_c120830.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="360x720cru"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/360x720/map_0.25x0.25_MODIS_to_360x720cru_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"      to_hgrid="360x720cru"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/360x720/map_0.5x0.5_AVHRR_to_360x720_nomask_aave_da_c120830.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask"     to_hgrid="360x720cru"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_10x10min_nomask_to_360x720_nomask_aave_da_c120830.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP"  to_hgrid="360x720cru"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_5x5min_IGBP-GSDP_to_360x720_nomask_aave_da_c120830.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask"     to_hgrid="360x720cru"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_5x5min_nomask_to_360x720_nomask_aave_da_c120830.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="360x720cru"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_5x5min_ISRIC-WISE_to_360x720_nomask_aave_da_c120830.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="360x720cru" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_5x5min_ORNL-Soil_to_360x720cru_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"      to_hgrid="360x720cru"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_3x3min_MODIS_to_360x720_nomask_aave_da_c120830.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp" to_hgrid="360x720cru"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_3x3min_MODIS-wCsp_to_360x720cru_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"       to_hgrid="360x720cru"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_3x3min_USGS_to_360x720_nomask_aave_da_c121128.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="360x720cru" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_3x3min_LandScan2004_to_360x720_nomask_aave_da_c121017.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="360x720cru" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_3x3min_GLOBE-Gardner_to_360x720_nomask_aave_da_c121128.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="360x720cru" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/360x720/map_3x3min_GLOBE-Gardner-mergeGIS_to_360x720_nomask_aave_da_c121128.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="360x720cru"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/360x720/map_0.9x1.25_GRDC_to_360x720_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="360x720cru"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/360x720/map_360x720_cruncep_to_360x720_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="360x720cru"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/360x720/map_1km-merge-10min_HYDRO1K-merge-nomask_to_360x720_nomask_aave_da_c130403.nc</map>
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="512x1024"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/512x1024/map_0.5x0.5_MODIS_to_512x1024_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="512x1024"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/512x1024/map_0.25x0.25_MODIS_to_512x1024_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="512x1024"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/512x1024/map_0.5x0.5_AVHRR_to_512x1024_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="512x1024"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_10x10min_nomask_to_512x1024_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="512x1024"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_5x5min_IGBP-GSDP_to_512x1024_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="512x1024"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_5x5min_nomask_to_512x1024_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="512x1024" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_5x5min_ISRIC-WISE_to_512x1024_nomask_aave_da_c120906.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="512x1024" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_5x5min_ORNL-Soil_to_512x1024_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="512x1024"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_3x3min_MODIS_to_512x1024_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp" to_hgrid="512x1024"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_3x3min_MODIS-wCsp_to_512x1024_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="512x1024"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_3x3min_USGS_to_512x1024_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="512x1024" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_3x3min_LandScan2004_to_512x1024_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="512x1024" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_3x3min_GLOBE-Gardner_to_512x1024_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="512x1024" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/512x1024/map_3x3min_GLOBE-Gardner-mergeGIS_to_512x1024_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="512x1024"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/512x1024/map_0.9x1.25_GRDC_to_512x1024_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="512x1024"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/512x1024/map_360x720_cruncep_to_512x1024_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="512x1024"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/512x1024/map_1km-merge-10min_HYDRO1K-merge-nomask_to_512x1024_nomask_aave_da_c130403.nc</map>
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="128x256"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/128x256/map_0.5x0.5_MODIS_to_128x256_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="128x256"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/128x256/map_0.25x0.25_MODIS_to_128x256_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="128x256"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/128x256/map_0.5x0.5_AVHRR_to_128x256_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="128x256"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_10x10min_nomask_to_128x256_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="128x256"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_5x5min_IGBP-GSDP_to_128x256_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="128x256"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_5x5min_nomask_to_128x256_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="128x256" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_5x5min_ISRIC-WISE_to_128x256_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="128x256" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_5x5min_ORNL-Soil_to_128x256_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="128x256"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_3x3min_MODIS_to_128x256_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="128x256"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_3x3min_MODIS-wCsp_to_128x256_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="128x256"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_3x3min_USGS_to_128x256_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="128x256" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_3x3min_LandScan2004_to_128x256_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="128x256" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_3x3min_GLOBE-Gardner_to_128x256_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="128x256" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/128x256/map_3x3min_GLOBE-Gardner-mergeGIS_to_128x256_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="128x256"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/128x256/map_0.9x1.25_GRDC_to_128x256_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="128x256"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/128x256/map_360x720_cruncep_to_128x256_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="128x256"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/128x256/map_1km-merge-10min_HYDRO1K-merge-nomask_to_128x256_nomask_aave_da_c130403.nc</map>
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="64x128"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/64x128/map_0.5x0.5_MODIS_to_64x128_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="64x128"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/64x128/map_0.25x0.25_MODIS_to_64x128_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="64x128"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/64x128/map_0.5x0.5_AVHRR_to_64x128_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="64x128"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_10x10min_nomask_to_64x128_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="64x128"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_5x5min_IGBP-GSDP_to_64x128_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="64x128"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_5x5min_nomask_to_64x128_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="64x128" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_5x5min_ISRIC-WISE_to_64x128_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="64x128" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_5x5min_ORNL-Soil_to_64x128_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="64x128"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_3x3min_MODIS_to_64x128_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="64x128"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_3x3min_MODIS-wCsp_to_64x128_nomask_aave_da_c160428.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="64x128"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_3x3min_USGS_to_64x128_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="64x128" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_3x3min_LandScan2004_to_64x128_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="64x128" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_3x3min_GLOBE-Gardner_to_64x128_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="64x128" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/64x128/map_3x3min_GLOBE-Gardner-mergeGIS_to_64x128_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="64x128"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/64x128/map_0.9x1.25_GRDC_to_64x128_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="64x128"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/64x128/map_360x720_cruncep_to_64x128_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="64x128"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/64x128/map_1km-merge-10min_HYDRO1K-merge-nomask_to_64x128_nomask_aave_da_c130403.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="48x96"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/48x96/map_0.5x0.5_MODIS_to_48x96_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="48x96"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/48x96/map_0.25x0.25_MODIS_to_48x96_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="48x96"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/48x96/map_0.5x0.5_AVHRR_to_48x96_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="48x96"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_10x10min_nomask_to_48x96_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="48x96"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_5x5min_IGBP-GSDP_to_48x96_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="48x96"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_5x5min_nomask_to_48x96_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="48x96" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_5x5min_ISRIC-WISE_to_48x96_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="48x96" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_5x5min_ORNL-Soil_to_48x96_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="48x96"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_3x3min_MODIS_to_48x96_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="48x96"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_3x3min_MODIS-wCsp_to_48x96_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="48x96"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_3x3min_USGS_to_48x96_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="48x96" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_3x3min_LandScan2004_to_48x96_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="48x96" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_3x3min_GLOBE-Gardner_to_48x96_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="48x96" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/48x96/map_3x3min_GLOBE-Gardner-mergeGIS_to_48x96_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="48x96"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/48x96/map_0.9x1.25_GRDC_to_48x96_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="48x96"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/48x96/map_360x720_cruncep_to_48x96_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="48x96"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/48x96/map_1km-merge-10min_HYDRO1K-merge-nomask_to_48x96_nomask_aave_da_c130405.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="32x64"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/32x64/map_0.5x0.5_MODIS_to_32x64_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="32x64"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/32x64/map_0.25x0.25_MODIS_to_32x64_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="32x64"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/32x64/map_0.5x0.5_AVHRR_to_32x64_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="32x64"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_10x10min_nomask_to_32x64_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="32x64"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_5x5min_IGBP-GSDP_to_32x64_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="32x64"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_5x5min_nomask_to_32x64_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="32x64" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_5x5min_ISRIC-WISE_to_32x64_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="32x64" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_5x5min_ORNL-Soil_to_32x64_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="32x64"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_3x3min_MODIS_to_32x64_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="32x64"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_3x3min_MODIS-wCsp_to_32x64_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="32x64"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_3x3min_USGS_to_32x64_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="32x64" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_3x3min_LandScan2004_to_32x64_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="32x64" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_3x3min_GLOBE-Gardner_to_32x64_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="32x64" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/32x64/map_3x3min_GLOBE-Gardner-mergeGIS_to_32x64_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="32x64"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/32x64/map_0.9x1.25_GRDC_to_32x64_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="32x64"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/32x64/map_360x720_cruncep_to_32x64_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="32x64"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/32x64/map_1km-merge-10min_HYDRO1K-merge-nomask_to_32x64_nomask_aave_da_c130405.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="8x16"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/8x16/map_0.5x0.5_MODIS_to_8x16_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="8x16"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/8x16/map_0.25x0.25_MODIS_to_8x16_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="8x16"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/8x16/map_0.5x0.5_AVHRR_to_8x16_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="8x16"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_10x10min_nomask_to_8x16_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="8x16"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_5x5min_IGBP-GSDP_to_8x16_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="8x16"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_5x5min_nomask_to_8x16_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="8x16" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_5x5min_ISRIC-WISE_to_8x16_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="8x16" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_5x5min_ORNL-Soil_to_8x16_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="8x16"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_3x3min_MODIS_to_8x16_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="8x16"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_3x3min_MODIS-wCsp_to_8x16_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="8x16"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_3x3min_USGS_to_8x16_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="8x16" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_3x3min_LandScan2004_to_8x16_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="8x16" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_3x3min_GLOBE-Gardner_to_8x16_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="8x16" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/8x16/map_3x3min_GLOBE-Gardner-mergeGIS_to_8x16_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="8x16"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/8x16/map_0.9x1.25_GRDC_to_8x16_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="8x16"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/8x16/map_360x720_cruncep_to_8x16_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="8x16"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/8x16/map_1km-merge-10min_HYDRO1K-merge-nomask_to_8x16_nomask_aave_da_c130411.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="4x5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/4x5/map_0.5x0.5_MODIS_to_4x5_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="4x5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/4x5/map_0.25x0.25_MODIS_to_4x5_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="4x5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/4x5/map_0.5x0.5_AVHRR_to_4x5_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="4x5"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_10x10min_nomask_to_4x5_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="4x5"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_5x5min_IGBP-GSDP_to_4x5_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="4x5"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_5x5min_nomask_to_4x5_nomask_aave_da_c110822.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="4x5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_5x5min_ISRIC-WISE_to_4x5_nomask_aave_da_c120906.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="4x5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_5x5min_ORNL-Soil_to_4x5_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="4x5"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_3x3min_MODIS_to_4x5_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="4x5"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_3x3min_MODIS-wCsp_to_4x5_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="4x5"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_3x3min_USGS_to_4x5_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="4x5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_3x3min_LandScan2004_to_4x5_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="4x5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_3x3min_GLOBE-Gardner_to_4x5_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="4x5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/4x5/map_3x3min_GLOBE-Gardner-mergeGIS_to_4x5_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="4x5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/4x5/map_0.9x1.25_GRDC_to_4x5_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="4x5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/4x5/map_360x720_cruncep_to_4x5_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="4x5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/4x5/map_1km-merge-10min_HYDRO1K-merge-nomask_to_4x5_nomask_aave_da_c130411.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="0.23x0.31"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.23x0.31/map_0.5x0.5_MODIS_to_0.23x0.31_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="0.23x0.31"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.23x0.31/map_0.25x0.25_MODIS_to_0.23x0.31_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="0.23x0.31"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.23x0.31/map_0.5x0.5_AVHRR_to_0.23x0.31_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="0.23x0.31"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_10x10min_nomask_to_0.23x0.31_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="0.23x0.31"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_5x5min_IGBP-GSDP_to_0.23x0.31_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="0.23x0.31"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_5x5min_nomask_to_0.23x0.31_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="0.23x0.31" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_5x5min_ISRIC-WISE_to_0.23x0.31_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="0.23x0.31" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_5x5min_ORNL-Soil_to_0.23x0.31_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="0.23x0.31"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_3x3min_MODIS_to_0.23x0.31_nomask_aave_da_c110930.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="0.23x0.31"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_3x3min_MODIS-wCsp_to_0.23x0.31_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="0.23x0.31"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_3x3min_USGS_to_0.23x0.31_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="0.23x0.31" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_3x3min_LandScan2004_to_0.23x0.31_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="0.23x0.31" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_3x3min_GLOBE-Gardner_to_0.23x0.31_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="0.23x0.31" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_3x3min_GLOBE-Gardner-mergeGIS_to_0.23x0.31_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="0.23x0.31" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.23x0.31/map_3x3min_LandScan2004_to_0.23x0.31_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="0.23x0.31"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.23x0.31/map_0.9x1.25_GRDC_to_0.23x0.31_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="0.23x0.31"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.23x0.31/map_360x720_cruncep_to_0.23x0.31_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="0.23x0.31"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.23x0.31/map_1km-merge-10min_HYDRO1K-merge-nomask_to_0.23x0.31_nomask_aave_da_c130405.nc</map>
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="2.5x3.33"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/2.5x3.33/map_0.5x0.5_MODIS_to_2.5x3.33_nomask_aave_da_c110823.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="2.5x3.33"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/2.5x3.33/map_0.25x0.25_MODIS_to_2.5x3.33_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="2.5x3.33"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/2.5x3.33/map_0.5x0.5_AVHRR_to_2.5x3.33_nomask_aave_da_c110823.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="2.5x3.33"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_10x10min_nomask_to_2.5x3.33_nomask_aave_da_c110823.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="2.5x3.33"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_5x5min_IGBP-GSDP_to_2.5x3.33_nomask_aave_da_c110823.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="2.5x3.33"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_5x5min_nomask_to_2.5x3.33_nomask_aave_da_c110823.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="2.5x3.33" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_5x5min_ISRIC-WISE_to_2.5x3.33_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="2.5x3.33" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_5x5min_ORNL-Soil_to_2.5x3.33_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="2.5x3.33"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_3x3min_MODIS_to_2.5x3.33_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="2.5x3.33"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_3x3min_MODIS-wCsp_to_2.5x3.33_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="2.5x3.33"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_3x3min_USGS_to_2.5x3.33_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="2.5x3.33" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_3x3min_LandScan2004_to_2.5x3.33_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="2.5x3.33" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_3x3min_GLOBE-Gardner_to_2.5x3.33_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="2.5x3.33" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/2.5x3.33/map_3x3min_GLOBE-Gardner-mergeGIS_to_2.5x3.33_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="2.5x3.33"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/2.5x3.33/map_0.9x1.25_GRDC_to_2.5x3.33_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="2.5x3.33"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/2.5x3.33/map_360x720_cruncep_to_2.5x3.33_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="2.5x3.33"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/2.5x3.33/map_1km-merge-10min_HYDRO1K-merge-nomask_to_2.5x3.33_nomask_aave_da_c130405.nc</map>
-
-<!-- mapping files for 0.5x0.5 START added on Wed Sep 19 09:05:45 2012-->
-<!-- Created by lnd/clm/bld/namelist_files/createMapEntry.pl--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_0.5x0.5_AVHRR_to_0.5x0.5_nomask_aave_da_c111021.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_0.25x0.25_MODIS_to_0.5x0.5_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_0.5x0.5_MODIS_to_0.5x0.5_nomask_aave_da_c111021.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_0.5x0.5_nomask_to_0.5x0.5_nomask_aave_da_c111021.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="IGBPmergeICESatGIS"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_10x10min_IGBPmergeICESatGIS_to_0.5x0.5_nomask_aave_da_c111021.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_10x10min_nomask_to_0.5x0.5_nomask_aave_da_c111021.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_5x5min_IGBP-GSDP_to_0.5x0.5_nomask_aave_da_c111021.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_5x5min_nomask_to_0.5x0.5_nomask_aave_da_c111021.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_3x3min_MODIS_to_0.5x0.5_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_3x3min_MODIS-wCsp_to_0.5x0.5_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_5x5min_ISRIC-WISE_to_0.5x0.5_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="0.5x0.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.5x0.5/map_5x5min_ORNL-Soil_to_0.5x0.5_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_3x3min_LandScan2004_to_0.5x0.5_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="0.5x0.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.5x0.5/map_3x3min_GLOBE-Gardner_to_0.5x0.5_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="0.5x0.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.5x0.5/map_3x3min_GLOBE-Gardner-mergeGIS_to_0.5x0.5_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.1x0.1"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_0.1x0.1_nomask_to_0.5x0.5_nomask_aave_da_c120706.nc</map>
-<map frm_hgrid="ne240np4"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_ne240np4_nomask_to_0.5x0.5_nomask_aave_da_c120711.nc</map>
-<map frm_hgrid="4x5"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_4x5_nomask_to_0.5x0.5_nomask_aave_da_c120706.nc</map>
-<map frm_hgrid="1.9x2.5"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_1.9x2.5_nomask_to_0.5x0.5_nomask_aave_da_c120709.nc</map>
-<map frm_hgrid="ne120np4"    frm_lmask="nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_ne120np4_nomask_to_0.5x0.5_nomask_aave_da_c120711.nc</map>
-<map frm_hgrid="3x3"    frm_lmask="USGS"  to_hgrid="to"   to_lmask="0.5x0.5" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_3x3_USGS_nomask_to_0.5x0.5_nomask_aave_da_c120912.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_0.9x1.25_GRDC_to_0.5x0.5_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_360x720_cruncep_to_0.5x0.5_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="0.5x0.5"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.5x0.5/map_1km-merge-10min_HYDRO1K-merge-nomask_to_0.5x0.5_nomask_aave_da_c130405.nc</map>
-
-<!-- mapping files for 0.5x0.5 END -->
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="ne4np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne4np4/map_0.5x0.5_MODIS_to_ne4np4_nomask_aave_da_c110923.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="ne4np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne4np4/map_0.25x0.25_MODIS_to_ne4np4_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="ne4np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne4np4/map_0.5x0.5_AVHRR_to_ne4np4_nomask_aave_da_c110923.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="ne4np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_10x10min_nomask_to_ne4np4_nomask_aave_da_c110923.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="ne4np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_5x5min_IGBP-GSDP_to_ne4np4_nomask_aave_da_c110923.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="ne4np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_5x5min_nomask_to_ne4np4_nomask_aave_da_c110923.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="ne4np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_5x5min_ISRIC-WISE_to_ne4np4_nomask_aave_da_c120906.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="ne4np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_5x5min_ORNL-Soil_to_ne4np4_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="ne4np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_3x3min_MODIS_to_ne4np4_nomask_aave_da_c120906.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="ne4np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_3x3min_MODIS-wCsp_to_ne4np4_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="ne4np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_3x3min_USGS_to_ne4np4_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="ne4np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_3x3min_LandScan2004_to_ne4np4_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="ne4np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_3x3min_GLOBE-Gardner_to_ne4np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="ne4np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_3x3min_GLOBE-Gardner-mergeGIS_to_ne4np4_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="ne4np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_3x3min_LandScan2004_to_ne4np4_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="ne4np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne4np4/map_0.9x1.25_GRDC_to_ne4np4_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="ne4np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne4np4/map_360x720_cruncep_to_ne4np4_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="ne4np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne4np4/map_1km-merge-10min_HYDRO1K-merge-nomask_to_ne4np4_nomask_aave_da_c130411.nc</map>
-<map frm_hgrid="ne4np4"    frm_lmask="nomask" to_hgrid="0.5x0.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne4np4/map_ne4np4_nomask_to_0.5x0.5_nomask_aave_da_c110923.nc</map>
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="ne16np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne16np4/map_0.5x0.5_MODIS_to_ne16np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="ne16np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne16np4/map_0.25x0.25_MODIS_to_ne16np4_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="ne16np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne16np4/map_0.5x0.5_AVHRR_to_ne16np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="ne16np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_10x10min_nomask_to_ne16np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="ne16np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_5x5min_IGBP-GSDP_to_ne16np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="ne16np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_5x5min_nomask_to_ne16np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="ne16np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_5x5min_ISRIC-WISE_to_ne16np4_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="ne16np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_5x5min_ORNL-Soil_to_ne16np4_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="ne16np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_3x3min_MODIS_to_ne16np4_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="ne16np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_3x3min_MODIS-wCsp_to_ne16np4_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="ne16np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_3x3min_USGS_to_ne16np4_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="ne16np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_3x3min_LandScan2004_to_ne16np4_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="ne16np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_3x3min_GLOBE-Gardner_to_ne16np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="ne16np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_3x3min_GLOBE-Gardner-mergeGIS_to_ne16np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="ne16np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne16np4/map_0.9x1.25_GRDC_to_ne16np4_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="ne16np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne16np4/map_360x720_cruncep_to_ne16np4_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="ne16np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne16np4/map_1km-merge-10min_HYDRO1K-merge-nomask_to_ne16np4_nomask_aave_da_c130408.nc</map>
-<map frm_hgrid="ne16np4"    frm_lmask="nomask" to_hgrid="0.5x0.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne16np4/map_ne16np4_nomask_to_0.5x0.5_nomask_aave_da_c110922.nc</map>
-
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="ne30np4" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne30np4/map_0.5x0.5_landuse_to_ne30np4_aave_da_110320.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="ne30np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne30np4/map_0.25x0.25_MODIS_to_ne30np4_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="ne30np4" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne30np4/map_0.5x0.5_lanwat_to_ne30np4_aave_da_110320.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_10minx10min_topo_to_ne30np4_aave_da_110320.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_5minx5min_soitex_to_ne30np4_aave_da_110320.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_5minx5min_irrig_to_ne30np4_aave_da_110720.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_5x5min_ISRIC-WISE_to_ne30np4_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_5x5min_ORNL-Soil_to_ne30np4_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="ne30np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_3x3min_MODIS_to_ne30np4_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="ne30np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_3x3min_MODIS-wCsp_to_ne30np4_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="ne30np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_3x3min_USGS_to_ne30np4_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_3x3min_LandScan2004_to_ne30np4_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_3x3min_GLOBE-Gardner_to_ne30np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="ne30np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_3x3min_GLOBE-Gardner-mergeGIS_to_ne30np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="ne30np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne30np4/map_0.9x1.25_GRDC_to_ne30np4_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="ne30np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne30np4/map_360x720_cruncep_to_ne30np4_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="ne30np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne30np4/map_1km-merge-10min_HYDRO1K-merge-nomask_to_ne30np4_nomask_aave_da_c130405.nc</map>
-
-<map frm_hgrid="ne30np4"  frm_lmask="nomask" to_hgrid="0.5x0.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne30np4/map_ne30np4_to_0.5x0.5rtm_aave_da_110320.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="ne60np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne60np4/map_0.5x0.5_MODIS_to_ne60np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="ne60np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne60np4/map_0.25x0.25_MODIS_to_ne60np4_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="ne60np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne60np4/map_0.5x0.5_AVHRR_to_ne60np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="ne60np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_10x10min_nomask_to_ne60np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="ne60np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_5x5min_IGBP-GSDP_to_ne60np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="ne60np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_5x5min_nomask_to_ne60np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="ne60np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_5x5min_ISRIC-WISE_to_ne60np4_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="ne60np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_5x5min_ORNL-Soil_to_ne60np4_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="ne60np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_3x3min_MODIS_to_ne60np4_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="ne60np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_3x3min_MODIS-wCsp_to_ne60np4_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="ne60np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_3x3min_USGS_to_ne60np4_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="ne60np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_3x3min_LandScan2004_to_ne60np4_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="ne60np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_3x3min_GLOBE-Gardner_to_ne60np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="ne60np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_3x3min_GLOBE-Gardner-mergeGIS_to_ne60np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="ne60np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne60np4/map_0.9x1.25_GRDC_to_ne60np4_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="ne60np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne60np4/map_360x720_cruncep_to_ne60np4_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="ne60np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne60np4/map_1km-merge-10min_HYDRO1K-merge-nomask_to_ne60np4_nomask_aave_da_c130405.nc</map>
-<map frm_hgrid="ne60np4"    frm_lmask="nomask" to_hgrid="0.5x0.5" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne60np4/map_ne60np4_nomask_to_0.5x0.5_nomask_aave_da_c110922.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="ne120np4" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne120np4/map_0.5x0.5_landuse_to_ne120np4_aave_da_110320.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="ne120np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne120np4/map_0.25x0.25_MODIS_to_ne120np4_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="ne120np4" to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne120np4/map_0.5x0.5_lanwat_to_ne120np4_aave_da_110320.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_10minx10min_topo_to_ne120np4_aave_da_110320.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP"  to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_5minx5min_soitex_to_ne120np4_aave_da_110320.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_5x5min_ISRIC-WISE_to_ne120np4_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_5x5min_ORNL-Soil_to_ne120np4_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_5minx5min_irrig_to_ne120np4_aave_da_110817.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_3x3min_MODIS_to_ne120np4_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_3x3min_MODIS-wCsp_to_ne120np4_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_3x3min_USGS_to_ne120np4_nomask_aave_da_c120913.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_3x3min_LandScan2004_to_ne120np4_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_3x3min_GLOBE-Gardner_to_ne120np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_3x3min_GLOBE-Gardner-mergeGIS_to_ne120np4_nomask_aave_da_c120924.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="ne120np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne120np4/map_3x3min_USGS_to_ne120np4_nomask_aave_da_c120913.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="ne120np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne120np4/map_0.9x1.25_GRDC_to_ne120np4_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="ne120np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne120np4/map_360x720_cruncep_to_ne120np4_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="ne120np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne120np4/map_1km-merge-10min_HYDRO1K-merge-nomask_to_ne120np4_nomask_aave_da_c130405.nc</map>
-
-<!-- mapping files for ne120np4 START added on Wed Sep 19 09:10:57 2012-->
-<!-- Created by lnd/clm/bld/namelist_files/createMapEntry.pl--> 
-
-<map frm_hgrid="0.1x0.1"    frm_lmask="nomask"  to_hgrid="ne120np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne120np4/map_0.1x0.1_nomask_to_ne120np4_nomask_aave_da_c120706.nc</map>
-
-<!-- mapping files for ne120np4 END --> 
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="5x5_amazon"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/5x5_amazon/map_0.5x0.5_MODIS_to_5x5_amazon_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="5x5_amazon"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/5x5_amazon/map_0.25x0.25_MODIS_to_5x5_amazon_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="5x5_amazon"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/5x5_amazon/map_0.5x0.5_AVHRR_to_5x5_amazon_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="5x5_amazon"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_10x10min_nomask_to_5x5_amazon_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="5x5_amazon"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_5x5min_IGBP-GSDP_to_5x5_amazon_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="5x5_amazon"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_5x5min_nomask_to_5x5_amazon_nomask_aave_da_c110920.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="5x5_amazon" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_5x5min_ISRIC-WISE_to_5x5_amazon_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="5x5_amazon" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_5x5min_ORNL-Soil_to_5x5_amazon_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="5x5_amazon"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_3x3min_MODIS_to_5x5_amazon_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="5x5_amazon"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_3x3min_MODIS-wCsp_to_5x5_amazon_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="5x5_amazon"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_3x3min_USGS_to_5x5_amazon_nomask_aave_da_c120927.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="5x5_amazon" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_3x3min_LandScan2004_to_5x5_amazon_nomask_aave_da_c120518.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="5x5_amazon" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_3x3min_GLOBE-Gardner_to_5x5_amazon_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="5x5_amazon" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/5x5_amazon/map_3x3min_GLOBE-Gardner-mergeGIS_to_5x5_amazon_nomask_aave_da_c120923.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="5x5_amazon"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/5x5_amazon/map_0.9x1.25_GRDC_to_5x5_amazon_nomask_aave_da_c130309.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="5x5_amazon"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/5x5_amazon/map_360x720_cruncep_to_5x5_amazon_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="5x5_amazon"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/5x5_amazon/map_1km-merge-10min_HYDRO1K-merge-nomask_to_5x5_amazon_nomask_aave_da_c130403.nc</map>
-
-<map frm_hgrid="0.5x0.5"  frm_lmask="MODIS"  to_hgrid="ne240np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne240np4/map_0.5x0.5_MODIS_to_ne240np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="ne240np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne240np4/map_0.25x0.25_MODIS_to_ne240np4_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.5x0.5"  frm_lmask="AVHRR"  to_hgrid="ne240np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne240np4/map_0.5x0.5_AVHRR_to_ne240np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="10x10min" frm_lmask="nomask" to_hgrid="ne240np4"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_10x10min_nomask_to_ne240np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="IGBP-GSDP" to_hgrid="ne240np4"  to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_5x5min_IGBP-GSDP_to_ne240np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="nomask" to_hgrid="ne240np4"     to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_5x5min_nomask_to_ne240np4_nomask_aave_da_c110922.nc</map>
-<map frm_hgrid="5x5min"   frm_lmask="ISRIC-WISE" to_hgrid="ne240np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_5x5min_ISRIC-WISE_to_ne240np4_nomask_aave_da_c111115.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="ne240np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_5x5min_ORNL-Soil_to_ne240np4_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS"  to_hgrid="ne240np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_3x3min_MODIS_to_ne240np4_nomask_aave_da_c111111.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="MODIS-wCsp"  to_hgrid="ne240np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_3x3min_MODIS-wCsp_to_ne240np4_nomask_aave_da_c160425.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="USGS"   to_hgrid="ne240np4"    to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_3x3min_USGS_to_ne240np4_nomask_aave_da_c120926.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="LandScan2004" to_hgrid="ne240np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_3x3min_LandScan2004_to_ne240np4_nomask_aave_da_c120521.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner" to_hgrid="ne240np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_3x3min_GLOBE-Gardner_to_ne240np4_nomask_aave_da_c120925.nc</map>
-<map frm_hgrid="3x3min"   frm_lmask="GLOBE-Gardner-mergeGIS" to_hgrid="ne240np4" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_3x3min_GLOBE-Gardner-mergeGIS_to_ne240np4_nomask_aave_da_c120925.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="ne240np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne240np4/map_0.9x1.25_GRDC_to_ne240np4_nomask_aave_da_c130308.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="ne240np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne240np4/map_360x720_cruncep_to_ne240np4_nomask_aave_da_c130326.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="ne240np4"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/ne240np4/map_1km-merge-10min_HYDRO1K-merge-nomask_to_ne240np4_nomask_aave_da_c130405.nc</map>
-<map frm_hgrid="ne240np4"    frm_lmask="nomask" to_hgrid="0.5x0.5"   to_lmask="nomask"
->lnd/clm2/mappingdata/maps/ne240np4/map_ne240np4_nomask_to_0.5x0.5_nomask_aave_da_c110922.nc</map>
-
-<!-- mapping files for 0.125x0.125 START added on Fri Aug  1 15:44:32 2014-->
-<!-- Created by lnd/clm/bld/namelist_files/createMapEntry.pl--> 
-
-<map frm_hgrid="0.5x0.5"    frm_lmask="AVHRR"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_0.5x0.5_AVHRR_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="0.5x0.5"    frm_lmask="MODIS"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_0.5x0.5_MODIS_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="0.25x0.25"  frm_lmask="MODIS"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_0.25x0.25_MODIS_to_0.125x0.125_nomask_aave_da_c170321.nc</map>
-<map frm_hgrid="0.9x1.25"    frm_lmask="GRDC"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_0.9x1.25_GRDC_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="IGBPmergeICESatGIS"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_10x10min_IGBPmergeICESatGIS_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="10x10min"    frm_lmask="nomask"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_10x10min_nomask_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="1km-merge-10min"    frm_lmask="HYDRO1K-merge-nomask"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_1km-merge-10min_HYDRO1K-merge-nomask_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="360x720cru"    frm_lmask="cruncep"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_360x720cru_cruncep_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="GLOBE-Gardner-mergeGIS"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_3x3min_GLOBE-Gardner-mergeGIS_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="GLOBE-Gardner"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_3x3min_GLOBE-Gardner_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="LandScan2004"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_3x3min_LandScan2004_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_3x3min_MODIS_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="MODIS-wCsp"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_3x3min_MODIS-wCsp_to_0.125x0.125_nomask_aave_da_c160427.nc</map>
-<map frm_hgrid="3x3min"    frm_lmask="USGS"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_3x3min_USGS_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="IGBP-GSDP"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_5x5min_IGBP-GSDP_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ISRIC-WISE"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_5x5min_ISRIC-WISE_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="ORNL-Soil" to_hgrid="0.125x0.125" to_lmask="nomask"
->lnd/clm2/mappingdata/maps/0.125x0.125/map_5x5min_ORNL-Soil_to_0.125x0.125_nomask_aave_da_c170706.nc</map>
-<map frm_hgrid="5x5min"    frm_lmask="nomask"  to_hgrid="0.125x0.125"   to_lmask="nomask" 
->lnd/clm2/mappingdata/maps/0.125x0.125/map_5x5min_nomask_to_0.125x0.125_nomask_aave_da_c140702.nc</map>
-
-<!-- mapping files for 0.125x0.125 END -->
-
-<!-- =========================================  -->
 <!-- Defaults for modelio namelist              -->
 <!-- =========================================  -->
 
 <diri>.</diri>
 <diro>.</diro>
-
-<!-- =========================================  -->
-<!-- Defaults for different BGC modes           -->
-<!-- =========================================  -->
-
-<use_vertsoilc       bgc_mode="sp"  >.false.</use_vertsoilc>
-<use_century_decomp  bgc_mode="sp"  >.false.</use_century_decomp>
-<use_lch4            bgc_mode="sp"  >.false.</use_lch4>
-<use_nitrif_denitrif bgc_mode="sp"  >.false.</use_nitrif_denitrif>
-
-<use_vertsoilc       bgc_mode="cn"  >.false.</use_vertsoilc>
-<use_century_decomp  bgc_mode="cn"  >.false.</use_century_decomp>
-<use_lch4            bgc_mode="cn"  >.false.</use_lch4>
-<use_nitrif_denitrif bgc_mode="cn"  >.false.</use_nitrif_denitrif>
-
-<use_vertsoilc       bgc_mode="bgc" >.true.</use_vertsoilc>
-<use_century_decomp  bgc_mode="bgc" >.true.</use_century_decomp>
-<use_lch4            bgc_mode="bgc" >.true.</use_lch4>
-<use_nitrif_denitrif bgc_mode="bgc" >.true.</use_nitrif_denitrif>
-
-<use_vertsoilc       bgc_mode="fates"  >.true.</use_vertsoilc>
-<use_century_decomp  bgc_mode="fates"  >.true.</use_century_decomp>
-<use_lch4            bgc_mode="fates"  >.false.</use_lch4>
-<use_nitrif_denitrif bgc_mode="fates"  >.false.</use_nitrif_denitrif>
-
-<!-- ===== FATES DEFAULTS =========== -->
-<use_fates_spitfire            use_fates=".true.">.false.</use_fates_spitfire>
-<use_fates_planthydro          use_fates=".true.">.false.</use_fates_planthydro>
-<use_fates_ed_st3              use_fates=".true.">.false.</use_fates_ed_st3>
-<use_fates_ed_prescribed_phys  use_fates=".true.">.false.</use_fates_ed_prescribed_phys>
-<use_fates_logging             use_fates=".true.">.false.</use_fates_logging>
-<use_fates_inventory_init      use_fates=".true.">.false.</use_fates_inventory_init>
 
 </namelist_defaults>

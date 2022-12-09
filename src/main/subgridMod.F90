@@ -428,13 +428,8 @@ contains
     ! Returns true if a patch should be created in memory for the given crop functional
     ! type in this grid cell.
     !
-    ! This just applies to the crop landunit: it always returns .false. if
-    ! create_crop_landunit is .false.
-    !
     ! !USES:
     use clm_varpar           , only : cft_lb, cft_ub
-    use clm_varctl           , only : create_crop_landunit
-    use pftconmod            , only : pftcon
     use landunit_varcon      , only : istcrop
     !
     ! !ARGUMENTS:
@@ -447,10 +442,6 @@ contains
     character(len=*), parameter :: subname = 'crop_patch_exists'
     !-----------------------------------------------------------------------
 
-    if (create_crop_landunit) then
-       SHR_ASSERT(cft >= cft_lb, errMsg(sourcefile, __LINE__))
-       SHR_ASSERT(cft <= cft_ub, errMsg(sourcefile, __LINE__))
-
        ! For a run without transient crops, only allocate memory for crops that are
        ! actually present in this run. (This will require running init_interp when
        ! changing between a transient crop run and a non-transient run.)
@@ -459,10 +450,6 @@ contains
        else
           exists = .false.
        end if
-
-    else  ! create_crop_landunit false
-       exists = .false.
-    end if
 
   end function crop_patch_exists
 

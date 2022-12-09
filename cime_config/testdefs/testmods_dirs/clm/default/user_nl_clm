@@ -16,4 +16,4 @@
          'MML_diag1_1d', 'MML_diag2_1d', 'MML_diag3_1d', 'MML_diag1_2d', 'MML_diag2_2d', 'MML_diag3_2d', 'MML_q_excess',
 'MML_lh_excess',
          'MML_q_demand', 'MML_lh_demand', 'mml_err_h2o', 'mml_err_h2osno', 'mml_err_seb', 'mml_err_soi', 'mml_err_sol', 'WIND',
-         'THBOT', 'RAIN', 'SNOW', 'RH'
+         'RH'

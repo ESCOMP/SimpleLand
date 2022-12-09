@@ -4,9 +4,7 @@ module lnd_import_export
   use abortutils   , only: endrun
   use decompmod    , only: bounds_type
   use lnd2atmType  , only: lnd2atm_type
-  use lnd2glcMod   , only: lnd2glc_type
   use atm2lndType  , only: atm2lnd_type
-  use glc2lndMod   , only: glc2lnd_type 
   use clm_cpl_indices
   !
   implicit none
@@ -15,7 +13,7 @@ module lnd_import_export
 contains
 
   !===============================================================================
-  subroutine lnd_import( bounds, x2l, glc_present, atm2lnd_inst, glc2lnd_inst)
+  subroutine lnd_import( bounds, x2l, atm2lnd_inst)
 
     !---------------------------------------------------------------------------
     ! !DESCRIPTION:
@@ -24,8 +22,7 @@ contains
     ! !USES:
     use seq_flds_mod    , only: seq_flds_x2l_fields
     use clm_varctl      , only: co2_type, co2_ppmv, iulog
-    use clm_varctl      , only: ndep_from_cpl 
-    use clm_varcon      , only: rair, o2_molar_const, c13ratio
+    use clm_varcon      , only: rair, o2_molar_const
     use shr_const_mod   , only: SHR_CONST_TKFRZ
     use shr_string_mod  , only: shr_string_listGetName
     use domainMod       , only: ldomain
@@ -34,9 +31,7 @@ contains
     ! !ARGUMENTS:
     type(bounds_type)  , intent(in)    :: bounds   ! bounds
     real(r8)           , intent(in)    :: x2l(:,:) ! driver import state to land model
-    logical            , intent(in)    :: glc_present       ! .true. => running with a non-stub GLC model
     type(atm2lnd_type) , intent(inout) :: atm2lnd_inst      ! clm internal input data type
-    type(glc2lnd_type) , intent(inout) :: glc2lnd_inst      ! clm internal input data type
     !
     ! !LOCAL VARIABLES:
     integer  :: g,i,k,nstep,ier      ! indices, number of steps, and error code
@@ -162,10 +157,6 @@ contains
           co2_ppmv_diag = co2_ppmv
        end if
 
-       if (index_x2l_Sa_methane /= 0) then
-          atm2lnd_inst%forc_pch4_grc(g) = x2l(index_x2l_Sa_methane,i)
-       endif
-
        ! Determine derived quantities for required fields
 
        forc_t = atm2lnd_inst%forc_t_not_downscaled_grc(g)
@@ -249,33 +240,13 @@ contains
        end if
        atm2lnd_inst%forc_pco2_grc(g)   = co2_ppmv_val * 1.e-6_r8 * forc_pbot 
 
-       if (ndep_from_cpl) then
-          ! The coupler is sending ndep in units if kgN/m2/s - and clm uses units of gN/m2/sec - so the
-          ! following conversion needs to happen
-          atm2lnd_inst%forc_ndep_grc(g) = (x2l(index_x2l_Faxa_nhx, i) + x2l(index_x2l_faxa_noy, i))*1000._r8
-       end if
-
     end do
-
-    call glc2lnd_inst%set_glc2lnd_fields( &
-         bounds = bounds, &
-         glc_present = glc_present, &
-         ! NOTE(wjs, 2017-12-13) the x2l argument doesn't have the typical bounds
-         ! subsetting (bounds%begg:bounds%endg). This mirrors the lack of these bounds in
-         ! the call to lnd_import from lnd_run_mct. This is okay as long as this code is
-         ! outside a clump loop.
-         x2l = x2l, &
-         index_x2l_Sg_ice_covered = index_x2l_Sg_ice_covered, &
-         index_x2l_Sg_topo = index_x2l_Sg_topo, &
-         index_x2l_Flgg_hflx = index_x2l_Flgg_hflx, &
-         index_x2l_Sg_icemask = index_x2l_Sg_icemask, &
-         index_x2l_Sg_icemask_coupled_fluxes = index_x2l_Sg_icemask_coupled_fluxes)
 
   end subroutine lnd_import
 
   !===============================================================================
 
-  subroutine lnd_export( bounds, lnd2atm_inst, lnd2glc_inst, l2x)
+  subroutine lnd_export( bounds, lnd2atm_inst, l2x)
 
     !---------------------------------------------------------------------------
     ! !DESCRIPTION:
@@ -286,9 +257,6 @@ contains
     use seq_flds_mod       , only : seq_flds_l2x_fields
     use clm_varctl         , only : iulog
     use clm_time_manager   , only : get_nstep, get_step_size  
-    use seq_drydep_mod     , only : n_drydep
-    use shr_megan_mod      , only : shr_megan_mechcomps_n
-    use shr_fire_emis_mod  , only : shr_fire_emis_mechcomps_n
     use domainMod          , only : ldomain
     use shr_string_mod     , only : shr_string_listGetName
     use shr_infnan_mod     , only : isnan => shr_infnan_isnan
@@ -297,7 +265,6 @@ contains
     implicit none
     type(bounds_type) , intent(in)    :: bounds  ! bounds
     type(lnd2atm_type), intent(inout) :: lnd2atm_inst ! clm land to atmosphere exchange data type
-    type(lnd2glc_type), intent(inout) :: lnd2glc_inst ! clm land to atmosphere exchange data type
     real(r8)          , intent(out)   :: l2x(:,:)! land to coupler export state on land grid
     !
     ! !LOCAL VARIABLES:
@@ -336,40 +303,15 @@ contains
           l2x(index_l2x_Fall_fco2_lnd,i) = -lnd2atm_inst%net_carbon_exchange_grc(g)  
        end if
 
-       ! Additional fields for DUST, PROGSSLT, dry-deposition and VOC
+       ! Additional fields for DUST, PROGSSLT, dry-deposition
        ! These are now standard fields, but the check on the index makes sure the driver handles them
        if (index_l2x_Sl_ram1      /= 0 )  l2x(index_l2x_Sl_ram1,i)     =  lnd2atm_inst%ram1_grc(g)
        if (index_l2x_Sl_fv        /= 0 )  l2x(index_l2x_Sl_fv,i)       =  lnd2atm_inst%fv_grc(g)
-       if (index_l2x_Sl_soilw     /= 0 )  l2x(index_l2x_Sl_soilw,i)    =  lnd2atm_inst%h2osoi_vol_grc(g,1)
+       if (index_l2x_Sl_soilw     /= 0 )  l2x(index_l2x_Sl_soilw,i)    =  0.5_r8
        if (index_l2x_Fall_flxdst1 /= 0 )  l2x(index_l2x_Fall_flxdst1,i)= -lnd2atm_inst%flxdst_grc(g,1)
        if (index_l2x_Fall_flxdst2 /= 0 )  l2x(index_l2x_Fall_flxdst2,i)= -lnd2atm_inst%flxdst_grc(g,2)
        if (index_l2x_Fall_flxdst3 /= 0 )  l2x(index_l2x_Fall_flxdst3,i)= -lnd2atm_inst%flxdst_grc(g,3)
        if (index_l2x_Fall_flxdst4 /= 0 )  l2x(index_l2x_Fall_flxdst4,i)= -lnd2atm_inst%flxdst_grc(g,4)
-
-
-       ! for dry dep velocities
-       if (index_l2x_Sl_ddvel     /= 0 )  then
-          l2x(index_l2x_Sl_ddvel:index_l2x_Sl_ddvel+n_drydep-1,i) = &
-               lnd2atm_inst%ddvel_grc(g,:n_drydep)
-       end if
-
-       ! for MEGAN VOC emis fluxes
-       if (index_l2x_Fall_flxvoc  /= 0 ) then
-          l2x(index_l2x_Fall_flxvoc:index_l2x_Fall_flxvoc+shr_megan_mechcomps_n-1,i) = &
-               -lnd2atm_inst%flxvoc_grc(g,:shr_megan_mechcomps_n)
-       end if
-
-
-       ! for fire emis fluxes
-       if (index_l2x_Fall_flxfire  /= 0 ) then
-          l2x(index_l2x_Fall_flxfire:index_l2x_Fall_flxfire+shr_fire_emis_mechcomps_n-1,i) = &
-               -lnd2atm_inst%fireflx_grc(g,:shr_fire_emis_mechcomps_n)
-          l2x(index_l2x_Sl_ztopfire,i) = lnd2atm_inst%fireztop_grc(g)
-       end if
-
-       if (index_l2x_Fall_methane /= 0) then
-          l2x(index_l2x_Fall_methane,i) = -lnd2atm_inst%flux_ch4_grc(g) 
-       endif
 
        ! sign convention is positive downward with 
        ! hierarchy of atm/glc/lnd/rof/ice/ocn.  
@@ -388,19 +330,6 @@ contains
 
        ! ice  sent individually to coupler
        l2x(index_l2x_Flrl_rofi,i) = lnd2atm_inst%qflx_rofice_grc(g)
-
-       ! irrigation flux to be removed from main channel storage (negative)
-       l2x(index_l2x_Flrl_irrig,i) = - lnd2atm_inst%qirrig_grc(g)
-
-       ! glc coupling
-       ! We could avoid setting these fields if glc_present is .false., if that would
-       ! help with performance. (The downside would be that we wouldn't have these fields
-       ! available for diagnostic purposes or to force a later T compset with dlnd.)
-       do num = 0,glc_nec
-          l2x(index_l2x_Sl_tsrf(num),i)   = lnd2glc_inst%tsrf_grc(g,num)
-          l2x(index_l2x_Sl_topo(num),i)   = lnd2glc_inst%topo_grc(g,num)
-          l2x(index_l2x_Flgl_qice(num),i) = lnd2glc_inst%qice_grc(g,num)
-       end do
 
        ! Check if any output sent to the coupler is NaN
        if ( any(isnan(l2x(:,i))) )then

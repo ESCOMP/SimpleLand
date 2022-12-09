@@ -20,17 +20,15 @@
     </ul>
     <h3>Miscellaneous items include:</h3>
     <ol>
-       <li>Biogeochemistry (BGC) type (none, CN, CNDV)</li>
+       <li>Biogeochemistry (BGC) type (none, CN)</li>
        <li>Initial condition date (ymd - year month day)</li>
        <li>Initial condition time of day (tod) (sec)</li>
        <li>Maximum number of Plant Function Types (maxpft)</li>
-       <li>Number of glacier multiple elevation classes (glc_nec)</li>
        <li>Site specific point name (sitespf_pt)</li>
        <li>Crop model (crop)</li>
        <li>Data model forcing source (forcing)</li>
        <li>Representative concentration pathway for future scenarios (rcp)</li>
        <li>New good wood harvest (newwoodharv)</li>
-       <li>CN Spin-up mode (spinup)</li>
        <li>Type of file (type)</li>
        <li>Grid mapping to (to_hgrid)</li>
        <li>Land-mask mapping to (to_lmask)</li>
@@ -121,9 +119,6 @@
         <xsl:if test="string-length(@maxpft)>0">
         maxpft=<xsl:value-of select="@maxpft"/>
         </xsl:if>
-        <xsl:if test="string-length(@glc_nec)>0">
-        glc_nec=<xsl:value-of select="@glc_nec"/>
-        </xsl:if>
         <xsl:if test="string-length(@sitespf_pt)>0">
         sitespf_pt=<xsl:value-of select="@sitespf_pt"/>
         </xsl:if>
@@ -132,12 +127,6 @@
         </xsl:if>
         <xsl:if test="string-length(@crop)>0">
         crop=<xsl:value-of select="@crop"/>
-        </xsl:if>
-        <xsl:if test="string-length(@irrig)>0">
-        irrig=<xsl:value-of select="@irrig"/>
-        </xsl:if>
-        <xsl:if test="string-length(@spinup)>0">
-        spinup=<xsl:value-of select="@spinup"/>
         </xsl:if>
         <xsl:if test="string-length(@source)>0">
         forcing=<xsl:value-of select="@source"/>

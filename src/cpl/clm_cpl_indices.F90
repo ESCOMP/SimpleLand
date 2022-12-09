@@ -18,16 +18,12 @@ module clm_cpl_indices
   !
   ! !PUBLIC DATA MEMBERS:
   !
-  integer , public :: glc_nec     ! number of elevation classes for glacier_mec landunits 
-                                  ! (from coupler) - must equal maxpatch_glcmec from namelist
-
   ! lnd -> drv (required)
 
   integer, public ::index_l2x_Flrl_rofsur     ! lnd->rtm input liquid surface fluxes
   integer, public ::index_l2x_Flrl_rofgwl     ! lnd->rtm input liquid gwl fluxes
   integer, public ::index_l2x_Flrl_rofsub     ! lnd->rtm input liquid subsurface fluxes
   integer, public ::index_l2x_Flrl_rofi       ! lnd->rtm input frozen fluxes
-  integer, public ::index_l2x_Flrl_irrig      ! irrigation withdrawal
 
   integer, public ::index_l2x_Sl_t            ! temperature
   integer, public ::index_l2x_Sl_tref         ! 2m reference temperature
@@ -54,16 +50,7 @@ module clm_cpl_indices
   integer, public ::index_l2x_Fall_flxdst2    ! dust flux size bin 2    
   integer, public ::index_l2x_Fall_flxdst3    ! dust flux size bin 3    
   integer, public ::index_l2x_Fall_flxdst4    ! dust flux size bin 4
-  integer, public ::index_l2x_Fall_flxvoc     ! MEGAN fluxes
-  integer, public ::index_l2x_Fall_flxfire    ! Fire fluxes
-  integer, public ::index_l2x_Sl_ztopfire     ! Top of fire emissions (m)
 
-  ! In the following, index 0 is bare land, other indices are glc elevation classes
-  integer, allocatable, public ::index_l2x_Sl_tsrf(:)   ! glc MEC temperature
-  integer, allocatable, public ::index_l2x_Sl_topo(:)   ! glc MEC topo height
-  integer, allocatable, public ::index_l2x_Flgl_qice(:) ! glc MEC ice flux
-
-  integer, public ::index_x2l_Sa_methane
   integer, public ::index_l2x_Fall_methane
 
   integer, public :: nflds_l2x = 0
@@ -104,9 +91,6 @@ module clm_cpl_indices
   integer, public ::index_x2l_Faxa_dstdry3    ! flux: Size 3 dust -- dry deposition
   integer, public ::index_x2l_Faxa_dstdry4    ! flux: Size 4 dust -- dry deposition
  
-  integer, public ::index_x2l_Faxa_nhx        ! flux nhx from atm
-  integer, public ::index_x2l_Faxa_noy        ! flux noy from atm
-
   integer, public ::index_x2l_Flrr_flood      ! rtm->lnd rof flood flux
   integer, public ::index_x2l_Flrr_volr       ! rtm->lnd rof volr total volume
   integer, public ::index_x2l_Flrr_volrmch    ! rtm->lnd rof volr main channel volume
@@ -136,10 +120,6 @@ contains
     use seq_flds_mod   , only: seq_flds_x2l_fields, seq_flds_l2x_fields
     use mct_mod        , only: mct_aVect, mct_aVect_init, mct_avect_indexra
     use mct_mod        , only: mct_aVect_clean, mct_avect_nRattr
-    use seq_drydep_mod , only: drydep_fields_token, lnd_drydep
-    use shr_megan_mod  , only: shr_megan_fields_token, shr_megan_mechcomps_n
-    use shr_fire_emis_mod,only: shr_fire_emis_fields_token, shr_fire_emis_ztop_token, shr_fire_emis_mechcomps_n
-    use clm_varctl     , only:  ndep_from_cpl
     use glc_elevclass_mod, only: glc_get_num_elevation_classes, glc_elevclass_as_string
     !
     ! !ARGUMENTS:
@@ -175,7 +155,6 @@ contains
     index_l2x_Flrl_rofgwl   = mct_avect_indexra(l2x,'Flrl_rofgwl')
     index_l2x_Flrl_rofsub   = mct_avect_indexra(l2x,'Flrl_rofsub')
     index_l2x_Flrl_rofi     = mct_avect_indexra(l2x,'Flrl_rofi')
-    index_l2x_Flrl_irrig    = mct_avect_indexra(l2x,'Flrl_irrig')
 
     index_l2x_Sl_t          = mct_avect_indexra(l2x,'Sl_t')
     index_l2x_Sl_snowh      = mct_avect_indexra(l2x,'Sl_snowh')
@@ -189,12 +168,6 @@ contains
     index_l2x_Sl_ram1       = mct_avect_indexra(l2x,'Sl_ram1')
     index_l2x_Sl_fv         = mct_avect_indexra(l2x,'Sl_fv')
     index_l2x_Sl_soilw      = mct_avect_indexra(l2x,'Sl_soilw',perrwith='quiet')
-
-    if ( lnd_drydep )then
-       index_l2x_Sl_ddvel = mct_avect_indexra(l2x, trim(drydep_fields_token))
-    else
-       index_l2x_Sl_ddvel = 0
-    end if
 
     index_l2x_Fall_taux     = mct_avect_indexra(l2x,'Fall_taux')
     index_l2x_Fall_tauy     = mct_avect_indexra(l2x,'Fall_tauy')
@@ -212,22 +185,6 @@ contains
 
     index_l2x_Fall_methane  = mct_avect_indexra(l2x,'Fall_methane',perrWith='quiet')
 
-    ! MEGAN fluxes
-    if (shr_megan_mechcomps_n>0) then
-       index_l2x_Fall_flxvoc = mct_avect_indexra(l2x,trim(shr_megan_fields_token))
-    else
-       index_l2x_Fall_flxvoc = 0
-    endif
-
-    ! Fire fluxes
-    if (shr_fire_emis_mechcomps_n>0) then
-       index_l2x_Fall_flxfire = mct_avect_indexra(l2x,trim(shr_fire_emis_fields_token))
-       index_l2x_Sl_ztopfire = mct_avect_indexra(l2x,trim(shr_fire_emis_ztop_token))
-    else
-       index_l2x_Fall_flxfire = 0
-       index_l2x_Sl_ztopfire = 0
-    endif
-
     !-------------------------------------------------------------
     ! drv -> clm
     !-------------------------------------------------------------
@@ -242,8 +199,6 @@ contains
     index_x2l_Sa_shum       = mct_avect_indexra(x2l,'Sa_shum')
     index_x2l_Sa_co2prog    = mct_avect_indexra(x2l,'Sa_co2prog',perrwith='quiet')
     index_x2l_Sa_co2diag    = mct_avect_indexra(x2l,'Sa_co2diag',perrwith='quiet')
-
-    index_x2l_Sa_methane    = mct_avect_indexra(x2l,'Sa_methane',perrWith='quiet')
 
     index_x2l_Flrr_volr     = mct_avect_indexra(x2l,'Flrr_volr')
     index_x2l_Flrr_volrmch  = mct_avect_indexra(x2l,'Flrr_volrmch')
@@ -272,13 +227,6 @@ contains
     index_x2l_Faxa_dstwet3  = mct_avect_indexra(x2l,'Faxa_dstwet3')
     index_x2l_Faxa_dstwet4  = mct_avect_indexra(x2l,'Faxa_dstwet4')
 
-    index_x2l_Faxa_nhx      = mct_avect_indexra(x2l,'Faxa_nhx', perrWith='quiet')
-    index_x2l_Faxa_noy      = mct_avect_indexra(x2l,'Faxa_noy', perrWith='quiet')
-
-    if (index_x2l_Faxa_nhx > 0 .and. index_x2l_Faxa_noy > 0) then
-       ndep_from_cpl = .true.
-    end if
-
     index_x2l_Flrr_flood    = mct_avect_indexra(x2l,'Flrr_flood')
 
     !-------------------------------------------------------------
@@ -288,21 +236,13 @@ contains
     index_x2l_Sg_icemask = mct_avect_indexra(x2l,'Sg_icemask')
     index_x2l_Sg_icemask_coupled_fluxes = mct_avect_indexra(x2l,'Sg_icemask_coupled_fluxes')
 
-    glc_nec = glc_get_num_elevation_classes()
-    if (glc_nec < 1) then
-       call shr_sys_abort('ERROR: In CLM4.5 and later, glc_nec must be at least 1.')
-    end if
-
     ! Create coupling fields for all glc elevation classes (1:glc_nec) plus bare land
     ! (index 0).
-    allocate(index_l2x_Sl_tsrf(0:glc_nec))
-    allocate(index_l2x_Sl_topo(0:glc_nec))
-    allocate(index_l2x_Flgl_qice(0:glc_nec))
-    allocate(index_x2l_Sg_ice_covered(0:glc_nec))
-    allocate(index_x2l_Sg_topo(0:glc_nec))
-    allocate(index_x2l_Flgg_hflx(0:glc_nec))
+    allocate(index_x2l_Sg_ice_covered(0:10))
+    allocate(index_x2l_Sg_topo(0:10))
+    allocate(index_x2l_Flgg_hflx(0:10))
 
-    do num = 0,glc_nec
+    do num = 0,10
        nec_str = glc_elevclass_as_string(num)
 
        name = 'Sg_ice_covered' // nec_str
@@ -311,13 +251,6 @@ contains
        index_x2l_Sg_topo(num)   = mct_avect_indexra(x2l,trim(name))
        name = 'Flgg_hflx' // nec_str
        index_x2l_Flgg_hflx(num) = mct_avect_indexra(x2l,trim(name))
-
-       name = 'Sl_tsrf' // nec_str
-       index_l2x_Sl_tsrf(num)   = mct_avect_indexra(l2x,trim(name))
-       name = 'Sl_topo' // nec_str
-       index_l2x_Sl_topo(num)   = mct_avect_indexra(l2x,trim(name))
-       name = 'Flgl_qice' // nec_str
-       index_l2x_Flgl_qice(num) = mct_avect_indexra(l2x,trim(name))
     end do
 
     call mct_aVect_clean(x2l)

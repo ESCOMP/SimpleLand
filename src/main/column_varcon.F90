@@ -84,7 +84,6 @@ contains
     ! Convert an icemec class (1..maxpatch_glcmec) into col%itype
     !
     ! !USES:
-    use clm_varpar, only : maxpatch_glcmec
     use landunit_varcon, only : istice_mec
     !
     ! !ARGUMENTS:
@@ -96,8 +95,6 @@ contains
     character(len=*), parameter :: subname = 'icemec_class_to_col_itype'
     !-----------------------------------------------------------------------
     
-    SHR_ASSERT((1 <= icemec_class .and. icemec_class <= maxpatch_glcmec), errMsg(sourcefile, __LINE__))
-
     col_itype = istice_mec*100 + icemec_class
 
   end function icemec_class_to_col_itype
@@ -109,7 +106,6 @@ contains
     ! Convert a col%itype value (for an icemec landunit) into an icemec class (1..maxpatch_glcmec)
     !
     ! !USES:
-    use clm_varpar, only : maxpatch_glcmec
     use landunit_varcon, only : istice_mec
     !
     ! !ARGUMENTS:
@@ -122,10 +118,6 @@ contains
     !-----------------------------------------------------------------------
     
     icemec_class = col_itype - istice_mec*100
-
-    ! The following assertion is here to ensure that col_itype is really from an
-    ! istice_mec landunit
-    SHR_ASSERT((1 <= icemec_class .and. icemec_class <= maxpatch_glcmec), errMsg(sourcefile, __LINE__))
 
   end function col_itype_to_icemec_class
 

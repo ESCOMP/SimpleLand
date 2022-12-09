@@ -55,84 +55,6 @@
     </table>
 
     <table border="1" cellpadding="10">
-    <caption>CLM Namelist Lake Model Options</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='clm_lake']"/>
-    </table>
-
-    <table border="1" cellpadding="10">
-    <caption>CLM Biogeochemistry (BGC) Model Options</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='bgc']"/>
-    </table>
-
-    <table border="1" cellpadding="10">
-    <caption>CLM Biogeochemistry Namelist Nitrogen Model Options</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='clm_nitrogen']"/>
-    </table>
-
-    <table border="1" cellpadding="10">
-    <caption>CLM Namelist Methane Model Options</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='clm_methane']"/>
-    </table>
-
-    <table border="1" cellpadding="10">
-    <caption>CLM Namelist Vertical CN Model Options</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='clm_vertcn']"/>
-    </table>
-
-    <table border="1" cellpadding="10">
-    <caption>CLM Namelist Carbon Isotope Model Options</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='clm_isotope']"/>
-    </table>
-
-    <table border="1" cellpadding="10">
     <caption>CLM Namelist Datasets</caption>
       <tr>
       <th rowspan="2">Name</th>
@@ -313,21 +235,6 @@
     </table>
 
 <hr/>
-
-<h2>Namelist items for Driver MEGAN Physics</h2>
-    <table border="1" cellpadding="10">
-    <caption>Driver Physics</caption>
-      <tr>
-      <th rowspan="2">Name</th>
-      <th rowspan="2">Type</th>
-      <th>Description</th>
-      </tr>
-      <tr>
-      <th colspan="1">Valid values</th>
-      </tr>
-      <xsl:apply-templates select="entry[@category='drv_physics']"/>
-    </table>
-
 
 <h2>Namelist items for Driver Dry Deposition</h2>
     <table border="1" cellpadding="10">
