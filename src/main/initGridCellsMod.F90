@@ -62,7 +62,6 @@ contains
     use subgridWeightsMod , only : compute_higher_order_weights
     use landunit_varcon   , only : istsoil, istwet, istdlak, istice_mec
     use landunit_varcon   , only : isturb_tbd, isturb_hd, isturb_md, istcrop
-    use clm_varctl        , only : use_fates
     use shr_const_mod     , only : SHR_CONST_PI
     !
     ! !ARGUMENTS:
@@ -223,7 +222,7 @@ contains
     ! !USES
     use clm_instur, only : wt_lunit, wt_nat_patch
     use subgridMod, only : subgrid_get_info_natveg
-    use clm_varpar, only : numpft, maxpatch_pft, natpft_lb, natpft_ub
+    use clm_varpar, only : natpft_lb, natpft_ub
     !
     ! !ARGUMENTS:
     integer , intent(in)    :: ltype             ! landunit type
@@ -270,7 +269,6 @@ contains
     use clm_instur      , only : wt_lunit
     use landunit_varcon , only : istwet, istdlak
     use subgridMod      , only : subgrid_get_info_wetland, subgrid_get_info_lake
-    use pftconMod       , only : noveg
 
     !
     ! !ARGUMENTS:
@@ -317,7 +315,7 @@ contains
        
        call add_landunit(li=li, gi=gi, ltype=ltype, wtgcell=wtlunit2gcell)
        call add_column(ci=ci, li=li, ctype=ltype, wtlunit=1.0_r8)
-       call add_patch(pi=pi, ci=ci, ptype=noveg, wtcol=1.0_r8)
+       call add_patch(pi=pi, ci=ci, ptype=0, wtcol=1.0_r8)
 
     endif       ! npatches > 0       
 
@@ -330,12 +328,10 @@ contains
     ! Initialize glacier_mec landunits
     !
     ! !USES:
-    use clm_varpar      , only : maxpatch_glcmec
     use clm_instur      , only : wt_lunit, wt_glc_mec
     use landunit_varcon , only : istice_mec
     use column_varcon   , only : icemec_class_to_col_itype
     use subgridMod      , only : subgrid_get_info_glacier_mec
-    use pftconMod       , only : noveg
     !
     ! !ARGUMENTS:
     type(glc_behavior_type), intent(in) :: glc_behavior
@@ -383,13 +379,13 @@ contains
        ! balance in each elevation class wherever the SMB is needed.
        
        type_is_dynamic = glc_behavior%cols_have_dynamic_type(gi)
-       do m = 1, maxpatch_glcmec
+       do m = 1, 10
           call glc_behavior%glc_mec_col_exists(gi = gi, elev_class = m, atm_topo = atm_topo, &
                exists = col_exists, col_wt_lunit = wtcol2lunit)
           if (col_exists) then
              call add_column(ci=ci, li=li, ctype=icemec_class_to_col_itype(m), &
                   wtlunit=wtcol2lunit, type_is_dynamic=type_is_dynamic)
-             call add_patch(pi=pi, ci=ci, ptype=noveg, wtcol=1.0_r8)
+             call add_patch(pi=pi, ci=ci, ptype=0, wtcol=1.0_r8)
           endif
        enddo
 
@@ -415,8 +411,7 @@ contains
     use clm_instur      , only : wt_lunit, wt_cft
     use landunit_varcon , only : istcrop, istsoil
     use subgridMod      , only : subgrid_get_info_crop, crop_patch_exists
-    use clm_varpar      , only : maxpatch_pft, cft_lb, cft_ub
-    use clm_varctl      , only : create_crop_landunit
+    use clm_varpar      , only : cft_lb, cft_ub
     !
     ! !ARGUMENTS:
     integer , intent(in)    :: ltype             ! landunit type
@@ -444,16 +439,7 @@ contains
 
        ! Note that we cannot simply use the 'ltype' argument to set itype here,
        ! because ltype will always indicate istcrop
-       if ( create_crop_landunit )then
-          my_ltype = ltype    ! Will always be istcrop
-          if ( ltype /= istcrop )then
-             write(iulog,*)' create_crop_landunit on and ltype is not istcrop: ', ltype
-             call endrun(msg=errMsg(sourcefile, __LINE__))
-          end if
-       else
-          my_ltype = istsoil
-       end if
-
+       my_ltype = ltype    ! Will always be istcrop
        call add_landunit(li=li, gi=gi, ltype=my_ltype, wtgcell=wtlunit2gcell)
        
        ! Set column and patch properties for this landunit 
@@ -487,7 +473,6 @@ contains
     use subgridMod      , only : subgrid_get_info_urban_md
     use UrbanParamsType , only : urbinp
     use decompMod       , only : ldecomp
-    use pftconMod       , only : noveg
     !
     ! !ARGUMENTS:
     integer , intent(in)    :: ltype             ! landunit type
@@ -561,7 +546,7 @@ contains
 
           call add_column(ci=ci, li=li, ctype=ctype, wtlunit=wtcol2lunit)
 
-          call add_patch(pi=pi, ci=ci, ptype=noveg, wtcol=1.0_r8)
+          call add_patch(pi=pi, ci=ci, ptype=0, wtcol=1.0_r8)
 
        end do   ! end of loop through urban columns-pfts
     end if

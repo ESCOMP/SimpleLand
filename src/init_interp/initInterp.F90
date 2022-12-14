@@ -208,7 +208,6 @@ contains
     ! maintenance problem - or maybe even remove check_dim_level entirely.
     call check_dim_level(ncidi, ncido, dimname='levsno' , must_be_same=.false.)
     call check_dim_level(ncidi, ncido, dimname='levsno1', must_be_same=.false.)
-    call check_dim_level(ncidi, ncido, dimname='levcan' , must_be_same=.true.)
     call check_dim_level(ncidi, ncido, dimname='levlak' , must_be_same=.true.)
     call check_dim_level(ncidi, ncido, dimname='levtot' , must_be_same=.false.)
     call check_dim_level(ncidi, ncido, dimname='levgrnd', must_be_same=.false.)

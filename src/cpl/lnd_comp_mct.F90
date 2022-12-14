@@ -42,10 +42,9 @@ contains
     use shr_kind_mod     , only : shr_kind_cl
     use abortutils       , only : endrun
     use clm_time_manager , only : get_nstep, get_step_size, set_timemgr_init, set_nextsw_cday
-    use clm_initializeMod, only : initialize1, initialize2, lnd2atm_inst, lnd2glc_inst
+    use clm_initializeMod, only : initialize1, initialize2, lnd2atm_inst
     use clm_varctl       , only : finidat,single_column, clm_varctl_set, iulog, noland
     use clm_varctl       , only : inst_index, inst_suffix, inst_name
-    use clm_varorb       , only : eccen, obliqr, lambm0, mvelpp
     use controlMod       , only : control_setNL
     use decompMod        , only : get_proc_bounds
     use domainMod        , only : ldomain
@@ -151,11 +150,6 @@ contains
     call shr_file_getLogLevel(shrloglev)
     call shr_file_setLogUnit (iulog)
     
-    ! Use infodata to set orbital values
-
-    call seq_infodata_GetData( infodata, orb_eccen=eccen, orb_mvelpp=mvelpp, &
-         orb_lambm0=lambm0, orb_obliqr=obliqr )
-
     ! Consistency check on namelist filename	
 
     call control_setNL("lnd_in"//trim(inst_suffix))
@@ -252,7 +246,7 @@ contains
 
     ! Create land export state 
 
-    call lnd_export(bounds, lnd2atm_inst, lnd2glc_inst, l2x_l%rattr)
+    call lnd_export(bounds, lnd2atm_inst, l2x_l%rattr)
     !write(iulog,*)'MML back from lnd_export'
 
     ! Fill in infodata settings
@@ -295,14 +289,13 @@ contains
     !
     ! !USES:
     use shr_kind_mod    ,  only : r8 => shr_kind_r8
-    use clm_initializeMod, only : lnd2atm_inst, atm2lnd_inst, lnd2glc_inst, glc2lnd_inst
+    use clm_initializeMod, only : lnd2atm_inst, atm2lnd_inst
     use clm_driver      ,  only : clm_drv
     use clm_time_manager,  only : get_curr_date, get_nstep, get_curr_calday, get_step_size
     use clm_time_manager,  only : advance_timestep, set_nextsw_cday,update_rad_dtime
     use decompMod       ,  only : get_proc_bounds
     use abortutils      ,  only : endrun
     use clm_varctl      ,  only : iulog
-    use clm_varorb      ,  only : eccen, obliqr, lambm0, mvelpp
     use shr_file_mod    ,  only : shr_file_setLogUnit, shr_file_setLogLevel
     use shr_file_mod    ,  only : shr_file_getLogUnit, shr_file_getLogLevel
     use seq_cdata_mod   ,  only : seq_cdata, seq_cdata_setptrs
@@ -340,16 +333,13 @@ contains
     logical      :: dosend               ! true => send data back to driver
     logical      :: doalb                ! .true. ==> do albedo calculation on this time step
     logical      :: rof_prognostic       ! .true. => running with a prognostic ROF model
-    logical      :: glc_present          ! .true. => running with a non-stub GLC model
     real(r8)     :: nextsw_cday          ! calday from clock of next radiation computation
     real(r8)     :: caldayp1             ! clm calday plus dtime offset
     integer      :: shrlogunit,shrloglev ! old values for share log unit and log level
     integer      :: lbnum                ! input to memory diagnostic
     integer      :: g,i,lsize            ! counters
-    real(r8)     :: calday               ! calendar day for nstep
     real(r8)     :: declin               ! solar declination angle in radians for nstep
     real(r8)     :: declinp1             ! solar declination angle in radians for nstep+1
-    real(r8)     :: eccf                 ! earth orbit eccentricity factor
     real(r8)     :: recip                ! reciprical
     logical,save :: first_call = .true.  ! first call work
     type(seq_infodata_type),pointer :: infodata             ! CESM information from the driver
@@ -398,8 +388,7 @@ contains
     ! their being set in initialization, so need to get them in the run method.
 
     call seq_infodata_GetData( infodata, &
-         rof_prognostic=rof_prognostic, &
-         glc_present=glc_present)
+         rof_prognostic=rof_prognostic)
 
     ! Map MCT to land data type
     ! Perform downscaling if appropriate
@@ -411,18 +400,9 @@ contains
     call t_startf ('lc_lnd_import')
     call lnd_import( bounds, &
          x2l = x2l_l%rattr, &
-         glc_present = glc_present, &
-         atm2lnd_inst = atm2lnd_inst, &
-         glc2lnd_inst = glc2lnd_inst)
+         atm2lnd_inst = atm2lnd_inst)
     call t_stopf ('lc_lnd_import')
 
-    !write(*,*)'MML just after lc_lnd_impoft'
-	
-    ! Use infodata to set orbital values if updated mid-run
-
-    call seq_infodata_GetData( infodata, orb_eccen=eccen, orb_mvelpp=mvelpp, &
-         orb_lambm0=lambm0, orb_obliqr=obliqr )
-    !write(*,*)'MML just after se_infodata_GetData'
     ! Loop over time steps in coupling interval
 
     dosend = .false.
@@ -468,18 +448,13 @@ contains
 
        call t_barrierf('sync_clm_run1', mpicom)
        call t_startf ('clm_run')
-       call t_startf ('shr_orb_decl')
-       calday = get_curr_calday()
-       call shr_orb_decl( calday     , eccen, mvelpp, lambm0, obliqr, declin  , eccf )
-       call shr_orb_decl( nextsw_cday, eccen, mvelpp, lambm0, obliqr, declinp1, eccf )
-       call t_stopf ('shr_orb_decl')
        call clm_drv(doalb, nextsw_cday, declinp1, declin, rstwr, nlend, rdate, rof_prognostic)
        call t_stopf ('clm_run')
 
        ! Create l2x_l export state - add river runoff input to l2x_l if appropriate
        !write(*,*)'MML export l2x_l'
        call t_startf ('lc_lnd_export')
-       call lnd_export(bounds, lnd2atm_inst, lnd2glc_inst, l2x_l%rattr)
+       call lnd_export(bounds, lnd2atm_inst, l2x_l%rattr)
        call t_stopf ('lc_lnd_export')
 
        ! Advance clm time step

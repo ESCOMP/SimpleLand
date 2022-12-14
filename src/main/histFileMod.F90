@@ -12,9 +12,9 @@ module histFileMod
   use shr_sys_mod    , only : shr_sys_flush
   use spmdMod        , only : masterproc
   use abortutils     , only : endrun
-  use clm_varctl     , only : iulog, use_vertsoilc
-  use clm_varcon     , only : spval, ispval, dzsoi_decomp 
-  use clm_varcon     , only : grlnd, nameg, namel, namec, namep, nameCohort
+  use clm_varctl     , only : iulog
+  use clm_varcon     , only : spval, ispval
+  use clm_varcon     , only : grlnd, nameg, namel, namec, namep
   use decompMod      , only : get_proc_bounds, get_proc_global, bounds_type
   use GridcellType   , only : grc                
   use LandunitType   , only : lun                
@@ -108,7 +108,6 @@ module histFileMod
   public :: hist_readNML         ! Read in the history namelist settings
   public :: hist_addfld1d        ! Add a 1d single-level field to the master field list
   public :: hist_addfld2d        ! Add a 2d multi-level field to the master field list
-  public :: hist_addfld_decomp   ! Add a 2d multi-level field to the master field list
   public :: hist_add_subscript   ! Add a 2d subscript dimension
   public :: hist_printflds       ! Print summary of master field list
   public :: hist_htapes_build    ! Initialize history file handler for initial or continue run
@@ -126,8 +125,6 @@ module histFileMod
   private :: htape_create              ! Define contents of history file t
   private :: htape_add_ltype_metadata  ! Add global metadata defining landunit types
   private :: htape_add_ctype_metadata  ! Add global metadata defining column types
-  private :: htape_add_natpft_metadata ! Add global metadata defining natpft types
-  private :: htape_add_cft_metadata    ! Add global metadata defining cft types
   private :: htape_timeconst           ! Write time constant values to history tape
   private :: htape_timeconst3D         ! Write time constant 3D values to primary history tape
   private :: hfields_normalize         ! Normalize history file fields by number of accumulations
@@ -163,7 +160,7 @@ module histFileMod
      character(len=max_chars)  :: units        ! units
      character(len=hist_dim_name_length) :: type1d                ! pointer to first dimension type from data type (nameg, etc)
      character(len=hist_dim_name_length) :: type1d_out            ! hbuf first dimension type from data type (nameg, etc)
-     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","glc_nec","elevclas","subname(n)"]
+     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","elevclas","subname(n)"]
      integer :: beg1d                          ! on-node 1d clm pointer start index
      integer :: end1d                          ! on-node 1d clm pointer end index
      integer :: num1d                          ! size of clm pointer first dimension (all nodes)
@@ -1026,7 +1023,7 @@ contains
     integer :: f                   ! field index
     integer :: num2d               ! size of second dimension (e.g. number of vertical levels)
     character(len=*),parameter :: subname = 'hist_update_hbuf'
-    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","glc_nec","elevclas","subname(n)"]
+    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","elevclas","subname(n)"]
     !-----------------------------------------------------------------------
 
     do t = 1,ntapes
@@ -1853,10 +1850,10 @@ contains
     ! wrapper calls to define the history file contents.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, nlevurb, numrad, nlevcan, nvegwcs,nlevsoi
-    use clm_varpar      , only : natpft_size, cft_size, maxpatch_glcmec, nlevdecomp_full
+    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, nlevurb, numrad, nlevsoi
+    use clm_varpar      , only : natpft_size
     use landunit_varcon , only : max_lunit
-    use clm_varctl      , only : caseid, ctitle, fsurdat, finidat, paramfile
+    use clm_varctl      , only : caseid, ctitle, fsurdat, finidat
     use clm_varctl      , only : version, hostname, username, conventions, source
     use domainMod       , only : ldomain
     use fileutils       , only : get_filename
@@ -1974,8 +1971,6 @@ contains
        str = get_filename(finidat)
     endif
     call ncd_putatt(lnfid, ncd_global, 'Initial_conditions_dataset', trim(str))
-    str = get_filename(paramfile)
-    call ncd_putatt(lnfid, ncd_global, 'PFT_physiological_constants_dataset', trim(str))
 
     ! Define dimensions.
     ! Time is an unlimited dimension. Character string is treated as an array of characters.
@@ -2004,26 +1999,18 @@ contains
     call ncd_defdim(lnfid, 'numrad' , numrad , dimid)
     call ncd_defdim(lnfid, 'levsno' , nlevsno , dimid)
     call ncd_defdim(lnfid, 'ltype', max_lunit, dimid)
-    call ncd_defdim(lnfid, 'nlevcan',nlevcan, dimid)
-    call ncd_defdim(lnfid, 'nvegwcs',nvegwcs, dimid)
     call htape_add_ltype_metadata(lnfid)
     call htape_add_ctype_metadata(lnfid)
     call ncd_defdim(lnfid, 'natpft', natpft_size, dimid)
-    if (cft_size > 0) then
-       call ncd_defdim(lnfid, 'cft', cft_size, dimid)
-       call htape_add_cft_metadata(lnfid)
-    end if
-    call ncd_defdim(lnfid, 'glc_nec' , maxpatch_glcmec , dimid)
-    ! elevclas (in contrast to glc_nec) includes elevation class 0 (bare land)
+    ! elevclas includes elevation class 0 (bare land)
     ! (although on the history file it will go 1:(nec+1) rather than 0:nec)
-    call ncd_defdim(lnfid, 'elevclas' , maxpatch_glcmec + 1, dimid)
+    call ncd_defdim(lnfid, 'elevclas' , 11, dimid)
 
     do n = 1,num_subs
        call ncd_defdim(lnfid, subs_name(n), subs_dim(n), dimid)
     end do
     call ncd_defdim(lnfid, 'string_length', hist_dim_name_length, strlen_dimid)
     call ncd_defdim(lnfid, 'scale_type_string_length', scale_type_strlen, dimid)
-    call ncd_defdim( lnfid, 'levdcmp', nlevdecomp_full, dimid)
     ! MML: adding a mml soiz dimension:
     call ncd_defdim(lnfid, 'mml_lev', 10, dimid); ! hard-coded for 10 soil layers; make more clever.
     call ncd_defdim(lnfid, 'mml_dust', 4, dimid); ! hard-coded for 4 dust bins
@@ -2097,68 +2084,7 @@ contains
   end subroutine htape_add_ctype_metadata
 
   !-----------------------------------------------------------------------
-  subroutine htape_add_natpft_metadata(lnfid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining natpft types
-    !
-    ! !USES:
-    use clm_varpar, only : natpft_lb, natpft_ub
-    use pftconMod , only : pftname_len, pftname
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: lnfid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ptype  ! patch type
-    integer :: ptype_1_indexing ! patch type, translated to 1 indexing
-    character(len=*), parameter :: att_prefix = 'natpft_' ! prefix for attributes
-    character(len=len(att_prefix)+pftname_len) :: attname ! attribute name
-
-    character(len=*), parameter :: subname = 'htape_add_natpft_metadata'
-    !-----------------------------------------------------------------------
-    
-    do ptype = natpft_lb, natpft_ub
-       ptype_1_indexing = ptype + (1 - natpft_lb)
-       attname = att_prefix // pftname(ptype)
-       call ncd_putatt(lnfid, ncd_global, attname, ptype_1_indexing)
-    end do
-
-  end subroutine htape_add_natpft_metadata
-
-  !-----------------------------------------------------------------------
-  subroutine htape_add_cft_metadata(lnfid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining natpft types
-    !
-    ! !USES:
-    use clm_varpar, only : cft_lb, cft_ub
-    use pftconMod , only : pftname_len, pftname
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: lnfid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ptype  ! patch type
-    integer :: ptype_1_indexing ! patch type, translated to 1 indexing
-    character(len=*), parameter :: att_prefix = 'cft_'    ! prefix for attributes
-    character(len=len(att_prefix)+pftname_len) :: attname ! attribute name
-
-    character(len=*), parameter :: subname = 'htape_add_cft_metadata'
-    !-----------------------------------------------------------------------
-    
-    do ptype = cft_lb, cft_ub
-       ptype_1_indexing = ptype + (1 - cft_lb)
-       attname = att_prefix // pftname(ptype)
-       call ncd_putatt(lnfid, ncd_global, attname, ptype_1_indexing)
-    end do
-
-  end subroutine htape_add_cft_metadata
-
-  !-----------------------------------------------------------------------
-  subroutine htape_timeconst3D(t, &
-       bounds, watsat_col, sucsat_col, bsw_col, hksat_col, mode)
+  subroutine htape_timeconst3D(t, bounds, mode)
     !
     ! !DESCRIPTION:
     ! Write time constant 3D variables to history tapes.
@@ -2176,10 +2102,7 @@ contains
     ! !ARGUMENTS:
     integer           , intent(in) :: t    ! tape index
     type(bounds_type) , intent(in) :: bounds           
-    real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: sucsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: bsw_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: hksat_col( bounds%begc:,1: ) 
+!   real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
     character(len=*)  , intent(in) :: mode ! 'define' or 'write'
     !
     ! !LOCAL VARIABLES:
@@ -2192,15 +2115,11 @@ contains
     !
     real(r8), pointer :: histi(:,:)       ! temporary
     real(r8), pointer :: histo(:,:)       ! temporary
-    integer, parameter :: nflds = 6       ! Number of 3D time-constant fields
+    integer, parameter :: nflds = 2       ! Number of 3D time-constant fields
     character(len=*),parameter :: subname = 'htape_timeconst3D'
     character(len=*),parameter :: varnames(nflds) = (/ &
                                                         'ZSOI  ', &
-                                                        'DZSOI ', &
-                                                        'WATSAT', &
-                                                        'SUCSAT', &
-                                                        'BSW   ', &
-                                                        'HKSAT '  &
+                                                        'DZSOI '  &
                                                     /)
     real(r8), pointer :: histil(:,:)      ! temporary
     real(r8), pointer :: histol(:,:)
@@ -2211,10 +2130,7 @@ contains
                                                       /)
     !-----------------------------------------------------------------------
 
-    SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(sucsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(bsw_col)    == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(hksat_col)  == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
+!   SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
 
     !-------------------------------------------------------------------------------
     !***      Non-time varying 3D fields                    ***
@@ -2230,14 +2146,6 @@ contains
              long_name='soil depth'; units = 'm'
           else if (ifld == 2) then
              long_name='soil thickness'; units = 'm'
-          else if (ifld == 3) then
-             long_name='saturated soil water content (porosity)';  units = 'mm3/mm3'
-          else if (ifld == 4) then
-             long_name='saturated soil matric potential'; units = 'mm'
-          else if (ifld == 5) then
-             long_name='slope of soil water retention curve'; units = 'unitless'
-          else if (ifld == 6) then
-             long_name='saturated hydraulic conductivity'; units = 'mm s-1'
           else
              call endrun(msg=' ERROR: bad 3D time-constant field index'//errMsg(sourcefile, __LINE__))
           end if
@@ -2293,14 +2201,6 @@ contains
              l2g_scale_type = 'nonurb'
           else if (ifld == 2) then  ! DZSOI
              l2g_scale_type = 'nonurb'
-          else if (ifld == 3) then  ! WATSAT
-             l2g_scale_type = 'veg'
-          else if (ifld == 4) then  ! SUCSAT
-             l2g_scale_type = 'veg'
-          else if (ifld == 5) then  ! BSW
-             l2g_scale_type = 'veg'
-          else if (ifld == 6) then  ! HKSAT
-             l2g_scale_type = 'veg'
           end if
 
           histi(:,:) = spval
@@ -2310,10 +2210,6 @@ contains
                    ! Field indices MUST match varnames array order above!
                    if (ifld ==1) histi(c,lev) = col%z(c,lev)
                    if (ifld ==2) histi(c,lev) = col%dz(c,lev)
-                   if (ifld ==3) histi(c,lev) = watsat_col(c,lev)
-                   if (ifld ==4) histi(c,lev) = sucsat_col(c,lev)
-                   if (ifld ==5) histi(c,lev) = bsw_col(c,lev)
-                   if (ifld ==6) histi(c,lev) = hksat_col(c,lev)
              end do
           end do
           if (tape(t)%dov2xy) then
@@ -2518,8 +2414,6 @@ contains
           call ncd_defvar(varname='levlak', xtype=tape(t)%ncprec, &
                dim1name='levlak', &
                long_name='coordinate lake levels', units='m', ncid=nfid(t))
-          call ncd_defvar(varname='levdcmp', xtype=tape(t)%ncprec, dim1name='levdcmp', &
-               long_name='coordinate soil levels', units='m', ncid=nfid(t))
 
       	  ! Add MML soil layers
           call ncd_defvar(varname='mml_lev', xtype=tape(t)%ncprec, dim1name='mml_lev', &
@@ -2532,12 +2426,7 @@ contains
           if ( masterproc ) write(iulog, *) ' zsoi:',zsoi
           call ncd_io(varname='levgrnd', data=zsoi, ncid=nfid(t), flag='write')
           call ncd_io(varname='levlak' , data=zlak, ncid=nfid(t), flag='write')
-          if (use_vertsoilc) then
-             call ncd_io(varname='levdcmp', data=zsoi, ncid=nfid(t), flag='write')
-          else
-             zsoi_1d(1) = 1._r8
-             call ncd_io(varname='levdcmp', data=zsoi_1d, ncid=nfid(t), flag='write')
-          end if
+          zsoi_1d(1) = 1._r8
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')
           
@@ -2714,28 +2603,6 @@ contains
               long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
               imissing_value=ispval, ifill_value=ispval)
        end if
-       if (ldomain%isgrid2d) then
-          call ncd_defvar(varname='pftmask' , xtype=ncd_int, &
-              dim1name='lon', dim2name='lat', &
-              long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       else
-          call ncd_defvar(varname='pftmask' , xtype=ncd_int, &
-              dim1name=grlnd, &
-              long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       end if
-       if (ldomain%isgrid2d) then
-          call ncd_defvar(varname='nbedrock' , xtype=ncd_int, &
-              dim1name='lon', dim2name='lat', &
-              long_name='index of shallowest bedrock layer', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       else
-          call ncd_defvar(varname='nbedrock' , xtype=ncd_int, &
-              dim1name=grlnd, &
-              long_name='index of shallowest bedrock layer', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       end if
 
     else if (mode == 'write') then
 
@@ -2752,8 +2619,6 @@ contains
        call ncd_io(varname='area'    , data=ldomain%area, dim1name=grlnd, ncid=nfid(t), flag='write')
        call ncd_io(varname='landfrac', data=ldomain%frac, dim1name=grlnd, ncid=nfid(t), flag='write')
        call ncd_io(varname='landmask', data=ldomain%mask, dim1name=grlnd, ncid=nfid(t), flag='write')
-       call ncd_io(varname='pftmask' , data=ldomain%pftm, dim1name=grlnd, ncid=nfid(t), flag='write')
-       call ncd_io(varname='nbedrock' , data=grc%nbedrock, dim1name=grlnd, ncid=nfid(t), flag='write')
 
     end if  ! (define/write mode
 
@@ -3234,8 +3099,7 @@ contains
   end subroutine hfields_1dinfo
 
   !-----------------------------------------------------------------------
-  subroutine hist_htapes_wrapup( rstwr, nlend, bounds, &
-       watsat_col, sucsat_col, bsw_col, hksat_col)
+  subroutine hist_htapes_wrapup( rstwr, nlend, bounds)
     !
     ! !DESCRIPTION:
     ! Write history tape(s)
@@ -3267,10 +3131,7 @@ contains
     logical, intent(in) :: rstwr    ! true => write restart file this step
     logical, intent(in) :: nlend    ! true => end of run on this step
     type(bounds_type) , intent(in) :: bounds           
-    real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: sucsat_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: bsw_col( bounds%begc:,1: ) 
-    real(r8)          , intent(in) :: hksat_col( bounds%begc:,1: ) 
+!   real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
     !
     ! !LOCAL VARIABLES:
     integer :: t                          ! tape index
@@ -3294,10 +3155,7 @@ contains
     character(len=*),parameter :: subname = 'hist_htapes_wrapup'
     !-----------------------------------------------------------------------
 
-    SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(sucsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(bsw_col)    == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(hksat_col)  == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
+!   SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
 
     ! get current step
 
@@ -3367,36 +3225,29 @@ contains
              ! Define time-constant field variables
              call htape_timeconst(t, mode='define')
 
-             !write(iulog,*)'MML define 3D'
-             ! Define 3D time-constant field variables only to first primary tape
-             if ( do_3Dtconst .and. t == 1 ) then
-                call htape_timeconst3D(t, &
-                     bounds, watsat_col, sucsat_col, bsw_col, hksat_col, mode='define')
-                TimeConst3DVars_Filename = trim(locfnh(t))
-             end if
+!            ! Define 3D time-constant field variables only to first primary tape
+!            if ( do_3Dtconst .and. t == 1 ) then
+!               call htape_timeconst3D(t, bounds, watsat_col, mode='define')
+!               TimeConst3DVars_Filename = trim(locfnh(t))
+!            end if
 
-             !write(iulog,*)'MML define model field vars'
              ! Define model field variables
              call hfields_write(t, mode='define')
 
-             !write(iulog,*)'MML run away'
              ! Exit define model
              call ncd_enddef(nfid(t))
              call t_stopf('hist_htapes_wrapup_define')
           endif
 
-          !write(iulog,*)'MML before htape_teimconst'
           call t_startf('hist_htapes_wrapup_tconst')
           ! Write time constant history variables
           call htape_timeconst(t, mode='write')
 
-          !write(iulog,*)'MML write 3D time const'
-          ! Write 3D time constant history variables only to first primary tape
-          if ( do_3Dtconst .and. t == 1 .and. tape(t)%ntimes == 1 )then
-             call htape_timeconst3D(t, &
-                  bounds, watsat_col, sucsat_col, bsw_col, hksat_col, mode='write')
-             do_3Dtconst = .false.
-          end if
+!         ! Write 3D time constant history variables only to first primary tape
+!         if ( do_3Dtconst .and. t == 1 .and. tape(t)%ntimes == 1 )then
+!            call htape_timeconst3D(t, bounds, watsat_col, mode='write')
+!            do_3Dtconst = .false.
+!         end if
 
           if (masterproc) then
              write(iulog,*)
@@ -3487,7 +3338,7 @@ contains
     use clm_varctl      , only : nsrest, caseid, inst_suffix, nsrStartup, nsrBranch
     use fileutils       , only : getfil
     use domainMod       , only : ldomain
-    use clm_varpar      , only : nlevgrnd, nlevlak, numrad, nlevdecomp_full
+    use clm_varpar      , only : nlevgrnd, nlevlak, numrad
     use clm_time_manager, only : is_restart
     use restUtilMod     , only : iflag_skip
     use pio
@@ -4682,8 +4533,8 @@ contains
     ! initial or branch run to initialize the actual history tapes.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevdecomp_full, nlevcan, nvegwcs,nlevsoi
-    use clm_varpar      , only : natpft_size, cft_size, maxpatch_glcmec
+    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevsoi
+    use clm_varpar      , only : natpft_size, cft_size
     use landunit_varcon , only : max_lunit
     !
     ! !ARGUMENTS:
@@ -4762,8 +4613,6 @@ contains
        num2d = nlevlak
     case ('numrad')
        num2d = numrad
-    case ('levdcmp')
-       num2d = nlevdecomp_full
     case ('ltype')
        num2d = max_lunit
     case ('natpft')
@@ -4776,27 +4625,21 @@ contains
                ' only valid for cft_size > 0'
           call endrun()
        end if
-    case ('glc_nec')
-       num2d = maxpatch_glcmec
     case ('elevclas')
-       ! add one because indexing starts at 0 (elevclas, unlike glc_nec, includes the
+       ! add one because indexing starts at 0 (elevclas includes the
        ! bare ground "elevation class")
-       num2d = maxpatch_glcmec + 1
+       num2d = 11
     case ('levsno')
        num2d = nlevsno
-    case ('nlevcan')
-        num2d = nlevcan 
     ! MML: adding my own 
     case ('mml_lev')
     	num2d = 10 !mml_nsoi ! mml_dim ! mml_nsoi not defined in this subroutine, so hard coding until I get more clever...
     case ('mml_dust')
     	num2d = 4
-    case ('nvegwcs')
-        num2d = nvegwcs
     case default
        write(iulog,*) trim(subname),' ERROR: unsupported 2d type ',type2d, &
           ' currently supported types for multi level fields are: ', &
-          '[levgrnd,levsoi,levlak,numrad,levdcmp,levtrc,ltype,natpft,cft,glc_nec,elevclas,levsno,nvegwcs]'
+          '[levgrnd,levsoi,levlak,numrad,levtrc,ltype,natpft,cft,elevclas,levsno]'
        call endrun(msg=errMsg(sourcefile, __LINE__))
     end select
 
@@ -4951,94 +4794,6 @@ contains
     end if
 
   end subroutine hist_addfld2d
-
-  !-----------------------------------------------------------------------
-  subroutine hist_addfld_decomp (fname, type2d, units, avgflag, long_name, ptr_col, &
-       ptr_patch, l2g_scale_type, default)
-
-    !
-    ! !USES:
-    use clm_varpar  , only : nlevdecomp_full
-    use clm_varctl  , only : iulog
-    use abortutils  , only : endrun
-    use shr_log_mod , only : errMsg => shr_log_errMsg
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: fname                    ! field name
-    character(len=*), intent(in) :: type2d                   ! 2d output type
-    character(len=*), intent(in) :: units                    ! units of field
-    character(len=*), intent(in) :: avgflag                  ! time averaging flag
-    character(len=*), intent(in) :: long_name                ! long name of field
-    real(r8)        , optional, pointer    :: ptr_col(:,:)   ! pointer to column array
-    real(r8)        , optional, pointer    :: ptr_patch(:,:)   ! pointer to patch array
-    character(len=*), optional, intent(in) :: l2g_scale_type ! scale type for subgrid averaging of landunits to gridcells
-    character(len=*), optional, intent(in) :: default        ! if set to 'inactive, field will not appear on primary tape
-    !
-    ! !LOCAL VARIABLES:
-    real(r8), pointer  :: ptr_1d(:)
-    !-----------------------------------------------------------------------
-
-    if (present(ptr_col)) then
-
-       ! column-level data
-       if (present(default)) then
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_col, l2g_scale_type=l2g_scale_type, default=default)
-          else
-             ptr_1d => ptr_col(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_1d, l2g_scale_type=l2g_scale_type, default=default)
-          endif
-       else
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_col, l2g_scale_type=l2g_scale_type)
-          else
-             ptr_1d => ptr_col(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_col=ptr_1d, l2g_scale_type=l2g_scale_type)
-          endif
-       endif
-
-    else if (present(ptr_patch)) then
-
-       ! patch-level data
-       if (present(default)) then
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_patch, l2g_scale_type=l2g_scale_type, default=default)
-          else
-             ptr_1d => ptr_patch(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_1d, l2g_scale_type=l2g_scale_type, default=default)
-          endif
-       else
-          if ( nlevdecomp_full > 1 ) then
-             call hist_addfld2d (fname=trim(fname), units=units, type2d=type2d, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_patch, l2g_scale_type=l2g_scale_type)
-          else
-             ptr_1d => ptr_patch(:,1)
-             call hist_addfld1d (fname=trim(fname), units=units, &
-                  avgflag=avgflag, long_name=long_name, &
-                  ptr_patch=ptr_1d, l2g_scale_type=l2g_scale_type)
-          endif
-       endif
-
-    else
-       write(iulog, *) ' error: hist_addfld_decomp needs either patch or column level pointer'
-       write(iulog, *) fname
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-
-  end subroutine hist_addfld_decomp
 
   !-----------------------------------------------------------------------
   integer function pointer_index ()

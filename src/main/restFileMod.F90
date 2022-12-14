@@ -17,9 +17,8 @@ module restFileMod
   use accumulMod       , only : accumulRest
   use clm_instMod      , only : clm_instRest
   use histFileMod      , only : hist_restart_ncd
-  use clm_varctl       , only : iulog, use_fates, use_hydrstress
-  use clm_varctl       , only : create_crop_landunit, irrigate
-  use clm_varcon       , only : nameg, namel, namec, namep, nameCohort
+  use clm_varctl       , only : iulog
+  use clm_varcon       , only : nameg, namel, namec, namep
   use ncdio_pio        , only : file_desc_t, ncd_pio_createfile, ncd_pio_openfile, ncd_global
   use ncdio_pio        , only : ncd_pio_closefile, ncd_defdim, ncd_putatt, ncd_enddef, check_dim
   use ncdio_pio        , only : check_att, ncd_getatt
@@ -47,7 +46,6 @@ module restFileMod
   private :: restFile_add_flag_metadata ! Add global metadata for some logical flag
   private :: restFile_add_ilun_metadata ! Add global metadata defining landunit types
   private :: restFile_add_icol_metadata ! Add global metadata defining column types
-  private :: restFile_add_ipft_metadata ! Add global metadata defining patch types
   private :: restFile_dimcheck
   private :: restFile_enddef
   private :: restFile_check_consistency   ! Perform consistency checks on the restart file
@@ -185,7 +183,7 @@ contains
     !$OMP PARALLEL DO PRIVATE (nc, bounds_clump)
     do nc = 1, nclumps
        call get_clump_bounds(nc, bounds_clump)
-       call reweight_wrapup(bounds_clump, glc_behavior)
+       call reweight_wrapup(bounds_clump)
     end do
     !$OMP END PARALLEL DO
 
@@ -483,8 +481,7 @@ contains
     use clm_time_manager     , only : get_nstep
     use clm_varctl           , only : caseid, ctitle, version, username, hostname, fsurdat
     use clm_varctl           , only : conventions, source
-    use clm_varpar           , only : numrad, nlevlak, nlevsno, nlevgrnd, nlevurb, nlevcan
-    use clm_varpar           , only : maxpatch_glcmec, nvegwcs
+    use clm_varpar           , only : numrad, nlevlak, nlevsno, nlevgrnd, nlevurb
     use decompMod            , only : get_proc_global
     !
     ! !ARGUMENTS:
@@ -513,7 +510,6 @@ contains
     call ncd_defdim(ncid , namel      , numl           ,  dimid)
     call ncd_defdim(ncid , namec      , numc           ,  dimid)
     call ncd_defdim(ncid , namep      , nump           ,  dimid)
-    call ncd_defdim(ncid , nameCohort , numCohort      ,  dimid)
 
     call ncd_defdim(ncid , 'levgrnd' , nlevgrnd       ,  dimid)
     call ncd_defdim(ncid , 'levurb'  , nlevurb        ,  dimid)
@@ -522,12 +518,7 @@ contains
     call ncd_defdim(ncid , 'levsno1' , nlevsno+1      ,  dimid)
     call ncd_defdim(ncid , 'levtot'  , nlevsno+nlevgrnd, dimid)
     call ncd_defdim(ncid , 'numrad'  , numrad         ,  dimid)
-    call ncd_defdim(ncid , 'levcan'  , nlevcan        ,  dimid)
-    if ( use_hydrstress ) then
-      call ncd_defdim(ncid , 'vegwcs'  , nvegwcs        ,  dimid)
-    end if
     call ncd_defdim(ncid , 'string_length', 64        ,  dimid)
-    call ncd_defdim(ncid , 'glc_nec', maxpatch_glcmec, dimid)
 	
 	! mml add my soil dimension
     call ncd_defdim(ncid , 'mml_lev'  , 10        ,  dimid) ! mml: hard coded for six soil layers
@@ -551,8 +542,6 @@ contains
     call ncd_putatt(ncid, NCD_GLOBAL, 'surface_dataset', trim(fsurdat))
     call ncd_putatt(ncid, NCD_GLOBAL, 'title', 'CLM Restart information')
 
-    call restFile_add_flag_metadata(ncid, create_crop_landunit, 'create_crop_landunit')
-    call restFile_add_flag_metadata(ncid, irrigate, 'irrigate')
     ! BACKWARDS_COMPATIBILITY(wjs, 2017-12-13) created_glacier_mec_landunits is always
     ! true now. However, we can't remove the read of this field from init_interp until we
     ! can reliably assume that all initial conditions files that might be used in
@@ -560,7 +549,6 @@ contains
     ! hard-coded .true. value.
     call restFile_add_flag_metadata(ncid, .true., 'created_glacier_mec_landunits')
 
-    call restFile_add_ipft_metadata(ncid)
     call restFile_add_icol_metadata(ncid)
     call restFile_add_ilun_metadata(ncid)
 
@@ -643,37 +631,6 @@ contains
   end subroutine restFile_add_icol_metadata
 
   !-----------------------------------------------------------------------
-  subroutine restFile_add_ipft_metadata(ncid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining patch types
-    !
-    ! !USES:
-    use clm_varpar, only : natpft_lb, mxpft, cft_lb, cft_ub
-    use pftconMod , only : pftname_len, pftname
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: ncid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ptype  ! patch type
-    character(len=*), parameter :: att_prefix = 'ipft_'   ! prefix for attributes
-    character(len=len(att_prefix)+pftname_len) :: attname ! attribute name
-
-    character(len=*), parameter :: subname = 'restFile_add_ipft_metadata'
-    !-----------------------------------------------------------------------
-    
-    do ptype = natpft_lb, mxpft
-       attname = att_prefix // pftname(ptype)
-       call ncd_putatt(ncid, ncd_global, attname, ptype)
-    end do
-
-    call ncd_putatt(ncid, ncd_global, 'cft_lb', cft_lb)
-    call ncd_putatt(ncid, ncd_global, 'cft_ub', cft_ub)
-
-  end subroutine restFile_add_ipft_metadata
-
-  !-----------------------------------------------------------------------
   subroutine restFile_dimcheck( ncid )
     !
     ! !DESCRIPTION:
@@ -714,7 +671,6 @@ contains
        call check_dim(ncid, namel, numl, msg=msg)
        call check_dim(ncid, namec, numc, msg=msg)
        call check_dim(ncid, namep, nump, msg=msg)
-       if ( use_fates ) call check_dim(ncid, nameCohort  , numCohort, msg=msg)
     end if
     call check_dim(ncid, 'levsno'  , nlevsno, &
          msg = 'You can deal with this mismatch by rerunning with ' // &

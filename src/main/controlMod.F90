@@ -17,24 +17,16 @@ module controlMod
   use abortutils                       , only: endrun
   use spmdMod                          , only: masterproc
   use decompMod                        , only: clump_pproc
-  use clm_varcon                       , only: h2osno_max, int_snow_max, n_melt_glcmec
-  use clm_varpar                       , only: maxpatch_pft, maxpatch_glcmec, numrad, nlevsno
+  use clm_varpar                       , only: numrad, nlevsno
   use initInterpMod                    , only: initInterp_readnl
-  use UrbanParamsType                  , only: UrbanReadNML
-  use SurfaceAlbedoMod                 , only: albice
-  use CNSharedParamsMod                , only: use_fun
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
-  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, paramfile
-  use clm_varctl                       , only: all_active, co2_type
-  use clm_varctl                       , only: wrtdia, co2_ppmv, use_bedrock, soil_layerstruct, nsegspc, rpntdir, rpntfil
-  use clm_varctl                       , only: use_cn, NLFilename_in, use_century_decomp
-  use clm_varctl                       , only: use_nitrif_denitrif, create_crop_landunit, glc_snow_persistence_max_days
-  use clm_varctl                       , only: subgridflag, use_nguardrail, nfix_timeconst, use_vertsoilc
+  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid
+  use clm_varctl                       , only: co2_type
+  use clm_varctl                       , only: wrtdia, co2_ppmv, nsegspc, rpntdir, rpntfil
+  use clm_varctl                       , only: NLFilename_in
   use clm_varctl                       , only: clm_varctl_set
-  use clm_varctl                       , only: use_lch4, irrigate, create_crop_landunit, use_crop, use_dynroot
-  use clm_varctl                       , only: use_fates, use_flexiblecn, use_hydrstress, use_luna, spinup_state
-  use clm_varctl                       , only: single_column, nrevsn, finidat_interp_source
+  use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -117,64 +109,26 @@ contains
 
     ! Input datasets
 
-    namelist /clm_inparm/  &
-         fsurdat, &
-         paramfile
+    namelist /clm_inparm/ fsurdat
 
     ! BGC info
 
     namelist /clm_inparm / &
          co2_type
 
-    namelist /clm_inparm / use_fun
-
     ! Glacier_mec info
-    namelist /clm_inparm/ &    
-         maxpatch_glcmec, &
-         glc_snow_persistence_max_days, &
-         nlevsno, h2osno_max, int_snow_max, n_melt_glcmec
+    namelist /clm_inparm/ nlevsno
 
     ! Other options
 
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
-         create_crop_landunit, co2_ppmv, override_nsrest, &
-         albice, soil_layerstruct, subgridflag, &
-         all_active
-
-    namelist /clm_inparm/ use_bedrock
+         nsegspc, co2_ppmv, override_nsrest
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
 
-    ! max number of plant functional types in naturally vegetated landunit
-    namelist /clm_inparm/ maxpatch_pft
-
-    namelist /clm_inparm/ &
-         use_vertsoilc, &
-         use_century_decomp, use_cn, &
-         use_nguardrail, use_nitrif_denitrif
-
     ! Items not really needed, but do need to be properly set as they are used
-    namelist / clm_inparm/ &
-               use_lch4,   &
-               irrigate,   &
-               create_crop_landunit,   &
-               use_crop,   &
-               use_dynroot,   &
-               use_fates,   &
-               use_flexiblecn,   &
-               use_hydrstress,   &
-               use_luna,   &
-               spinup_state, &
-               single_column
-
-    logical :: use_fertilizer = .false.
-    logical :: use_grainproduct = .false.
-    logical :: use_lai_streams = .false.
-    character(len=256) :: fsnowaging, fsnowoptics
-    namelist /clm_inparm/ use_fertilizer, use_grainproduct, use_lai_streams, &
-            fsnowaging, fsnowoptics
-
+    namelist / clm_inparm/ single_column
 
     ! ----------------------------------------------------------------------
     ! Default values
@@ -236,15 +190,6 @@ contains
        ! ----------------------------------------------------------------------
 
        ! Check for namelist variables that SLIM can NOT use
-       if ( use_fates )then
-          call endrun(msg='ERROR SLIM can NOT run with use_fates on'//errMsg(sourcefile, __LINE__))
-       end if
-       if ( use_lai_streams )then
-          call endrun(msg='ERROR SLIM can NOT run with use_lai_streams on'//errMsg(sourcefile, __LINE__))
-       end if
-       if ( use_dynroot )then
-          call endrun(msg='ERROR SLIM can NOT run with use_dynroot on'//errMsg(sourcefile, __LINE__))
-       end if
        if ( single_column )then
           call endrun(msg='ERROR SLIM can NOT run with single_column on'//errMsg(sourcefile, __LINE__))
        end if
@@ -260,24 +205,7 @@ contains
            call clm_varctl_set( nsrest_in=override_nsrest )
        end if
 
-       if (maxpatch_glcmec <= 0) then
-          call endrun(msg=' ERROR: maxpatch_glcmec must be at least 1 ' // &
-               errMsg(sourcefile, __LINE__))
-       end if
-
-       ! If nfix_timeconst is equal to the junk default value, then it was not specified
-       ! by the user namelist and we need to assign it the correct default value. If the 
-       ! user specified it in the namelist, we leave it alone.
-
-       if (nfix_timeconst == -1.2345_r8) then
-          if (use_nitrif_denitrif) then
-             nfix_timeconst = 10._r8
-          else
-             nfix_timeconst = 0._r8
-          end if
-       end if
-
-       ! If nlevsno, h2osno_max, int_snow_max or n_melt_glcmec are equal to their junk
+       ! If nlevsno are equal to their junk
        ! default value, then they were not specified by the user namelist and we generate
        ! an error message. Also check nlevsno for bounds.
        if (nlevsno < 3 .or. nlevsno > 12)  then
@@ -285,22 +213,6 @@ contains
           call endrun(msg=' ERROR: invalid value for nlevsno in CLM namelist. '//&
                errMsg(sourcefile, __LINE__))
        endif
-       if (h2osno_max <= 0.0_r8) then
-          write(iulog,*)'ERROR: h2osno_max = ',h2osno_max,' is not supported, must be greater than 0.0.'
-          call endrun(msg=' ERROR: invalid value for h2osno_max in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
-       if (int_snow_max <= 0.0_r8) then
-          write(iulog,*)'ERROR: int_snow_max = ',int_snow_max,' is not supported, must be greater than 0.0.'
-          call endrun(msg=' ERROR: invalid value for int_snow_max in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
-       if (n_melt_glcmec <= 0.0_r8) then
-          write(iulog,*)'ERROR: n_melt_glcmec = ',n_melt_glcmec,' is not supported, must be greater than 0.0.'
-          call endrun(msg=' ERROR: invalid value for n_melt_glcmec in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
-
     endif   ! end of if-masterproc if-block
 
     ! ----------------------------------------------------------------------
@@ -308,7 +220,6 @@ contains
     ! ----------------------------------------------------------------------
 
     call initInterp_readnl( NLFilename )
-    call UrbanReadNML           ( NLFilename )
 
     ! ----------------------------------------------------------------------
     ! Broadcast all control information if appropriate
@@ -493,70 +404,18 @@ contains
     call mpi_bcast (username, len(username), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (nsrest, 1, MPI_INTEGER, 0, mpicom, ier)
 
-    call mpi_bcast (use_lch4, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_nitrif_denitrif, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_vertsoilc, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_century_decomp, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_cn, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_nguardrail, 1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (use_crop, 1, MPI_LOGICAL, 0, mpicom, ier)
-
     ! initial file variables
     call mpi_bcast (fsurdat, len(fsurdat), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (paramfile, len(paramfile) , MPI_CHARACTER, 0, mpicom, ier)
 
-    ! Irrigation
-    call mpi_bcast(irrigate, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    ! Landunit generation
-    call mpi_bcast(create_crop_landunit, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    ! Other subgrid logic
-    call mpi_bcast(all_active, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    ! max number of plant functional types in naturally vegetated landunit
-    call mpi_bcast(maxpatch_pft, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    ! BGC
     call mpi_bcast (co2_type, len(co2_type), MPI_CHARACTER, 0, mpicom, ier)
-    if (use_cn) then
-       call mpi_bcast (nfix_timeconst, 1, MPI_REAL8, 0, mpicom, ier)
-       call mpi_bcast (spinup_state, 1, MPI_INTEGER, 0, mpicom, ier)
-    end if
-
-    call mpi_bcast (use_fates, 1, MPI_LOGICAL, 0, mpicom, ier)
-    ! flexibleCN nitrogen model
-    call mpi_bcast (use_flexibleCN, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_luna, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_bedrock, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_hydrstress, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    call mpi_bcast (use_dynroot, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    if (use_cn) then
-       call mpi_bcast (use_fun,            1, MPI_LOGICAL, 0, mpicom, ier)
-    end if
 
     ! physics variables
-    call mpi_bcast (subgridflag , 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (co2_ppmv, 1, MPI_REAL8,0, mpicom, ier)
-    call mpi_bcast (albice, 2, MPI_REAL8,0, mpicom, ier)
-    call mpi_bcast (soil_layerstruct,len(soil_layerstruct), MPI_CHARACTER, 0, mpicom, ier)
 
     ! snow pack variables
     call mpi_bcast (nlevsno, 1, MPI_INTEGER, 0, mpicom, ier)
-    call mpi_bcast (h2osno_max, 1, MPI_REAL8, 0, mpicom, ier)
-    call mpi_bcast (int_snow_max, 1, MPI_REAL8, 0, mpicom, ier)
-    call mpi_bcast (n_melt_glcmec, 1, MPI_REAL8, 0, mpicom, ier)
-
-    ! glacier_mec variables
-    call mpi_bcast (maxpatch_glcmec, 1, MPI_INTEGER, 0, mpicom, ier)
-    call mpi_bcast (glc_snow_persistence_max_days, 1, MPI_INTEGER, 0, mpicom, ier)
 
     ! restart file variables
 
@@ -590,35 +449,14 @@ contains
     write(iulog,*) '   username              = ',trim(username)
     write(iulog,*) '   hostname              = ',trim(hostname)
     write(iulog,*) 'process control parameters:'
-    write(iulog,*) '    use_nitrif_denitrif = ', use_nitrif_denitrif
-    write(iulog,*) '    use_vertsoilc = ', use_vertsoilc
-    write(iulog,*) '    use_century_decomp = ', use_century_decomp
-    write(iulog,*) '    use_cn = ', use_cn
 
     write(iulog,*) 'input data files:'
-    write(iulog,*) '   PFT physiology and parameters file = ',trim(paramfile)
     if (fsurdat == ' ') then
        write(iulog,*) '   fsurdat, surface dataset not set'
     else
        write(iulog,*) '   surface data   = ',trim(fsurdat)
     end if
-    if (use_cn) then
-       if (nfix_timeconst /= 0._r8) then
-          write(iulog,*) '   nfix_timeconst, timescale for smoothing npp in N fixation term: ', nfix_timeconst
-       else
-          write(iulog,*) '   nfix_timeconst == zero, use standard N fixation scheme. '
-       end if
-       
-    end if
-
     write(iulog,*) '   Number of snow layers =', nlevsno
-    write(iulog,*) '   Max snow depth (mm) =', h2osno_max
-    write(iulog,*) '   Limit applied to integrated snowfall when determining changes in'
-    write(iulog,*) '       snow-covered fraction during melt (mm) =', int_snow_max
-    write(iulog,*) '   SCA shape parameter for glc_mec columns (n_melt_glcmec) =', n_melt_glcmec
-
-    write(iulog,*) '   glc number of elevation classes =', maxpatch_glcmec
-    write(iulog,*) '   glc snow persistence max days = ', glc_snow_persistence_max_days
 
     if (nsrest == nsrStartup) then
        if (finidat /= ' ') then
@@ -644,8 +482,6 @@ contains
        write(iulog,*) '   CO2 volume mixing ratio                = ', co2_type
     end if
 
-    write(iulog,*) '   land-ice albedos      (unitless 0-1)   = ', albice
-    write(iulog,*) '   soil layer structure = ', soil_layerstruct
     if (nsrest == nsrContinue) then
        write(iulog,*) 'restart warning:'
        write(iulog,*) '   Namelist not checked for agreement with initial run.'
@@ -656,7 +492,6 @@ contains
        write(iulog,*) '   Namelist not checked for agreement with initial run.'
        write(iulog,*) '   Surface data set and reference date should not differ from initial run'
     end if
-    write(iulog,*) '   maxpatch_pft         = ',maxpatch_pft
 
   end subroutine control_print
 

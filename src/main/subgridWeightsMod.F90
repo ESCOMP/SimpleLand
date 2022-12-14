@@ -92,14 +92,13 @@ module subgridWeightsMod
   use shr_kind_mod , only : r8 => shr_kind_r8
   use shr_log_mod  , only : errMsg => shr_log_errMsg
   use abortutils   , only : endrun
-  use clm_varctl   , only : iulog, all_active, use_fates
+  use clm_varctl   , only : iulog
   use clm_varcon   , only : nameg, namel, namec, namep
   use decompMod    , only : bounds_type
   use GridcellType , only : grc                
   use LandunitType , only : lun                
   use ColumnType   , only : col                
   use PatchType    , only : patch                
-  use glcBehaviorMod , only : glc_behavior_type
   !
   ! PUBLIC TYPES:
   implicit none
@@ -155,7 +154,7 @@ contains
     !
     ! !USES:
     use landunit_varcon, only : max_lunit
-    use clm_varpar     , only : maxpatch_glcmec, natpft_size, cft_size
+    use clm_varpar     , only : natpft_size, cft_size
     use shr_infnan_mod , only : nan => shr_infnan_nan, assignment(=)
     use decompMod      , only : BOUNDS_LEVEL_PROC
     use histFileMod    , only : hist_addfld2d
@@ -183,7 +182,7 @@ contains
     subgrid_weights_diagnostics%pct_nat_pft(:,:) = nan
     allocate(subgrid_weights_diagnostics%pct_cft(bounds%begg:bounds%endg, 1:cft_size))
     subgrid_weights_diagnostics%pct_cft(:,:) = nan
-    allocate(subgrid_weights_diagnostics%pct_glc_mec(bounds%begg:bounds%endg, 1:maxpatch_glcmec))
+    allocate(subgrid_weights_diagnostics%pct_glc_mec(bounds%begg:bounds%endg, 1:10))
     subgrid_weights_diagnostics%pct_glc_mec(:,:) = nan
 
     ! ------------------------------------------------------------------------
@@ -194,22 +193,10 @@ contains
          avgflag='A', long_name='% of each landunit on grid cell', &
          ptr_lnd=subgrid_weights_diagnostics%pct_landunit, default='inactive')
 
-    if(.not.use_fates) then
-       call hist_addfld2d (fname='PCT_NAT_PFT', units='%', type2d='natpft', &
-             avgflag='A', long_name='% of each PFT on the natural vegetation (i.e., soil) landunit', &
-             ptr_lnd=subgrid_weights_diagnostics%pct_nat_pft, default='inactive')
-    end if
+    call hist_addfld2d (fname='PCT_NAT_PFT', units='%', type2d='natpft', &
+          avgflag='A', long_name='% of each PFT on the natural vegetation (i.e., soil) landunit', &
+          ptr_lnd=subgrid_weights_diagnostics%pct_nat_pft, default='inactive')
        
-    if (cft_size > 0) then
-       call hist_addfld2d (fname='PCT_CFT', units='%', type2d='cft', &
-            avgflag='A', long_name='% of each crop on the crop landunit', &
-            ptr_lnd=subgrid_weights_diagnostics%pct_cft, default='inactive')
-    end if
-
-    call hist_addfld2d (fname='PCT_GLC_MEC', units='%', type2d='glc_nec', &
-         avgflag='A', long_name='% of each GLC elevation class on the glc_mec landunit', &
-         ptr_lnd=subgrid_weights_diagnostics%pct_glc_mec, default='inactive')
-
   end subroutine init_subgrid_weights_mod
 
 
@@ -243,7 +230,7 @@ contains
   end subroutine compute_higher_order_weights
 
   !-----------------------------------------------------------------------
-  subroutine set_active(bounds, glc_behavior)
+  subroutine set_active(bounds)
     !
     ! !DESCRIPTION:
     ! Set 'active' flags at the pft, column and landunit level
@@ -260,7 +247,6 @@ contains
     ! !ARGUMENTS:
     implicit none
     type(bounds_type), intent(in) :: bounds  ! bounds
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: l,c,p       ! loop counters
@@ -269,12 +255,12 @@ contains
     !------------------------------------------------------------------------
 
     do l = bounds%begl,bounds%endl
-       lun%active(l) = is_active_l(l, glc_behavior)
+       lun%active(l) = is_active_l(l)
     end do
 
     do c = bounds%begc,bounds%endc
        l = col%landunit(c)
-       col%active(c) = is_active_c(c, glc_behavior)
+       col%active(c) = is_active_c(c)
        if (col%active(c) .and. .not. lun%active(l)) then
           write(iulog,*) trim(subname),' ERROR: active column found on inactive landunit', &
                          'at c = ', c, ', l = ', l
@@ -295,7 +281,7 @@ contains
   end subroutine set_active
 
   !-----------------------------------------------------------------------
-  logical function is_active_l(l, glc_behavior)
+  logical function is_active_l(l)
     !
     ! !DESCRIPTION:
     ! Determine whether the given landunit is active
@@ -306,16 +292,11 @@ contains
     ! !ARGUMENTS:
     implicit none
     integer, intent(in) :: l   ! landunit index
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: g  ! grid cell index
     !------------------------------------------------------------------------
 
-    if (all_active) then
-       is_active_l = .true.
-
-    else
        g =lun%gridcell(l)
 
        is_active_l = .false.
@@ -325,15 +306,6 @@ contains
        ! the requirements laid out at the top of this module:
        ! ------------------------------------------------------------------------
        if (lun%wtgcell(l) > 0) is_active_l = .true.
-
-       ! ------------------------------------------------------------------------
-       ! Conditions under which is_active_p is set to true because we want extra virtual landunits:
-       ! ------------------------------------------------------------------------
-
-       if (lun%itype(l) == istice_mec .and. &
-            glc_behavior%has_virtual_columns_grc(g)) then
-          is_active_l = .true.
-       end if
 
        ! In general, include a virtual natural vegetation landunit. This aids
        ! initialization of a new landunit; and for runs that are coupled to CISM, this
@@ -357,12 +329,10 @@ contains
           is_active_l = .true.
        end if
 
-    end if
-
   end function is_active_l
 
   !-----------------------------------------------------------------------
-  logical function is_active_c(c, glc_behavior)
+  logical function is_active_c(c)
     !
     ! !DESCRIPTION:
     ! Determine whether the given column is active
@@ -373,17 +343,12 @@ contains
     ! !ARGUMENTS:
     implicit none
     integer, intent(in) :: c   ! column index
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: l  ! landunit index
     integer :: g  ! grid cell index
     !------------------------------------------------------------------------
 
-    if (all_active) then
-       is_active_c = .true.
-
-    else
        l =col%landunit(c)
        g =col%gridcell(c)
 
@@ -395,15 +360,6 @@ contains
        ! ------------------------------------------------------------------------
        if (lun%active(l) .and. col%wtlunit(c) > 0._r8) is_active_c = .true.
 
-       ! ------------------------------------------------------------------------
-       ! Conditions under which is_active_c is set to true because we want extra virtual columns:
-       ! ------------------------------------------------------------------------
-
-       if (lun%itype(l) == istice_mec .and. &
-            glc_behavior%has_virtual_columns_grc(g)) then
-          is_active_c = .true.
-       end if
-
        ! We don't really need to run over 0-weight urban columns. But because of some
        ! messiness in the urban code (many loops are over the landunit filter, then drill
        ! down to columns - so we would need to add 'col%active(c)' conditionals in many
@@ -413,7 +369,6 @@ contains
        if (lun%active(l) .and. (lun%itype(l) >= isturb_MIN .and. lun%itype(l) <= isturb_MAX)) then
           is_active_c = .true.
        end if
-    end if
 
   end function is_active_c
 
@@ -433,10 +388,6 @@ contains
     integer :: c  ! column index
     !------------------------------------------------------------------------
 
-    if (all_active) then
-       is_active_p = .true.
-
-    else
        c =patch%column(p)
     
        is_active_p = .false.
@@ -446,8 +397,6 @@ contains
        ! the requirements laid out at the top of this module:
        ! ------------------------------------------------------------------------
        if (col%active(c) .and. patch%wtcol(p) > 0._r8) is_active_p = .true.
-
-    end if
 
   end function is_active_p
 
@@ -733,8 +682,6 @@ contains
     
     call set_pct_landunit_diagnostics(bounds)
 
-    ! Note: (MV, 10-17-14): The following has an use_fates if-block around it since
-    ! the pct_pft_diagnostics referens to patch%itype(p) which is not used by ED
     ! Note: (SPM, 10-20-15): If this isn't set then debug mode with intel and 
     ! yellowstone will fail when trying to write pct_nat_pft since it contains
     ! all NaN's.
@@ -845,7 +792,7 @@ contains
        g = patch%gridcell(p)
        l = patch%landunit(p)
        ptype = patch%itype(p)
-       if (lun%itype(l) == istsoil .and. (.not.use_fates) ) then
+       if (lun%itype(l) == istsoil) then
           ptype_1indexing = ptype + (1 - natpft_lb)
           subgrid_weights_diagnostics%pct_nat_pft(g, ptype_1indexing) = patch%wtlunit(p) * 100._r8
        else if (lun%itype(l) == istcrop) then
