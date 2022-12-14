@@ -32,12 +32,12 @@ def getVariableFromNML(nmlfile, variable):
     """Get a variable from the namelist file"""
     with open(nmlfile, "r") as nfile:
         for line in nfile:
-            if re.search( "^\s*"+variable+"\s*=", line) is not None:
+            if re.search(r"^\s*" + variable + r"\s*=", line) is not None:
                 print("lnd_in:" + line)
-                match = re.search('= ["]*([ a-zA-Z0-9._//-]+)["]*', line)
+                match = re.search(r'= ["]*([ a-zA-Z0-9._//-]+)["]*', line)
                 if match is not None:
                     return match.group(1)
-                match = re.search("= [']*([ a-zA-Z0-9._//-]+)[']*", line)
+                match = re.search(r"= [']*([ a-zA-Z0-9._//-]+)[']*", line)
                 if match is not None:
                     return match.group(1)
     return None
@@ -255,7 +255,7 @@ class TestBuildNML(unittest.TestCase):
                 "Input data list file should exist after running buildnml",
             )
             value = getVariableFromNML("lnd_in", "finidat")
-            self.assertEqual(value, finidat, msg="finidat not set as expected: type="+stype)
+            self.assertEqual(value, finidat, msg="finidat not set as expected: type=" + stype)
         stype = "required"
         finidat = "TESTFINIDATFILENAME.nc"
         Path(finidat).touch()
