@@ -13,26 +13,15 @@ module lnd2atmType
   use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins. 	! MML: ndst = 4 from clm varpar
   use clm_varcon    , only : spval
   use clm_varctl    , only : iulog
-  use shr_megan_mod , only : shr_megan_mechcomps_n
-  use shr_fire_emis_mod,only : shr_fire_emis_mechcomps_n
-  use seq_drydep_mod, only : n_drydep, drydep_method, DD_XLND
   !
   ! !PUBLIC TYPES:
   implicit none
   private
 
-  type, public :: lnd2atm_params_type
-     ! true => ice runoff generated from non-glacier columns and glacier columns outside
-     ! icesheet regions is converted to liquid, with an appropriate sensible heat flux
-     logical, public :: melt_non_icesheet_ice_runoff
-  end type lnd2atm_params_type
-
   ! ----------------------------------------------------
   ! land -> atmosphere variables structure
   !----------------------------------------------------
   type, public :: lnd2atm_type
-     type(lnd2atm_params_type) :: params
-
      ! lnd->atm
      real(r8), pointer :: t_rad_grc          (:)   => null() ! radiative temperature (Kelvin)
      ! MML check tech note for examples on how to calculate this; use MO theory
@@ -50,7 +39,6 @@ module lnd2atmType
      real(r8), pointer :: tauy_grc           (:)   => null() ! wind stress: n-s (kg/m/s**2)
      real(r8), pointer :: eflx_lh_tot_grc    (:)   => null() ! total latent HF (W/m**2)  [+ to atm]
      real(r8), pointer :: eflx_sh_tot_grc    (:)   => null() ! total sensible HF (W/m**2) [+ to atm]
-     real(r8), pointer :: eflx_sh_precip_conversion_grc(:) => null() ! sensible HF from precipitation conversion (W/m**2) [+ to atm]
      real(r8), pointer :: eflx_sh_ice_to_liq_col(:) => null() ! sensible HF generated from conversion of ice runoff to liquid (W/m**2) [+ to atm]
      real(r8), pointer :: eflx_lwrad_out_grc (:)   => null() ! IR (longwave) radiation (W/m**2)
      real(r8), pointer :: qflx_evap_tot_grc  (:)   => null() ! qflx_evap_soi + qflx_evap_can + qflx_tran_veg
@@ -61,10 +49,6 @@ module lnd2atmType
      real(r8), pointer :: fv_grc             (:)   => null() ! friction velocity (m/s) (for dust model)
      real(r8), pointer :: flxdst_grc         (:,:) => null() ! dust flux (size bins)
      real(r8), pointer :: ddvel_grc          (:,:) => null() ! dry deposition velocities
-     real(r8), pointer :: flxvoc_grc         (:,:) => null() ! VOC flux (size bins)
-     real(r8), pointer :: fireflx_grc        (:,:) => null() ! Wild Fire Emissions
-     real(r8), pointer :: fireztop_grc       (:)   => null() ! Wild Fire Emissions vertical distribution top
-     real(r8), pointer :: flux_ch4_grc       (:)   => null() ! net CH4 flux (kg C/m**2/s) [+ to atm]
      ! lnd->rof
      real(r8), pointer :: qflx_rofliq_grc         (:)   => null() ! rof liq forcing
      real(r8), pointer :: qflx_rofliq_qsur_grc    (:)   => null() ! rof liq -- surface runoff component
@@ -74,21 +58,15 @@ module lnd2atmType
      real(r8), pointer :: qflx_rofliq_drain_perched_grc    (:)   => null() ! rof liq -- perched water table runoff component
      real(r8), pointer :: qflx_rofice_grc    (:)   => null() ! rof ice forcing
      real(r8), pointer :: qflx_liq_from_ice_col(:) => null() ! liquid runoff from converted ice runoff
-     real(r8), pointer :: qirrig_grc         (:)   => null() ! irrigation flux
 
    contains
 
      procedure, public  :: Init
-     procedure, private :: ReadNamelist
      procedure, private :: InitAllocate 
      procedure, private :: InitHistory  
 
   end type lnd2atm_type
   !------------------------------------------------------------------------
-
-  interface lnd2atm_params_type
-     module procedure lnd2atm_params_constructor
-  end interface lnd2atm_params_type
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -96,36 +74,13 @@ module lnd2atmType
 
 contains
 
-  !-----------------------------------------------------------------------
-  function lnd2atm_params_constructor(melt_non_icesheet_ice_runoff) &
-       result(params)
-    !
-    ! !DESCRIPTION:
-    ! Creates a new instance of lnd2atm_params_type
-    !
-    ! !ARGUMENTS:
-    type(lnd2atm_params_type) :: params  ! function result
-    logical, intent(in) :: melt_non_icesheet_ice_runoff
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'lnd2atm_params_type'
-    !-----------------------------------------------------------------------
-
-    params%melt_non_icesheet_ice_runoff = melt_non_icesheet_ice_runoff
-
-  end function lnd2atm_params_constructor
-
-
   !------------------------------------------------------------------------
-  subroutine Init(this, bounds, NLFilename)
+  subroutine Init(this, bounds)
 
     class(lnd2atm_type) :: this
     type(bounds_type), intent(in) :: bounds  
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
 
     call this%InitAllocate(bounds)
-    call this%ReadNamelist(NLFilename)
     call this%InitHistory(bounds)
     
   end subroutine Init
@@ -161,7 +116,6 @@ contains
     allocate(this%tauy_grc           (begg:endg))            ; this%tauy_grc           (:)   =ival
     allocate(this%eflx_lwrad_out_grc (begg:endg))            ; this%eflx_lwrad_out_grc (:)   =ival
     allocate(this%eflx_sh_tot_grc    (begg:endg))            ; this%eflx_sh_tot_grc    (:)   =ival
-    allocate(this%eflx_sh_precip_conversion_grc(begg:endg))  ; this%eflx_sh_precip_conversion_grc(:) = ival
     allocate(this%eflx_sh_ice_to_liq_col(begc:endc))         ; this%eflx_sh_ice_to_liq_col(:) = ival
     allocate(this%eflx_lh_tot_grc    (begg:endg))            ; this%eflx_lh_tot_grc    (:)   =ival
     allocate(this%qflx_evap_tot_grc  (begg:endg))            ; this%qflx_evap_tot_grc  (:)   =ival
@@ -171,7 +125,6 @@ contains
     allocate(this%ram1_grc           (begg:endg))            ; this%ram1_grc           (:)   =ival
     allocate(this%fv_grc             (begg:endg))            ; this%fv_grc             (:)   =ival
     allocate(this%flxdst_grc         (begg:endg,1:ndst))     ; this%flxdst_grc         (:,:) =ival
-    allocate(this%flux_ch4_grc       (begg:endg))            ; this%flux_ch4_grc       (:)   =ival
     allocate(this%qflx_rofliq_grc    (begg:endg))            ; this%qflx_rofliq_grc    (:)   =ival
     allocate(this%qflx_rofliq_qsur_grc    (begg:endg))       ; this%qflx_rofliq_qsur_grc    (:)   =ival
     allocate(this%qflx_rofliq_qsub_grc    (begg:endg))       ; this%qflx_rofliq_qsub_grc    (:)   =ival
@@ -180,85 +133,8 @@ contains
     allocate(this%qflx_rofliq_drain_perched_grc    (begg:endg))       ; this%qflx_rofliq_drain_perched_grc    (:)   =ival
     allocate(this%qflx_rofice_grc    (begg:endg))            ; this%qflx_rofice_grc    (:)   =ival
     allocate(this%qflx_liq_from_ice_col(begc:endc))          ; this%qflx_liq_from_ice_col(:) = ival
-    allocate(this%qirrig_grc         (begg:endg))            ; this%qirrig_grc         (:)   =ival
-
-    if (shr_megan_mechcomps_n>0) then
-       allocate(this%flxvoc_grc(begg:endg,1:shr_megan_mechcomps_n));  this%flxvoc_grc(:,:)=ival
-    endif
-    if (shr_fire_emis_mechcomps_n>0) then
-       allocate(this%fireflx_grc(begg:endg,1:shr_fire_emis_mechcomps_n))
-       this%fireflx_grc = ival
-       allocate(this%fireztop_grc(begg:endg))
-       this%fireztop_grc = ival
-    endif
-    if ( n_drydep > 0 .and. drydep_method == DD_XLND )then
-       allocate(this%ddvel_grc(begg:endg,1:n_drydep)); this%ddvel_grc(:,:)=ival
-    end if
 
   end subroutine InitAllocate
-
-  !-----------------------------------------------------------------------
-  subroutine ReadNamelist(this, NLFilename)
-    !
-    ! !DESCRIPTION:
-    ! Read the lnd2atm namelist
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    class(lnd2atm_type), intent(inout) :: this
-    !
-    ! !LOCAL VARIABLES:
-
-    ! temporary variables corresponding to the components of lnd2atm_params_type
-    logical :: melt_non_icesheet_ice_runoff
-
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-    character(len=*), parameter :: nmlname = 'lnd2atm_inparm'
-
-    character(len=*), parameter :: subname = 'ReadNamelist'
-    !-----------------------------------------------------------------------
-
-    namelist /lnd2atm_inparm/ melt_non_icesheet_ice_runoff
-
-    ! Initialize namelist variables to defaults
-    melt_non_icesheet_ice_runoff = .false.
-
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in '//nmlname//'  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=lnd2atm_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          write(iulog,*) "could NOT find "//nmlname//"namelist"
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast(melt_non_icesheet_ice_runoff, mpicom)
-
-    if (masterproc) then
-       write(iulog,*)
-       write(iulog,*) nmlname, ' settings:'
-       write(iulog,nml=lnd2atm_inparm)
-       write(iulog,*) ' '
-    end if
-
-    this%params = lnd2atm_params_type( &
-         melt_non_icesheet_ice_runoff = melt_non_icesheet_ice_runoff)
-
-  end subroutine ReadNamelist
 
   !-----------------------------------------------------------------------
   subroutine InitHistory(this, bounds)
@@ -271,11 +147,9 @@ contains
     type(bounds_type), intent(in) :: bounds  
     !
     ! !LOCAL VARIABLES:
-    integer  :: begc, endc
     integer  :: begg, endg
     !---------------------------------------------------------------------
 
-    begc = bounds%begc; endc = bounds%endc
     begg = bounds%begg; endg = bounds%endg
 
     this%eflx_sh_tot_grc(begg:endg) = 0._r8
@@ -284,37 +158,6 @@ contains
          long_name='sensible heat sent to coupler &
               &(includes corrections for land use change, rain/snow conversion and conversion of ice runoff to liquid)', &
          ptr_lnd=this%eflx_sh_tot_grc)
-
-    this%eflx_sh_ice_to_liq_col(begc:endc) = 0._r8
-    call hist_addfld1d (fname='FSH_RUNOFF_ICE_TO_LIQ', units='W/m^2', &
-         avgflag='A', &
-         long_name='sensible heat flux generated from conversion of ice runoff to liquid', &
-         ptr_col=this%eflx_sh_ice_to_liq_col)
-
-    this%qflx_rofliq_grc(begg:endg) = 0._r8
-    call hist_addfld1d (fname='QRUNOFF_TO_COUPLER',  units='mm/s',  &
-         avgflag='A', &
-         long_name='total liquid runoff sent to coupler (includes corrections for land use change)', &
-         ptr_lnd=this%qflx_rofliq_grc)
-
-    this%qflx_rofice_grc(begg:endg) = 0._r8
-    call hist_addfld1d (fname='QRUNOFF_ICE_TO_COUPLER',  units='mm/s',  &
-         avgflag='A', &
-         long_name='total ice runoff sent to coupler (includes corrections for land use change)', &
-         ptr_lnd=this%qflx_rofice_grc)
-
-    this%qflx_liq_from_ice_col(begc:endc) = 0._r8
-    call hist_addfld1d (fname='QRUNOFF_ICE_TO_LIQ', units='mm/s', &
-         avgflag='A', &
-         long_name='liquid runoff from converted ice runoff', &
-         ptr_col=this%qflx_liq_from_ice_col, default='inactive')
-
-    this%net_carbon_exchange_grc(begg:endg) = spval
-    call hist_addfld1d(fname='FCO2', units='kgCO2/m2/s', &
-         avgflag='A', &
-         long_name='CO2 flux to atmosphere (+ to atm)', &
-         ptr_lnd=this%net_carbon_exchange_grc, &
-         default='inactive')
 
   end subroutine InitHistory
 

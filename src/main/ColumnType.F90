@@ -47,13 +47,6 @@ module ColumnType
      logical , pointer :: active               (:)   ! true=>do computations on this column 
      logical , pointer :: type_is_dynamic      (:)   ! true=>itype can change throughout the run
 
-     ! topography
-     ! TODO(wjs, 2016-04-05) Probably move these things into topoMod
-     real(r8), pointer :: micro_sigma          (:)   ! microtopography pdf sigma (m)
-     real(r8), pointer :: n_melt               (:)   ! SCA shape parameter
-     real(r8), pointer :: topo_slope           (:)   ! gridcell topographic slope
-     real(r8), pointer :: topo_std             (:)   ! gridcell elevation standard deviation
-
      ! vertical levels
      integer , pointer :: snl                  (:)   ! number of snow layers
      real(r8), pointer :: dz                   (:,:) ! layer thickness (m)  (-nlevsno+1:nlevgrnd) 
@@ -63,20 +56,9 @@ module ColumnType
      real(r8), pointer :: dz_lake              (:,:) ! lake layer thickness (m)  (1:nlevlak)
      real(r8), pointer :: z_lake               (:,:) ! layer depth for lake (m)
      real(r8), pointer :: lakedepth            (:)   ! variable lake depth (m)                             
-     integer , pointer :: nbedrock             (:)   ! variable depth to bedrock index
-
      ! other column characteristics
      logical , pointer :: hydrologically_active(:)   ! true if this column is a hydrologically active type
 
-     ! levgrnd_class gives the class in which each layer falls. This is relevant for
-     ! columns where there are 2 or more fundamentally different layer types. For
-     ! example, this distinguishes between soil and bedrock layers. The particular value
-     ! assigned to each class is irrelevant; the important thing is that different
-     ! classes (e.g., soil vs. bedrock) have different values of levgrnd_class.
-     !
-     ! levgrnd_class = ispval indicates that the given layer is completely unused for
-     ! this column (i.e., this column doesn't use the full nlevgrnd layers).
-     integer , pointer :: levgrnd_class        (:,:) ! class in which each layer falls (1:nlevgrnd)
    contains
 
      procedure, public :: Init
@@ -124,13 +106,6 @@ contains
     allocate(this%dz_lake     (begc:endc,nlevlak))             ; this%dz_lake     (:,:) = nan
     allocate(this%z_lake      (begc:endc,nlevlak))             ; this%z_lake      (:,:) = nan
 
-    allocate(this%nbedrock   (begc:endc))                     ; this%nbedrock   (:)   = ispval  
-    allocate(this%levgrnd_class(begc:endc,nlevgrnd))           ; this%levgrnd_class(:,:) = ispval
-    allocate(this%micro_sigma (begc:endc))                     ; this%micro_sigma (:)   = nan
-    allocate(this%n_melt      (begc:endc))                     ; this%n_melt      (:)   = nan 
-    allocate(this%topo_slope  (begc:endc))                     ; this%topo_slope  (:)   = nan
-    allocate(this%topo_std    (begc:endc))                     ; this%topo_std    (:)   = nan
-
     allocate(this%hydrologically_active(begc:endc))            ; this%hydrologically_active(:) = .false.
 
   end subroutine Init
@@ -160,12 +135,6 @@ contains
     deallocate(this%lakedepth  )
     deallocate(this%dz_lake    )
     deallocate(this%z_lake     )
-    deallocate(this%micro_sigma)
-    deallocate(this%n_melt     )
-    deallocate(this%topo_slope )
-    deallocate(this%topo_std   )
-    deallocate(this%nbedrock   )
-    deallocate(this%levgrnd_class)
     deallocate(this%hydrologically_active)
 
   end subroutine Clean

@@ -13,7 +13,6 @@ module QSatMod
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: QSatOld
   public :: QSat
-  public :: rhoSat
   !-----------------------------------------------------------------------
 
     ! For water vapor (temperature range 0C-100C)
@@ -230,4 +229,5 @@ contains
   rho   = es/(rwat*T)                !kg  m^-3
   if(present(rhodT))rhodT= esdT/(rwat*T)-rho/T         !kg  m^-3 K^-1
   end subroutine rhoSat  
+
 end module QSatMod
