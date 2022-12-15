@@ -416,7 +416,7 @@ contains
     ! Initialize options to default values
     glacier_region_behavior(:) = behavior_str_unset
     ! Hardwire to the current defaults
-    glacier_region_behavior(0:3) = (/'single_at_atm_topo','virtual','virtual','multiple' /)
+    glacier_region_behavior(0:3) = (/'single_at_atm_topo','virtual           ','virtual           ','multiple          ' /)
 
     if (masterproc) then
        unitn = getavu()
