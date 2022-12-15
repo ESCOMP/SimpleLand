@@ -20,6 +20,7 @@ module mml_mainMod
 
   
   ! !USES:
+#include "shr_assert.h"
   ! MML: bounds & data type
   use decompMod , 	only : bounds_type
   use spmdMod   ,       only : masterproc
@@ -80,7 +81,8 @@ module mml_mainMod
  			! then used those coeffs instead of the more recent one!) Instead, I'm using the equivalent, but newer, clm 
  			! function QSat, and doing the lhflx calculations with specific humidity rather than saturation vapour pressure
   
- 
+  character(len=*), parameter, private :: sourcefile = &
+       __FILE__
 
 contains
   
@@ -196,6 +198,7 @@ contains
   !-----------------------------------------------------------------------
   subroutine mml_main (bounds, atm2lnd_inst, lnd2atm_inst) !lnd2atm_inst
   
+    use clm_varpar, only : numrad
     implicit none
   
     type(bounds_type), intent(in) :: bounds
@@ -580,6 +583,13 @@ contains
      psrf		= atm2lnd_inst%forc_psrf_grc  ! surface pressure (Pa)
      pbot		= atm2lnd_inst%forc_pbot_not_downscaled_grc ! not downscaled atm pressure (Pa)
      qbot		= atm2lnd_inst%forc_q_not_downscaled_grc   ! not downscaled atm specific humidity (kg/kg) 
+
+
+     SHR_ASSERT(numrad == 2, errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((ubound(fsds_dir) == (/bounds%endg,numrad/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((lbound(fsds_dir) == (/bounds%begg,1/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((ubound(atm2lnd_inst%forc_solad_grc) == (/bounds%endg,numrad/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((lbound(atm2lnd_inst%forc_solad_grc) == (/bounds%begg,1/)), errMsg(sourcefile, __LINE__))
      ! NOTE: this is NOT going to be consistent with CAM, still, if I use pbot and psrf as the "edges" of 
      ! my lowest atm layer; cam uses the actual pressure levels at the edges of the lowermost 
      ! atmospheric layer, but all I've got is pbot (which is likely in the middle of the lowest layer)
