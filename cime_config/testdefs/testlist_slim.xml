@@ -116,7 +116,7 @@
       <option name="comment">Longer smoke test for standalone SLIM, go over at least a year boundary (with clm5_0 and SP to ensure same as above)</option>
     </options>
   </test>
-  <test name="PEM" grid="f19_g17" compset="I1850Slim50RsGs" testmods="slim/realistic_fromCLM5_1850">
+  <test name="PEM" grid="f19_g17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -125,7 +125,7 @@
       <option name="comment">Change PE count test for standalone SLIM</option>
     </options>
   </test>
-  <test name="ERP_D_Ld60" grid="f19_g17" compset="I1850Slim50RsGs" testmods="slim/realistic_fromCLM5_1850Monthly">
+  <test name="ERP_D_Ld60" grid="f19_g17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
