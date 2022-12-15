@@ -21,7 +21,7 @@ module controlMod
   use initInterpMod                    , only: initInterp_readnl
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
-  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid
+  use clm_varctl                       , only: iulog, outnc_large_files, fsurdat, fatmgrid
   use clm_varctl                       , only: co2_type
   use clm_varctl                       , only: wrtdia, co2_ppmv, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: NLFilename_in
@@ -153,11 +153,7 @@ contains
 #else
     clump_pproc = 1
 #endif
-    maxpatch_glcmec = 10
     nlevsno = 5
-    h2osno_max = 1000.0_r8
-    int_snow_max = 1.e30_r8
-    n_melt_glcmec = 10.0_r8
 
     override_nsrest = nsrest
 
@@ -243,23 +239,9 @@ contains
        call endrun(msg=' ERROR:: must set nsrest'//& 
             errMsg(sourcefile, __LINE__))
     end if
-    if (nsrest == nsrBranch .and. nrevsn == ' ') then
-       call endrun(msg=' ERROR: need to set restart data file name'//&
-            errMsg(sourcefile, __LINE__))
-    end if
-
     ! Consistency settings for co2_ppvm
     if ( (co2_ppmv <= 0.0_r8) .or. (co2_ppmv > 3000.0_r8) ) then
        call endrun(msg=' ERROR: co2_ppmv is out of a reasonable range'//& 
-            errMsg(sourcefile, __LINE__))
-    end if
-
-    ! Consistency settings for nrevsn
-
-    if (nsrest == nsrStartup ) nrevsn = ' '
-    if (nsrest == nsrContinue) nrevsn = 'set by restart pointer file file'
-    if (nsrest /= nsrStartup .and. nsrest /= nsrContinue .and. nsrest /= nsrBranch ) then
-       call endrun(msg=' ERROR: nsrest NOT set to a valid value'//&
             errMsg(sourcefile, __LINE__))
     end if
 
@@ -457,18 +439,6 @@ contains
        write(iulog,*) '   surface data   = ',trim(fsurdat)
     end if
     write(iulog,*) '   Number of snow layers =', nlevsno
-
-    if (nsrest == nsrStartup) then
-       if (finidat /= ' ') then
-          write(iulog,*) '   initial data: ', trim(finidat)
-       else if (finidat_interp_source /= ' ') then
-          write(iulog,*) '   initial data interpolated from: ', trim(finidat_interp_source)
-       else
-          write(iulog,*) '   initial data created by model (cold start)'
-       end if
-    else
-       write(iulog,*) '   restart data   = ',trim(nrevsn)
-    end if
 
     write(iulog,*) '   atmospheric forcing data is from cesm atm model'
     write(iulog,*) 'Restart parameters:'
