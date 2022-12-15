@@ -40,30 +40,30 @@
   
   <!-- CAM6 -->
   <compset>
-    <alias>E2000Cam6SlimRsGs</alias>
+    <alias>ELT2000ClimoTESTC6I5Slim</alias>
     <lname>2000_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
 
   <!-- This compset is currently not tested, but the 2000 one is -->
   <compset>
-    <alias>E1850Cam6SlimRsGs</alias>
+    <alias>ELT1850TESTC6I5Slim</alias>
     <lname>1850_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
 
   <compset>
-    <alias>F2000Cam6SlimRsGs</alias>
+    <alias>FLT2000ClimoC6I5Slim</alias>
     <lname>2000_CAM60_SLIM_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- CAM5 -->
   <compset>
-    <alias>E2000Cam5SlimRsGs</alias>
+    <alias>ELT2000ClimoTESTC5I5Slim</alias>
     <lname>2000_CAM50_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- CAM5 Historical -->
   <compset>
-    <alias>FHistCam5SlimRsGs</alias>
+    <alias>FLTHISTC5I5Slim</alias>
     <lname>HIST_CAM50_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   
