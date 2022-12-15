@@ -354,31 +354,6 @@
      </desc>
   </entry>
 
-  <entry id="paramfile">
-     <type>char</type>
-     <category>datasets</category>
-     <input_pathname>abs</input_pathname> 
-     <group>clm_inparm</group>
-     <values>
-       <value>$DIN_LOC_ROOT/lnd/clm2/paramdata/clm_params.c170913.nc</value>
-     </values>
-     <desc>
-           PFT and parameter file
-     </desc>
-  </entry>
-
-
-  <entry id="use_cn" skip_default_entry="true">
-     <type>logical</type>
-     <category>slim_physics</category>
-     <group>clm_inparm</group>
-     <desc>
-           If Carbon/Nitrogen model should be used
-           Currently this is used in a couple places in SLIM, but should be removed.
-     </desc>
-  </entry>
-
-
   <!-- =============================================================  -->
   <!-- Namelist items currently not used that could be good to add    -->
   <!-- back in                                                        -->
