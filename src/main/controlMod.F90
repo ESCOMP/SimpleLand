@@ -123,7 +123,7 @@ contains
 
     namelist /clm_inparm/  &
          clump_pproc, wrtdia, &
-         nsegspc, co2_ppmv, override_nsrest
+         co2_ppmv, override_nsrest
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
 
