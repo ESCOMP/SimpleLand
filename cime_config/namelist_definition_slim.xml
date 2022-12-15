@@ -104,9 +104,9 @@
      <category>slim_performance</category>
      <group>slim_perf</group>
      <desc>number of segments per clump for decomposition</desc>
-     <default_value>20</default_value>
+     <default_value>35</default_value>
      <values>
-       <value>20</value>
+       <value>35</value>
      </values>
   </entry>
 
