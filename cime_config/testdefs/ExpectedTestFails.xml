@@ -29,82 +29,82 @@
 
   <!-- aux_slim test suite failures -->
 
-  <test name="ERS_Lm3.f19_g16.ELT2000ClimoTESTC6I5Slim.cheyenne_intel.slim-global_uniform_g16_SOM">
+  <test name="ERS_Lm3.f19_f19_mg16.ELT2000ClimoTESTC6I5Slim.cheyenne_intel.slim-global_uniform_g16_SOM">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_Ld60.f19_g16.ELT2000ClimoTESTC6I5Slim.cheyenne_gnu.slim-global_uniform_g16_SOM">
+  <test name="ERS_Ld60.f19_f19_mg16.ELT2000ClimoTESTC6I5Slim.cheyenne_gnu.slim-global_uniform_g16_SOM">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_D_Lm3.f19_g17.IHistSlimQianRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850">
+  <test name="ERS_D_Lm3.f19_f19_mg17.IHistSlimQianRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_D_Lm3.f19_g17.IHistSlimQianRsGs.cheyenne_gnu.slim-realistic_fromCLM5_1850">
+  <test name="ERS_D_Lm3.f19_f19_mg17.IHistSlimQianRsGs.cheyenne_gnu.slim-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_D_Lm3.f19_g17.IHistSlimQianRsGs.izumi_intel.slim-realistic_fromCLM5_1850">
+  <test name="ERS_D_Lm3.f19_f19_mg17.IHistSlimQianRsGs.izumi_intel.slim-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERS_D_Lm3.f19_g17.IHistSlimQianRsGs.izumi_gnu.slim-realistic_fromCLM5_1850">
+  <test name="ERS_D_Lm3.f19_f19_mg17.IHistSlimQianRsGs.izumi_gnu.slim-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERP_Ld60_D.f19_g17.I2000SlimRsGs.cheyenne_intel.slim-2000_CMIP6_AMIP_1deg_ensemble">
+  <test name="ERP_Ld60_D.f19_f19_mg17.I2000SlimRsGs.cheyenne_intel.slim-2000_CMIP6_AMIP_1deg_ensemble">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERP_Ld60_D.f19_g17.I2000SlimRsGs.izumi_intel.slim-2000_CMIP6_AMIP_1deg_ensemble">
+  <test name="ERP_Ld60_D.f19_f19_mg17.I2000SlimRsGs.izumi_intel.slim-2000_CMIP6_AMIP_1deg_ensemble">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERP_D_Ld60.f19_g17.I1850SlimRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850">
+  <test name="ERP_D_Ld60.f19_f19_mg17.I1850SlimRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERP_D_Ld60.f19_g17.I1850SlimRsGs.izumi_intel.slim-realistic_fromCLM5_1850">
+  <test name="ERP_D_Ld60.f19_f19_mg17.I1850SlimRsGs.izumi_intel.slim-realistic_fromCLM5_1850">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#14</issue>
+      <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="SMS_Ld400.f19_g17.IHistSlimQianRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850">
+  <test name="SMS_Ld400.f19_f19_mg17.IHistSlimQianRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850">
     <phase name="RUN">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#25?</issue>
+      <issue>ESCOMP/SimpleLand#25?</issue>
     </phase>
   </test>
-  <test name="SMS.f19_g17.I2000SlimRsGs.cheyenne_intel.slim-global_uniform">
+  <test name="SMS.f19_f19_mg17.I2000SlimRsGs.cheyenne_intel.slim-global_uniform">
     <phase name="RUN">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#17</issue>
+      <issue>ESCOMP/SimpleLand#17</issue>
     </phase>
   </test>
-  <test name="SMS.f19_g17.I2000SlimRsGs.izumi_intel.slim-global_uniform">
+  <test name="SMS.f19_f19_mg17.I2000SlimRsGs.izumi_intel.slim-global_uniform">
     <phase name="RUN">
       <status>FAIL</status>
-      <issue>marysa/SimpleLand#17</issue>
+      <issue>ESCOMP/SimpleLand#17</issue>
     </phase>
   </test>
 
