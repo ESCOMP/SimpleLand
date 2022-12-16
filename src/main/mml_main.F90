@@ -91,8 +91,9 @@ contains
     use shr_mpi_mod     , only : shr_mpi_bcast
     use spmdMod         , only : mpicom
     use clm_nlUtilsMod  , only : find_nlgroup_name
-    use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest
+    use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest, nsrest
     use clm_varctl      , only : nrevsn, fname_len, mml_surdat, finidat_interp_source
+    use clm_varctl      , only : nsrStartup, nsrContinue, nsrBranch
   
     implicit none
 
@@ -143,16 +144,41 @@ contains
        end if
 
        if (fatmlndfrc == ' ') then
-          write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
+          call endrun(subname // ':: ERROR fatmlndfrc was NOT set and needs to be' )
        else
           write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
        end if
 
        if (mml_surdat == ' ') then
-           write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
+           call endrun(subname // ':: ERROR mml_surdat was NOT set and needs to be' )
        else
            write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
        end if
+
+       if (nsrest == nsrBranch .and. nrevsn == ' ') then
+          call endrun(msg=' ERROR: need to set restart data file name'//&
+               errMsg(sourcefile, __LINE__))
+       end if
+       ! Consistency settings for nrevsn
+
+       if (nsrest == nsrStartup ) nrevsn = ' '
+       if (nsrest == nsrContinue) nrevsn = 'set by restart pointer file file'
+       if (nsrest /= nsrStartup .and. nsrest /= nsrContinue .and. nsrest /= nsrBranch ) then
+          call endrun(msg=' ERROR: nsrest NOT set to a valid value'//&
+               errMsg(sourcefile, __LINE__))
+       end if
+       if (nsrest == nsrStartup) then
+          if (finidat /= ' ') then
+             write(iulog,*) '   initial data: ', trim(finidat)
+          else if (finidat_interp_source /= ' ') then
+             write(iulog,*) '   initial data interpolated from: ', trim(finidat_interp_source)
+          else
+             write(iulog,*) '   initial data created by model (cold start)'
+          end if
+       else
+          write(iulog,*) '   restart data   = ',trim(nrevsn)
+       end if
+
     end if
 
   end subroutine readnml_datasets
