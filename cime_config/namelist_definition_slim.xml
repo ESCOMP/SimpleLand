@@ -354,6 +354,23 @@
      </desc>
   </entry>
 
+  <entry id="co2_type">
+     <type>char</type>
+     <category>clm_leftover</category>
+     <group>clm_inparm</group>
+     <valid_values>constant,prognostic,diagnostic</valid_values>
+     <values>
+       <value                   >constant</value>
+       <value compset="HIST_CAM">diagnostic</value>
+     </values>
+     <desc>
+     Type of CO2 feedback.
+         constant   = use the input co2_ppmv value
+         prognostic = use the prognostic value sent from the atmosphere
+         diagnostic = use the diagnostic value sent from the atmosphere
+     </desc>
+  </entry>
+
   <!-- =============================================================  -->
   <!-- Namelist items currently not used that could be good to add    -->
   <!-- back in                                                        -->

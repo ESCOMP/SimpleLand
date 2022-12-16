@@ -394,6 +394,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # ------------------------------------------------------
     config = {}
     config["lnd_grid"] = case.get_value("LND_GRID")
+    config["compset"] = case.get_value("COMPSET")
     config["slim_scenario"] = case.get_value("SLIM_SCENARIO")
     config["slim_start_type"] = case.get_value("SLIM_START_TYPE")
 
