@@ -371,6 +371,18 @@
      </desc>
   </entry>
 
+  <entry id="co2_ppmv">
+    <type>real</type> 
+    <category>clm_leftover</category>
+    <group>clm_inparm</group>
+     <values>
+       <value>999.9</value>
+     </values>
+    <desc>
+          Atmospheric CO2 molar ratio (by volume) only used when co2_type==constant (umol/mol)
+    </desc>
+  </entry>
+
   <!-- =============================================================  -->
   <!-- Namelist items currently not used that could be good to add    -->
   <!-- back in                                                        -->
