@@ -4293,6 +4293,9 @@ contains
           hist_nhtfrq(i) = nint(-hist_nhtfrq(i)*SHR_CONST_CDAY/(24._r8*dtime))
        endif
     end do
+    if ( masterproc )then
+       if ( use_noio ) write(iulog,*) ' History output is turned off with use_noio = ', use_noio
+    end if
 
   end subroutine hist_readNML
 
