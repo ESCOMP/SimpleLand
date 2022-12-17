@@ -91,6 +91,9 @@ contains
     ! !DESCRIPTION:
     ! Initialize lnd2atm derived type
     !
+    ! !USES
+    use clm_varcon, only: tfrz
+    !
     ! !ARGUMENTS:
     class (lnd2atm_type) :: this
     type(bounds_type), intent(in) :: bounds  
@@ -104,7 +107,7 @@ contains
     begc = bounds%begc; endc = bounds%endc
     begg = bounds%begg; endg = bounds%endg
 
-    allocate(this%t_rad_grc          (begg:endg))            ; this%t_rad_grc          (:)   =ival
+    allocate(this%t_rad_grc          (begg:endg))            ; this%t_rad_grc          (:)   = tfrz + 2._r8
     allocate(this%t_ref2m_grc        (begg:endg))            ; this%t_ref2m_grc        (:)   =ival
     allocate(this%q_ref2m_grc        (begg:endg))            ; this%q_ref2m_grc        (:)   =ival
     allocate(this%u_ref10m_grc       (begg:endg))            ; this%u_ref10m_grc       (:)   =ival
