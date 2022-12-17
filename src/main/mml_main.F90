@@ -612,7 +612,8 @@ contains
      qbot		= atm2lnd_inst%forc_q_not_downscaled_grc   ! not downscaled atm specific humidity (kg/kg) 
 
 
-#ifdef NDEBUG
+#ifndef NDEBUG
+     ! Only execute this code if DEBUG=TRUE
      if ( is_first_step_of_this_run_segment() )then
         write(iulog,*) 'fsds_dir ubounds = ', ubound(fsds_dir)
         write(iulog,*) 'fsds_dir lbounds = ', lbound(fsds_dir)
