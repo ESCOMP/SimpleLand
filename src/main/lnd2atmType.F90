@@ -117,7 +117,7 @@ contains
     allocate(this%albi_grc           (begg:endg,1:numrad))   ; this%albi_grc           (:,:) =ival
     allocate(this%taux_grc           (begg:endg))            ; this%taux_grc           (:)   =ival
     allocate(this%tauy_grc           (begg:endg))            ; this%tauy_grc           (:)   =ival
-    allocate(this%eflx_lwrad_out_grc (begg:endg))            ; this%eflx_lwrad_out_grc (:)   =ival
+    allocate(this%eflx_lwrad_out_grc (begg:endg))            ; this%eflx_lwrad_out_grc (:)   = 5.67e-8_r8 * 273.15_r8**4  ! sb * tfrz**4
     allocate(this%eflx_sh_tot_grc    (begg:endg))            ; this%eflx_sh_tot_grc    (:)   =ival
     allocate(this%eflx_sh_ice_to_liq_col(begc:endc))         ; this%eflx_sh_ice_to_liq_col(:) = ival
     allocate(this%eflx_lh_tot_grc    (begg:endg))            ; this%eflx_lh_tot_grc    (:)   =ival

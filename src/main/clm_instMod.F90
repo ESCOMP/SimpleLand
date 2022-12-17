@@ -21,7 +21,6 @@ module clm_instMod
   ! Definition of component types 
   !-----------------------------------------
 
-  use EnergyFluxType                  , only : energyflux_type
   use SurfaceAlbedoType               , only : surfalb_type
   use TemperatureType                 , only : temperature_type
   use WaterStateType                  , only : waterstate_type
@@ -43,7 +42,6 @@ module clm_instMod
   !-----------------------------------------
 
   ! Physics types 
-  type(energyflux_type)                   :: energyflux_inst
   type(surfalb_type)                      :: surfalb_inst
   type(temperature_type)                  :: temperature_inst
   type(urbanparams_type)                  :: urbanparams_inst
@@ -129,8 +127,6 @@ contains
 
     call waterstate_inst%Init(bounds, h2osno_col(begc:endc))
 
-    call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc))
-
     call surfalb_inst%Init(bounds)
 
     call topo_inst%Init(bounds)
@@ -166,8 +162,6 @@ contains
     !-----------------------------------------------------------------------
 
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
-
-    call energyflux_inst%restart (bounds, ncid, flag=flag)
 
     call temperature_inst%restart (bounds, ncid, flag=flag)
 

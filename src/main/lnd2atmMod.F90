@@ -16,7 +16,6 @@ module lnd2atmMod
   use subgridAveMod        , only : p2g, c2g 
   use lnd2atmType          , only : lnd2atm_type
   use atm2lndType          , only : atm2lnd_type
-  use EnergyFluxType       , only : energyflux_type
   use SurfaceAlbedoType    , only : surfalb_type
   use TemperatureType      , only : temperature_type
   use WaterstateType       , only : waterstate_type
@@ -43,7 +42,7 @@ contains
 
   !------------------------------------------------------------------------
   subroutine lnd2atm_minimal(bounds, &
-      waterstate_inst, surfalb_inst, energyflux_inst, lnd2atm_inst)
+      waterstate_inst, surfalb_inst, lnd2atm_inst)
     !
     ! !DESCRIPTION:
     ! Compute clm_l2a_inst component of gridcell derived type. This routine computes
@@ -57,7 +56,6 @@ contains
     type(bounds_type)     , intent(in)    :: bounds  
     type(waterstate_type) , intent(in)    :: waterstate_inst
     type(surfalb_type)    , intent(in)    :: surfalb_inst
-    type(energyflux_type) , intent(in)    :: energyflux_inst
     type(lnd2atm_type)    , intent(inout) :: lnd2atm_inst 
     !
     ! !LOCAL VARIABLES:
@@ -87,20 +85,6 @@ contains
          surfalb_inst%albi_patch (bounds%begp:bounds%endp, :), &
          lnd2atm_inst%albi_grc   (bounds%begg:bounds%endg, :), &
          p2c_scale_type='unity', c2l_scale_type= 'urbanf', l2g_scale_type='unity')
-
-    call p2g(bounds, &
-         energyflux_inst%eflx_lwrad_out_patch (bounds%begp:bounds%endp), &
-         lnd2atm_inst%eflx_lwrad_out_grc      (bounds%begg:bounds%endg), &
-         p2c_scale_type='unity', c2l_scale_type= 'urbanf', l2g_scale_type='unity')
-
-    ! TODO slevis SLIM: Eliminating next assignment returns error:
-    ! Longwave down is <= 0, while eliminating and then changing the
-    ! initialization of t_rad_grc to tfrz in lnd2atmType works but changes
-    ! answers throughout, including in MML variables. See
-    ! /glade/scratch/slevis/ERS_D_Ld60.f19_g16.H_MML_2000_CAM5.cheyenne_gnu.clm-global_uniform_g16_SOM.C.20221207_111523_9gqwvp/ERS_D_Ld60.f19_g16.H_MML_2000_CAM5.cheyenne_gnu.clm-global_uniform_g16_SOM.C.20221207_111523_9gqwvp.clm2.h0.0001-03-02-00000.nc.cprnc.out
-!   do g = bounds%begg,bounds%endg
-!      lnd2atm_inst%t_rad_grc(g) = sqrt(sqrt(lnd2atm_inst%eflx_lwrad_out_grc(g)/sb))
-!   end do
 
   end subroutine lnd2atm_minimal
 
