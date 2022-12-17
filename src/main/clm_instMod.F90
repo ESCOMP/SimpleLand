@@ -21,7 +21,6 @@ module clm_instMod
   ! Definition of component types 
   !-----------------------------------------
 
-  use SurfaceAlbedoType               , only : surfalb_type
   use TemperatureType                 , only : temperature_type
   use WaterStateType                  , only : waterstate_type
   use UrbanParamsType                 , only : urbanparams_type
@@ -42,7 +41,6 @@ module clm_instMod
   !-----------------------------------------
 
   ! Physics types 
-  type(surfalb_type)                      :: surfalb_inst
   type(temperature_type)                  :: temperature_inst
   type(urbanparams_type)                  :: urbanparams_inst
   type(waterstate_type)                   :: waterstate_inst
@@ -127,8 +125,6 @@ contains
 
     call waterstate_inst%Init(bounds, h2osno_col(begc:endc))
 
-    call surfalb_inst%Init(bounds)
-
     call topo_inst%Init(bounds)
 
     deallocate (h2osno_col)
@@ -166,8 +162,6 @@ contains
     call temperature_inst%restart (bounds, ncid, flag=flag)
 
     call waterstate_inst%restart (bounds, ncid, flag=flag)
-
-    call surfalb_inst%restart (bounds, ncid, flag=flag)
 
     call topo_inst%restart (bounds, ncid, flag=flag)
 

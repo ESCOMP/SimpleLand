@@ -443,8 +443,7 @@ contains
 
     if (nsrest == nsrStartup) then
        call t_startf('init_map2gc')
-       call lnd2atm_minimal(bounds_proc, &
-            waterstate_inst, surfalb_inst, lnd2atm_inst)
+       call lnd2atm_minimal(bounds_proc, waterstate_inst, lnd2atm_inst)
        call t_stopf('init_map2gc')
     end if
 

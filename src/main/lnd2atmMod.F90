@@ -16,7 +16,6 @@ module lnd2atmMod
   use subgridAveMod        , only : p2g, c2g 
   use lnd2atmType          , only : lnd2atm_type
   use atm2lndType          , only : atm2lnd_type
-  use SurfaceAlbedoType    , only : surfalb_type
   use TemperatureType      , only : temperature_type
   use WaterstateType       , only : waterstate_type
   use glcBehaviorMod       , only : glc_behavior_type
@@ -42,29 +41,20 @@ contains
 
   !------------------------------------------------------------------------
   subroutine lnd2atm_minimal(bounds, &
-      waterstate_inst, surfalb_inst, lnd2atm_inst)
+      waterstate_inst, lnd2atm_inst)
     !
     ! !DESCRIPTION:
     ! Compute clm_l2a_inst component of gridcell derived type. This routine computes
     ! the bare minimum of components necessary to get the first step of a
     ! run started.
     !
-    ! !USES:
-    use clm_varcon, only : sb
-    !
     ! !ARGUMENTS:
     type(bounds_type)     , intent(in)    :: bounds  
     type(waterstate_type) , intent(in)    :: waterstate_inst
-    type(surfalb_type)    , intent(in)    :: surfalb_inst
     type(lnd2atm_type)    , intent(inout) :: lnd2atm_inst 
     !
     ! !LOCAL VARIABLES:
     integer :: g                                    ! index
-    real(r8), parameter :: amC   = 12.0_r8          ! Atomic mass number for Carbon
-    real(r8), parameter :: amO   = 16.0_r8          ! Atomic mass number for Oxygen
-    real(r8), parameter :: amCO2 = amC + 2.0_r8*amO ! Atomic mass number for CO2
-    ! The following converts g of C to kg of CO2
-    real(r8), parameter :: convertgC2kgCO2 = 1.0e-3_r8 * (amCO2/amC)
     !------------------------------------------------------------------------
 
     call c2g(bounds, &
@@ -75,16 +65,6 @@ contains
     do g = bounds%begg,bounds%endg
        lnd2atm_inst%h2osno_grc(g) = lnd2atm_inst%h2osno_grc(g)/1000._r8
     end do
-
-    call p2g(bounds, numrad, &
-         surfalb_inst%albd_patch (bounds%begp:bounds%endp, :), &
-         lnd2atm_inst%albd_grc   (bounds%begg:bounds%endg, :), &
-         p2c_scale_type='unity', c2l_scale_type= 'urbanf', l2g_scale_type='unity')
-
-    call p2g(bounds, numrad, &
-         surfalb_inst%albi_patch (bounds%begp:bounds%endp, :), &
-         lnd2atm_inst%albi_grc   (bounds%begg:bounds%endg, :), &
-         p2c_scale_type='unity', c2l_scale_type= 'urbanf', l2g_scale_type='unity')
 
   end subroutine lnd2atm_minimal
 
