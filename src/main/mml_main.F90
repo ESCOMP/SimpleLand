@@ -24,6 +24,7 @@ module mml_mainMod
   ! MML: bounds & data type
   use decompMod , 	only : bounds_type
   use spmdMod   ,       only : masterproc
+  use shr_sys_mod,      only : shr_sys_flush
   use atm2lndType,	only : atm2lnd_type
   use lnd2atmType, 	only : lnd2atm_type  ! MML: probably going to need a lnd2atm type
   ! to hand to the coupler as data coming from the land going to the atmosphere (l2x) 
@@ -42,7 +43,7 @@ module mml_mainMod
   use perf_mod			! for t_startf and t_stopf
    
   ! For using month-dependent values from forcing files
-  use clm_time_manager, only : get_curr_date, get_nstep, get_step_size
+  use clm_time_manager, only : get_curr_date, get_nstep, get_step_size, is_first_step_of_this_run_segment
   
   ! For namelist var
   use clm_varctl       , only: mml_surdat
@@ -611,6 +612,15 @@ contains
      qbot		= atm2lnd_inst%forc_q_not_downscaled_grc   ! not downscaled atm specific humidity (kg/kg) 
 
 
+#ifdef NDEBUG
+     if ( is_first_step_of_this_run_segment() )then
+        write(iulog,*) 'fsds_dir ubounds = ', ubound(fsds_dir)
+        write(iulog,*) 'fsds_dir lbounds = ', lbound(fsds_dir)
+        write(iulog,*) 'forc_solad_grc ubounds = ', ubound(atm2lnd_inst%forc_solad_grc)
+        write(iulog,*) 'forc_solad_grc lbounds = ', lbound(atm2lnd_inst%forc_solad_grc)
+        call shr_sys_flush(iulog)
+     end if
+#endif
      SHR_ASSERT(numrad == 2, errMsg(sourcefile, __LINE__))
      SHR_ASSERT_ALL((ubound(fsds_dir) == (/bounds%endg,numrad/)), errMsg(sourcefile, __LINE__))
      SHR_ASSERT_ALL((lbound(fsds_dir) == (/bounds%begg,1/)), errMsg(sourcefile, __LINE__))
