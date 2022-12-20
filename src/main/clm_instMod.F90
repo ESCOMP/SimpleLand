@@ -22,7 +22,6 @@ module clm_instMod
   !-----------------------------------------
 
   use TemperatureType                 , only : temperature_type
-  use WaterStateType                  , only : waterstate_type
   use UrbanParamsType                 , only : urbanparams_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
@@ -43,7 +42,6 @@ module clm_instMod
   ! Physics types 
   type(temperature_type)                  :: temperature_inst
   type(urbanparams_type)                  :: urbanparams_inst
-  type(waterstate_type)                   :: waterstate_inst
   type(atm2lnd_type)                      :: atm2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
   type(glc_behavior_type), target         :: glc_behavior
@@ -70,38 +68,11 @@ contains
     integer               :: begp, endp
     integer               :: begc, endc
     integer               :: begl, endl
-    real(r8), allocatable :: h2osno_col(:)
     !----------------------------------------------------------------------
-
-    ! Note: h2osno_col initialized as local variable 
-    ! since needed to initialize vertical data structures  
 
     begp = bounds%begp; endp = bounds%endp 
     begc = bounds%begc; endc = bounds%endc 
     begl = bounds%begl; endl = bounds%endl
-
-    allocate (h2osno_col(begc:endc))
-
-    ! snow water
-    do c = begc,endc
-       l = col%landunit(c)
-       g = col%gridcell(c)
-
-       ! In areas that should be snow-covered, it can be problematic to start with 0 snow
-       ! cover, because this can affect the long-term state through soil heating, albedo
-       ! feedback, etc. On the other hand, we would introduce hysteresis by putting too
-       ! much snow in places that are in a net melt regime, because the melt-albedo
-       ! feedback may not activate on time (or at all). So, as a compromise, we start with
-       ! a small amount of snow in places that are likely to be snow-covered for much or
-       ! all of the year.
-       if (lun%itype(l)==istice_mec) then
-          h2osno_col(c) = 100._r8
-       else if (lun%itype(l)==istsoil .and. abs(grc%latdeg(g)) >= 60._r8) then 
-          h2osno_col(c) = 100._r8
-       else
-          h2osno_col(c) = 0._r8
-       endif
-    end do
 
     ! Initialize urban constants
 
@@ -123,11 +94,7 @@ contains
 
     call temperature_inst%Init(bounds)
 
-    call waterstate_inst%Init(bounds, h2osno_col(begc:endc))
-
     call topo_inst%Init(bounds)
-
-    deallocate (h2osno_col)
 
     ! ------------------------------------------------------------------------
     ! Initialize accumulated fields
@@ -160,8 +127,6 @@ contains
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
 
     call temperature_inst%restart (bounds, ncid, flag=flag)
-
-    call waterstate_inst%restart (bounds, ncid, flag=flag)
 
     call topo_inst%restart (bounds, ncid, flag=flag)
 

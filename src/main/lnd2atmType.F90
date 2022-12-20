@@ -111,7 +111,7 @@ contains
     allocate(this%t_ref2m_grc        (begg:endg))            ; this%t_ref2m_grc        (:)   =ival
     allocate(this%q_ref2m_grc        (begg:endg))            ; this%q_ref2m_grc        (:)   =ival
     allocate(this%u_ref10m_grc       (begg:endg))            ; this%u_ref10m_grc       (:)   =ival
-    allocate(this%h2osno_grc         (begg:endg))            ; this%h2osno_grc         (:)   =ival
+    allocate(this%h2osno_grc         (begg:endg))            ; this%h2osno_grc         (:)   = 0._r8
     allocate(this%h2osoi_vol_grc     (begg:endg,1:nlevgrnd)) ; this%h2osoi_vol_grc     (:,:) =ival
     allocate(this%albd_grc           (begg:endg,1:numrad))   ; this%albd_grc           (:,:) = 0.2_r8
     allocate(this%albi_grc           (begg:endg,1:numrad))   ; this%albi_grc           (:,:) = 0.2_r8
