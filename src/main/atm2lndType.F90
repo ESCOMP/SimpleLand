@@ -235,10 +235,6 @@ module atm2lndType
 	 
 	! ------------------------------------------------------------------------------------
 
-     !  rof->lnd
-     real(r8), pointer :: volr_grc                      (:)   => null() ! rof volr total volume (m3)
-     real(r8), pointer :: volrmch_grc                   (:)   => null() ! rof volr main channel (m3)
-
      ! time averaged quantities
      real(r8) , pointer :: fsd240_patch                 (:)   => null() ! patch 240hr average of direct beam radiation 
 
@@ -460,10 +456,6 @@ contains
 	
 	
 	! ---------------------------------------
-
-    ! rof->lnd
-    allocate(this%volr_grc                      (begg:endg))        ; this%volr_grc                      (:)   = ival
-    allocate(this%volrmch_grc                   (begg:endg))        ; this%volrmch_grc                   (:)   = ival
 
     allocate(this%fsd240_patch                  (begp:endp))        ; this%fsd240_patch                  (:)   = nan
 
@@ -1591,10 +1583,6 @@ contains
     deallocate(this%forc_rain_not_downscaled_grc)
     deallocate(this%forc_snow_not_downscaled_grc)
     
-    ! rof->lnd
-    deallocate(this%volr_grc)
-    deallocate(this%volrmch_grc)
-
     deallocate(this%fsd240_patch)
     
     ! MML: deallocate mml vars:

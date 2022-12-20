@@ -91,10 +91,6 @@ module clm_cpl_indices
   integer, public ::index_x2l_Faxa_dstdry3    ! flux: Size 3 dust -- dry deposition
   integer, public ::index_x2l_Faxa_dstdry4    ! flux: Size 4 dust -- dry deposition
  
-  integer, public ::index_x2l_Flrr_flood      ! rtm->lnd rof flood flux
-  integer, public ::index_x2l_Flrr_volr       ! rtm->lnd rof volr total volume
-  integer, public ::index_x2l_Flrr_volrmch    ! rtm->lnd rof volr main channel volume
-
   ! In the following, index 0 is bare land, other indices are glc elevation classes
   integer, allocatable, public ::index_x2l_Sg_ice_covered(:) ! Fraction of glacier from glc model
   integer, allocatable, public ::index_x2l_Sg_topo(:)        ! Topo height from glc model 
@@ -200,9 +196,6 @@ contains
     index_x2l_Sa_co2prog    = mct_avect_indexra(x2l,'Sa_co2prog',perrwith='quiet')
     index_x2l_Sa_co2diag    = mct_avect_indexra(x2l,'Sa_co2diag',perrwith='quiet')
 
-    index_x2l_Flrr_volr     = mct_avect_indexra(x2l,'Flrr_volr')
-    index_x2l_Flrr_volrmch  = mct_avect_indexra(x2l,'Flrr_volrmch')
-
     index_x2l_Faxa_lwdn     = mct_avect_indexra(x2l,'Faxa_lwdn')
     index_x2l_Faxa_rainc    = mct_avect_indexra(x2l,'Faxa_rainc')
     index_x2l_Faxa_rainl    = mct_avect_indexra(x2l,'Faxa_rainl')
@@ -226,8 +219,6 @@ contains
     index_x2l_Faxa_dstwet2  = mct_avect_indexra(x2l,'Faxa_dstwet2')
     index_x2l_Faxa_dstwet3  = mct_avect_indexra(x2l,'Faxa_dstwet3')
     index_x2l_Faxa_dstwet4  = mct_avect_indexra(x2l,'Faxa_dstwet4')
-
-    index_x2l_Flrr_flood    = mct_avect_indexra(x2l,'Flrr_flood')
 
     !-------------------------------------------------------------
     ! glc coupling

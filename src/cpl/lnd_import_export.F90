@@ -96,13 +96,6 @@ contains
     do g = bounds%begg,bounds%endg
        i = 1 + (g - bounds%begg)
 
-       ! Determine flooding input, sign convention is positive downward and
-       ! hierarchy is atm/glc/lnd/rof/ice/ocn.  so water sent from rof to land is negative,
-       ! change the sign to indicate addition of water to system.
-
-       atm2lnd_inst%volr_grc(g)   = x2l(index_x2l_Flrr_volr,i) * (ldomain%area(g) * 1.e6_r8)
-       atm2lnd_inst%volrmch_grc(g)= x2l(index_x2l_Flrr_volrmch,i) * (ldomain%area(g) * 1.e6_r8)
-
        ! Determine required receive fields
 
        atm2lnd_inst%forc_hgt_grc(g)                  = x2l(index_x2l_Sa_z,i)         ! zgcmxy  Atm state m
