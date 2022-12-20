@@ -100,8 +100,6 @@ contains
        ! hierarchy is atm/glc/lnd/rof/ice/ocn.  so water sent from rof to land is negative,
        ! change the sign to indicate addition of water to system.
 
-       atm2lnd_inst%forc_flood_grc(g)   = -x2l(index_x2l_Flrr_flood,i)  
-
        atm2lnd_inst%volr_grc(g)   = x2l(index_x2l_Flrr_volr,i) * (ldomain%area(g) * 1.e6_r8)
        atm2lnd_inst%volrmch_grc(g)= x2l(index_x2l_Flrr_volrmch,i) * (ldomain%area(g) * 1.e6_r8)
 
@@ -169,7 +167,6 @@ contains
        atm2lnd_inst%forc_vp_grc(g)    = forc_q * forc_pbot  / (0.622_r8 + 0.378_r8 * forc_q)
        atm2lnd_inst%forc_rho_not_downscaled_grc(g) = &
             (forc_pbot - 0.378_r8 * atm2lnd_inst%forc_vp_grc(g)) / (rair * forc_t)
-       atm2lnd_inst%forc_po2_grc(g)   = o2_molar_const * forc_pbot
        atm2lnd_inst%forc_wind_grc(g)  = sqrt(atm2lnd_inst%forc_u_grc(g)**2 + atm2lnd_inst%forc_v_grc(g)**2)
        atm2lnd_inst%forc_solar_grc(g) = atm2lnd_inst%forc_solad_grc(g,1) + atm2lnd_inst%forc_solai_grc(g,1) + &
                                         atm2lnd_inst%forc_solad_grc(g,2) + atm2lnd_inst%forc_solai_grc(g,2)
@@ -238,7 +235,6 @@ contains
        else
           co2_ppmv_val = co2_ppmv
        end if
-       atm2lnd_inst%forc_pco2_grc(g)   = co2_ppmv_val * 1.e-6_r8 * forc_pbot 
 
     end do
 

@@ -8,8 +8,8 @@ module atm2lndType
   use shr_kind_mod  , only : r8 => shr_kind_r8
   use shr_infnan_mod, only : nan => shr_infnan_nan, assignment(=)
   use shr_log_mod   , only : errMsg => shr_log_errMsg
-  use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.  ! MML: numrad = 2, 1=vis, 2=nir
-  use clm_varcon    , only : rair, grav, cpair, hfus, tfrz, spval
+  use clm_varpar    , only : numrad  ! MML: numrad = 2, 1=vis, 2=nir
+  use clm_varcon    , only : spval
   use clm_varctl    , only : iulog
   use decompMod     , only : bounds_type
   use abortutils    , only : endrun
@@ -50,11 +50,9 @@ module atm2lndType
      real(r8), pointer :: forc_vp_grc                   (:)   => null() ! atmospheric vapor pressure (Pa)
      real(r8), pointer :: forc_rh_grc                   (:)   => null() ! atmospheric relative humidity (%)
      real(r8), pointer :: forc_psrf_grc                 (:)   => null() ! surface pressure (Pa)
-     real(r8), pointer :: forc_pco2_grc                 (:)   => null() ! CO2 partial pressure (Pa)
      real(r8), pointer :: forc_solad_grc                (:,:) => null() ! direct beam radiation (numrad) (vis=forc_sols , nir=forc_soll )
      real(r8), pointer :: forc_solai_grc                (:,:) => null() ! diffuse radiation (numrad) (vis=forc_solsd, nir=forc_solld)
      real(r8), pointer :: forc_solar_grc                (:)   => null() ! incident solar radiation
-     real(r8), pointer :: forc_po2_grc                  (:)   => null() ! O2 partial pressure (Pa)
      real(r8), pointer :: forc_aer_grc                  (:,:) => null() ! aerosol deposition array
 
      real(r8), pointer :: forc_t_not_downscaled_grc     (:)   => null() ! not downscaled atm temperature (Kelvin)       
@@ -144,7 +142,6 @@ module atm2lndType
 	real(r8), pointer :: mml_atm_rhomol_grc		(:)	  => null() ! molar density of air at ref height [mol/m3]
 	real(r8), pointer :: mml_atm_rhoair_grc		(:)	  => null() ! density of air at ref height [kg/m3]
 	real(r8), pointer :: mml_atm_cp_grc			(:)	  => null() ! specific heat of air at const pressure + ref height [J/kg/K]	
-	real(r8), pointer :: mml_atm_pco2			(:)	  => null() ! partial pressure of co2
 	! Hydrology:
 	real(r8), pointer :: mml_atm_prec_liq_grc    (:)   => null() ! liquid precipitation (rain) [mm/s] ! MML 20180615 - bug: used to say m/s, changing to mm/s
 	real(r8), pointer :: mml_atm_prec_frz_grc	 (:)   => null() ! frozen precipitation (snow) [mm/s]
@@ -239,7 +236,6 @@ module atm2lndType
 	! ------------------------------------------------------------------------------------
 
      !  rof->lnd
-     real(r8), pointer :: forc_flood_grc                (:)   => null() ! rof flood (mm/s)
      real(r8), pointer :: volr_grc                      (:)   => null() ! rof volr total volume (m3)
      real(r8), pointer :: volrmch_grc                   (:)   => null() ! rof volr main channel (m3)
 
@@ -314,11 +310,9 @@ contains
     allocate(this%forc_hgt_q_grc                (begg:endg))        ; this%forc_hgt_q_grc                (:)   = ival
     allocate(this%forc_vp_grc                   (begg:endg))        ; this%forc_vp_grc                   (:)   = ival
     allocate(this%forc_psrf_grc                 (begg:endg))        ; this%forc_psrf_grc                 (:)   = ival
-    allocate(this%forc_pco2_grc                 (begg:endg))        ; this%forc_pco2_grc                 (:)   = ival
     allocate(this%forc_solad_grc                (begg:endg,numrad)) ; this%forc_solad_grc                (:,:) = ival
     allocate(this%forc_solai_grc                (begg:endg,numrad)) ; this%forc_solai_grc                (:,:) = ival
     allocate(this%forc_solar_grc                (begg:endg))        ; this%forc_solar_grc                (:)   = ival
-    allocate(this%forc_po2_grc                  (begg:endg))        ; this%forc_po2_grc                  (:)   = ival
     allocate(this%forc_aer_grc                  (begg:endg,14))     ; this%forc_aer_grc                  (:,:) = ival
 
     ! atm->lnd not downscaled
@@ -378,7 +372,6 @@ contains
 	allocate(this%mml_atm_rhomol_grc    	(begg:endg))     	; this%mml_atm_rhomol_grc     	(:)   = ival
 	allocate(this%mml_atm_rhoair_grc    	(begg:endg))     	; this%mml_atm_rhoair_grc     	(:)   = ival
 	allocate(this%mml_atm_cp_grc    	 	(begg:endg))     	; this%mml_atm_cp_grc	     	(:)   = ival
-	allocate(this%mml_atm_pco2    	 		(begg:endg))     	; this%mml_atm_pco2	     		(:)   = ival
 	allocate(this%mml_atm_prec_liq_grc    	(begg:endg))     	; this%mml_atm_prec_liq_grc     (:)   = ival
 	allocate(this%mml_atm_prec_frz_grc    	(begg:endg))     	; this%mml_atm_prec_frz_grc     (:)   = ival
 	
@@ -469,7 +462,6 @@ contains
 	! ---------------------------------------
 
     ! rof->lnd
-    allocate(this%forc_flood_grc                (begg:endg))        ; this%forc_flood_grc                (:)   = ival
     allocate(this%volr_grc                      (begg:endg))        ; this%volr_grc                      (:)   = ival
     allocate(this%volrmch_grc                   (begg:endg))        ; this%volrmch_grc                   (:)   = ival
 
@@ -524,11 +516,6 @@ contains
     call hist_addfld1d (fname='FSDS', units='W/m^2',  &
          avgflag='A', long_name='atmospheric incident solar radiation', &
          ptr_lnd=this%forc_solar_grc)
-
-    this%forc_pco2_grc(begg:endg) = spval
-    call hist_addfld1d (fname='PCO2', units='Pa',  &
-         avgflag='A', long_name='atmospheric partial pressure of CO2', &
-         ptr_lnd=this%forc_pco2_grc)
 
     this%forc_solar_grc(begg:endg) = spval
     call hist_addfld1d (fname='SWdown', units='W/m^2',  &
@@ -707,11 +694,6 @@ contains
          avgflag='A', long_name='MML specific heat of air at constant pressure at ref height', &
          ptr_lnd=this%mml_atm_cp_grc)
     
-    this%mml_atm_pco2(begg:endg) = spval
-    call hist_addfld1d (fname='MML_pco2', units='Pa',  &
-         avgflag='A', long_name='MML partial pressure of co2', &
-         ptr_lnd=this%mml_atm_pco2)
-         
     this%mml_atm_prec_liq_grc(begg:endg) = spval
     call hist_addfld1d (fname='MML_prec_liq', units='mm/s',  &	! or mm/s? 
          avgflag='A', long_name='MML rate of liquid precipitation (rain)', &
@@ -1421,15 +1403,6 @@ contains
     logical            :: readvar 
     !------------------------------------------------------------------------
 
-    call restartvar(ncid=ncid, flag=flag, varname='qflx_floodg', xtype=ncd_double, &
-         dim1name='gridcell', &
-         long_name='flood water flux', units='mm/s', &
-         interpinic_flag='skip', readvar=readvar, data=this%forc_flood_grc)
-    if (flag == 'read' .and. .not. readvar) then
-       ! initial run, readvar=readvar, not restart: initialize flood to zero
-       this%forc_flood_grc = 0._r8
-    endif
-
     ! -----------------------------------------------------------------------
     ! Start MML simple land model restart variables section		! MML 2016.01.15
     
@@ -1603,11 +1576,9 @@ contains
     deallocate(this%forc_hgt_q_grc)
     deallocate(this%forc_vp_grc)
     deallocate(this%forc_psrf_grc)
-    deallocate(this%forc_pco2_grc)
     deallocate(this%forc_solad_grc)
     deallocate(this%forc_solai_grc)
     deallocate(this%forc_solar_grc)
-    deallocate(this%forc_po2_grc)
     deallocate(this%forc_aer_grc)
 
     ! atm->lnd not downscaled
@@ -1621,7 +1592,6 @@ contains
     deallocate(this%forc_snow_not_downscaled_grc)
     
     ! rof->lnd
-    deallocate(this%forc_flood_grc)
     deallocate(this%volr_grc)
     deallocate(this%volrmch_grc)
 
@@ -1668,7 +1638,6 @@ contains
 	deallocate(this%mml_atm_rhomol_grc   )
 	deallocate(this%mml_atm_rhoair_grc   )
 	deallocate(this%mml_atm_cp_grc    	 )
-	deallocate(this%mml_atm_pco2    	 )
 	deallocate(this%mml_atm_prec_liq_grc )
 	deallocate(this%mml_atm_prec_frz_grc )
 	
