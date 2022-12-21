@@ -21,7 +21,6 @@ module clm_instMod
   ! Definition of component types 
   !-----------------------------------------
 
-  use TemperatureType                 , only : temperature_type
   use UrbanParamsType                 , only : urbanparams_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
@@ -40,7 +39,6 @@ module clm_instMod
   !-----------------------------------------
 
   ! Physics types 
-  type(temperature_type)                  :: temperature_inst
   type(urbanparams_type)                  :: urbanparams_inst
   type(atm2lnd_type)                      :: atm2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
@@ -92,8 +90,6 @@ contains
 
     ! Initialization of public data types
 
-    call temperature_inst%Init(bounds)
-
     call topo_inst%Init(bounds)
 
     ! ------------------------------------------------------------------------
@@ -125,8 +121,6 @@ contains
     !-----------------------------------------------------------------------
 
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
-
-    call temperature_inst%restart (bounds, ncid, flag=flag)
 
     call topo_inst%restart (bounds, ncid, flag=flag)
 
