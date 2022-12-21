@@ -107,21 +107,11 @@ module clm_varctl
   character(len=fname_len), public :: finidat_interp_dest   = 'finidat_interp_dest.nc'     
 
   !----------------------------------------------------------
-  ! BGC logic and datasets
-  !----------------------------------------------------------
-
-  ! values of 'prognostic','diagnostic','constant'
-  character(len=16), public :: co2_type = 'constant'    
-
-  !----------------------------------------------------------
   ! Physics
   !----------------------------------------------------------
 
   ! true => write global average diagnostics to std out
   logical,  public :: wrtdia       = .false.            
-
-  ! atmospheric CO2 molar ratio (by volume) (umol/mol)
-  real(r8), public :: co2_ppmv     = 355._r8            !
 
   !----------------------------------------------------------
   ! single column control variables

@@ -38,8 +38,6 @@ def buildnml(case, caseroot, compname):
 
     lnd_root = case.get_value("COMP_ROOT_DIR_LND")
     din_loc_root = case.get_value("DIN_LOC_ROOT")
-    ccsm_co2_ppmv = case.get_value("CCSM_CO2_PPMV")
-    clm_co2_type = case.get_value("CLM_CO2_TYPE")
     clm_namelist_opts = case.get_value("CLM_NAMELIST_OPTS")
     clm_bldnml_opts = case.get_value("CLM_BLDNML_OPTS")
     clm_nml_use_case = case.get_value("CLM_NML_USE_CASE")
@@ -196,11 +194,11 @@ def buildnml(case, caseroot, compname):
 
         command = ("%s -cimeroot %s -infile %s -csmdata %s -inputdata %s %s -namelist \"&clm_inparm  start_ymd=%s/ \" "
                    "%s %s -res %s -clm_start_type %s -envxml_dir %s -l_ncpl %s "
-                   "-lnd_frac %s -co2_ppmv %s -co2_type %s -config %s "
+                   "-lnd_frac %s -config %s "
                    "%s %s"
                    %(cmd, _CIMEROOT, infile, din_loc_root, inputdata_file, ignore, start_ymd, clm_namelist_opts, 
                      usecase, lnd_grid, start_type, caseroot, lnd_ncpl,
-                     lndfrac_file, ccsm_co2_ppmv, clm_co2_type, config_cache_file, 
+                     lndfrac_file, config_cache_file, 
                      clm_bldnml_opts, gridmask))
 
         rc, out, err = run_cmd(command, from_dir=clmconf)

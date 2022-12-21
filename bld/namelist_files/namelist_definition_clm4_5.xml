@@ -63,20 +63,6 @@ Full pathname of land fraction data file.
 Clumps per processor.
 </entry>
 
-<entry id="co2_ppmv" type="real" category="clm_physics"
-       group="clm_inparm" valid_values="" >
-Atmospheric CO2 molar ratio (by volume) only used when co2_type==constant (umol/mol)
-(Set by CCSM_CO2_PPMV)
-</entry>
-
-<entry id="co2_type" type="char*16" category="clm_physics"
-       group="clm_inparm" valid_values="constant,prognostic,diagnostic" >
-Type of CO2 feedback.
-    constant   = use the input co2_ppmv value
-    prognostic = use the prognostic value sent from the atmosphere
-    diagnostic = use the diagnostic value sent from the atmosphere
-</entry>
-
 <entry id="glacier_region_behavior" type="char*32(10)" category="clm_physics"
        group="clm_glacier_behavior"
        valid_values="multiple,virtual,single_at_atm_topo" >

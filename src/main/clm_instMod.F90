@@ -89,16 +89,17 @@ contains
 
     call topo_inst%Init(bounds)
 
-    ! ------------------------------------------------------------------------
-    ! Initialize accumulated fields
-    ! ------------------------------------------------------------------------
+! TODO SLIM: slevis keeping an example of an accumulated field as template
+!   ! ------------------------------------------------------------------------
+!   ! Initialize accumulated fields
+!   ! ------------------------------------------------------------------------
 
-    ! The time manager needs to be initialized before this called is made, since
-    ! the step size is needed. 
+!   ! The time manager needs to be initialized before this called is made, since
+!   ! the step size is needed. 
 
-    call t_startf('init_accflds')
-    call atm2lnd_inst%InitAccBuffer(bounds)
-    call t_stopf('init_accflds')
+!   call t_startf('init_accflds')
+!   call atm2lnd_inst%InitAccBuffer(bounds)
+!   call t_stopf('init_accflds')
 
   end subroutine clm_instInit
 

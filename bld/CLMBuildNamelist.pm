@@ -92,8 +92,6 @@ OPTIONS
                               (arb_ic=start with arbitrary initial conditions if
                                initial conditions do not exist)
                               (startup=ensure that initial conditions are being used)
-     -co2_type "value"        Set CO2 the type of CO2 variation to use.
-     -co2_ppmv "value"        Set CO2 concentration to use when co2_type is constant (ppmv).
      -csmdata "dir"           Root directory of CESM input data.
                               Can also be set by using the CSMDATA environment variable.
      -help [or -h]            Print usage to STDOUT.
@@ -165,8 +163,6 @@ sub process_commandline {
   my %opts = ( cimeroot              => undef,
                config                => "config_cache.xml",
                csmdata               => undef,
-               co2_type              => undef,
-               co2_ppmv              => undef,
                clm_demand            => "null",
                help                  => 0,
                l_ncpl                => undef,
@@ -190,8 +186,6 @@ sub process_commandline {
   GetOptions(
              "cimeroot=s"                => \$opts{'cimeroot'},
              "clm_demand=s"              => \$opts{'clm_demand'},
-             "co2_ppmv=f"                => \$opts{'co2_ppmv'},
-             "co2_type=s"                => \$opts{'co2_type'},
              "config=s"                  => \$opts{'config'},
              "csmdata=s"                 => \$opts{'csmdata'},
              "envxml_dir=s"              => \$opts{'envxml_dir'},
@@ -851,7 +845,6 @@ sub process_namelist_inline_logic {
   # namelist group: clm_inparm #
   ##############################
   setup_logic_lnd_frac($opts, $nl_flags, $definition, $defaults, $nl, $envxml_ref);
-  setup_logic_co2_type($opts, $nl_flags, $definition, $defaults, $nl);
   setup_logic_start_type($opts, $nl_flags, $nl);
   setup_logic_delta_time($opts, $nl_flags, $definition, $defaults, $nl);
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
@@ -884,34 +877,6 @@ sub setup_logic_lnd_frac {
     # do nothing - use value provided by config_grid.xml and clm.cpl7.template
   } else {
     $log->fatal_error("fatmlndfrc was NOT sent into CLM build-namelist.");
-  }
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_co2_type {
-  my ($opts, $nl_flags, $definition, $defaults, $nl) = @_;
-
-  my $var = "co2_type";
-  if ( defined($opts->{$var}) ) {
-    if ( ! defined($nl->get_value($var)) ) {
-      add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'co2_type','val'=>"$opts->{'co2_type'}");
-    } else {
-      $log->fatal_error("co2_type set on namelist as well as -co2_type option.");
-    }
-  }
-  add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'co2_type');
-  if ( $nl->get_value('co2_type') =~ /constant/ ) {
-    my $var = 'co2_ppmv';
-    if ( defined($opts->{$var}) ) {
-      if ( $opts->{$var} <= 0.0 ) {
-        $log->fatal_error("co2_ppmv can NOT be less than or equal to zero.");
-      }
-      my $group = $definition->get_group_name($var);
-      $nl->set_variable_value($group, $var, $opts->{$var});
-    } else {
-      add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, $var, 'sim_year'=>$nl_flags->{'sim_year'} );
-    }
   }
 }
 

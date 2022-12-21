@@ -13,7 +13,7 @@ module atm2lndType
   use clm_varctl    , only : iulog
   use decompMod     , only : bounds_type
   use abortutils    , only : endrun
-  use PatchType     , only : patch
+! use PatchType     , only : patch
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -42,21 +42,17 @@ module atm2lndType
      real(r8), pointer :: forc_v_grc                    (:)   => null() ! atm wind speed, north direction (m/s)
      real(r8), pointer :: forc_wind_grc                 (:)   => null() ! atmospheric wind speed
      real(r8), pointer :: forc_hgt_grc                  (:)   => null() ! atmospheric reference height (m)
-     real(r8), pointer :: forc_topo_grc                 (:)   => null() ! atmospheric surface height (m)
      real(r8), pointer :: forc_hgt_u_grc                (:)   => null() ! obs height of wind [m] (new)
      real(r8), pointer :: forc_hgt_t_grc                (:)   => null() ! obs height of temperature [m] (new)
      real(r8), pointer :: forc_hgt_q_grc                (:)   => null() ! obs height of humidity [m] (new)
      ! mml maybe use these
      real(r8), pointer :: forc_vp_grc                   (:)   => null() ! atmospheric vapor pressure (Pa)
-     real(r8), pointer :: forc_rh_grc                   (:)   => null() ! atmospheric relative humidity (%)
      real(r8), pointer :: forc_psrf_grc                 (:)   => null() ! surface pressure (Pa)
      real(r8), pointer :: forc_solad_grc                (:,:) => null() ! direct beam radiation (numrad) (vis=forc_sols , nir=forc_soll )
      real(r8), pointer :: forc_solai_grc                (:,:) => null() ! diffuse radiation (numrad) (vis=forc_solsd, nir=forc_solld)
      real(r8), pointer :: forc_solar_grc                (:)   => null() ! incident solar radiation
-     real(r8), pointer :: forc_aer_grc                  (:,:) => null() ! aerosol deposition array
 
      real(r8), pointer :: forc_t_not_downscaled_grc     (:)   => null() ! not downscaled atm temperature (Kelvin)       
-     real(r8), pointer :: forc_th_not_downscaled_grc    (:)   => null() ! not downscaled atm potential temperature (Kelvin)    
      real(r8), pointer :: forc_q_not_downscaled_grc     (:)   => null() ! not downscaled atm specific humidity (kg/kg)  
      			! MML: I think this is the q I need to check if the negative LH is too big. 
      real(r8), pointer :: forc_pbot_not_downscaled_grc  (:)   => null() ! not downscaled atm pressure (Pa)   
@@ -236,7 +232,7 @@ module atm2lndType
 	! ------------------------------------------------------------------------------------
 
      ! time averaged quantities
-     real(r8) , pointer :: fsd240_patch                 (:)   => null() ! patch 240hr average of direct beam radiation 
+!    real(r8) , pointer :: fsd240_patch                 (:)   => null() ! patch 240hr average of direct beam radiation 
 
    contains
 
@@ -244,9 +240,9 @@ module atm2lndType
      procedure, private :: InitAllocate
      procedure, private :: InitHistory  
      procedure, private :: InitCold    		! MML 2016.01.15 adding InitCold to give accumulating variables a starting point 
-     procedure, public  :: InitAccBuffer
-     procedure, public  :: InitAccVars
-     procedure, public  :: UpdateAccVars
+!    procedure, public  :: InitAccBuffer
+!    procedure, public  :: InitAccVars
+!    procedure, public  :: UpdateAccVars
      procedure, public  :: Restart
      procedure, public  :: Clean
 
@@ -286,21 +282,15 @@ contains
     ! !LOCAL VARIABLES:
     real(r8) :: ival  = 0.0_r8  ! initial value
     integer  :: begg, endg
-    integer  :: begc, endc
-    integer  :: begp, endp
     !------------------------------------------------------------------------
 
     begg = bounds%begg; endg= bounds%endg
-    begc = bounds%begc; endc= bounds%endc
-    begp = bounds%begp; endp= bounds%endp
 
     ! atm->lnd
     allocate(this%forc_u_grc                    (begg:endg))        ; this%forc_u_grc                    (:)   = ival
     allocate(this%forc_v_grc                    (begg:endg))        ; this%forc_v_grc                    (:)   = ival
     allocate(this%forc_wind_grc                 (begg:endg))        ; this%forc_wind_grc                 (:)   = ival
-    allocate(this%forc_rh_grc                   (begg:endg))        ; this%forc_rh_grc                   (:)   = ival
     allocate(this%forc_hgt_grc                  (begg:endg))        ; this%forc_hgt_grc                  (:)   = ival
-    allocate(this%forc_topo_grc                 (begg:endg))        ; this%forc_topo_grc                 (:)   = ival
     allocate(this%forc_hgt_u_grc                (begg:endg))        ; this%forc_hgt_u_grc                (:)   = ival
     allocate(this%forc_hgt_t_grc                (begg:endg))        ; this%forc_hgt_t_grc                (:)   = ival
     allocate(this%forc_hgt_q_grc                (begg:endg))        ; this%forc_hgt_q_grc                (:)   = ival
@@ -309,13 +299,11 @@ contains
     allocate(this%forc_solad_grc                (begg:endg,numrad)) ; this%forc_solad_grc                (:,:) = ival
     allocate(this%forc_solai_grc                (begg:endg,numrad)) ; this%forc_solai_grc                (:,:) = ival
     allocate(this%forc_solar_grc                (begg:endg))        ; this%forc_solar_grc                (:)   = ival
-    allocate(this%forc_aer_grc                  (begg:endg,14))     ; this%forc_aer_grc                  (:,:) = ival
 
     ! atm->lnd not downscaled
     allocate(this%forc_t_not_downscaled_grc     (begg:endg))        ; this%forc_t_not_downscaled_grc     (:)   = ival
     allocate(this%forc_q_not_downscaled_grc     (begg:endg))        ; this%forc_q_not_downscaled_grc     (:)   = ival
     allocate(this%forc_pbot_not_downscaled_grc  (begg:endg))        ; this%forc_pbot_not_downscaled_grc  (:)   = ival
-    allocate(this%forc_th_not_downscaled_grc    (begg:endg))        ; this%forc_th_not_downscaled_grc    (:)   = ival
     allocate(this%forc_rho_not_downscaled_grc   (begg:endg))        ; this%forc_rho_not_downscaled_grc   (:)   = ival
     allocate(this%forc_lwrad_not_downscaled_grc (begg:endg))        ; this%forc_lwrad_not_downscaled_grc (:)   = ival
     allocate(this%forc_rain_not_downscaled_grc  (begg:endg))        ; this%forc_rain_not_downscaled_grc  (:)   = ival
@@ -457,7 +445,7 @@ contains
 	
 	! ---------------------------------------
 
-    allocate(this%fsd240_patch                  (begp:endp))        ; this%fsd240_patch                  (:)   = nan
+!   allocate(this%fsd240_patch                  (begp:endp))        ; this%fsd240_patch                  (:)   = nan
 
   end subroutine InitAllocate
 
@@ -475,8 +463,6 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer  :: begg, endg
-    integer  :: begc, endc
-    integer  :: begp, endp
     
     integer  :: mml_nsoi ! number of soil levels
     !---------------------------------------------------------------------
@@ -484,8 +470,6 @@ contains
 	mml_nsoi = 10
 	
     begg = bounds%begg; endg= bounds%endg
-    begc = bounds%begc; endc= bounds%endc
-    begp = bounds%begp; endp= bounds%endp
 	
 	!write(iulog,*)  'MML trying write h0 - start'
 	
@@ -499,11 +483,6 @@ contains
          avgflag='A', long_name='atmospheric reference height', &
          ptr_lnd=this%forc_hgt_grc)
 
-    this%forc_topo_grc(begg:endg) = spval
-    call hist_addfld1d (fname='ATM_TOPO', units='m', &
-         avgflag='A', long_name='atmospheric surface height', &
-         ptr_lnd=this%forc_topo_grc)
-
     this%forc_solar_grc(begg:endg) = spval
     call hist_addfld1d (fname='FSDS', units='W/m^2',  &
          avgflag='A', long_name='atmospheric incident solar radiation', &
@@ -513,11 +492,6 @@ contains
     call hist_addfld1d (fname='SWdown', units='W/m^2',  &
          avgflag='A', long_name='atmospheric incident solar radiation', &
          ptr_gcell=this%forc_solar_grc, default='inactive')
-
-    this%forc_rh_grc(begg:endg) = spval
-    call hist_addfld1d (fname='RH', units='%',  &
-         avgflag='A', long_name='atmospheric relative humidity', &
-         ptr_gcell=this%forc_rh_grc, default='inactive')
 
     this%forc_t_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='Tair_from_atm', units='K',  &
@@ -1269,114 +1243,114 @@ contains
 ! MML: InitAccBuffer sounds like what I actually want... unless it only initializes a 
 ! value with the necessity of having a r0 file overwrite it. 
   !-----------------------------------------------------------------------
-  subroutine InitAccBuffer (this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize accumulation buffer for all required module accumulated fields
-    ! This routine set defaults values that are then overwritten by the
-    ! restart file for restart or branch runs
-    !
-    ! !USES 
-    use clm_varcon  , only : spval
-    use accumulMod  , only : init_accum_field
-    !
-    ! !ARGUMENTS:
-    class(atm2lnd_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !---------------------------------------------------------------------
+! subroutine InitAccBuffer (this, bounds)
+!   !
+!   ! !DESCRIPTION:
+!   ! Initialize accumulation buffer for all required module accumulated fields
+!   ! This routine set defaults values that are then overwritten by the
+!   ! restart file for restart or branch runs
+!   !
+!   ! !USES 
+!   use clm_varcon  , only : spval
+!   use accumulMod  , only : init_accum_field
+!   !
+!   ! !ARGUMENTS:
+!   class(atm2lnd_type) :: this
+!   type(bounds_type), intent(in) :: bounds  
+!   !---------------------------------------------------------------------
 
-    this%fsd240_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSD240', units='W/m2',                                            &
-         desc='240hr average of direct solar radiation',  accum_type='runmean', accum_period=-10,  &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
+!   this%fsd240_patch(bounds%begp:bounds%endp) = spval
+!   call init_accum_field (name='FSD240', units='W/m2',                                            &
+!        desc='240hr average of direct solar radiation',  accum_type='runmean', accum_period=-10,  &
+!        subgrid_type='pft', numlev=1, init_value=0._r8)
 
-  end subroutine InitAccBuffer
+! end subroutine InitAccBuffer
 
-  !-----------------------------------------------------------------------
-  subroutine InitAccVars(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize module variables that are associated with
-    ! time accumulated fields. This routine is called for both an initial run
-    ! and a restart run (and must therefore must be called after the restart file 
-    ! is read in and the accumulation buffer is obtained)
-    !
-    ! !USES 
-    use accumulMod       , only : extract_accum_field
-    use clm_time_manager , only : get_nstep
-    !
-    ! !ARGUMENTS:
-    class(atm2lnd_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer  :: begp, endp
-    integer  :: nstep
-    integer  :: ier
-    real(r8), pointer :: rbufslp(:)  ! temporary
-    !---------------------------------------------------------------------
+! !-----------------------------------------------------------------------
+! subroutine InitAccVars(this, bounds)
+!   !
+!   ! !DESCRIPTION:
+!   ! Initialize module variables that are associated with
+!   ! time accumulated fields. This routine is called for both an initial run
+!   ! and a restart run (and must therefore must be called after the restart file 
+!   ! is read in and the accumulation buffer is obtained)
+!   !
+!   ! !USES 
+!   use accumulMod       , only : extract_accum_field
+!   use clm_time_manager , only : get_nstep
+!   !
+!   ! !ARGUMENTS:
+!   class(atm2lnd_type) :: this
+!   type(bounds_type), intent(in) :: bounds  
+!   !
+!   ! !LOCAL VARIABLES:
+!   integer  :: begp, endp
+!   integer  :: nstep
+!   integer  :: ier
+!   real(r8), pointer :: rbufslp(:)  ! temporary
+!   !---------------------------------------------------------------------
 
-    begp = bounds%begp; endp = bounds%endp
+!   begp = bounds%begp; endp = bounds%endp
 
-    ! Allocate needed dynamic memory for single level patch field
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)' in '
-       call endrun(msg="InitAccVars allocation error for rbufslp"//&
-            errMsg(sourcefile, __LINE__))
-    endif
+!   ! Allocate needed dynamic memory for single level patch field
+!   allocate(rbufslp(begp:endp), stat=ier)
+!   if (ier/=0) then
+!      write(iulog,*)' in '
+!      call endrun(msg="InitAccVars allocation error for rbufslp"//&
+!           errMsg(sourcefile, __LINE__))
+!   endif
 
-    ! Determine time step
-    nstep = get_nstep()
+!   ! Determine time step
+!   nstep = get_nstep()
 
-    call extract_accum_field ('FSD240', rbufslp, nstep)
-    this%fsd240_patch(begp:endp) = rbufslp(begp:endp)
+!   call extract_accum_field ('FSD240', rbufslp, nstep)
+!   this%fsd240_patch(begp:endp) = rbufslp(begp:endp)
 
-    deallocate(rbufslp)
+!   deallocate(rbufslp)
 
-  end subroutine InitAccVars
+! end subroutine InitAccVars
 
-  !-----------------------------------------------------------------------
-  subroutine UpdateAccVars (this, bounds)
-    !
-    ! USES
-    use clm_time_manager, only : get_nstep
-    use accumulMod      , only : update_accum_field, extract_accum_field
-    !
-    ! !ARGUMENTS:
-    class(atm2lnd_type)                 :: this
-    type(bounds_type)      , intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g,c,p                     ! indices
-    integer :: nstep                     ! timestep number
-    integer :: ier                       ! error status
-    integer :: begp, endp
-    real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
-    !---------------------------------------------------------------------
+! !-----------------------------------------------------------------------
+! subroutine UpdateAccVars (this, bounds)
+!   !
+!   ! USES
+!   use clm_time_manager, only : get_nstep
+!   use accumulMod      , only : update_accum_field, extract_accum_field
+!   !
+!   ! !ARGUMENTS:
+!   class(atm2lnd_type)                 :: this
+!   type(bounds_type)      , intent(in) :: bounds  
+!   !
+!   ! !LOCAL VARIABLES:
+!   integer :: g,c,p                     ! indices
+!   integer :: nstep                     ! timestep number
+!   integer :: ier                       ! error status
+!   integer :: begp, endp
+!   real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
+!   !---------------------------------------------------------------------
 
-    begp = bounds%begp; endp = bounds%endp
+!   begp = bounds%begp; endp = bounds%endp
 
-    nstep = get_nstep()
+!   nstep = get_nstep()
 
-    ! Allocate needed dynamic memory for single level patch field
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)'UpdateAccVars allocation error for rbufslp'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
+!   ! Allocate needed dynamic memory for single level patch field
+!   allocate(rbufslp(begp:endp), stat=ier)
+!   if (ier/=0) then
+!      write(iulog,*)'UpdateAccVars allocation error for rbufslp'
+!      call endrun(msg=errMsg(sourcefile, __LINE__))
+!   endif
 
-    ! Accumulate and extract forc_solad24 & forc_solad240 
-    do p = begp,endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_solad_grc(g,1)
-    end do
-    call update_accum_field  ('FSD240', rbufslp               , nstep)
-    call extract_accum_field ('FSD240', this%fsd240_patch     , nstep)
+!   ! Accumulate and extract forc_solad24 & forc_solad240 
+!   do p = begp,endp
+!      g = patch%gridcell(p)
+!      rbufslp(p) = this%forc_solad_grc(g,1)
+!   end do
+!   call update_accum_field  ('FSD240', rbufslp               , nstep)
+!   call extract_accum_field ('FSD240', this%fsd240_patch     , nstep)
 
-    deallocate(rbufslp)
+!   deallocate(rbufslp)
 
-  end subroutine UpdateAccVars
+! end subroutine UpdateAccVars
 
   !------------------------------------------------------------------------
   subroutine Restart(this, bounds, ncid, flag)
@@ -1560,9 +1534,7 @@ contains
     deallocate(this%forc_u_grc)
     deallocate(this%forc_v_grc)
     deallocate(this%forc_wind_grc)
-    deallocate(this%forc_rh_grc)
     deallocate(this%forc_hgt_grc)
-    deallocate(this%forc_topo_grc)
     deallocate(this%forc_hgt_u_grc)
     deallocate(this%forc_hgt_t_grc)
     deallocate(this%forc_hgt_q_grc)
@@ -1571,19 +1543,17 @@ contains
     deallocate(this%forc_solad_grc)
     deallocate(this%forc_solai_grc)
     deallocate(this%forc_solar_grc)
-    deallocate(this%forc_aer_grc)
 
     ! atm->lnd not downscaled
     deallocate(this%forc_t_not_downscaled_grc)
     deallocate(this%forc_q_not_downscaled_grc)
     deallocate(this%forc_pbot_not_downscaled_grc)
-    deallocate(this%forc_th_not_downscaled_grc)
     deallocate(this%forc_rho_not_downscaled_grc)
     deallocate(this%forc_lwrad_not_downscaled_grc)
     deallocate(this%forc_rain_not_downscaled_grc)
     deallocate(this%forc_snow_not_downscaled_grc)
     
-    deallocate(this%fsd240_patch)
+!   deallocate(this%fsd240_patch)
     
     ! MML: deallocate mml vars:
     

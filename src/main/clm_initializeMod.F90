@@ -428,13 +428,14 @@ contains
        call hist_htapes_build()
     end if
 
-    ! ------------------------------------------------------------------------
-    ! Initialize variables that are associated with accumulated fields.
-    ! ------------------------------------------------------------------------
+! TODO SLIM: slevis keeping an example of an accumulated field as template
+!   ! ------------------------------------------------------------------------
+!   ! Initialize variables that are associated with accumulated fields.
+!   ! ------------------------------------------------------------------------
 
-    ! The following is called for both initial and restart runs and must
-    ! must be called after the restart file is read 
-    call atm2lnd_inst%initAccVars(bounds_proc)
+!   ! The following is called for both initial and restart runs and must
+!   ! must be called after the restart file is read 
+!   call atm2lnd_inst%initAccVars(bounds_proc)
 
     !------------------------------------------------------------       
     ! Deallocate wt_nat_patch
