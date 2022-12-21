@@ -45,7 +45,6 @@ module LandunitType
      logical , pointer :: active       (:) ! true=>do computations on this landunit 
 
      ! urban properties
-     real(r8), pointer :: canyon_hwr   (:) ! urban landunit canyon height to width ratio (-)   
      real(r8), pointer :: wtroad_perv  (:) ! urban landunit weight of pervious road column to total road (-)
      real(r8), pointer :: wtlunit_roof (:) ! weight of roof with respect to urban landunit (-)
 
@@ -92,7 +91,6 @@ contains
     allocate(this%active       (begl:endl))
 
     ! The following is set in routine urbanparams_inst%Init in module UrbanParamsType
-    allocate(this%canyon_hwr   (begl:endl)); this%canyon_hwr   (:) = nan
     allocate(this%wtroad_perv  (begl:endl)); this%wtroad_perv  (:) = nan
     allocate(this%wtlunit_roof (begl:endl)); this%wtlunit_roof (:) = nan
 
@@ -122,7 +120,6 @@ contains
     deallocate(this%urbpoi       )
     deallocate(this%glcmecpoi    )
     deallocate(this%active       )
-    deallocate(this%canyon_hwr   )
     deallocate(this%wtroad_perv  )
     deallocate(this%wtlunit_roof )
 

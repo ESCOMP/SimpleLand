@@ -78,10 +78,7 @@ contains
 
     ! Initialize vertical data components 
 
-    call initVertical(bounds,               &
-         glc_behavior, &
-         urbanparams_inst%thick_wall(begl:endl), &
-         urbanparams_inst%thick_roof(begl:endl))
+    call initVertical(bounds)
 
     ! Initialize clm->drv and drv->clm data structures
 

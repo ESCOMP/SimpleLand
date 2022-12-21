@@ -22,19 +22,13 @@ module UrbanParamsType
   !
   ! !PRIVATE TYPE
   type urbinp_type
-     real(r8), pointer :: canyon_hwr      (:,:)  
      real(r8), pointer :: wtlunit_roof    (:,:)  
      real(r8), pointer :: wtroad_perv     (:,:)  
-     real(r8), pointer :: thick_wall      (:,:)
-     real(r8), pointer :: thick_roof      (:,:)
   end type urbinp_type
   type (urbinp_type), public :: urbinp   ! urban input derived type
 
   ! !PUBLIC TYPE
   type, public :: urbanparams_type
-
-     real(r8), pointer     :: thick_wall          (:)   ! lun total thickness of urban wall (m)
-     real(r8), pointer     :: thick_roof          (:)   ! lun total thickness of urban roof (m)
 
    contains
 
@@ -76,10 +70,6 @@ contains
     begl = bounds%begl; endl = bounds%endl
     begg = bounds%begg; endg = bounds%endg
 
-    ! Allocate urbanparams data structure
-    allocate(this%thick_wall          (begl:endl))          ; this%thick_wall          (:)   = nan
-    allocate(this%thick_roof          (begl:endl))          ; this%thick_roof          (:)   = nan
-
     ! Initialize time constant urban variables
 
     do l = begl,endl
@@ -91,14 +81,8 @@ contains
           dindx = lun%itype(l) - isturb_MIN + 1
 
           ! Landunit level initialization for urban wall and roof layers and interfaces
-
-          lun%canyon_hwr(l)   = urbinp%canyon_hwr(g,dindx)
           lun%wtroad_perv(l)  = urbinp%wtroad_perv(g,dindx)
           lun%wtlunit_roof(l) = urbinp%wtlunit_roof(g,dindx)
-
-          this%thick_wall(l)     = urbinp%thick_wall(g,dindx)
-          this%thick_roof(l)     = urbinp%thick_roof(g,dindx)
-
        end if
     end do
 
@@ -171,11 +155,8 @@ contains
        if ( nlevurb == 0 ) return
 
        ! Allocate dynamic memory
-       allocate(urbinp%canyon_hwr(begg:endg, numurbl), &  
-                urbinp%wtlunit_roof(begg:endg, numurbl), &  
+       allocate(urbinp%wtlunit_roof(begg:endg, numurbl), &  
                 urbinp%wtroad_perv(begg:endg, numurbl), &
-                urbinp%thick_wall(begg:endg, numurbl), &
-                urbinp%thick_roof(begg:endg, numurbl), &
                 stat=ier)
        if (ier /= 0) then
           call endrun(msg="Allocation error "//errmsg(sourcefile, __LINE__))
@@ -212,11 +193,6 @@ contains
                'does not equal input dataset numurbl= ',numurbl_i
           call endrun(msg=errmsg(sourcefile, __LINE__))
        endif
-       call ncd_io(ncid=ncid, varname='CANYON_HWR', flag='read', data=urbinp%canyon_hwr,&
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg='ERROR: CANYON_HWR NOT on fsurdat file '//errmsg(sourcefile, __LINE__))
-       end if
 
        call ncd_io(ncid=ncid, varname='WTLUNIT_ROOF', flag='read', data=urbinp%wtlunit_roof, &
             dim1name=grlnd,  readvar=readvar)
@@ -230,18 +206,6 @@ contains
           call endrun( msg=' ERROR: WTROAD_PERV NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
        end if
 
-       call ncd_io(ncid=ncid, varname='THICK_WALL', flag='read', data=urbinp%thick_wall, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: THICK_WALL NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='THICK_ROOF', flag='read', data=urbinp%thick_roof, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: THICK_ROOF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
        call ncd_pio_closefile(ncid)
        if (masterproc) then
           write(iulog,*)' Sucessfully read urban input data' 
@@ -252,11 +216,8 @@ contains
 
        if ( nlevurb == 0 ) return
 
-       deallocate(urbinp%canyon_hwr, &
-                  urbinp%wtlunit_roof, &
+       deallocate(urbinp%wtlunit_roof, &
                   urbinp%wtroad_perv, &
-                  urbinp%thick_wall, &
-                  urbinp%thick_roof, &
                   stat=ier)
        if (ier /= 0) then
           call endrun(msg='initUrbanInput: deallocation error '//errmsg(sourcefile, __LINE__))
