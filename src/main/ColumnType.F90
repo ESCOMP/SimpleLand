@@ -53,9 +53,6 @@ module ColumnType
      real(r8), pointer :: z                    (:,:) ! layer depth (m) (-nlevsno+1:nlevgrnd) 
      real(r8), pointer :: zi                   (:,:) ! interface level below a "z" level (m) (-nlevsno+0:nlevgrnd) 
      real(r8), pointer :: zii                  (:)   ! convective boundary height [m]
-     real(r8), pointer :: dz_lake              (:,:) ! lake layer thickness (m)  (1:nlevlak)
-     real(r8), pointer :: z_lake               (:,:) ! layer depth for lake (m)
-     real(r8), pointer :: lakedepth            (:)   ! variable lake depth (m)                             
      ! other column characteristics
      logical , pointer :: hydrologically_active(:)   ! true if this column is a hydrologically active type
 
@@ -102,9 +99,6 @@ contains
     allocate(this%z           (begc:endc,-nlevsno+1:nlevgrnd)) ; this%z           (:,:) = nan
     allocate(this%zi          (begc:endc,-nlevsno+0:nlevgrnd)) ; this%zi          (:,:) = nan
     allocate(this%zii         (begc:endc))                     ; this%zii         (:)   = nan
-    allocate(this%lakedepth   (begc:endc))                     ; this%lakedepth   (:)   = spval  
-    allocate(this%dz_lake     (begc:endc,nlevlak))             ; this%dz_lake     (:,:) = nan
-    allocate(this%z_lake      (begc:endc,nlevlak))             ; this%z_lake      (:,:) = nan
 
     allocate(this%hydrologically_active(begc:endc))            ; this%hydrologically_active(:) = .false.
 
@@ -132,9 +126,6 @@ contains
     deallocate(this%z          )
     deallocate(this%zi         )
     deallocate(this%zii        )
-    deallocate(this%lakedepth  )
-    deallocate(this%dz_lake    )
-    deallocate(this%z_lake     )
     deallocate(this%hydrologically_active)
 
   end subroutine Clean

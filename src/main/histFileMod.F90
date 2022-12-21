@@ -2120,17 +2120,6 @@ contains
                                                         'ZSOI  ', &
                                                         'DZSOI '  &
                                                     /)
-    real(r8), pointer :: histil(:,:)      ! temporary
-    real(r8), pointer :: histol(:,:)
-    integer, parameter :: nfldsl = 2
-    character(len=*),parameter :: varnamesl(nfldsl) = (/ &
-                                                          'ZLAKE ', &
-                                                          'DZLAKE' &
-                                                      /)
-    !-----------------------------------------------------------------------
-
-!   SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-
     !-------------------------------------------------------------------------------
     !***      Non-time varying 3D fields                    ***
     !***      Only write out when this subroutine is called ***
@@ -2237,88 +2226,6 @@ contains
 
     end if  ! (define/write mode
 
-    if (mode == 'define') then
-       do ifld = 1,nfldsl
-          ! Field indices MUST match varnamesl array order above!
-          if (ifld == 1) then
-             long_name='lake layer node depth'; units = 'm'
-          else if (ifld == 2) then
-             long_name='lake layer thickness'; units = 'm'
-          else
-             call endrun(msg=' ERROR: bad 3D time-constant field index'//errMsg(sourcefile, __LINE__))
-          end if
-          if (tape(t)%dov2xy) then
-             if (ldomain%isgrid2d) then
-                call ncd_defvar(ncid=nfid(t), varname=trim(varnamesl(ifld)), xtype=tape(t)%ncprec,&
-                     dim1name='lon', dim2name='lat', dim3name='levlak', &
-                     long_name=long_name, units=units, missing_value=spval, fill_value=spval)
-             else
-                call ncd_defvar(ncid=nfid(t), varname=trim(varnamesl(ifld)), xtype=tape(t)%ncprec, &
-                        dim1name=grlnd, dim2name='levlak', &
-                     long_name=long_name, units=units, missing_value=spval, fill_value=spval)
-             end if
-          else
-             call ncd_defvar(ncid=nfid(t), varname=trim(varnamesl(ifld)), xtype=tape(t)%ncprec, &
-                  dim1name=namec, dim2name='levlak', &
-                  long_name=long_name, units=units, missing_value=spval, fill_value=spval)
-          end if
-          call shr_string_listAppend(TimeConst3DVars,varnamesl(ifld))
-       end do
-
-    else if (mode == 'write') then
-
-       allocate(histil(bounds%begc:bounds%endc,nlevlak), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*) trim(subname),' ERROR: allocation error for histil'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-
-       ! Write time constant fields
-
-       if (tape(t)%dov2xy) then
-          allocate(histol(bounds%begg:bounds%endg,nlevlak), stat=ier)
-          if (ier /= 0) then
-             write(iulog,*)  trim(subname),' ERROR: allocation error for histol'
-             call endrun(msg=errMsg(sourcefile, __LINE__))
-          end if
-       end if
-
-       do ifld = 1,nfldsl
-          histil(:,:) = spval
-          do lev = 1,nlevlak
-             do c = bounds%begc,bounds%endc
-                l = col%landunit(c)
-                if (lun%lakpoi(l)) then
-                   ! Field indices MUST match varnamesl array order above!
-                   if (ifld ==1) histil(c,lev) = col%z_lake(c,lev) 
-                   if (ifld ==2) histil(c,lev) = col%dz_lake(c,lev)
-                end if
-             end do
-          end do
-          if (tape(t)%dov2xy) then
-             histol(:,:) = spval
-             call c2g(bounds, nlevlak, &
-                  histil(bounds%begc:bounds%endc, :), &
-                  histol(bounds%begg:bounds%endg, :), &
-                  c2l_scale_type='unity', l2g_scale_type='lake')
-             if (ldomain%isgrid2d) then
-                call ncd_io(varname=trim(varnamesl(ifld)), dim1name=grlnd, &
-                     data=histol, ncid=nfid(t), flag='write')
-             else
-                call ncd_io(varname=trim(varnamesl(ifld)), dim1name=grlnd, &
-                     data=histol, ncid=nfid(t), flag='write')
-             end if
-          else
-             call ncd_io(varname=trim(varnamesl(ifld)), dim1name=namec,  &
-                  data=histil, ncid=nfid(t), flag='write')
-          end if
-       end do
-
-       if (tape(t)%dov2xy) deallocate(histol)
-       deallocate(histil)
-
-    end if  ! (define/write mode
-
   end subroutine htape_timeconst3D
 
   !-----------------------------------------------------------------------
@@ -2331,7 +2238,7 @@ contains
     ! contents.
     !
     ! !USES:
-    use clm_varcon      , only : zsoi, zlak, secspday, isecspday, isecsphr, isecspmin
+    use clm_varcon      , only : zsoi, secspday, isecspday, isecsphr, isecspmin
     use domainMod       , only : ldomain, lon1d, lat1d
     use clm_time_manager, only : get_nstep, get_curr_date, get_curr_time
     use clm_time_manager, only : get_ref_date, get_calendar, NO_LEAP_C, GREGORIAN_C
@@ -2410,9 +2317,6 @@ contains
           call ncd_defvar(varname='levgrnd', xtype=tape(t)%ncprec, &
                dim1name='levgrnd', &
                long_name='coordinate soil levels', units='m', ncid=nfid(t))
-          call ncd_defvar(varname='levlak', xtype=tape(t)%ncprec, &
-               dim1name='levlak', &
-               long_name='coordinate lake levels', units='m', ncid=nfid(t))
 
       	  ! Add MML soil layers
           call ncd_defvar(varname='mml_lev', xtype=tape(t)%ncprec, dim1name='mml_lev', &
@@ -2424,7 +2328,6 @@ contains
        elseif (mode == 'write') then
           if ( masterproc ) write(iulog, *) ' zsoi:',zsoi
           call ncd_io(varname='levgrnd', data=zsoi, ncid=nfid(t), flag='write')
-          call ncd_io(varname='levlak' , data=zlak, ncid=nfid(t), flag='write')
           zsoi_1d(1) = 1._r8
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')

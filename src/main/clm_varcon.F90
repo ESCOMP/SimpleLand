@@ -114,8 +114,6 @@ module clm_varcon
   ! The values for the following arrays are set in routine iniTimeConst
   !------------------------------------------------------------------
 
-  real(r8), allocatable :: zlak(:)         !lake z  (layers)
-  real(r8), allocatable :: dzlak(:)        !lake dz (thickness)
   real(r8), allocatable :: zsoi(:)         !soil z  (layers)
   real(r8), allocatable :: dzsoi(:)        !soil dz (thickness)
   real(r8), allocatable :: zisoi(:)        !soil zi (interfaces)
@@ -142,8 +140,6 @@ contains
     !   Created by E. Kluzek
 !------------------------------------------------------------------------------
 
-    allocate( zlak(1:nlevlak                 ))
-    allocate( dzlak(1:nlevlak                ))
     allocate( zsoi(1:nlevgrnd                ))
     allocate( dzsoi(1:nlevgrnd               ))
     allocate( zisoi(0:nlevgrnd               ))
