@@ -25,12 +25,6 @@ module glcBehaviorMod
   type, public :: glc_behavior_type
      private
 
-     ! If allow_multiple_columns_grc(g) is true, then grid cell g may have multiple
-     ! glacier columns, for the different elevation classes. If
-     ! allow_multiple_columns_grc(g) is false, then grid cell g is guaranteed to have at
-     ! most one glacier column.
-     logical, allocatable, public :: allow_multiple_columns_grc(:)
-
      ! ------------------------------------------------------------------------
      ! Private data
      ! ------------------------------------------------------------------------
@@ -65,9 +59,6 @@ module glcBehaviorMod
      ! potentially changing at runtime)
      procedure, public  :: cols_have_dynamic_type
 
-     ! update the column class types of any glc_mec columns that need to be updated
-     procedure, public  :: update_glc_classes
-
      ! ------------------------------------------------------------------------
      ! Public routines, for unit tests only
      ! ------------------------------------------------------------------------
@@ -90,10 +81,6 @@ module glcBehaviorMod
      ! returns a column-level filter of ice_mec columns with the collapse_to_atm_topo
      ! behavior
      procedure, private :: collapse_to_atm_topo_icemec_filterc
-
-     ! update class of glc_mec columns in regions where these are collapsed to a single
-     ! column, given a filter
-     procedure, private :: update_collapsed_columns_classes
 
   end type glc_behavior_type
 
@@ -212,18 +199,10 @@ contains
        my_id = glacier_region_map(g)
        my_behavior = glacier_region_behavior(my_id)
 
-       ! For now, allow_multiple_columns_grc is simply the opposite of
-       ! collapse_to_atm_topo_grc. However, we maintain the separate
-       ! allow_multiple_columns_grc so that the public interface can stay the same if we
-       ! differentiate between the two in the future - e.g., allowing for the possibility
-       ! of a behavior where we have at most one glacier column, but not forced to the
-       ! atmosphere's elevation.
        if (my_behavior == BEHAVIOR_SINGLE_AT_ATM_TOPO) then
           this%collapse_to_atm_topo_grc(g) = .true.
-          this%allow_multiple_columns_grc(g) = .false.
        else
           this%collapse_to_atm_topo_grc(g) = .false.
-          this%allow_multiple_columns_grc(g) = .true.
        end if
     end do
 
@@ -331,7 +310,6 @@ contains
     character(len=*), parameter :: subname = 'InitAllocate'
     !-----------------------------------------------------------------------
 
-    allocate(this%allow_multiple_columns_grc(begg:endg)); this%allow_multiple_columns_grc(:) = .false.
     allocate(this%collapse_to_atm_topo_grc(begg:endg)); this%collapse_to_atm_topo_grc(:) = .false.
 
   end subroutine InitAllocate
@@ -589,92 +567,6 @@ contains
     end if
 
   end function cols_have_dynamic_type
-
-  !-----------------------------------------------------------------------
-  subroutine update_glc_classes(this, bounds, topo_col)
-    !
-    ! !DESCRIPTION:
-    ! Update the column class types of any glc_mec columns that need to be updated.
-    !
-    ! Assumes that topo_col has already been set appropriately.
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    class(glc_behavior_type), intent(in) :: this
-    type(bounds_type), intent(in) :: bounds
-    real(r8), intent(in) :: topo_col( bounds%begc: )
-    !
-    ! !LOCAL VARIABLES:
-    type(filter_col_type) :: collapse_filterc
-
-    character(len=*), parameter :: subname = 'update_glc_classes'
-    !-----------------------------------------------------------------------
-
-    collapse_filterc = this%collapse_to_atm_topo_icemec_filterc(bounds)
-    call this%update_collapsed_columns_classes(bounds, collapse_filterc, topo_col)
-
-  end subroutine update_glc_classes
-
-  !-----------------------------------------------------------------------
-  subroutine update_collapsed_columns_classes(this, bounds, collapse_filterc, topo_col)
-    !
-    ! !DESCRIPTION:
-    ! Update class of glc_mec columns in regions where these are collapsed to a single
-    ! column, given a filter.
-    !
-    ! Assumes that topo_col has already been updated appropriately for these columns.
-    !
-    ! !USES:
-    use glc_elevclass_mod, only : glc_get_elevation_class, GLC_ELEVCLASS_ERR_NONE
-    use glc_elevclass_mod, only : GLC_ELEVCLASS_ERR_TOO_LOW, GLC_ELEVCLASS_ERR_TOO_HIGH
-    use glc_elevclass_mod, only : glc_errcode_to_string
-    use column_varcon    , only : icemec_class_to_col_itype
-    !
-    ! !ARGUMENTS:
-    class(glc_behavior_type), intent(in) :: this
-    type(bounds_type), intent(in) :: bounds
-    type(filter_col_type), intent(in) :: collapse_filterc
-    real(r8), intent(in) :: topo_col( bounds%begc: )
-    !
-    ! !LOCAL VARIABLES:
-    integer :: fc         ! filter index
-    integer :: c          ! column index
-    integer :: elev_class ! elevation class of the single column on the ice_mec landunit
-    integer :: err_code
-    integer :: new_coltype
-
-    character(len=*), parameter :: subname = 'update_collapsed_columns_classes'
-    !-----------------------------------------------------------------------
-
-    SHR_ASSERT_ALL((ubound(topo_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-
-    do fc = 1, collapse_filterc%num
-       c = collapse_filterc%indices(fc)
-
-       call glc_get_elevation_class(topo_col(c), elev_class, err_code)
-       if ( err_code == GLC_ELEVCLASS_ERR_NONE .or. &
-            err_code == GLC_ELEVCLASS_ERR_TOO_LOW .or. &
-            err_code == GLC_ELEVCLASS_ERR_TOO_HIGH) then
-          ! These are all acceptable "errors" - it is even okay for these purposes if
-          ! the elevation is lower than the lower bound of elevation class 1, or
-          ! higher than the upper bound of the top elevation class.
-          
-          ! Do nothing
-       else
-          write(iulog,*) subname, ': ERROR getting elevation class for topo = ', &
-               topo_col(c)
-          write(iulog,*) glc_errcode_to_string(err_code)
-          call endrun(msg=subname//': ERROR getting elevation class')
-       end if
-
-       new_coltype = icemec_class_to_col_itype(elev_class)
-       if (new_coltype /= col%itype(c)) then
-          call col%update_itype(c = c, itype = new_coltype)
-       end if
-    end do
-          
-  end subroutine update_collapsed_columns_classes
 
   !-----------------------------------------------------------------------
   function collapse_to_atm_topo_icemec_filterc(this, bounds) result(filter)

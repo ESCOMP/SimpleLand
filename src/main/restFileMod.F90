@@ -22,7 +22,6 @@ module restFileMod
   use ncdio_pio        , only : file_desc_t, ncd_pio_createfile, ncd_pio_openfile, ncd_global
   use ncdio_pio        , only : ncd_pio_closefile, ncd_defdim, ncd_putatt, ncd_enddef, check_dim
   use ncdio_pio        , only : check_att, ncd_getatt
-  use glcBehaviorMod   , only : glc_behavior_type
   use reweightMod      , only : reweight_wrapup
   !
   ! !PUBLIC TYPES:
@@ -38,7 +37,6 @@ module restFileMod
   public :: restFile_filename        ! Sets restart filename
   !
   ! !PRIVATE MEMBER FUNCTIONS:
-  private :: restFile_set_derived       ! On a read, set variables derived from others
   private :: restFile_read_pfile
   private :: restFile_write_pfile       ! Writes restart pointer file
   private :: restFile_closeRestart      ! Close restart file and write restart pointer file
@@ -137,7 +135,7 @@ contains
   end subroutine restFile_write
 
   !-----------------------------------------------------------------------
-  subroutine restFile_read( bounds_proc, file, glc_behavior )
+  subroutine restFile_read( bounds_proc, file)
     !
     ! !DESCRIPTION:
     ! Read a CLM restart file.
@@ -145,7 +143,6 @@ contains
     ! !ARGUMENTS:
     type(bounds_type) , intent(in) :: bounds_proc      ! processor-level bounds
     character(len=*)  , intent(in) :: file             ! output netcdf restart file
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     type(file_desc_t) :: ncid    ! netcdf id
@@ -190,8 +187,6 @@ contains
     call accumulRest( ncid, flag='read' )
 
     call clm_instRest( bounds_proc, ncid, flag='read' )
-
-    call restFile_set_derived(bounds_proc, glc_behavior)
 
     call hist_restart_ncd (bounds_proc, ncid, flag='read' )
 
@@ -275,34 +270,6 @@ contains
     end if
 
   end subroutine restFile_getfile
-
-  !-----------------------------------------------------------------------
-  subroutine restFile_set_derived(bounds, glc_behavior)
-    !
-    ! !DESCRIPTION:
-    ! Upon a restart read, set variables that are not on the restart file, but can be
-    ! derived from variables that are on the restart file.
-    !
-    ! This should be called after variables are read from the restart file.
-    !
-    ! !USES:
-    !
-    ! NOTE(wjs, 2016-04-05) Is it an architectural violation to use topo_inst directly
-    ! here? I can't see a good way around it.
-    use clm_instMod, only : topo_inst
-    !
-    ! !ARGUMENTS:
-    type(bounds_type), intent(in) :: bounds
-    type(glc_behavior_type), intent(in) :: glc_behavior
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'restFile_set_derived'
-    !-----------------------------------------------------------------------
-
-    call glc_behavior%update_glc_classes(bounds, topo_inst%topo_col(bounds%begc:bounds%endc))
-
-  end subroutine restFile_set_derived
 
   !-----------------------------------------------------------------------
   subroutine restFile_read_pfile( pnamer )

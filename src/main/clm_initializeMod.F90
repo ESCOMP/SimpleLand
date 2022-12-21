@@ -373,7 +373,7 @@ contains
              write(iulog,*)'Reading initial conditions from ',trim(finidat)
           end if
           call getfil( finidat, fnamer, 0 )
-          call restFile_read(bounds_proc, fnamer, glc_behavior)
+          call restFile_read(bounds_proc, fnamer)
        end if
 
     else if ((nsrest == nsrContinue) .or. (nsrest == nsrBranch)) then
@@ -381,7 +381,7 @@ contains
        if (masterproc) then
           write(iulog,*)'Reading restart file ',trim(fnamer)
        end if
-       call restFile_read(bounds_proc, fnamer, glc_behavior)
+       call restFile_read(bounds_proc, fnamer)
 
     end if
 
@@ -407,7 +407,7 @@ contains
        call initInterp(filei=fnamer, fileo=finidat_interp_dest, bounds=bounds_proc)
 
        ! Read new interpolated conditions file back in
-       call restFile_read(bounds_proc, finidat_interp_dest, glc_behavior)
+       call restFile_read(bounds_proc, finidat_interp_dest)
 
        ! Reset finidat to now be finidat_interp_dest 
        ! (to be compatible with routines still using finidat)

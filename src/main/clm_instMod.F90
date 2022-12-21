@@ -25,7 +25,6 @@ module clm_instMod
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
   use glcBehaviorMod                  , only : glc_behavior_type
-  use TopoMod                         , only : topo_type
   use GridcellType                    , only : grc
   use LandunitType                    , only : lun                
   use ColumnType                      , only : col                
@@ -43,7 +42,6 @@ module clm_instMod
   type(atm2lnd_type)                      :: atm2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
   type(glc_behavior_type), target         :: glc_behavior
-  type(topo_type)                         :: topo_inst
 
   public :: clm_instInit       ! Initialize
   public :: clm_instRest       ! Setup restart
@@ -87,8 +85,6 @@ contains
 
     ! Initialization of public data types
 
-    call topo_inst%Init(bounds)
-
 ! TODO SLIM: slevis keeping an example of an accumulated field as template
 !   ! ------------------------------------------------------------------------
 !   ! Initialize accumulated fields
@@ -119,8 +115,6 @@ contains
     !-----------------------------------------------------------------------
 
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
-
-    call topo_inst%restart (bounds, ncid, flag=flag)
 
  end subroutine clm_instRest
 
