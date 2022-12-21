@@ -11,7 +11,6 @@ module TopoMod
   use PatchType      , only : patch
   use ColumnType     , only : col
   use LandunitType   , only : lun
-  use glcBehaviorMod , only : glc_behavior_type
   use landunit_varcon, only : istice_mec
   use filterColMod   , only : filter_col_type, col_filter_from_logical_array_active_only
   !
@@ -26,10 +25,6 @@ module TopoMod
      ! Public member data
 
      real(r8), pointer, public :: topo_col(:)  ! surface elevation (m)
-
-     ! Private member data
-
-     logical, pointer :: needs_downscaling_col(:)  ! whether a column needs to be downscaled
 
    contains
      procedure, public :: Init
@@ -76,9 +71,6 @@ contains
     allocate(this%topo_col(begc:endc))
     this%topo_col(:) = nan
 
-    allocate(this%needs_downscaling_col(begc:endc))
-    this%needs_downscaling_col(:) = .false.
-
   end subroutine InitAllocate
 
   !-----------------------------------------------------------------------
@@ -98,22 +90,7 @@ contains
     !-----------------------------------------------------------------------
 
     do c = bounds%begc, bounds%endc
-       l = col%landunit(c)
-       g = col%gridcell(c)
-
-       if (lun%itype(l) == istice_mec) then
-          ! For ice_mec landunits, initialize topo_col based on surface dataset; this
-          ! will get overwritten in the run loop by values sent from CISM
-          icemec_class = col_itype_to_icemec_class(col%itype(c))
-          this%topo_col(c) = topo_glc_mec(g, icemec_class)
-          this%needs_downscaling_col(c) = .true.
-       else
-          ! For other landunits, arbitrarily initialize topo_col to 0 m; for landunits
-          ! where this matters, this will get overwritten in the run loop by values sent
-          ! from CISM
           this%topo_col(c) = 0._r8
-          this%needs_downscaling_col(c) = .false.
-       end if
     end do
 
   end subroutine InitCold
@@ -171,7 +148,6 @@ contains
     !-----------------------------------------------------------------------
 
     deallocate(this%topo_col)
-    deallocate(this%needs_downscaling_col)
 
   end subroutine Clean
 

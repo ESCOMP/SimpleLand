@@ -65,10 +65,6 @@ module glcBehaviorMod
      ! potentially changing at runtime)
      procedure, public  :: cols_have_dynamic_type
 
-     ! Sets a column-level logical array to true for any ice_mec column that needs
-     ! downscaling, false for any ice_mec column that does not need downscaling
-     procedure, public  :: icemec_cols_need_downscaling
-
      ! update the column class types of any glc_mec columns that need to be updated
      procedure, public  :: update_glc_classes
 
@@ -593,48 +589,6 @@ contains
     end if
 
   end function cols_have_dynamic_type
-
-  !-----------------------------------------------------------------------
-  subroutine icemec_cols_need_downscaling(this, bounds, num_icemecc, filter_icemecc, &
-       needs_downscaling_col)
-    !
-    ! !DESCRIPTION:
-    ! Sets needs_downscaling_col to true for any ice_mec column that needs downscaling,
-    ! false for any ice_mec column that does not need downscaling.
-    !
-    ! Outside of filter_icemecc, leaves needs_downscaling_col untouched.
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    class(glc_behavior_type) , intent(in) :: this
-    type(bounds_type)        , intent(in) :: bounds
-    integer                  , intent(in) :: num_icemecc       ! number of points in filter_icemecc
-    integer                  , intent(in) :: filter_icemecc(:) ! col filter for ice_mec
-    logical                  , intent(inout) :: needs_downscaling_col( bounds%begc: )
-    !
-    ! !LOCAL VARIABLES:
-    integer :: fc
-    integer :: c
-    integer :: g
-
-    character(len=*), parameter :: subname = 'icemec_cols_need_downscaling'
-    !-----------------------------------------------------------------------
-
-    SHR_ASSERT_ALL((ubound(needs_downscaling_col) == (/bounds%endc/)), errMsg(sourcefile, __LINE__))
-
-    do fc = 1, num_icemecc
-       c = filter_icemecc(fc)
-       g = col%gridcell(c)
-
-       if (this%collapse_to_atm_topo_grc(g)) then
-          needs_downscaling_col(c) = .false.
-       else
-          needs_downscaling_col(c) = .true.
-       end if
-    end do
-
-  end subroutine icemec_cols_need_downscaling
 
   !-----------------------------------------------------------------------
   subroutine update_glc_classes(this, bounds, topo_col)
