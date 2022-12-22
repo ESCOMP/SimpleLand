@@ -135,9 +135,6 @@ contains
     endif
     ldomain%mask = 1  !!! TODO - is this needed?
 
-    ! Initialize glc behavior
-    call glc_behavior%Init(begg, endg, NLFilename)
-
     ! Initialize urban model input (initialize urbinp data structure)
     ! This needs to be called BEFORE the call to surfrd_get_data since
     ! that will call surfrd_get_special which in turn calls check_urban

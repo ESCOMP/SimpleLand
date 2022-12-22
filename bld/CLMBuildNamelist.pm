@@ -848,7 +848,6 @@ sub process_namelist_inline_logic {
   setup_logic_start_type($opts, $nl_flags, $nl);
   setup_logic_delta_time($opts, $nl_flags, $definition, $defaults, $nl);
   setup_logic_decomp_performance($opts,  $nl_flags, $definition, $defaults, $nl);
-  setup_logic_glacier($opts, $nl_flags, $definition, $defaults, $nl,  $envxml_ref, $physv);
   setup_logic_demand($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_surface_dataset($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_initial_conditions($opts, $nl_flags, $definition, $defaults, $nl, $physv);
@@ -942,17 +941,6 @@ sub setup_logic_decomp_performance {
 
   # Set the number of segments per clump
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'nsegspc', 'hgrid'=>$nl_flags->{'res'});
-}
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_glacier {
-  #
-  # Glacier multiple elevation class options
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $envxml_ref, $physv) = @_;
-
-  add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'glacier_region_behavior');
 }
 
 #-------------------------------------------------------------------------------
@@ -1202,8 +1190,7 @@ sub write_output_files {
   # CLM component
   my @groups = qw(clm_inparm 
                  finidat_consistency_checks 
-                 clm_initinterp_inparm 
-                 clm_glacier_behavior);
+                 clm_initinterp_inparm);
 
   my $outfile;
   $outfile = "$opts->{'dir'}/lnd_in";

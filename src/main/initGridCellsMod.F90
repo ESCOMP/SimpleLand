@@ -349,20 +349,13 @@ contains
     logical  :: col_exists
     real(r8) :: wtlunit2gcell ! weight relative to gridcell of landunit
     real(r8) :: wtcol2lunit   ! col weight in landunit
-    logical  :: type_is_dynamic
-
-    ! We don't have a true atm_topo value at the point of this call, so arbitrarily use
-    ! 0. This will put glc_mec in elevation class 1 in some places where it should
-    ! actually be in a higher elevation class, but that will be adjusted in the run loop
-    ! (or upon reading the restart file).
-    real(r8), parameter :: atm_topo = 0._r8
 
     character(len=*), parameter :: subname = 'set_landunit_ice_mec'
     !-----------------------------------------------------------------------
 
     SHR_ASSERT(ltype == istice_mec, errMsg(sourcefile, __LINE__))
 
-    call subgrid_get_info_glacier_mec(gi, atm_topo, glc_behavior, &
+    call subgrid_get_info_glacier_mec(gi, glc_behavior, &
          npatches=npatches, ncols=ncols, nlunits=nlunits)
 
     if (nlunits == 1) then
@@ -378,13 +371,12 @@ contains
        ! This ensures that the ice sheet component, glc, will receive a surface mass
        ! balance in each elevation class wherever the SMB is needed.
        
-       type_is_dynamic = glc_behavior%cols_have_dynamic_type(gi)
        do m = 1, 10
-          call glc_behavior%glc_mec_col_exists(gi = gi, elev_class = m, atm_topo = atm_topo, &
+          call glc_behavior%glc_mec_col_exists(gi = gi, elev_class = m, &
                exists = col_exists, col_wt_lunit = wtcol2lunit)
           if (col_exists) then
              call add_column(ci=ci, li=li, ctype=icemec_class_to_col_itype(m), &
-                  wtlunit=wtcol2lunit, type_is_dynamic=type_is_dynamic)
+                  wtlunit=wtcol2lunit, type_is_dynamic=.false.)
              call add_patch(pi=pi, ci=ci, ptype=0, wtcol=1.0_r8)
           endif
        enddo
