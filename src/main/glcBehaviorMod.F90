@@ -60,13 +60,6 @@ module glcBehaviorMod
      procedure, public  :: cols_have_dynamic_type
 
      ! ------------------------------------------------------------------------
-     ! Public routines, for unit tests only
-     ! ------------------------------------------------------------------------
-
-     ! get the value of collapse_to_atm_topo at a given grid cell
-     procedure, public :: get_collapse_to_atm_topo
-
-     ! ------------------------------------------------------------------------
      ! Private routines
      ! ------------------------------------------------------------------------
 
@@ -77,10 +70,6 @@ module glcBehaviorMod
 
      ! reads local namelist items
      procedure, private, nopass :: read_namelist
-
-     ! returns a column-level filter of ice_mec columns with the collapse_to_atm_topo
-     ! behavior
-     procedure, private :: collapse_to_atm_topo_icemec_filterc
 
   end type glc_behavior_type
 
@@ -228,12 +217,7 @@ contains
     subroutine determine_region_presence
       integer :: g
       integer :: my_id
-
       glacier_region_present(:) = .false.
-      do g = begg, endg
-         my_id = glacier_region_map(g)
-         glacier_region_present(my_id) = .true.
-      end do
     end subroutine determine_region_presence
 
     subroutine translate_glacier_region_behavior
@@ -567,67 +551,5 @@ contains
     end if
 
   end function cols_have_dynamic_type
-
-  !-----------------------------------------------------------------------
-  function collapse_to_atm_topo_icemec_filterc(this, bounds) result(filter)
-    !
-    ! !DESCRIPTION:
-    ! Returns a column-level filter of ice_mec columns with the collapse_to_atm_topo behavior
-    !
-    ! !USES:
-    use filterColMod, only : filter_col_type, col_filter_from_grcflags_ltypes
-    !
-    ! !ARGUMENTS:
-    class(glc_behavior_type), intent(in) :: this
-    type(filter_col_type) :: filter  ! function result
-    type(bounds_type), intent(in) :: bounds
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'collapse_to_atm_topo_icemec_filterc'
-    !-----------------------------------------------------------------------
-
-    ! Currently this creates the filter on the fly, recreating it every time this
-    ! function is called. Since this is a static filter, we could just compute it once
-    ! and save it, returning the already-computed filter when this function is called.
-    ! However, the problem with that is the need to have a different filter for each
-    ! clump (and potentially another filter for calls from outside a clump loop). This
-    ! will become easier to handle if we rework CLM's threading so that there is a
-    ! separate instance of each object for each clump: in that case, we'll have multiple
-    ! instances of glc_behavior_type, each corresponding to one clump, each with its own
-    ! filter.
-
-    filter = col_filter_from_grcflags_ltypes( &
-         bounds = bounds, &
-         grcflags = this%collapse_to_atm_topo_grc(bounds%begg:bounds%endg), &
-         ltypes = [istice_mec], &
-         include_inactive = .true.)
-
-  end function collapse_to_atm_topo_icemec_filterc
-
-  !-----------------------------------------------------------------------
-  function get_collapse_to_atm_topo(this, gi) result(collapse_to_atm_topo)
-    !
-    ! !DESCRIPTION:
-    ! Get the value of collapse_to_atm_topo at a given grid cell
-    !
-    ! This function just exists to support unit testing, and should not be called from
-    ! production code.
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    logical :: collapse_to_atm_topo  ! function result
-    class(glc_behavior_type), intent(in) :: this
-    integer, intent(in) :: gi ! grid cell index
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'get_collapse_to_atm_topo'
-    !-----------------------------------------------------------------------
-
-    collapse_to_atm_topo = this%collapse_to_atm_topo_grc(gi)
-
-  end function get_collapse_to_atm_topo
 
 end module glcBehaviorMod
