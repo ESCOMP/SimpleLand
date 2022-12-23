@@ -230,7 +230,6 @@ contains
     use histFileMod           , only : hist_addfld1d, hist_addfld2d, no_snow_normal
     use restFileMod           , only : restFile_getfile, restFile_open, restFile_close
     use restFileMod           , only : restFile_read, restFile_write 
-    use lnd2atmMod            , only : lnd2atm_minimal
     use controlMod            , only : NLFilename
     !
     ! !ARGUMENTS    
@@ -436,17 +435,6 @@ contains
     ! The following is called for both initial and restart runs and must
     ! must be called after the restart file is read 
     call atm2lnd_inst%initAccVars(bounds_proc)
-
-    !------------------------------------------------------------       
-    ! Determine gridcell averaged properties to send to atm
-    !------------------------------------------------------------       
-
-    if (nsrest == nsrStartup) then
-       call t_startf('init_map2gc')
-       call lnd2atm_minimal(bounds_proc, &
-            waterstate_inst, surfalb_inst, energyflux_inst, lnd2atm_inst)
-       call t_stopf('init_map2gc')
-    end if
 
     !------------------------------------------------------------       
     ! Deallocate wt_nat_patch

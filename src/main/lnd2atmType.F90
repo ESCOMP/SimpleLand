@@ -91,6 +91,9 @@ contains
     ! !DESCRIPTION:
     ! Initialize lnd2atm derived type
     !
+    ! !USES
+    use clm_varcon, only: sb, tfrz
+    !
     ! !ARGUMENTS:
     class (lnd2atm_type) :: this
     type(bounds_type), intent(in) :: bounds  
@@ -104,17 +107,17 @@ contains
     begc = bounds%begc; endc = bounds%endc
     begg = bounds%begg; endg = bounds%endg
 
-    allocate(this%t_rad_grc          (begg:endg))            ; this%t_rad_grc          (:)   =ival
+    allocate(this%t_rad_grc          (begg:endg))            ; this%t_rad_grc          (:)   = tfrz + 2._r8
     allocate(this%t_ref2m_grc        (begg:endg))            ; this%t_ref2m_grc        (:)   =ival
     allocate(this%q_ref2m_grc        (begg:endg))            ; this%q_ref2m_grc        (:)   =ival
     allocate(this%u_ref10m_grc       (begg:endg))            ; this%u_ref10m_grc       (:)   =ival
-    allocate(this%h2osno_grc         (begg:endg))            ; this%h2osno_grc         (:)   =ival
+    allocate(this%h2osno_grc         (begg:endg))            ; this%h2osno_grc         (:)   = 0._r8
     allocate(this%h2osoi_vol_grc     (begg:endg,1:nlevgrnd)) ; this%h2osoi_vol_grc     (:,:) =ival
-    allocate(this%albd_grc           (begg:endg,1:numrad))   ; this%albd_grc           (:,:) =ival
-    allocate(this%albi_grc           (begg:endg,1:numrad))   ; this%albi_grc           (:,:) =ival
+    allocate(this%albd_grc           (begg:endg,1:numrad))   ; this%albd_grc           (:,:) = 0.2_r8
+    allocate(this%albi_grc           (begg:endg,1:numrad))   ; this%albi_grc           (:,:) = 0.2_r8
     allocate(this%taux_grc           (begg:endg))            ; this%taux_grc           (:)   =ival
     allocate(this%tauy_grc           (begg:endg))            ; this%tauy_grc           (:)   =ival
-    allocate(this%eflx_lwrad_out_grc (begg:endg))            ; this%eflx_lwrad_out_grc (:)   =ival
+    allocate(this%eflx_lwrad_out_grc (begg:endg))            ; this%eflx_lwrad_out_grc (:)   = sb * tfrz**4
     allocate(this%eflx_sh_tot_grc    (begg:endg))            ; this%eflx_sh_tot_grc    (:)   =ival
     allocate(this%eflx_sh_ice_to_liq_col(begc:endc))         ; this%eflx_sh_ice_to_liq_col(:) = ival
     allocate(this%eflx_lh_tot_grc    (begg:endg))            ; this%eflx_lh_tot_grc    (:)   =ival
