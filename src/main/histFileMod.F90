@@ -143,7 +143,7 @@ module histFileMod
      character(len=max_chars)  :: units        ! units
      character(len=hist_dim_name_length) :: type1d                ! pointer to first dimension type from data type (nameg, etc)
      character(len=hist_dim_name_length) :: type1d_out            ! hbuf first dimension type from data type (nameg, etc)
-     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","subname(n)"]
+     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","numrad","ltype","subname(n)"]
      integer :: beg1d                          ! on-node 1d clm pointer start index
      integer :: end1d                          ! on-node 1d clm pointer end index
      integer :: num1d                          ! size of clm pointer first dimension (all nodes)
@@ -929,7 +929,7 @@ contains
     integer :: f                   ! field index
     integer :: num2d               ! size of second dimension (e.g. number of vertical levels)
     character(len=*),parameter :: subname = 'hist_update_hbuf'
-    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","subname(n)"]
+    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","numrad","ltype","subname(n)"]
     !-----------------------------------------------------------------------
 
     do t = 1,ntapes
@@ -1304,7 +1304,7 @@ contains
     ! wrapper calls to define the history file contents.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, numrad, nlevsoi
+    use clm_varpar      , only : nlevgrnd, numrad
     use clm_varctl      , only : caseid, ctitle, fsurdat, finidat
     use clm_varctl      , only : version, hostname, username, conventions, source
     use domainMod       , only : ldomain
@@ -1437,9 +1437,7 @@ contains
 
     ! "level" dimensions
     call ncd_defdim(lnfid, 'levgrnd', nlevgrnd, dimid)
-    call ncd_defdim(lnfid, 'levsoi', nlevsoi, dimid)
     call ncd_defdim(lnfid, 'numrad' , numrad , dimid)
-    call ncd_defdim(lnfid, 'levsno' , nlevsno , dimid)
 
     do n = 1,num_subs
        call ncd_defdim(lnfid, subs_name(n), subs_dim(n), dimid)
@@ -1498,12 +1496,9 @@ contains
     !
     real(r8), pointer :: histi(:,:)       ! temporary
     real(r8), pointer :: histo(:,:)       ! temporary
-    integer, parameter :: nflds = 2       ! Number of 3D time-constant fields
+    integer, parameter :: nflds = 1       ! Number of 3D time-constant fields
     character(len=*),parameter :: subname = 'htape_timeconst3D'
-    character(len=*),parameter :: varnames(nflds) = (/ &
-                                                        'ZSOI  ', &
-                                                        'DZSOI '  &
-                                                    /)
+    character(len=*),parameter :: varnames(nflds) = (/ 'ZSOI  ' /)
     !-------------------------------------------------------------------------------
     !***      Non-time varying 3D fields                    ***
     !***      Only write out when this subroutine is called ***
@@ -1516,8 +1511,6 @@ contains
           ! Field indices MUST match varnames array order above!
           if (ifld == 1) then
              long_name='soil depth'; units = 'm'
-          else if (ifld == 2) then
-             long_name='soil thickness'; units = 'm'
           else
              call endrun(msg=' ERROR: bad 3D time-constant field index'//errMsg(sourcefile, __LINE__))
           end if
@@ -1580,7 +1573,7 @@ contains
     ! contents.
     !
     ! !USES:
-    use clm_varcon      , only : zsoi, secspday, isecspday, isecsphr, isecspmin
+    use clm_varcon      , only : secspday, isecspday, isecsphr, isecspmin
     use domainMod       , only : ldomain, lon1d, lat1d
     use clm_time_manager, only : get_nstep, get_curr_date, get_curr_time
     use clm_time_manager, only : get_ref_date, get_calendar, NO_LEAP_C, GREGORIAN_C
@@ -1617,7 +1610,6 @@ contains
     character(len=256):: str              ! global attribute string
     real(r8), pointer :: histo(:,:)       ! temporary
     integer :: status
-    real(r8) :: zsoi_1d(1)
     character(len=*),parameter :: subname = 'htape_timeconst'
     
     ! MML soil z:
@@ -1664,8 +1656,6 @@ contains
                long_name='mml dust bins', units='unknown', ncid=nfid(t))
       
        elseif (mode == 'write') then
-          if ( masterproc ) write(iulog, *) ' zsoi:',zsoi
-          zsoi_1d(1) = 1._r8
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')
           
@@ -3267,7 +3257,7 @@ contains
     ! initial or branch run to initialize the actual history tapes.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, numrad, nlevsoi
+    use clm_varpar      , only : nlevgrnd, numrad
     !
     ! !ARGUMENTS:
     character(len=*), intent(in) :: fname                      ! field name
@@ -3300,12 +3290,8 @@ contains
     select case (type2d)
     case ('levgrnd')
        num2d = nlevgrnd
-    case ('levsoi')
-       num2d = nlevsoi
     case ('numrad')
        num2d = numrad
-    case ('levsno')
-       num2d = nlevsno
     ! MML: adding my own 
     case ('mml_lev')
     	num2d = 10 !mml_nsoi ! mml_dim ! mml_nsoi not defined in this subroutine, so hard coding until I get more clever...
@@ -3314,7 +3300,7 @@ contains
     case default
        write(iulog,*) trim(subname),' ERROR: unsupported 2d type ',type2d, &
           ' currently supported types for multi level fields are: ', &
-          '[levgrnd,levsoi,levlak,numrad,levtrc,ltype,levsno]'
+          '[levgrnd,levsoi,numrad,ltype]'
        call endrun(msg=errMsg(sourcefile, __LINE__))
     end select
 

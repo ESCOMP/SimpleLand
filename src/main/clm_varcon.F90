@@ -112,11 +112,6 @@ module clm_varcon
   !------------------------------------------------------------------
 
   real(r8), allocatable :: zsoi(:)         !soil z  (layers)
-  real(r8), allocatable :: dzsoi(:)        !soil dz (thickness)
-  real(r8), allocatable :: zisoi(:)        !soil zi (interfaces)
-  real(r8) ,allocatable :: zsoifl(:)       !original soil midpoint (used in interpolation of sand and clay)
-  real(r8) ,allocatable :: zisoifl(:)      !original soil interface depth (used in interpolation of sand and clay)
-  real(r8) ,allocatable :: dzsoifl(:)      !original soil thickness  (used in interpolation of sand and clay)
 
 contains
 
@@ -128,7 +123,7 @@ contains
     ! MUST be called  after clm_varpar_init.
     !
     ! !USES:
-    use clm_varpar, only: nlevgrnd, nlevsoifl
+    use clm_varpar, only: nlevgrnd
     !
     ! !ARGUMENTS:
     implicit none
@@ -138,11 +133,6 @@ contains
 !------------------------------------------------------------------------------
 
     allocate( zsoi(1:nlevgrnd                ))
-    allocate( dzsoi(1:nlevgrnd               ))
-    allocate( zisoi(0:nlevgrnd               ))
-    allocate( zsoifl(1:nlevsoifl             ))
-    allocate( zisoifl(0:nlevsoifl            ))
-    allocate( dzsoifl(1:nlevsoifl            ))
 
   end subroutine clm_varcon_init
 

@@ -17,7 +17,7 @@ module controlMod
   use abortutils                       , only: endrun
   use spmdMod                          , only: masterproc
   use decompMod                        , only: clump_pproc
-  use clm_varpar                       , only: numrad, nlevsno
+  use clm_varpar                       , only: numrad
   use histFileMod                      , only: max_tapes, max_namlen 
   use histFileMod                      , only: hist_empty_htapes, hist_dov2xy, hist_avgflag_pertape, hist_type1d_pertape 
   use histFileMod                      , only: hist_nhtfrq, hist_ndens, hist_mfilt, hist_fincl1, hist_fincl2, hist_fincl3
@@ -147,9 +147,6 @@ contains
          hist_fexcl1,  hist_fexcl2, hist_fexcl3, &
          hist_fexcl4,  hist_fexcl5, hist_fexcl6
 
-    ! Glacier_mec info
-    namelist /clm_inparm/ nlevsno
-
     ! Other options
 
     namelist /clm_inparm/  &
@@ -250,14 +247,6 @@ contains
            call clm_varctl_set( nsrest_in=override_nsrest )
        end if
 
-       ! If nlevsno are equal to their junk
-       ! default value, then they were not specified by the user namelist and we generate
-       ! an error message. Also check nlevsno for bounds.
-       if (nlevsno < 3 .or. nlevsno > 12)  then
-          write(iulog,*)'ERROR: nlevsno = ',nlevsno,' is not supported, must be in range 3-12.'
-          call endrun(msg=' ERROR: invalid value for nlevsno in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
     endif   ! end of if-masterproc if-block
 
     ! ----------------------------------------------------------------------
@@ -347,9 +336,6 @@ contains
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
 
-    ! snow pack variables
-    call mpi_bcast (nlevsno, 1, MPI_INTEGER, 0, mpicom, ier)
-
     ! history file variables
     call mpi_bcast (hist_empty_htapes, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (hist_dov2xy, size(hist_dov2xy), MPI_LOGICAL, 0, mpicom, ier)
@@ -421,7 +407,6 @@ contains
     else
        write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
     end if
-    write(iulog,*) '   Number of snow layers =', nlevsno
 
     if (nsrest == nsrStartup) then
        if (finidat /= ' ') then

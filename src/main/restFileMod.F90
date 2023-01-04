@@ -427,7 +427,7 @@ contains
     use clm_time_manager     , only : get_nstep
     use clm_varctl           , only : caseid, ctitle, version, username, hostname, fsurdat
     use clm_varctl           , only : conventions, source
-    use clm_varpar           , only : numrad, nlevsno, nlevgrnd
+    use clm_varpar           , only : numrad, nlevgrnd
     use decompMod            , only : get_proc_global
     !
     ! !ARGUMENTS:
@@ -451,9 +451,6 @@ contains
     call ncd_defdim(ncid , nameg      , numg           ,  dimid)
 
     call ncd_defdim(ncid , 'levgrnd' , nlevgrnd       ,  dimid)
-    call ncd_defdim(ncid , 'levsno'  , nlevsno        ,  dimid)
-    call ncd_defdim(ncid , 'levsno1' , nlevsno+1      ,  dimid)
-    call ncd_defdim(ncid , 'levtot'  , nlevsno+nlevgrnd, dimid)
     call ncd_defdim(ncid , 'numrad'  , numrad         ,  dimid)
     call ncd_defdim(ncid , 'string_length', 64        ,  dimid)
 	
@@ -516,7 +513,7 @@ contains
     !
     ! !USES:
     use decompMod,  only : get_proc_global
-    use clm_varpar, only : nlevsno, nlevgrnd
+    use clm_varpar, only : nlevgrnd
     use clm_varctl, only : single_column, nsrest, nsrStartup
     !
     ! !ARGUMENTS:
@@ -543,9 +540,6 @@ contains
             'or when running a resolution or configuration that differs from the initial conditions.)'
        call check_dim(ncid, nameg, numg, msg=msg)
     end if
-    call check_dim(ncid, 'levsno'  , nlevsno, &
-         msg = 'You can deal with this mismatch by rerunning with ' // &
-               'use_init_interp = .true. in user_nl_clm')
     call check_dim(ncid, 'levgrnd' , nlevgrnd)
     ! mml add check for my dim?
     call check_dim(ncid, 'mml_lev'  , 10) 

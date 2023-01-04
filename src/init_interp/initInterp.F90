@@ -44,7 +44,6 @@ module initInterpMod
   private :: interp_1d_double
   private :: interp_1d_int
   private :: interp_2d_double
-  private :: limit_snlsno
 
   ! Private data
  
@@ -181,10 +180,6 @@ contains
     ! ensure that the dimension sizes match. So we may want to remove the must_be_same
     ! argument, and make check_dim_level purely informational, in order to remove this
     ! maintenance problem - or maybe even remove check_dim_level entirely.
-    call check_dim_level(ncidi, ncido, dimname='levsno' , must_be_same=.false.)
-    call check_dim_level(ncidi, ncido, dimname='levsno1', must_be_same=.false.)
-    call check_dim_level(ncidi, ncido, dimname='levlak' , must_be_same=.true.)
-    call check_dim_level(ncidi, ncido, dimname='levtot' , must_be_same=.false.)
     call check_dim_level(ncidi, ncido, dimname='levgrnd', must_be_same=.false.)
     call check_dim_level(ncidi, ncido, dimname='numrad' , must_be_same=.true.)
 
@@ -484,9 +479,6 @@ contains
     if (masterproc) then
        write(iulog,*) 'Cleaning up / adjusting variables'
     end if
-
-    call limit_snlsno(ncido, bounds_o)
-
 
     ! Close output file
 
@@ -894,67 +886,5 @@ contains
     end if
 
   end subroutine check_dim_level
-
-  !-----------------------------------------------------------------------
-  subroutine limit_snlsno(ncido, bounds_o)
-    !
-    ! !DESCRIPTION:
-    ! Apply a limit to SNLSNO in the output file so that it doesn't exceed the number of
-    ! snow layers.
-    !
-    ! This is needed if the output file has fewer snow layers than the input file.
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t)       , intent(inout) :: ncido         
-    type(interp_bounds_type), intent(in)    :: bounds_o
-    !
-    ! !LOCAL VARIABLES:
-    character(len=16) :: vec_dimname
-    integer :: bego, endo
-    integer, pointer :: snlsno(:)
-    integer :: snlsno_dids(1)  ! dimension ID
-    integer :: levsno_dimid
-    integer :: levsno
-    integer :: i
-    integer :: err_code
-
-    character(len=*), parameter :: levsno_dimname = 'levsno'
-    character(len=*), parameter :: snlsno_varname = 'SNLSNO'
-
-    character(len=*), parameter :: subname = 'limit_snlsno'
-    !-----------------------------------------------------------------------
-
-    ! Determine levsno size
-    call ncd_inqdlen(ncid=ncido, dimid=levsno_dimid, len=levsno, name=levsno_dimname)
-
-    ! Read SNLSNO
-    !
-    ! TODO(wjs, 2015-11-01) This is a lot of code for simply reading in a 1-d variable.
-    ! It would be nice if there was a routine that did all of this for you, similarly to
-    ! what initInterp2dvar does for 2-d variables.
-    call ncd_inqvdname(ncid=ncido, varname=snlsno_varname, dimnum=1, dname=vec_dimname, &
-         err_code=err_code)
-    if (err_code /= 0) then
-       call endrun(subname//' ERROR getting vec_dimname')
-    end if
-    bego = bounds_o%get_beg(vec_dimname)
-    endo = bounds_o%get_end(vec_dimname)
-    allocate(snlsno(bego:endo))
-    call ncd_io(ncid=ncido, varname=snlsno_varname, flag='read', data=snlsno, &
-         dim1name=trim(vec_dimname))
-
-    ! Limit SNLSNO
-    do i = bego, endo
-       ! Note that snlsno is negative
-       snlsno(i) = max(snlsno(i), -1*levsno)
-    end do
-
-    ! Write out limited SNLSNO
-    call ncd_io(ncid=ncido, varname=snlsno_varname, flag='write', data=snlsno, &
-         dim1name=trim(vec_dimname))
-    deallocate(snlsno)
-  end subroutine limit_snlsno
 
 end module initInterpMod

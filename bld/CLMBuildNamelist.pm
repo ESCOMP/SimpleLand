@@ -851,7 +851,6 @@ sub process_namelist_inline_logic {
   setup_logic_demand($opts, $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_surface_dataset($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
   setup_logic_initial_conditions($opts, $nl_flags, $definition, $defaults, $nl, $physv);
-  setup_logic_snowpack($opts,  $nl_flags, $definition, $defaults, $nl, $physv);
 
 }
 
@@ -1156,19 +1155,6 @@ sub setup_logic_initial_conditions {
      $log->fatal_error("$useinitvar is set BUT $var is NOT, need to set both" );
   }
 } # end initial conditions
-
-#-------------------------------------------------------------------------------
-
-sub setup_logic_snowpack {
-  #
-  # Snowpack related options
-  #
-  my ($opts, $nl_flags, $definition, $defaults, $nl, $physv) = @_;
-
-  if ($physv->as_long() >= $physv->as_long("clm4_5")) {
-    add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'nlevsno');
-  }
-}
 
 #-------------------------------------------------------------------------------
 

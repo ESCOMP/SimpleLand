@@ -15,12 +15,9 @@ module clm_varpar
 
   ! Note - model resolution is read in from the surface dataset
 
-  integer            :: nlevsoi               ! number of hydrologically active soil layers
-  integer            :: nlevsoifl             ! number of soil layers on input file
   integer            :: nlevgrnd              ! number of ground layers 
                                               ! (includes lower layers that are hydrologically inactive)
                                               ! (includes lower layers that are biogeochemically inactive)
-  integer            :: nlevsno     =  -1     ! maximum number of snow layers
   !ED variables
   integer, parameter :: numrad      =   2     ! number of solar radiation bands: vis, nir
   integer, parameter :: ndst        =   4     ! number of dust size classes (BGC only)
@@ -46,13 +43,10 @@ contains
     character(len=32) :: subname = 'clm_varpar_init'  ! subroutine name
     !------------------------------------------------------------------------------
 
-    nlevsoifl   =  10
-    nlevsoi     =  nlevsoifl
     nlevgrnd    =  15
 
     if ( masterproc )then
        write(iulog, *) 'CLM varpar subsurface discretization levels '
-       write(iulog, '(a, i3)') '    nlevsoi = ', nlevsoi
        write(iulog, '(a, i3)') '    nlevgrnd = ', nlevgrnd
        write(iulog, *)
     end if

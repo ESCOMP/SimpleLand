@@ -22,10 +22,6 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- Default time step -->
 <dtime>1800</dtime>
 
-<!-- Snow pack settings-->
-<nlevsno phys="clm5_0" >12</nlevsno>
-<nlevsno phys="clm4_5" >5</nlevsno>
-
 <!-- ================================================================== -->
 <!-- The default filenames are given relative to the root directory
      for the CLM2 data in the CESM distribution -->

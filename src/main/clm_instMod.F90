@@ -43,9 +43,6 @@ contains
   !-----------------------------------------------------------------------
   subroutine clm_instInit(bounds)
     !
-    ! !USES: 
-    use clm_varpar                         , only : nlevsno
-    !
     ! !ARGUMENTS    
     type(bounds_type), intent(in) :: bounds  ! processor bounds
     !

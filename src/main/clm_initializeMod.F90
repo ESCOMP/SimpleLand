@@ -39,7 +39,7 @@ contains
     use clm_varctl       , only: fsurdat, fatmlndfrc, noland, version, mml_surdat  
     use decompInitMod    , only: decompInit_lnd, decompInit_clumps, decompInit_glcp
     use domainMod        , only: domain_check, ldomain, domain_init
-    use surfrdMod        , only: surfrd_get_globmask, surfrd_get_grid, surfrd_get_data 
+    use surfrdMod        , only: surfrd_get_globmask, surfrd_get_grid
     use controlMod       , only: control_init, control_print, NLFilename
     use ncdio_pio        , only: ncd_pio_init
     !
@@ -158,7 +158,6 @@ contains
     !
     ! !USES:
     use shr_scam_mod          , only : shr_scam_getCloseLatLon
-    use clm_varpar            , only : nlevsno
     use clm_varcon            , only : spval
     use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat, mml_surdat
     use clm_varctl            , only : single_column, scmlat, scmlon
