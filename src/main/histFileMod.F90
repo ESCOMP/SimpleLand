@@ -1656,10 +1656,6 @@ contains
 
     if (tape(t)%ntimes == 1) then
        if (mode == 'define') then
-          call ncd_defvar(varname='levgrnd', xtype=tape(t)%ncprec, &
-               dim1name='levgrnd', &
-               long_name='coordinate soil levels', units='m', ncid=nfid(t))
-
       	  ! Add MML soil layers
           call ncd_defvar(varname='mml_lev', xtype=tape(t)%ncprec, dim1name='mml_lev', &
                long_name='mml soil levels', units='m', ncid=nfid(t))
@@ -1669,7 +1665,6 @@ contains
       
        elseif (mode == 'write') then
           if ( masterproc ) write(iulog, *) ' zsoi:',zsoi
-          call ncd_io(varname='levgrnd', data=zsoi, ncid=nfid(t), flag='write')
           zsoi_1d(1) = 1._r8
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')

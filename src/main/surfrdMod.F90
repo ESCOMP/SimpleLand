@@ -10,12 +10,10 @@ module surfrdMod
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use shr_log_mod     , only : errMsg => shr_log_errMsg
   use abortutils      , only : endrun
-  use clm_varpar      , only : nlevsoifl
   use clm_varcon      , only : grlnd
   use clm_varctl      , only : iulog, scmlat, scmlon, single_column
-  use surfrdUtilsMod  , only : check_sums_equal_1
   use ncdio_pio       , only : file_desc_t, var_desc_t, ncd_pio_openfile, ncd_pio_closefile
-  use ncdio_pio       , only : ncd_io, check_var, ncd_inqfdims, check_dim, ncd_inqdid
+  use ncdio_pio       , only : ncd_io, check_var, ncd_inqfdims, ncd_inqdid
   use pio
   use spmdMod                         
   !
@@ -26,13 +24,8 @@ module surfrdMod
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: surfrd_get_globmask  ! Reads global land mask (needed for setting domain decomp)
   public :: surfrd_get_grid      ! Read grid/ladnfrac data into domain (after domain decomp)
-  public :: surfrd_get_data      ! Read surface dataset and determine subgrid weights
-  !
-  ! !PRIVATE MEMBER FUNCTIONS:
   !
   ! !PRIVATE DATA MEMBERS:
-  ! default multiplication factor for epsilon for error checks
-  real(r8), private, parameter :: eps_fact = 2._r8
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -271,125 +264,5 @@ contains
     call ncd_pio_closefile(ncid)
 
   end subroutine surfrd_get_grid
-
-  !-----------------------------------------------------------------------
-  subroutine surfrd_get_data (begg, endg, ldomain, lfsurdat)
-    !
-    ! !DESCRIPTION:
-    ! Read the surface dataset and create subgrid weights.
-    ! The model's surface dataset recognizes 6 basic land cover types within a grid
-    ! cell: lake, wetland, urban, glacier, glacier_mec and vegetated. The vegetated
-    ! portion of the grid cell is comprised of up to [maxpatch_pft] patches. These
-    ! subgrid patches are read in explicitly for each grid cell. This is in
-    ! contrast to LSMv1, where the patches were built implicitly from biome types.
-    !    o real latitude  of grid cell (degrees)
-    !    o real longitude of grid cell (degrees)
-    !    o integer surface type: 0 = ocean or 1 = land
-    !    o integer soil color (1 to 20) for use with soil albedos
-    !    o real soil texture, %sand, for thermal and hydraulic properties
-    !    o real soil texture, %clay, for thermal and hydraulic properties
-    !    o real % of cell covered by lake    for use as subgrid patch
-    !    o real % of cell covered by wetland for use as subgrid patch
-    !    o real % of cell that is urban      for use as subgrid patch
-    !    o real % of cell that is glacier    for use as subgrid patch
-    !    o real % of cell that is glacier_mec for use as subgrid patch
-    !    o integer PFTs
-    !    o real % abundance PFTs (as a percent of vegetated area)
-    !
-    ! !USES:
-    use fileutils   , only : getfil
-    use domainMod   , only : domain_type, domain_init, domain_clean
-    !
-    ! !ARGUMENTS:
-    integer,          intent(in) :: begg, endg      
-    type(domain_type),intent(in) :: ldomain     ! land domain
-    character(len=*), intent(in) :: lfsurdat    ! surface dataset filename
-    !
-    ! !LOCAL VARIABLES:
-    type(var_desc_t)  :: vardesc              ! pio variable descriptor
-    type(domain_type) :: surfdata_domain      ! local domain associated with surface dataset
-    character(len=256):: locfn                ! local file name
-    integer           :: n                    ! loop indices
-    integer           :: ni,nj,ns             ! domain sizes
-    character(len=16) :: lon_var, lat_var     ! names of lat/lon on dataset
-    logical           :: readvar              ! true => variable is on dataset
-    real(r8)          :: rmaxlon,rmaxlat      ! local min/max vars
-    type(file_desc_t) :: ncid                 ! netcdf id
-    logical           :: istype_domain        ! true => input file is of type domain
-    logical           :: isgrid2d             ! true => intut grid is 2d 
-    character(len=32) :: subname = 'surfrd_get_data'    ! subroutine name
-    !-----------------------------------------------------------------------
-
-    if (masterproc) then
-       write(iulog,*) 'Attempting to read surface boundary data .....'
-       if (lfsurdat == ' ') then
-          write(iulog,*)'lfsurdat must be specified'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       endif
-    endif
-
-    ! Read surface data
-
-    call getfil( lfsurdat, locfn, 0 )
-    call ncd_pio_openfile (ncid, trim(locfn), 0)
-
-    ! Check if fsurdat grid is "close" to fatmlndfrc grid, exit if lats/lon > 0.001
-
-    call check_var(ncid=ncid, varname='xc', vardesc=vardesc, readvar=readvar) 
-    if (readvar) then
-       istype_domain = .true.
-    else
-       call check_var(ncid=ncid, varname='LONGXY', vardesc=vardesc, readvar=readvar) 
-       if (readvar) then
-          istype_domain = .false.
-       else
-          call endrun( msg=' ERROR: unknown domain type'//errMsg(sourcefile, __LINE__))
-       end if
-    end if
-    if (istype_domain) then
-       lon_var  = 'xc'
-       lat_var  = 'yc'
-    else
-       lon_var  = 'LONGXY'
-       lat_var  = 'LATIXY'
-    end if
-    if ( masterproc )then
-       write(iulog,*) trim(subname),' lon_var = ',trim(lon_var),' lat_var =',trim(lat_var)
-    end if
-
-    call ncd_inqfdims(ncid, isgrid2d, ni, nj, ns)
-    call domain_init(surfdata_domain, isgrid2d, ni, nj, begg, endg, clmlevel=grlnd)
-
-    call ncd_io(ncid=ncid, varname=lon_var, flag='read', data=surfdata_domain%lonc, &
-         dim1name=grlnd, readvar=readvar)
-    if (.not. readvar) call endrun( msg=' ERROR: lon var NOT on surface dataset'//errMsg(sourcefile, __LINE__))
-
-    call ncd_io(ncid=ncid, varname=lat_var, flag='read', data=surfdata_domain%latc, &
-         dim1name=grlnd, readvar=readvar)
-    if (.not. readvar) call endrun( msg=' ERROR: lat var NOT on surface dataset'//errMsg(sourcefile, __LINE__))
-
-    rmaxlon = 0.0_r8
-    rmaxlat = 0.0_r8
-    do n = begg,endg
-       if (ldomain%lonc(n)-surfdata_domain%lonc(n) > 300.) then
-          rmaxlon = max(rmaxlon,abs(ldomain%lonc(n)-surfdata_domain%lonc(n)-360._r8))
-       elseif (ldomain%lonc(n)-surfdata_domain%lonc(n) < -300.) then
-          rmaxlon = max(rmaxlon,abs(ldomain%lonc(n)-surfdata_domain%lonc(n)+360._r8))
-       else
-          rmaxlon = max(rmaxlon,abs(ldomain%lonc(n)-surfdata_domain%lonc(n)))
-       endif
-       rmaxlat = max(rmaxlat,abs(ldomain%latc(n)-surfdata_domain%latc(n)))
-    enddo
-    if (rmaxlon > 0.001_r8 .or. rmaxlat > 0.001_r8) then
-       write(iulog,*)' ERROR: surfdata/fatmgrid lon/lat mismatch error', rmaxlon,rmaxlat
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    end if
-
-    if ( masterproc )then
-       write(iulog,*) 'Successfully read surface boundary data'
-       write(iulog,*)
-    end if
-
-  end subroutine surfrd_get_data
 
 end module surfrdMod

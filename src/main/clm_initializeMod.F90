@@ -125,10 +125,6 @@ contains
     endif
     ldomain%mask = 1  !!! TODO - is this needed?
 
-    ! Read surface dataset and set up subgrid weight arrays
-    
-    call surfrd_get_data(begg, endg, ldomain, fsurdat)
-
     ! ------------------------------------------------------------------------
     ! Determine decomposition of subgrid scale landunits, columns, patches
     ! ------------------------------------------------------------------------

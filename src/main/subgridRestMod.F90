@@ -7,14 +7,11 @@ module subgridRestMod
   use shr_kind_mod       , only : r8 => shr_kind_r8
   use shr_log_mod        , only : errMsg => shr_log_errMsg
   use abortutils         , only : endrun
-  use decompMod          , only : bounds_type, BOUNDS_LEVEL_PROC, ldecomp
+  use decompMod          , only : bounds_type, ldecomp
   use domainMod          , only : ldomain
-  use clm_time_manager   , only : get_curr_date
   use clm_varcon         , only : nameg
-  use clm_varpar         , only : nlevsno, nlevgrnd
   use pio                , only : file_desc_t
   use ncdio_pio          , only : ncd_int, ncd_double
-  use GetGlobalValuesMod , only : GetGlobalIndex
   use GridcellType       , only : grc                
   use restUtilMod
   !
