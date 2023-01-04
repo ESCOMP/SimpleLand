@@ -45,17 +45,12 @@ contains
     !
     ! !USES: 
     use clm_varpar                         , only : nlevsno
-    use initVerticalMod                    , only : initVertical
     !
     ! !ARGUMENTS    
     type(bounds_type), intent(in) :: bounds  ! processor bounds
     !
     ! !LOCAL VARIABLES:
     !----------------------------------------------------------------------
-
-    ! Initialize vertical data components 
-
-    call initVertical(bounds)
 
     ! Initialize clm->drv and drv->clm data structures
 
