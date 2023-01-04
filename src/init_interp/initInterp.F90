@@ -7,7 +7,7 @@ module initInterpMod
 
 #include "shr_assert.h"
   use initInterpBounds, only : interp_bounds_type
-  use initInterpMindist, only: set_mindist, subgrid_type, subgrid_special_indices_type
+  use initInterpMindist, only: set_mindist, subgrid_type
   use initInterp1dData, only : interp_1d_data
   use initInterp2dvar, only: interp_2dvar_type
   use initInterpMultilevelBase, only : interp_multilevel_type
@@ -31,7 +31,7 @@ module initInterpMod
 
   ! Public methods
 
-  public :: initInterp_readnl  ! Read namelist
+! public :: initInterp_readnl  ! Read namelist
   public :: initInterp
 
   ! Private methods
@@ -48,12 +48,6 @@ module initInterpMod
 
   ! Private data
  
-  character(len=8) :: created_glacier_mec_landunits
-
-  ! If true, fill missing types with closest natural veg column (using bare soil for
-  ! patch-level variables)
-  logical :: init_interp_fill_missing_with_natveg
-
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
 
@@ -62,59 +56,53 @@ contains
   !=======================================================================
 
   !-----------------------------------------------------------------------
-  subroutine initInterp_readnl(NLFilename)
-    !
-    ! !DESCRIPTION:
-    ! Read the namelist for initInterp
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
+! subroutine initInterp_readnl(NLFilename)
+!   !
+!   ! !DESCRIPTION:
+!   ! Read the namelist for initInterp
+!   !
+!   ! !USES:
+!   use fileutils      , only : getavu, relavu, opnfil
+!   use shr_nl_mod     , only : shr_nl_find_group_name
+!   use spmdMod        , only : masterproc, mpicom
+!   use shr_mpi_mod    , only : shr_mpi_bcast
+!   !
+!   ! !ARGUMENTS:
+!   character(len=*), intent(in) :: NLFilename ! Namelist filename
+!   !
+!   ! !LOCAL VARIABLES:
+!   integer :: ierr                 ! error code
+!   integer :: unitn                ! unit for namelist file
 
-    character(len=*), parameter :: subname = 'initInterp_readnl'
-    !-----------------------------------------------------------------------
+!   character(len=*), parameter :: subname = 'initInterp_readnl'
+!   !-----------------------------------------------------------------------
 
-    namelist /clm_initinterp_inparm/ &
-         init_interp_fill_missing_with_natveg
+!   ! Initialize options to default values, in case they are not specified in the namelist
 
-    ! Initialize options to default values, in case they are not specified in the namelist
-    init_interp_fill_missing_with_natveg = .false.
+!   if (masterproc) then
+!      unitn = getavu()
+!      write(iulog,*) 'Read in clm_initinterp_inparm  namelist'
+!      call opnfil (NLFilename, unitn, 'F')
+!      call shr_nl_find_group_name(unitn, 'clm_initinterp_inparm', status=ierr)
+!      if (ierr == 0) then
+!         read(unitn, clm_initinterp_inparm, iostat=ierr)
+!         if (ierr /= 0) then
+!            call endrun(msg="ERROR reading clm_initinterp_inparm namelist"//errmsg(sourcefile, __LINE__))
+!         end if
+!      else
+!         call endrun(msg="ERROR finding clm_initinterp_inparm namelist"//errmsg(sourcefile, __LINE__))
+!      end if
+!      call relavu( unitn )
+!   end if
 
-    if (masterproc) then
-       unitn = getavu()
-       write(iulog,*) 'Read in clm_initinterp_inparm  namelist'
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, 'clm_initinterp_inparm', status=ierr)
-       if (ierr == 0) then
-          read(unitn, clm_initinterp_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading clm_initinterp_inparm namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          call endrun(msg="ERROR finding clm_initinterp_inparm namelist"//errmsg(sourcefile, __LINE__))
-       end if
-       call relavu( unitn )
-    end if
+!   if (masterproc) then
+!      write(iulog,*) ' '
+!      write(iulog,*) 'initInterp settings:'
+!      write(iulog,nml=clm_initinterp_inparm)
+!      write(iulog,*) ' '
+!   end if
 
-    call shr_mpi_bcast (init_interp_fill_missing_with_natveg, mpicom)
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) 'initInterp settings:'
-       write(iulog,nml=clm_initinterp_inparm)
-       write(iulog,*) ' '
-    end if
-
-  end subroutine initInterp_readnl
+! end subroutine initInterp_readnl
 
 
   subroutine initInterp (filei, fileo, bounds)
@@ -156,18 +144,11 @@ contains
     integer            :: ivalue 
     integer            :: spinup_state_i, spinup_state_o
     integer            :: decomp_cascade_state_i, decomp_cascade_state_o 
-    integer            :: npftsi, ncolsi, nlunsi, ngrcsi 
-    integer            :: npftso, ncolso, nlunso, ngrcso 
-    integer , pointer  :: pftindx(:)     
-    integer , pointer  :: colindx(:)     
-    integer , pointer  :: lunindx(:)     
+    integer            :: ngrcsi 
+    integer            :: ngrcso 
     integer , pointer  :: grcindx(:) 
-    logical , pointer  :: pft_activei(:), pft_activeo(:) 
-    logical , pointer  :: col_activei(:), col_activeo(:) 
-    logical , pointer  :: lun_activei(:), lun_activeo(:)
     logical , pointer  :: grc_activei(:), grc_activeo(:)
     integer , pointer  :: sgridindex(:)
-    type(subgrid_special_indices_type) :: subgrid_special_indices
     type(interp_multilevel_container_type) :: interp_multilevel_container
     type(interp_2dvar_type) :: var2d_i, var2d_o  ! holds metadata for 2-d variables
     !--------------------------------------------------------------------
@@ -188,16 +169,10 @@ contains
     ! Determine dimensions and error checks on dimensions
     ! --------------------------------------------
 
-    call check_dim_subgrid(ncidi, ncido, dimname ='pft'     , dimleni=npftsi, dimleno=npftso)
-    call check_dim_subgrid(ncidi, ncido, dimname ='column'  , dimleni=ncolsi, dimleno=ncolso)
-    call check_dim_subgrid(ncidi, ncido, dimname ='landunit', dimleni=nlunsi, dimleno=nlunso)
     call check_dim_subgrid(ncidi, ncido, dimname ='gridcell', dimleni=ngrcsi, dimleno=ngrcso)
 
     if (masterproc) then
        write (iulog,*) 'input gridcells = ',ngrcsi,' output gridcells = ',ngrcso
-       write (iulog,*) 'input landuntis = ',nlunsi,' output landunits = ',nlunso
-       write (iulog,*) 'input columns   = ',ncolsi,' output columns   = ',ncolso
-       write (iulog,*) 'input pfts      = ',npftsi,' output pfts      = ',npftso
     end if
 
     ! NOTE(wjs, 2015-10-31) The inclusion of must_be_same in these checks essentially
@@ -214,103 +189,18 @@ contains
     call check_dim_level(ncidi, ncido, dimname='numrad' , must_be_same=.true.)
 
     ! --------------------------------------------
-    ! Determine input file global attributes that are needed 
+    ! Find closest values for gridcells
     ! --------------------------------------------
 
-    status = pio_get_att(ncidi, pio_global, &
-         'ipft_not_vegetated', &
-         subgrid_special_indices%ipft_not_vegetated)
-    status = pio_get_att(ncidi, pio_global, &
-         'icol_vegetated_or_bare_soil', &
-         subgrid_special_indices%icol_vegetated_or_bare_soil)
-    status = pio_get_att(ncidi, pio_global, &
-         'ilun_vegetated_or_bare_soil', &
-         subgrid_special_indices%ilun_vegetated_or_bare_soil)
-    status = pio_get_att(ncidi, pio_global, &
-         'ilun_crop', &
-         subgrid_special_indices%ilun_crop)
-    status = pio_get_att(ncidi, pio_global, &
-         'ilun_landice_multiple_elevation_classes', &
-         subgrid_special_indices%ilun_landice_multiple_elevation_classes)
-    status = pio_get_att(ncidi, pio_global, &
-         'created_glacier_mec_landunits', &
-         created_glacier_mec_landunits)
+    bounds_i = interp_bounds_type(begg = 1, endg = ngrcsi)
 
-    if (masterproc) then
-       write(iulog,*)'ipft_not_vegetated                      = ' , &
-            subgrid_special_indices%ipft_not_vegetated
-       write(iulog,*)'icol_vegetated_or_bare_soil             = ' , &
-            subgrid_special_indices%icol_vegetated_or_bare_soil
-       write(iulog,*)'ilun_vegetated_or_bare_soil             = ' , &
-            subgrid_special_indices%ilun_vegetated_or_bare_soil
-       write(iulog,*)'ilun_crop                               = ' , &
-            subgrid_special_indices%ilun_crop
-       write(iulog,*)'ilun_landice_multiple_elevation_classes = ' , &
-            subgrid_special_indices%ilun_landice_multiple_elevation_classes
-       write(iulog,*)'create_glacier_mec_landunits            = ', &
-            trim(created_glacier_mec_landunits)
-    end if
+    bounds_o = interp_bounds_type(begg = bounds%begg, endg = bounds%endg)
 
-    ! --------------------------------------------
-    ! Find closest values for pfts, cols, landunits, gridcells
-    ! --------------------------------------------
-
-    bounds_i = interp_bounds_type( &
-         begp = 1, endp = npftsi, &
-         begc = 1, endc = ncolsi, &
-         begl = 1, endl = nlunsi, &
-         begg = 1, endg = ngrcsi)
-
-    bounds_o = interp_bounds_type( &
-         begp = bounds%begp, endp = bounds%endp, &
-         begc = bounds%begc, endc = bounds%endc, &
-         begl = bounds%begl, endl = bounds%endl, &
-         begg = bounds%begg, endg = bounds%endg)
-
-    allocate(pft_activei(bounds_i%get_begp():bounds_i%get_endp()))
-    allocate(col_activei(bounds_i%get_begc():bounds_i%get_endc()))
-    allocate(lun_activei(bounds_i%get_begl():bounds_i%get_endl()))
     allocate(grc_activei(bounds_i%get_begg():bounds_i%get_endg()))
 
-    allocate(pft_activeo(bounds_o%get_begp():bounds_o%get_endp()))
-    allocate(col_activeo(bounds_o%get_begc():bounds_o%get_endc()))
-    allocate(lun_activeo(bounds_o%get_begl():bounds_o%get_endl()))
     allocate(grc_activeo(bounds_o%get_begg():bounds_o%get_endg()))
 
-    allocate(pftindx(bounds_o%get_begp():bounds_o%get_endp()))
-    allocate(colindx(bounds_o%get_begc():bounds_o%get_endc()))
-    allocate(lunindx(bounds_o%get_begl():bounds_o%get_endl()))
     allocate(grcindx(bounds_o%get_begg():bounds_o%get_endg()))
-
-    ! For each output pft, find the input pft, pftindx, that is closest
-
-    if (masterproc) then
-       write(iulog,*)'finding minimum distance for pfts'
-    end if
-    vec_dimname = 'pft'
-    call findMinDist(vec_dimname, bounds_i%get_begp(), bounds_i%get_endp(), &
-         bounds_o%get_begp(), bounds_o%get_endp(), ncidi, ncido, &
-         subgrid_special_indices, pft_activei, pft_activeo, pftindx )
-
-    ! For each output column, find the input column, colindx, that is closest
-
-    if (masterproc) then
-       write(iulog,*)'finding minimum distance for columns'
-    end if
-    vec_dimname = 'column'
-    call findMinDist(vec_dimname, bounds_i%get_begc(), bounds_i%get_endc(), &
-         bounds_o%get_begc(), bounds_o%get_endc(), ncidi, ncido, &
-         subgrid_special_indices, col_activei, col_activeo, colindx )
-
-    ! For each output landunit, find the input landunit, lunindx, that is closest
-
-    if (masterproc) then
-       write(iulog,*)'finding minimum distance for landunits'
-    end if
-    vec_dimname = 'landunit'
-    call findMinDist(vec_dimname, bounds_i%get_begl(), bounds_i%get_endl(), &
-         bounds_o%get_begl(), bounds_o%get_endl(), ncidi, ncido, &
-         subgrid_special_indices, lun_activei, lun_activeo, lunindx )
 
     ! For each output gridcell, find the input gridcell, grcindx, that is closest
 
@@ -320,19 +210,18 @@ contains
     vec_dimname = 'gridcell'
     call findMinDist(vec_dimname, bounds_i%get_begg(), bounds_i%get_endg(), &
          bounds_o%get_begg(), bounds_o%get_endg(), ncidi, ncido, &
-         subgrid_special_indices, grc_activei, grc_activeo, grcindx)
+         grc_activei, grc_activeo, grcindx)
 
     ! ------------------------------------------------------------------------
     ! Set up interpolators for multi-level variables
     ! ------------------------------------------------------------------------
 
-    if (masterproc) then
-       write(iulog,*)'setting up interpolators for multi-level variables'
-    end if
-    interp_multilevel_container = interp_multilevel_container_type( &
-         ncid_source = ncidi, ncid_dest = ncido, &
-         bounds_source = bounds_i, bounds_dest = bounds_o, &
-         pftindex = pftindx, colindex = colindx)
+!   if (masterproc) then
+!      write(iulog,*)'setting up interpolators for multi-level variables'
+!   end if
+!   interp_multilevel_container = interp_multilevel_container_type( &
+!        ncid_source = ncidi, ncid_dest = ncido, &
+!        bounds_source = bounds_i, bounds_dest = bounds_o)
 
     !------------------------------------------------------------------------          
     ! Read input initial data and write output initial data
@@ -501,13 +390,7 @@ contains
           endi = bounds_i%get_end(vec_dimname)
           bego = bounds_o%get_beg(vec_dimname)
           endo = bounds_o%get_end(vec_dimname)
-          if ( vec_dimname == 'pft' )then
-             sgridindex => pftindx
-          else if ( vec_dimname  == 'column' )then
-             sgridindex => colindx
-          else if ( vec_dimname == 'landunit' )then
-             sgridindex => lunindx
-          else if ( vec_dimname == 'gridcell' )then
+          if ( vec_dimname == 'gridcell' )then
              sgridindex => grcindx
           else
              call endrun(msg='ERROR interpinic: 1D variable '//trim(varname)//&
@@ -554,13 +437,7 @@ contains
           endi = bounds_i%get_end(vec_dimname)
           bego = bounds_o%get_beg(vec_dimname)
           endo = bounds_o%get_end(vec_dimname)
-          if ( vec_dimname == 'pft' )then
-             sgridindex => pftindx
-          else if ( vec_dimname  == 'column' )then
-             sgridindex => colindx
-          else if ( vec_dimname == 'landunit' )then
-             sgridindex => lunindx
-          else if ( vec_dimname == 'gridcell' )then
+          if ( vec_dimname == 'gridcell' )then
              sgridindex => grcindx
           else
              call endrun(msg='ERROR interpinic: 2D variable with unknown subgrid dimension: '//&
@@ -624,7 +501,7 @@ contains
   !=======================================================================
 
   subroutine findMinDist( dimname, begi, endi, bego, endo, ncidi, ncido, &
-       subgrid_special_indices, activei, activeo, minindx)
+       activei, activeo, minindx)
 
     ! --------------------------------------------------------------------
     !
@@ -636,7 +513,6 @@ contains
     integer           , intent(in)    :: bego, endo
     type(file_desc_t) , intent(inout) :: ncidi         
     type(file_desc_t) , intent(inout) :: ncido         
-    type(subgrid_special_indices_type), intent(in) :: subgrid_special_indices
     logical           , intent(out)   :: activei(begi:endi)
     logical           , intent(out)   :: activeo(bego:endo)
     integer           , intent(out)   :: minindx(bego:endo)         
@@ -662,7 +538,7 @@ contains
        write(iulog,*)'calling set_mindist for ',trim(dimname)
     end if
     call set_mindist(begi, endi, bego, endo, activei, activeo, subgridi, subgrido, &
-         subgrid_special_indices, init_interp_fill_missing_with_natveg, minindx)
+         minindx)
 
     deallocate(subgridi%lat, subgridi%lon, subgridi%coslat)
     deallocate(subgrido%lat, subgrido%lon, subgrido%coslat)
@@ -692,53 +568,6 @@ contains
 
     allocate(itemp(beg:end))
     allocate(subgrid%lat(beg:end), subgrid%lon(beg:end), subgrid%coslat(beg:end))
-    if (dimname == 'pft') then
-       allocate(subgrid%ptype(beg:end), subgrid%ctype(beg:end), subgrid%ltype(beg:end))
-    else if (dimname == 'column') then
-       allocate(subgrid%ctype(beg:end), subgrid%ltype(beg:end))
-    else if (dimname == 'landunit') then
-       allocate(subgrid%ltype(beg:end))
-    end if
-
-    ! determine if is_glcmec from global attributes
-    if (trim(created_glacier_mec_landunits) == 'true') then
-       if  (dimname == 'pft' .or. dimname == 'column') then
-          allocate(subgrid%topoglc(beg:end))
-       end if
-    end if
-
-    if (dimname == 'pft') then
-       call read_var_double(ncid=ncid, varname='pfts1d_lon'    , data=subgrid%lon  , dim1name='pft', use_glob=use_glob) 
-       call read_var_double(ncid=ncid, varname='pfts1d_lat'    , data=subgrid%lat  , dim1name='pft', use_glob=use_glob) 
-       call read_var_int(ncid=ncid, varname='pfts1d_itypveg', data=subgrid%ptype, dim1name='pft', use_glob=use_glob)
-       call read_var_int(ncid=ncid, varname='pfts1d_itypcol', data=subgrid%ctype, dim1name='pft', use_glob=use_glob)
-       call read_var_int(ncid=ncid, varname='pfts1d_ityplun', data=subgrid%ltype, dim1name='pft', use_glob=use_glob)
-       call read_var_int(ncid=ncid, varname='pfts1d_active' , data=itemp        , dim1name='pft', use_glob=use_glob)
-       if (associated(subgrid%topoglc)) then
-          call read_var_double(ncid=ncid, varname='pfts1d_topoglc', data=subgrid%topoglc, dim1name='pft', use_glob=use_glob)
-       end if
-    else if (dimname == 'column') then
-       call read_var_double(ncid=ncid, varname='cols1d_lon'    , data=subgrid%lon  , dim1name='column', use_glob=use_glob) 
-       call read_var_double(ncid=ncid, varname='cols1d_lat'    , data=subgrid%lat  , dim1name='column', use_glob=use_glob)  
-       call read_var_int(ncid=ncid, varname='cols1d_ityp'   , data=subgrid%ctype, dim1name='column', use_glob=use_glob) 
-       call read_var_int(ncid=ncid, varname='cols1d_ityplun', data=subgrid%ltype, dim1name='column', use_glob=use_glob) 
-       call read_var_int(ncid=ncid, varname='cols1d_active' , data=itemp        , dim1name='column', use_glob=use_glob)
-       if (associated(subgrid%topoglc)) then
-          call read_var_double(ncid=ncid, varname='cols1d_topoglc', data=subgrid%topoglc, dim1name='column', use_glob=use_glob) 
-       end if
-    else if (dimname == 'landunit') then
-       call read_var_double(ncid=ncid, varname='land1d_lon'    , data=subgrid%lon  , dim1name='landunit', use_glob=use_glob) 
-       call read_var_double(ncid=ncid, varname='land1d_lat'    , data=subgrid%lat  , dim1name='landunit', use_glob=use_glob) 
-       call read_var_int(ncid=ncid, varname='land1d_ityplun', data=subgrid%ltype, dim1name='landunit', use_glob=use_glob)
-       call read_var_int(ncid=ncid, varname='land1d_active' , data=itemp        , dim1name='landunit', use_glob=use_glob) 
-    else if (dimname == 'gridcell') then
-       call read_var_double(ncid=ncid, varname='grid1d_lon'    , data=subgrid%lon  , dim1name='gridcell', use_glob=use_glob) 
-       call read_var_double(ncid=ncid, varname='grid1d_lat'    , data=subgrid%lat  , dim1name='gridcell', use_glob=use_glob) 
-
-       ! All gridcells in the restart file are active
-       itemp(beg:end) = 1
-    end if
-
     do n = beg,end
        if (itemp(n) > 0) then
           active(n) = .true.

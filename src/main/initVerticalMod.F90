@@ -16,7 +16,6 @@ module initVerticalMod
   use clm_varpar        , only : nlevsoi
   use clm_varctl        , only : iulog
   use clm_varcon        , only : zsoi, dzsoi, zisoi, spval
-  use ColumnType        , only : col                
   use abortUtils        , only : endrun    
   use ncdio_pio
   !
@@ -46,11 +45,8 @@ contains
     ! LOCAL VARAIBLES:
     integer               :: c,l,g,i,j,lev     ! indices 
     real(r8)              :: scalez = 0.025_r8 ! Soil layer thickness discretization (m)
-    integer               :: begc, endc
 
     !------------------------------------------------------------------------
-
-    begc = bounds%begc; endc= bounds%endc
 
     ! --------------------------------------------------------------------
     ! Define layer structure for soil
@@ -80,13 +76,6 @@ contains
        write(iulog, *) 'zisoi: ', zisoi(:)
        write(iulog, *) 'dzsoi: ', dzsoi(:)
     end if
-
-    do c = bounds%begc,bounds%endc
-       l = col%landunit(c)
-          col%z(c,1:nlevgrnd)  = zsoi(1:nlevgrnd)
-          col%zi(c,0:nlevgrnd) = zisoi(0:nlevgrnd)
-          col%dz(c,1:nlevgrnd) = dzsoi(1:nlevgrnd)
-    end do
 
   end subroutine initVertical
 

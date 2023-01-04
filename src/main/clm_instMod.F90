@@ -9,26 +9,19 @@ module clm_instMod
   use decompMod       , only : bounds_type
   use clm_varcon      , only : bdsno
   use clm_varctl      , only : iulog
-  use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
 
   !-----------------------------------------
   ! Constants
   !-----------------------------------------
 
-  use UrbanParamsType                    , only : urbanparams_type   ! Constants 
   !-----------------------------------------
   ! Definition of component types 
   !-----------------------------------------
 
-  use UrbanParamsType                 , only : urbanparams_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
-  use glcBehaviorMod                  , only : glc_behavior_type
   use GridcellType                    , only : grc
-  use LandunitType                    , only : lun                
-  use ColumnType                      , only : col                
-  use PatchType                       , only : patch                
   !
   implicit none
   public   ! By default everything is public 
@@ -38,10 +31,8 @@ module clm_instMod
   !-----------------------------------------
 
   ! Physics types 
-  type(urbanparams_type)                  :: urbanparams_inst
   type(atm2lnd_type)                      :: atm2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
-  type(glc_behavior_type), target         :: glc_behavior
 
   public :: clm_instInit       ! Initialize
   public :: clm_instRest       ! Setup restart
@@ -60,19 +51,7 @@ contains
     type(bounds_type), intent(in) :: bounds  ! processor bounds
     !
     ! !LOCAL VARIABLES:
-    integer               :: c,l,g
-    integer               :: begp, endp
-    integer               :: begc, endc
-    integer               :: begl, endl
     !----------------------------------------------------------------------
-
-    begp = bounds%begp; endp = bounds%endp 
-    begc = bounds%begc; endc = bounds%endc 
-    begl = bounds%begl; endl = bounds%endl
-
-    ! Initialize urban constants
-
-    call urbanparams_inst%Init(bounds)
 
     ! Initialize vertical data components 
 

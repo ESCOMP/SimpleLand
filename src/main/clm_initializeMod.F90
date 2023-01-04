@@ -12,15 +12,9 @@ module clm_initializeMod
   use clm_varctl      , only : nsrest, nsrStartup, nsrContinue, nsrBranch
   use clm_varctl      , only : is_cold_start, is_interpolated_start
   use clm_varctl      , only : iulog
-  use clm_instur      , only : wt_lunit, urban_valid, wt_nat_patch, wt_cft, wt_glc_mec, topo_glc_mec
   use perf_mod        , only : t_startf, t_stopf
   use ncdio_pio       , only : file_desc_t
   use GridcellType    , only : grc           ! instance     
-  use LandunitType    , only : lun           ! instance          
-  use ColumnType      , only : col           ! instance          
-  use PatchType       , only : patch         ! instance            
-  use reweightMod     , only : reweight_wrapup
-  use filterMod       , only : allocFilters, filter
 
   use clm_instMod       
   ! 
@@ -40,17 +34,14 @@ contains
     ! CLM initialization first phase 
     !
     ! !USES:
-    use clm_varpar       , only: clm_varpar_init, natpft_lb, natpft_ub, cft_lb, cft_ub
+    use clm_varpar       , only: clm_varpar_init
     use clm_varcon       , only: clm_varcon_init
-    use landunit_varcon  , only: landunit_varcon_init, max_lunit
     use clm_varctl       , only: fsurdat, fatmlndfrc, noland, version, mml_surdat  
     use decompInitMod    , only: decompInit_lnd, decompInit_clumps, decompInit_glcp
     use domainMod        , only: domain_check, ldomain, domain_init
     use surfrdMod        , only: surfrd_get_globmask, surfrd_get_grid, surfrd_get_data 
     use controlMod       , only: control_init, control_print, NLFilename
     use ncdio_pio        , only: ncd_pio_init
-    use initGridCellsMod , only: initGridCells
-    use UrbanParamsType  , only: UrbanInput
     !
     ! !LOCAL VARIABLES:
     integer           :: ier                     ! error status
@@ -83,7 +74,6 @@ contains
     call control_init()
     call clm_varpar_init()
     call clm_varcon_init()
-    call landunit_varcon_init()
     call ncd_pio_init()
 
     if (masterproc) call control_print()
@@ -135,21 +125,6 @@ contains
     endif
     ldomain%mask = 1  !!! TODO - is this needed?
 
-    ! Initialize urban model input (initialize urbinp data structure)
-    ! This needs to be called BEFORE the call to surfrd_get_data since
-    ! that will call surfrd_get_special which in turn calls check_urban
-
-    call UrbanInput(begg, endg, mode='initialize')
-
-    ! Allocate surface grid dynamic memory (just gridcell bounds dependent)
-
-    allocate (wt_lunit     (begg:endg, max_lunit           ))
-    allocate (urban_valid  (begg:endg                      ))
-    allocate (wt_nat_patch (begg:endg, natpft_lb:natpft_ub ))
-    allocate (wt_cft       (begg:endg, cft_lb:cft_ub       ))
-    allocate (wt_glc_mec  (begg:endg, 10))
-    allocate (topo_glc_mec(begg:endg, 10))
-
     ! Read surface dataset and set up subgrid weight arrays
     
     call surfrd_get_data(begg, endg, ldomain, fsurdat)
@@ -158,48 +133,21 @@ contains
     ! Determine decomposition of subgrid scale landunits, columns, patches
     ! ------------------------------------------------------------------------
 
-    call decompInit_clumps(ns, ni, nj, glc_behavior)
+    call decompInit_clumps(ns, ni, nj)
 
     ! *** Get ALL processor bounds - for gridcells, landunit, columns and patches ***
 
     call get_proc_bounds(bounds_proc)
     
     ! Allocate memory for subgrid data structures
-    ! This is needed here BEFORE the following call to initGridcells
     ! Note that the assumption is made that none of the subgrid initialization
     ! can depend on other elements of the subgrid in the calls below
 
     call grc%Init  (bounds_proc%begg, bounds_proc%endg)
-    call lun%Init  (bounds_proc%begl, bounds_proc%endl)
-    call col%Init  (bounds_proc%begc, bounds_proc%endc)
-    call patch%Init(bounds_proc%begp, bounds_proc%endp)
 
-    ! Build hierarchy and topological info for derived types
-    ! This is needed here for the following call to decompInit_glcp
+    ! Set global seg maps for gridcells
 
-    call initGridCells(glc_behavior)
-
-    ! Set global seg maps for gridcells, landlunits, columns and patches
-
-    call decompInit_glcp(ns, ni, nj, glc_behavior)
-
-    ! Set filters
-
-    call allocFilters()
-
-    nclumps = get_proc_clumps()
-    !$OMP PARALLEL DO PRIVATE (nc, bounds_clump)
-    do nc = 1, nclumps
-       call get_clump_bounds(nc, bounds_clump)
-       call reweight_wrapup(bounds_clump)
-    end do
-    !$OMP END PARALLEL DO
-
-    ! Deallocate surface grid dynamic memory for variables that aren't needed elsewhere.
-    ! Some things are kept until the end of initialize2; urban_valid is kept through the
-    ! end of the run for error checking.
-
-    deallocate (wt_lunit, wt_cft, wt_glc_mec)
+    call decompInit_glcp(ns, ni, nj)
 
     call t_stopf('clm_init1')
 
@@ -222,9 +170,8 @@ contains
     use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart
     use fileutils             , only : getfil
     use initInterpMod         , only : initInterp
-    use subgridWeightsMod     , only : init_subgrid_weights_mod
     use histFileMod           , only : hist_htapes_build, htapes_fieldlist, hist_printflds
-    use histFileMod           , only : hist_addfld1d, hist_addfld2d, no_snow_normal
+    use histFileMod           , only : hist_addfld1d, hist_addfld2d
     use restFileMod           , only : restFile_getfile, restFile_open, restFile_close
     use restFileMod           , only : restFile_read, restFile_write 
     use controlMod            , only : NLFilename
@@ -249,9 +196,6 @@ contains
     logical               :: lexist
     integer               :: closelatidx,closelonidx
     real(r8)              :: closelat,closelon
-    integer               :: begp, endp
-    integer               :: begc, endc
-    integer               :: begl, endl
     real(r8), pointer     :: data2dptr(:,:) ! temp. pointers for slicing larger arrays
     character(len=32)     :: subname = 'initialize2' 
     !----------------------------------------------------------------------
@@ -289,22 +233,6 @@ contains
     ! First put in history calls for subgrid data structures - these cannot appear in the
     ! module for the subgrid data definition due to circular dependencies that are introduced
 
-    data2dptr => col%dz(:,-nlevsno+1:0)
-    col%dz(bounds_proc%begc:bounds_proc%endc,:) = spval
-    call hist_addfld2d (fname='SNO_Z', units='m', type2d='levsno',  &
-         avgflag='A', long_name='Snow layer thicknesses', &
-         ptr_col=data2dptr, no_snow_behavior=no_snow_normal, default='inactive')
-
-    call hist_addfld2d (fname='SNO_Z_ICE', units='m', type2d='levsno',  &
-         avgflag='A', long_name='Snow layer thicknesses (ice landunits only)', &
-         ptr_col=data2dptr, no_snow_behavior=no_snow_normal, &
-         l2g_scale_type='ice', default='inactive')
-
-    col%zii(bounds_proc%begc:bounds_proc%endc) = spval
-    call hist_addfld1d (fname='ZII', units='m', &
-         avgflag='A', long_name='convective boundary height', &
-         ptr_col=col%zii, default='inactive')
-
     ! If single-column determine closest latitude and longitude
 
     if (single_column) then
@@ -318,16 +246,6 @@ contains
     call clm_instInit(bounds_proc)
 
     call hist_printflds()
-
-    ! ------------------------------------------------------------------------
-    ! Initializate dynamic subgrid weights (for prescribed transient Patches
-    ! and/or dynamic landunits); note that these will be overwritten in a
-    ! restart run
-    ! ------------------------------------------------------------------------
-
-    call t_startf('init_subgrid_weights')
-    call init_subgrid_weights_mod(bounds_proc)
-    call t_stopf('init_subgrid_weights')
 
     ! ------------------------------------------------------------------------
     ! Initialize modules (after time-manager initialization in most cases)
@@ -433,21 +351,6 @@ contains
 !   ! The following is called for both initial and restart runs and must
 !   ! must be called after the restart file is read 
 !   call atm2lnd_inst%initAccVars(bounds_proc)
-
-    !------------------------------------------------------------       
-    ! Deallocate wt_nat_patch
-    !------------------------------------------------------------       
-
-    ! wt_nat_patch was allocated in initialize1, but needed to be kept around through
-    ! initialize2 for some consistency checking; now it can be deallocated
-
-    deallocate(wt_nat_patch)
-
-    ! topo_glc_mec was allocated in initialize1, but needed to be kept around through
-    ! initialize2 because it is used to initialize other variables; now it can be
-    ! deallocated
-
-    deallocate(topo_glc_mec)
 
     !------------------------------------------------------------       
     ! Write log output for end of initialization

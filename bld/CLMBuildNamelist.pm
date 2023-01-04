@@ -1189,8 +1189,8 @@ sub write_output_files {
 
   # CLM component
   my @groups = qw(clm_inparm 
-                 finidat_consistency_checks 
-                 clm_initinterp_inparm);
+                 finidat_consistency_checks);
+#                clm_initinterp_inparm);
 
   my $outfile;
   $outfile = "$opts->{'dir'}/lnd_in";

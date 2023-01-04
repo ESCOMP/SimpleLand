@@ -62,7 +62,6 @@ module initInterpMultilevelContainer
 
   private :: create_interp_multilevel_levgrnd
   private :: interp_levgrnd_check_source_file
-  private :: create_snow_interpolators
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -94,7 +93,7 @@ contains
     ! e.g., colindex(i) gives source col corresponding to dest col i.
     integer, intent(in) :: pftindex(:)
     integer, intent(in) :: colindex(:)
-    !
+
     ! !LOCAL VARIABLES:
 
     character(len=*), parameter :: subname = 'constructor'
@@ -102,36 +101,6 @@ contains
 
     allocate(this%interp_multilevel_copy)
     this%interp_multilevel_copy = interp_multilevel_copy_type()
-
-    allocate(this%interp_multilevel_levgrnd_col)
-    this%interp_multilevel_levgrnd_col = create_interp_multilevel_levgrnd( &
-         ncid_source = ncid_source, &
-         ncid_dest = ncid_dest, &
-         bounds_source = bounds_source, &
-         bounds_dest = bounds_dest, &
-         coord_varname = 'COL_Z', &
-         level_class_varname = 'LEVGRND_CLASS', &
-         sgridindex = colindex)
-
-    allocate(this%interp_multilevel_levgrnd_pft)
-    this%interp_multilevel_levgrnd_pft = create_interp_multilevel_levgrnd( &
-         ncid_source = ncid_source, &
-         ncid_dest = ncid_dest, &
-         bounds_source = bounds_source, &
-         bounds_dest = bounds_dest, &
-         coord_varname = 'COL_Z_p', &
-         level_class_varname = 'LEVGRND_CLASS_p', &
-         sgridindex = pftindex)
-
-    allocate(this%interp_multilevel_levsno)
-    allocate(this%interp_multilevel_levsno1)
-    call create_snow_interpolators( &
-         interp_multilevel_levsno = this%interp_multilevel_levsno, &
-         interp_multilevel_levsno1 = this%interp_multilevel_levsno1, &
-         ncid_source = ncid_source, &
-         bounds_source = bounds_source, &
-         bounds_dest = bounds_dest, &
-         colindex = colindex)
 
     ! levtot is two sets of levels: first snow, then levgrnd
     allocate(this%interp_multilevel_levtot_col)
@@ -171,24 +140,14 @@ contains
     select case (lev_dimname)
     case ('levgrnd')
        select case (vec_dimname)
-       case ('column')
-          interpolator => this%interp_multilevel_levgrnd_col
-       case ('pft')
-          interpolator => this%interp_multilevel_levgrnd_pft
        case default
           call error_not_found(subname, lev_dimname, vec_dimname)
        end select
     case ('levtot')
        select case (vec_dimname)
-       case ('column')
-          interpolator => this%interp_multilevel_levtot_col
        case default
           call error_not_found(subname, lev_dimname, vec_dimname)
        end select
-    case ('levsno')
-       interpolator => this%interp_multilevel_levsno
-    case ('levsno1')
-       interpolator => this%interp_multilevel_levsno1
     case default
        interpolator => this%interp_multilevel_copy
     end select
@@ -426,69 +385,5 @@ contains
     end if
 
   end subroutine interp_levgrnd_check_source_file
-
-  !-----------------------------------------------------------------------
-  subroutine create_snow_interpolators(interp_multilevel_levsno, interp_multilevel_levsno1, &
-       ncid_source, bounds_source, bounds_dest, colindex)
-    !
-    ! !DESCRIPTION:
-    ! Create multi-level interpolators for snow variables
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    type(interp_multilevel_snow_type), intent(out) :: interp_multilevel_levsno
-    type(interp_multilevel_snow_type), intent(out) :: interp_multilevel_levsno1
-    type(file_desc_t), intent(inout) :: ncid_source ! netcdf ID for source file
-    type(interp_bounds_type), intent(in) :: bounds_source
-    type(interp_bounds_type), intent(in) :: bounds_dest
-    integer, intent(in) :: colindex(:)  ! mappings from source to dest for column-level arrays
-    !
-    ! !LOCAL VARIABLES:
-    ! snlsno_source needs to be a pointer to satisfy the interface of ncd_io
-    integer, pointer     :: snlsno_source_sgrid(:)  ! snlsno in source, on source grid
-    integer, allocatable :: snlsno_source(:)        ! snlsno_source interpolated to dest
-    integer, allocatable :: snlsno_source_plus_1(:) ! snlsno_source+1 interpolated to dest
-
-    character(len=*), parameter :: subname = 'create_snow_interpolators'
-    !-----------------------------------------------------------------------
-
-    ! Read snlsno_source_sgrid
-    allocate(snlsno_source_sgrid(bounds_source%get_begc() : bounds_source%get_endc()))
-    call ncd_io(ncid=ncid_source, varname='SNLSNO', flag='read', &
-         data=snlsno_source_sgrid)
-    snlsno_source_sgrid(:) = abs(snlsno_source_sgrid(:))
-
-    ! Interpolate to dest
-    allocate(snlsno_source(bounds_dest%get_begc() : bounds_dest%get_endc()))
-    call interp_1d_data( &
-         begi = bounds_source%get_begc(), endi = bounds_source%get_endc(), &
-         bego = bounds_dest%get_begc(), endo = bounds_dest%get_endc(), &
-         sgridindex = colindex, &
-         keep_existing = .false., &
-         data_in = snlsno_source_sgrid, data_out = snlsno_source)
-    deallocate(snlsno_source_sgrid)
-
-    ! Set up interp_multilevel_levsno
-    interp_multilevel_levsno = interp_multilevel_snow_type( &
-         num_snow_layers_source = snlsno_source, &
-         num_layers_name = 'SNLSNO')
-
-    ! Set up interp_multilevel_levsno1
-    !
-    ! For variables dimensioned (levsno+1), we assume they have (snlsno+1) active layers.
-    ! Thus, if there are 0 active layers in the source, the bottom layer's value will
-    ! still get copied for these (levsno+1) variables.
-    allocate(snlsno_source_plus_1(bounds_dest%get_begc() : bounds_dest%get_endc()))
-    snlsno_source_plus_1(:) = snlsno_source(:) + 1
-    interp_multilevel_levsno1 = interp_multilevel_snow_type( &
-         num_snow_layers_source = snlsno_source_plus_1, &
-         num_layers_name = 'SNLSNO+1')
-
-    deallocate(snlsno_source)
-    deallocate(snlsno_source_plus_1)
-
-  end subroutine create_snow_interpolators
-
 
 end module initInterpMultilevelContainer

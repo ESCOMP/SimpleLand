@@ -14,10 +14,6 @@ module decompInitMod
   use clm_varctl      , only : iulog
   use clm_varcon      , only : grlnd
   use GridcellType    , only : grc
-  use LandunitType    , only : lun                
-  use ColumnType      , only : col                
-  use PatchType       , only : patch
-  use glcBehaviorMod  , only : glc_behavior_type
   use decompMod
   use mct_mod         , only : mct_gsMap_init, mct_gsMap_ngseg, mct_gsMap_nlseg, mct_gsmap_gsize
   !
@@ -97,20 +93,8 @@ contains
     procinfo%nclumps   = clump_pproc
     procinfo%cid(:)    = -1
     procinfo%ncells    = 0
-    procinfo%nlunits   = 0
-    procinfo%ncols     = 0
-    procinfo%npatches  = 0
-    procinfo%nCohorts  = 0
     procinfo%begg      = 1
-    procinfo%begl      = 1
-    procinfo%begc      = 1
-    procinfo%begp      = 1
-    procinfo%begCohort = 1
     procinfo%endg      = 0
-    procinfo%endl      = 0
-    procinfo%endc      = 0
-    procinfo%endp      = 0
-    procinfo%endCohort = 0
 
     allocate(clumps(nclumps), stat=ier)
     if (ier /= 0) then
@@ -119,20 +103,8 @@ contains
     end if
     clumps(:)%owner     = -1
     clumps(:)%ncells    = 0
-    clumps(:)%nlunits   = 0
-    clumps(:)%ncols     = 0
-    clumps(:)%npatches  = 0
-    clumps(:)%nCohorts  = 0
     clumps(:)%begg      = 1
-    clumps(:)%begl      = 1
-    clumps(:)%begc      = 1
-    clumps(:)%begp      = 1
-    clumps(:)%begCohort = 1
     clumps(:)%endg      = 0
-    clumps(:)%endl      = 0
-    clumps(:)%endc      = 0
-    clumps(:)%endp      = 0
-    clumps(:)%endCohort = 0
 
     ! assign clumps to proc round robin 
     cid = 0
@@ -312,7 +284,7 @@ contains
   end subroutine decompInit_lnd
 
   !------------------------------------------------------------------------------
-  subroutine decompInit_clumps(lns,lni,lnj,glc_behavior)
+  subroutine decompInit_clumps(lns,lni,lnj)
     !
     ! !DESCRIPTION:
     ! This subroutine initializes the land surface decomposition into a clump
@@ -320,13 +292,11 @@ contains
     ! set by clump_pproc
     !
     ! !USES:
-    use subgridMod, only : subgrid_get_gcellinfo
     use spmdMod
     !
     ! !ARGUMENTS:
     implicit none
     integer , intent(in) :: lns,lni,lnj ! land domain global size
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: ln,an              ! indices
@@ -336,10 +306,6 @@ contains
     integer :: anumg              ! lnd num gridcells
     integer :: icells             ! temporary
     integer :: begg, endg         ! temporary
-    integer :: ilunits            ! temporary
-    integer :: icols              ! temporary
-    integer :: ipatches           ! temporary
-    integer :: icohorts           ! temporary
     integer :: ier                ! error code
     integer, allocatable :: allvecg(:,:)  ! temporary vector "global"
     integer, allocatable :: allvecl(:,:)  ! temporary vector "local"
@@ -350,18 +316,11 @@ contains
     !--- assign gridcells to clumps (and thus pes) ---
     call get_proc_bounds(begg, endg)
 
-    allocate(allvecl(nclumps,5))   ! local  clumps [gcells,lunit,cols,patches,coh]
-    allocate(allvecg(nclumps,5))   ! global clumps [gcells,lunit,cols,patches,coh]
+    allocate(allvecl(nclumps,5))   ! local  clumps [gcells]
+    allocate(allvecg(nclumps,5))   ! global clumps [gcells]
 
-    ! Determine the number of gridcells, landunits, columns, and patches, cohorts 
+    ! Determine the number of gridcells
     ! on this processor 
-    ! Determine number of landunits, columns and patches for each global
-    ! gridcell index (an) that is associated with the local gridcell index (ln)
-
-    ilunits=0
-    icols=0
-    ipatches=0
-    icohorts=0 
 
     allvecg= 0
     allvecl= 0
@@ -369,101 +328,28 @@ contains
        an  = ldecomp%gdc2glo(anumg)
        cid = lcid(an)
        ln  = anumg
-       call subgrid_get_gcellinfo (ln, nlunits=ilunits, ncols=icols, npatches=ipatches, &
-            ncohorts=icohorts, glc_behavior=glc_behavior)
        allvecl(cid,1) = allvecl(cid,1) + 1
-       allvecl(cid,2) = allvecl(cid,2) + ilunits  ! number of landunits for local clump cid
-       allvecl(cid,3) = allvecl(cid,3) + icols    ! number of columns for local clump cid
-       allvecl(cid,4) = allvecl(cid,4) + ipatches ! number of patches for local clump cid 
-       allvecl(cid,5) = allvecl(cid,5) + icohorts ! number of cohorts for local clump cid 
     enddo
     call mpi_allreduce(allvecl,allvecg,size(allvecg),MPI_INTEGER,MPI_SUM,mpicom,ier)
 
-    ! Determine overall  total gridcells, landunits, columns and patches and distribute
+    ! Determine overall total gridcells and distribute
     ! gridcells over clumps
 
     numg = 0
-    numl = 0
-    numc = 0
-    nump = 0
-    numCohort = 0
 
     do cid = 1,nclumps
        icells   = allvecg(cid,1)  ! number of all clump cid gridcells (over all processors)
-       ilunits  = allvecg(cid,2)  ! number of all clump cid landunits (over all processors)
-       icols    = allvecg(cid,3)  ! number of all clump cid columns (over all processors)
-       ipatches = allvecg(cid,4)  ! number of all clump cid patches (over all processors)
-       icohorts = allvecg(cid,5)  ! number of all clump cid cohorts (over all processors)
 
        !--- overall total ---
        numg = numg + icells             ! total number of gridcells
-       numl = numl + ilunits            ! total number of landunits
-       numc = numc + icols              ! total number of columns
-       nump = nump + ipatches           ! total number of patches
-       numCohort = numCohort + icohorts ! total number of cohorts
-
-       !--- give gridcell to cid ---
-       !--- increment the beg and end indices ---
-       clumps(cid)%nlunits  = clumps(cid)%nlunits  + ilunits  
-       clumps(cid)%ncols    = clumps(cid)%ncols    + icols
-       clumps(cid)%npatches = clumps(cid)%npatches    + ipatches
-       clumps(cid)%nCohorts = clumps(cid)%nCohorts + icohorts
-
-       do m = 1,nclumps
-          if ((clumps(m)%owner >  clumps(cid)%owner) .or. &
-              (clumps(m)%owner == clumps(cid)%owner .and. m > cid)) then
-             clumps(m)%begl = clumps(m)%begl + ilunits
-             clumps(m)%begc = clumps(m)%begc + icols
-             clumps(m)%begp = clumps(m)%begp + ipatches
-             clumps(m)%begCohort = clumps(m)%begCohort + icohorts
-          endif
-
-          if ((clumps(m)%owner >  clumps(cid)%owner) .or. &
-              (clumps(m)%owner == clumps(cid)%owner .and. m >= cid)) then
-             clumps(m)%endl = clumps(m)%endl + ilunits
-             clumps(m)%endc = clumps(m)%endc + icols
-             clumps(m)%endp = clumps(m)%endp + ipatches
-             clumps(m)%endCohort = clumps(m)%endCohort + icohorts
-          endif
-       enddo
 
        !--- give gridcell to the proc that owns the cid ---
        !--- increment the beg and end indices ---
-       if (iam == clumps(cid)%owner) then
-          procinfo%nlunits  = procinfo%nlunits  + ilunits
-          procinfo%ncols    = procinfo%ncols    + icols
-          procinfo%npatches = procinfo%npatches + ipatches
-          procinfo%nCohorts = procinfo%nCohorts + icohorts
-       endif
-
-       if (iam >  clumps(cid)%owner) then
-          procinfo%begl = procinfo%begl + ilunits
-          procinfo%begc = procinfo%begc + icols
-          procinfo%begp = procinfo%begp + ipatches
-          procinfo%begCohort = procinfo%begCohort + icohorts
-       endif
-
-       if (iam >= clumps(cid)%owner) then
-          procinfo%endl = procinfo%endl + ilunits
-          procinfo%endc = procinfo%endc + icols
-          procinfo%endp = procinfo%endp + ipatches
-          procinfo%endCohort = procinfo%endCohort + icohorts
-       endif
-    enddo
+    end do
 
     do n = 1,nclumps
-       if (clumps(n)%ncells   /= allvecg(n,1) .or. &
-           clumps(n)%nlunits  /= allvecg(n,2) .or. &
-           clumps(n)%ncols    /= allvecg(n,3) .or. &
-           clumps(n)%npatches /= allvecg(n,4) .or. &
-           clumps(n)%nCohorts /= allvecg(n,5)) then
-
+       if (clumps(n)%ncells /= allvecg(n,1)) then
           write(iulog ,*) 'decompInit_glcp(): allvecg error ncells ',iam,n,clumps(n)%ncells   ,allvecg(n,1)
-          write(iulog ,*) 'decompInit_glcp(): allvecg error lunits ',iam,n,clumps(n)%nlunits  ,allvecg(n,2)
-          write(iulog ,*) 'decompInit_glcp(): allvecg error ncols  ',iam,n,clumps(n)%ncols    ,allvecg(n,3)
-          write(iulog ,*) 'decompInit_glcp(): allvecg error patches',iam,n,clumps(n)%npatches ,allvecg(n,4)
-          write(iulog ,*) 'decompInit_glcp(): allvecg error cohorts',iam,n,clumps(n)%nCohorts ,allvecg(n,5)
-          
           call endrun(msg=errMsg(sourcefile, __LINE__))
        endif
     enddo
@@ -474,7 +360,7 @@ contains
   end subroutine decompInit_clumps
 
   !------------------------------------------------------------------------------
-  subroutine decompInit_glcp(lns,lni,lnj,glc_behavior)
+  subroutine decompInit_glcp(lns,lni,lnj)
     !
     ! !DESCRIPTION:
     ! Determine gsMaps for landunits, columns, patches and cohorts
@@ -482,32 +368,18 @@ contains
     ! !USES:
     use spmdMod
     use spmdGathScatMod
-    use subgridMod,       only : subgrid_get_gcellinfo
     !
     ! !ARGUMENTS:
     implicit none
     integer , intent(in) :: lns,lni,lnj ! land domain global size
-    type(glc_behavior_type), intent(in) :: glc_behavior
     !
     ! !LOCAL VARIABLES:
     integer :: gi,li,ci,pi,coi    ! indices
     integer :: i,g,k,l,n,np       ! indices
     integer :: cid,pid            ! indices
     integer :: begg,endg          ! beg,end gridcells
-    integer :: begl,endl          ! beg,end landunits
-    integer :: begc,endc          ! beg,end columns
-    integer :: begp,endp          ! beg,end patches
-    integer :: begCohort,endCohort! beg,end cohorts
     integer :: numg               ! total number of gridcells across all processors
-    integer :: numl               ! total number of landunits across all processors
-    integer :: numc               ! total number of columns across all processors
-    integer :: nump               ! total number of patches across all processors
-    integer :: numCohort          ! fates cohorts
     integer :: icells             ! temporary
-    integer :: ilunits            ! temporary
-    integer :: icols              ! temporary
-    integer :: ipatches           ! temporary
-    integer :: icohorts           ! temporary
     integer :: ier                ! error code
     integer :: npmin,npmax,npint  ! do loop values for printing
     integer :: clmin,clmax        ! do loop values for printing
@@ -517,9 +389,6 @@ contains
     integer, pointer :: gindex(:) ! global index for gsMap init
     integer, pointer :: arrayglob(:) ! temporaroy
     integer, pointer :: gstart(:),  gcount(:)
-    integer, pointer :: lstart(:),  lcount(:)
-    integer, pointer :: cstart(:),  ccount(:)
-    integer, pointer :: pstart(:),  pcount(:)
     integer, pointer :: ioff(:)
     integer, parameter :: dbug=1      ! 0 = min, 1=normal, 2=much, 3=max
     character(len=32), parameter :: subname = 'decompInit_glcp'
@@ -527,9 +396,8 @@ contains
 
     !init 
 
-    call get_proc_bounds(begg, endg, begl, endl, begc, endc, begp, endp, &
-         begCohort, endCohort)
-    call get_proc_global(ng=numg, nl=numl, nc=numc, np=nump, nCohorts=numCohort)
+    call get_proc_bounds(begg, endg)
+    call get_proc_global(ng=numg)
 
     ! Determine global seg megs
 
@@ -537,33 +405,16 @@ contains
     gstart(:) = 0
     allocate(gcount(begg:endg))
     gcount(:) = 0
-    allocate(lstart(begg:endg))
-    lstart(:) = 0
-    allocate(lcount(begg:endg))
-    lcount(:) = 0
-    allocate(cstart(begg:endg))
-    cstart(:) = 0
-    allocate(ccount(begg:endg))
-    ccount(:) = 0
-    allocate(pstart(begg:endg))
-    pstart(:) = 0
-    allocate(pcount(begg:endg))
-    pcount(:) = 0
     allocate(ioff(begg:endg)) 
     ioff(:) = 0
 
-    ! Determine gcount, lcount, ccount and pcount
+    ! Determine gcount
 
     do gi = begg,endg
-       call subgrid_get_gcellinfo (gi, nlunits=ilunits, ncols=icols, npatches=ipatches, &
-            ncohorts=icohorts, glc_behavior=glc_behavior)
        gcount(gi)  = 1         ! number of gridcells for local gridcell index gi
-       lcount(gi)  = ilunits   ! number of landunits for local gridcell index gi
-       ccount(gi)  = icols     ! number of columns for local gridcell index gi
-       pcount(gi)  = ipatches  ! number of patches for local gridcell index gi
     enddo
 
-    ! Determine gstart, lstart, cstart, pstart for the OUTPUT 1d data structures
+    ! Determine gstart
 
     ! gather the gdc subgrid counts to masterproc in glo order
     ! compute glo ordered start indices from the counts
@@ -585,48 +436,6 @@ contains
        enddo
     endif
     call scatter_data_from_master(gstart, arrayglob, grlnd)
-
-    ! lstart for gridcell (n) is the total number of the landunits 
-    ! over gridcells 1->n-1
-
-    arrayglob(:) = 0
-    call gather_data_to_master(lcount, arrayglob, grlnd)
-    if (masterproc) then
-       val1 = arrayglob(1)
-       arrayglob(1) = 1
-       do n = 2,ng
-          val2 = arrayglob(n)
-          arrayglob(n) = arrayglob(n-1) + val1
-          val1 = val2
-       enddo
-    endif
-    call scatter_data_from_master(lstart, arrayglob, grlnd)
-
-    arrayglob(:) = 0
-    call gather_data_to_master(ccount, arrayglob, grlnd)
-    if (masterproc) then
-       val1 = arrayglob(1)
-       arrayglob(1) = 1
-       do n = 2,ng
-          val2 = arrayglob(n)
-          arrayglob(n) = arrayglob(n-1) + val1
-          val1 = val2
-       enddo
-    endif
-    call scatter_data_from_master(cstart, arrayglob, grlnd)
-
-    arrayglob(:) = 0
-    call gather_data_to_master(pcount, arrayglob, grlnd)
-    if (masterproc) then
-       val1 = arrayglob(1)
-       arrayglob(1) = 1
-       do n = 2,ng
-          val2 = arrayglob(n)
-          arrayglob(n) = arrayglob(n-1) + val1
-          val1 = val2
-       enddo
-    endif
-    call scatter_data_from_master(pstart, arrayglob, grlnd)
 
     deallocate(arrayglob)
 
@@ -656,56 +465,8 @@ contains
     call mct_gsMap_init(gsmap_gce_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
     deallocate(gindex)
 
-    ! Landunit gsmap
-
-    allocate(gindex(begl:endl))
-    ioff(:) = 0
-    do li = begl,endl
-       gi = lun%gridcell(li) !===this is determined internally from how landunits are spread out in memory
-       gindex(li) = lstart(gi) + ioff(gi) !=== the output gindex is ALWAYS the same regardless of how landuntis are spread out in memory
-       ioff(gi)  = ioff(gi) + 1 
-       ! check that this is less than [lstart(gi) + lcount(gi)]
-    enddo
-    locsize = endl-begl+1
-    globsize = numl
-    call mct_gsMap_init(gsmap_lun_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
-    deallocate(gindex)
-
-    ! Column gsmap
-
-    allocate(gindex(begc:endc))
-    ioff(:) = 0
-    do ci = begc,endc
-       gi = col%gridcell(ci)
-       gindex(ci) = cstart(gi) + ioff(gi)
-       ioff(gi) = ioff(gi) + 1 
-       ! check that this is less than [cstart(gi) + ccount(gi)]
-    enddo
-    locsize = endc-begc+1
-    globsize = numc
-    call mct_gsMap_init(gsmap_col_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
-    deallocate(gindex)
-
-    ! PATCH gsmap
-
-    allocate(gindex(begp:endp))
-    ioff(:) = 0
-    do pi = begp,endp
-       gi = patch%gridcell(pi)
-       gindex(pi) = pstart(gi) + ioff(gi)
-       ioff(gi) = ioff(gi) + 1 
-       ! check that this is less than [pstart(gi) + pcount(gi)]
-    enddo
-    locsize = endp-begp+1
-    globsize = nump
-    call mct_gsMap_init(gsmap_patch_gdc2glo, gindex, mpicom, comp_id, locsize, globsize)
-    deallocate(gindex)
-
     ! Deallocate start/count arrays
     deallocate(gstart, gcount)
-    deallocate(lstart, lcount)
-    deallocate(cstart, ccount)
-    deallocate(pstart, pcount)
     deallocate(ioff)
 
     ! Diagnostic output
@@ -715,19 +476,11 @@ contains
        write(iulog,*)'   longitude points          = ',lni
        write(iulog,*)'   latitude points           = ',lnj
        write(iulog,*)'   total number of gridcells = ',numg
-       write(iulog,*)'   total number of landunits = ',numl
-       write(iulog,*)'   total number of columns   = ',numc
-       write(iulog,*)'   total number of patches   = ',nump
-       write(iulog,*)'   total number of cohorts   = ',numCohort
        write(iulog,*)' Decomposition Characteristics'
        write(iulog,*)'   clumps per process        = ',clump_pproc
        write(iulog,*)' gsMap Characteristics'
        write(iulog,*) '  lnd gsmap glo num of segs = ',mct_gsMap_ngseg(gsMap_lnd_gdc2glo)
        write(iulog,*) '  gce gsmap glo num of segs = ',mct_gsMap_ngseg(gsMap_gce_gdc2glo)
-       write(iulog,*) '  lun gsmap glo num of segs = ',mct_gsMap_ngseg(gsMap_lun_gdc2glo)
-       write(iulog,*) '  col gsmap glo num of segs = ',mct_gsMap_ngseg(gsMap_col_gdc2glo)
-       write(iulog,*) '  patch gsmap glo num of segs = ',mct_gsMap_ngseg(gsMap_patch_gdc2glo)
-       write(iulog,*) '  coh gsmap glo num of segs = ',mct_gsMap_ngseg(gsMap_cohort_gdc2glo)
        write(iulog,*)
     end if
 
@@ -763,39 +516,11 @@ contains
                ' end gridcell= ',procinfo%endg,                   &
                ' total gridcells per proc= ',procinfo%ncells
           write(iulog,*)'proc= ',pid,&
-               ' beg landunit= ',procinfo%begl, &
-               ' end landunit= ',procinfo%endl,                   &
-               ' total landunits per proc= ',procinfo%nlunits
-          write(iulog,*)'proc= ',pid,&
-               ' beg column  = ',procinfo%begc, &
-               ' end column  = ',procinfo%endc,                   &
-               ' total columns per proc  = ',procinfo%ncols
-          write(iulog,*)'proc= ',pid,&
-               ' beg patch     = ',procinfo%begp, &
-               ' end patch     = ',procinfo%endp,                   &
-               ' total patches per proc = ',procinfo%npatches
-          write(iulog,*)'proc= ',pid,&
-               ' beg coh     = ',procinfo%begCohort, &
-               ' end coh     = ',procinfo%endCohort,                   &
-               ' total coh per proc     = ',procinfo%nCohorts
-          write(iulog,*)'proc= ',pid,&
                ' lnd ngseg   = ',mct_gsMap_ngseg(gsMap_lnd_gdc2glo), &
                ' lnd nlseg   = ',mct_gsMap_nlseg(gsMap_lnd_gdc2glo,iam)
           write(iulog,*)'proc= ',pid,&
                ' gce ngseg   = ',mct_gsMap_ngseg(gsMap_gce_gdc2glo), &
                ' gce nlseg   = ',mct_gsMap_nlseg(gsMap_gce_gdc2glo,iam)
-          write(iulog,*)'proc= ',pid,&
-               ' lun ngseg   = ',mct_gsMap_ngseg(gsMap_lun_gdc2glo), &
-               ' lun nlseg   = ',mct_gsMap_nlseg(gsMap_lun_gdc2glo,iam)
-          write(iulog,*)'proc= ',pid,&
-               ' col ngseg   = ',mct_gsMap_ngseg(gsMap_col_gdc2glo), &
-               ' col nlseg   = ',mct_gsMap_nlseg(gsMap_col_gdc2glo,iam)
-          write(iulog,*)'proc= ',pid,&
-               ' patch ngseg   = ',mct_gsMap_ngseg(gsMap_patch_gdc2glo), &
-               ' patch nlseg   = ',mct_gsMap_nlseg(gsMap_patch_gdc2glo,iam)
-          write(iulog,*)'proc= ',pid,&
-               ' coh ngseg   = ',mct_gsMap_ngseg(gsMap_cohort_gdc2glo), &
-               ' coh nlseg   = ',mct_gsMap_nlseg(gsMap_cohort_gdc2glo,iam)
           write(iulog,*)'proc= ',pid,' nclumps = ',procinfo%nclumps
 
           clmin = 1
@@ -812,26 +537,6 @@ contains
                   ' beg gridcell= ',clumps(cid)%begg, &
                   ' end gridcell= ',clumps(cid)%endg, &
                   ' total gridcells per clump= ',clumps(cid)%ncells
-             write(iulog,*)'proc= ',pid,' clump no = ',n, &
-                  ' clump id= ',procinfo%cid(n),    &
-                  ' beg landunit= ',clumps(cid)%begl, &
-                  ' end landunit= ',clumps(cid)%endl, &
-                  ' total landunits per clump = ',clumps(cid)%nlunits
-             write(iulog,*)'proc= ',pid,' clump no = ',n, &
-                  ' clump id= ',procinfo%cid(n),    &
-                  ' beg column  = ',clumps(cid)%begc, &
-                  ' end column  = ',clumps(cid)%endc, &
-                  ' total columns per clump  = ',clumps(cid)%ncols
-             write(iulog,*)'proc= ',pid,' clump no = ',n, &
-                  ' clump id= ',procinfo%cid(n),    &
-                  ' beg patch     = ',clumps(cid)%begp, &
-                  ' end patch     = ',clumps(cid)%endp, &
-                  ' total patches per clump = ',clumps(cid)%npatches 
-             write(iulog,*)'proc= ',pid,' clump no = ',n, &
-                  ' clump id= ',procinfo%cid(n),    &
-                  ' beg cohort     = ',clumps(cid)%begCohort, &
-                  ' end cohort     = ',clumps(cid)%endCohort, &
-                  ' total cohorts per clump     = ',clumps(cid)%nCohorts
           end do
        end if
        call shr_sys_flush(iulog)
