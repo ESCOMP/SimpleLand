@@ -1494,7 +1494,6 @@ contains
     character(len=max_namlen):: varname   ! variable name
     character(len=max_namlen):: units     ! variable units
     !
-    real(r8), pointer :: histi(:,:)       ! temporary
     real(r8), pointer :: histo(:,:)       ! temporary
     integer, parameter :: nflds = 1       ! Number of 3D time-constant fields
     character(len=*),parameter :: subname = 'htape_timeconst3D'
@@ -1542,7 +1541,6 @@ contains
 
        do ifld = 1,nflds
 
-          histi(:,:) = spval
           if (tape(t)%dov2xy) then
              histo(:,:) = spval
 
@@ -1557,7 +1555,6 @@ contains
        end do
 
        if (tape(t)%dov2xy) deallocate(histo)
-       deallocate(histi)
 
     end if  ! (define/write mode
 
