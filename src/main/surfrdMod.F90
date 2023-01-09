@@ -5,6 +5,11 @@ module surfrdMod
   ! Contains methods for reading in surface data file and determining
   ! subgrid weights
   !
+  ! !NOTES:
+  ! TODO Currently reading domain file, although this is done in surfrd.
+  ! In NUOPC version we will be reading ESMF mesh file. Until SLIM gets
+  ! updated to NUOPC, we are leaving the calls to surfrd unchanged.
+  !
   ! !USES:
 #include "shr_assert.h"
   use shr_kind_mod    , only : r8 => shr_kind_r8

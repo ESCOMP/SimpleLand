@@ -425,7 +425,7 @@ contains
     !
     ! !USES:
     use clm_time_manager     , only : get_nstep
-    use clm_varctl           , only : caseid, ctitle, version, username, hostname, fsurdat
+    use clm_varctl           , only : caseid, ctitle, version, username, hostname, mml_surdat
     use clm_varctl           , only : conventions, source
     use clm_varpar           , only : numrad, nlevgrnd
     use decompMod            , only : get_proc_global
@@ -473,7 +473,7 @@ contains
     call ncd_putatt(ncid, NCD_GLOBAL, 'revision_id'    , trim(str))
     call ncd_putatt(ncid, NCD_GLOBAL, 'case_title'     , trim(ctitle))
     call ncd_putatt(ncid, NCD_GLOBAL, 'case_id'        , trim(caseid))
-    call ncd_putatt(ncid, NCD_GLOBAL, 'surface_dataset', trim(fsurdat))
+    call ncd_putatt(ncid, NCD_GLOBAL, 'surface_dataset', trim(mml_surdat))
     call ncd_putatt(ncid, NCD_GLOBAL, 'title', 'CLM Restart information')
 
   end subroutine restFile_dimset

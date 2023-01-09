@@ -1305,7 +1305,7 @@ contains
     !
     ! !USES:
     use clm_varpar      , only : nlevgrnd, numrad
-    use clm_varctl      , only : caseid, ctitle, fsurdat, finidat
+    use clm_varctl      , only : caseid, ctitle, mml_surdat, finidat
     use clm_varctl      , only : version, hostname, username, conventions, source
     use domainMod       , only : ldomain
     use fileutils       , only : get_filename
@@ -1412,7 +1412,7 @@ contains
     call ncd_putatt(lnfid, ncd_global, 'revision_id', trim(str))
     call ncd_putatt(lnfid, ncd_global, 'case_title', trim(ctitle))
     call ncd_putatt(lnfid, ncd_global, 'case_id', trim(caseid))
-    str = get_filename(fsurdat)
+    str = get_filename(mml_surdat)
     call ncd_putatt(lnfid, ncd_global, 'Surface_dataset', trim(str))
     if (finidat == ' ') then
        str = 'arbitrary initialization'

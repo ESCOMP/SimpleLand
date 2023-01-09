@@ -1020,10 +1020,6 @@ sub setup_logic_surface_dataset {
   }
   $flanduse_timeseries = $nl_flags->{'flanduse_timeseries'};
 
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fsurdat',
-              'hgrid'=>$nl_flags->{'res'},
-              'sim_year'=>$nl_flags->{'sim_year'});
-  
   # MML: try and add my own namelist variable for mml_surdat forcing file
   add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'mml_surdat');
   
@@ -1071,9 +1067,6 @@ sub setup_logic_initial_conditions {
     $settings{'hgrid'}   = $nl_flags->{'res'};
     $settings{'phys'}    = $physv->as_string();
     $settings{'nofail'}  = $nofail;
-    my $fsurdat          = $nl->get_value('fsurdat');
-    $fsurdat             =~ s!(.*)/!!;
-    $settings{'fsurdat'} = $fsurdat;
     #
     # If not transient use sim_year, otherwise use date
     #

@@ -36,7 +36,7 @@ contains
     ! !USES:
     use clm_varpar       , only: clm_varpar_init
     use clm_varcon       , only: clm_varcon_init
-    use clm_varctl       , only: fsurdat, fatmlndfrc, noland, version, mml_surdat  
+    use clm_varctl       , only: fatmlndfrc, noland, version, mml_surdat  
     use decompInitMod    , only: decompInit_lnd, decompInit_clumps, decompInit_glcp
     use domainMod        , only: domain_check, ldomain, domain_init
     use surfrdMod        , only: surfrd_get_globmask, surfrd_get_grid
@@ -88,6 +88,9 @@ contains
        write(iulog,*) 'Attempting to read global land mask from ',trim(fatmlndfrc)
        call shr_sys_flush(iulog)
     endif
+    ! TODO Currently reading domain file, although this is done in surfrd.
+    ! In NUOPC version we will be reading ESMF mesh file. Until SLIM gets
+    ! updated to NUOPC, we are leaving the calls to surfrd unchanged.
     call surfrd_get_globmask(filename=fatmlndfrc, mask=amask, ni=ni, nj=nj)
 
     ! Exit early if no valid land points
@@ -119,6 +122,9 @@ contains
        write(iulog,*) 'Attempting to read ldomain from ',trim(fatmlndfrc)
        call shr_sys_flush(iulog)
     endif
+    ! TODO Currently reading domain file, although this is done in surfrd.
+    ! In NUOPC version we will be reading ESMF mesh file. Until SLIM gets
+    ! updated to NUOPC, we are leaving the calls to surfrd unchanged.
     call surfrd_get_grid(begg, endg, ldomain, fatmlndfrc)
     if (masterproc) then
        call domain_check(ldomain)
@@ -159,7 +165,7 @@ contains
     ! !USES:
     use shr_scam_mod          , only : shr_scam_getCloseLatLon
     use clm_varcon            , only : spval
-    use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, fsurdat, mml_surdat
+    use clm_varctl            , only : finidat, finidat_interp_source, finidat_interp_dest, mml_surdat
     use clm_varctl            , only : single_column, scmlat, scmlon
     use clm_time_manager      , only : get_curr_date, get_nstep, advance_timestep 
     use clm_time_manager      , only : timemgr_init, timemgr_restart_io, timemgr_restart
@@ -231,7 +237,7 @@ contains
     ! If single-column determine closest latitude and longitude
 
     if (single_column) then
-       call getfil (fsurdat, locfn, 0)
+       call getfil (mml_surdat, locfn, 0)
        call shr_scam_getCloseLatLon(locfn, scmlat, scmlon, &
             closelat, closelon, closelatidx, closelonidx)
     end if

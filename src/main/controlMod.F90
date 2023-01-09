@@ -26,7 +26,7 @@ module controlMod
 ! use initInterpMod                    , only: initInterp_readnl
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
-  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, nrevsn
+  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fatmgrid, fatmlndfrc, nrevsn
   use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest
   use clm_varctl                       , only: wrtdia, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: use_noio, NLFilename_in
@@ -125,8 +125,6 @@ contains
          use_init_interp
 
     ! Input datasets
-
-    namelist /clm_inparm/ fsurdat
 
 	! MML Input datasets for simple model
     namelist /clm_inparm/ &
@@ -325,7 +323,6 @@ contains
     call mpi_bcast (finidat, len(finidat), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (finidat_interp_source, len(finidat_interp_source), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (finidat_interp_dest, len(finidat_interp_dest), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (fsurdat, len(fsurdat), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (fatmlndfrc,len(fatmlndfrc),MPI_CHARACTER, 0, mpicom, ier)
 
 	! mml input file vars for simple model
@@ -392,11 +389,6 @@ contains
     write(iulog,*) '    use_noio = ', use_noio
 
     write(iulog,*) 'input data files:'
-    if (fsurdat == ' ') then
-       write(iulog,*) '   fsurdat, surface dataset not set'
-    else
-       write(iulog,*) '   surface data   = ',trim(fsurdat)
-    end if
     if (fatmlndfrc == ' ') then
        write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
     else
