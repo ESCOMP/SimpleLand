@@ -274,7 +274,6 @@ contains
      rhomol		=> atm2lnd_inst%mml_atm_rhomol_grc    	,	&
      rhoair		=> atm2lnd_inst%mml_atm_rhoair_grc    	,	&
      cpair		=> atm2lnd_inst%mml_atm_cp_grc    		,	& ! MML: this is in 
-     pco2		=> atm2lnd_inst%mml_atm_pco2			,	&
      prec_liq	=> atm2lnd_inst%mml_atm_prec_liq_grc    ,   &	! MML: in mm/s
      prec_frz	=> atm2lnd_inst%mml_atm_prec_frz_grc    ,   &
      ! lnd variables
@@ -463,7 +462,6 @@ contains
      rhoair		= atm2lnd_inst%forc_rho_not_downscaled_grc 
      prec_liq	= atm2lnd_inst%forc_rain_not_downscaled_grc
      prec_frz	= atm2lnd_inst%forc_snow_not_downscaled_grc
-     pco2 		= atm2lnd_inst%forc_pco2_grc
      ! For checking the big neg lhflx:
      psrf		= atm2lnd_inst%forc_psrf_grc  ! surface pressure (Pa)
      pbot		= atm2lnd_inst%forc_pbot_not_downscaled_grc ! not downscaled atm pressure (Pa)

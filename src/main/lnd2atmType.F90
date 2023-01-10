@@ -57,7 +57,6 @@ module lnd2atmType
      real(r8), pointer :: qflx_rofliq_h2osfc_grc  (:)   => null() ! rof liq -- surface water runoff component
      real(r8), pointer :: qflx_rofliq_drain_perched_grc    (:)   => null() ! rof liq -- perched water table runoff component
      real(r8), pointer :: qflx_rofice_grc    (:)   => null() ! rof ice forcing
-     real(r8), pointer :: qflx_liq_from_ice_col(:) => null() ! liquid runoff from converted ice runoff
 
    contains
 
@@ -100,11 +99,9 @@ contains
     !
     ! !LOCAL VARIABLES:
     real(r8) :: ival  = 0.0_r8  ! initial value
-    integer  :: begc, endc
     integer  :: begg, endg
     !------------------------------------------------------------------------
 
-    begc = bounds%begc; endc = bounds%endc
     begg = bounds%begg; endg = bounds%endg
 
     allocate(this%t_rad_grc          (begg:endg))            ; this%t_rad_grc          (:)   = tfrz + 2._r8
@@ -119,7 +116,6 @@ contains
     allocate(this%tauy_grc           (begg:endg))            ; this%tauy_grc           (:)   =ival
     allocate(this%eflx_lwrad_out_grc (begg:endg))            ; this%eflx_lwrad_out_grc (:)   = sb * tfrz**4
     allocate(this%eflx_sh_tot_grc    (begg:endg))            ; this%eflx_sh_tot_grc    (:)   =ival
-    allocate(this%eflx_sh_ice_to_liq_col(begc:endc))         ; this%eflx_sh_ice_to_liq_col(:) = ival
     allocate(this%eflx_lh_tot_grc    (begg:endg))            ; this%eflx_lh_tot_grc    (:)   =ival
     allocate(this%qflx_evap_tot_grc  (begg:endg))            ; this%qflx_evap_tot_grc  (:)   =ival
     allocate(this%fsa_grc            (begg:endg))            ; this%fsa_grc            (:)   =ival
@@ -135,7 +131,6 @@ contains
     allocate(this%qflx_rofliq_h2osfc_grc  (begg:endg))       ; this%qflx_rofliq_h2osfc_grc    (:)   =ival
     allocate(this%qflx_rofliq_drain_perched_grc    (begg:endg))       ; this%qflx_rofliq_drain_perched_grc    (:)   =ival
     allocate(this%qflx_rofice_grc    (begg:endg))            ; this%qflx_rofice_grc    (:)   =ival
-    allocate(this%qflx_liq_from_ice_col(begc:endc))          ; this%qflx_liq_from_ice_col(:) = ival
 
   end subroutine InitAllocate
 

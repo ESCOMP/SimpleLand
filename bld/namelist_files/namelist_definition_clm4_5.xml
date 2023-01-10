@@ -63,38 +63,6 @@ Full pathname of land fraction data file.
 Clumps per processor.
 </entry>
 
-<entry id="co2_ppmv" type="real" category="clm_physics"
-       group="clm_inparm" valid_values="" >
-Atmospheric CO2 molar ratio (by volume) only used when co2_type==constant (umol/mol)
-(Set by CCSM_CO2_PPMV)
-</entry>
-
-<entry id="co2_type" type="char*16" category="clm_physics"
-       group="clm_inparm" valid_values="constant,prognostic,diagnostic" >
-Type of CO2 feedback.
-    constant   = use the input co2_ppmv value
-    prognostic = use the prognostic value sent from the atmosphere
-    diagnostic = use the diagnostic value sent from the atmosphere
-</entry>
-
-<entry id="glacier_region_behavior" type="char*32(10)" category="clm_physics"
-       group="clm_glacier_behavior"
-       valid_values="multiple,virtual,single_at_atm_topo" >
-Behavior of each glacier region (GLACIER_REGION in surface dataset).
-First item corresponds to GLACIER_REGION with ID 0 in the surface dataset,
-second to GLACIER_REGION with ID 1, etc.
-Allowed values are:
-'multiple': grid cells can potentially have multiple glacier elevation classes,
-   but no virtual columns
-'virtual': grid cells have virtual columns: values are computed for every glacier
-   elevation class, even those with 0 area (in order to provide surface mass
-   balance for every glacier elevation class).
-'single_at_atm_topo': glacier landunits in these grid cells have a single column,
-   whose elevation matches the atmosphere's topographic height (so that there is no
-   adjustment due to downscaling)
-Behavior of 'virtual' is required in the region where we have an ice sheet model
-</entry>
-
 <entry id="dtime" type="real"  category="clm_physics" 
        group="clm_inparm" valid_values="">
 Time step (seconds)
@@ -414,30 +382,7 @@ and pct_pft read from the surface dataset. This check is only done for a NON-tra
 </entry>
 
 <!-- ========================================================================================  -->
-<!-- Namelist options related to the snow pack                                                 -->
-<!-- ========================================================================================  -->
-
-<entry id="nlevsno" type="integer" category="clm_physics"
-       group="clm_inparm" valid_values="3,4,5,6,7,8,9,10,11,12" >
-Number of snow layers.
-Values less than 5 are mainly useful for testing, and should not be used for science.
-</entry>
-
-<!-- ========================================================================================  -->
 <!-- Namelist options related to initInterp                                                    -->
 <!-- ========================================================================================  -->
-
-<entry id="init_interp_fill_missing_with_natveg" type="logical" category="datasets"
-       group="clm_initinterp_inparm" valid_values="" >
-If FALSE (which is the default): If an output type cannot be found in the input for initInterp,
-code aborts
-If TRUE: If an output type cannot be found in the input, fill with closest natural veg column
-(using bare soil for patch-level variables)
-
-NOTE: Natural vegetation and crop landunits always behave as if this were true. e.g., if
-we can't find a column with the same type as a given crop column in the output, then we
-always fill with the closest natural veg patch / column, regardless of the value of this
-flag. So interpolation from non-crop to crop cases can be done without setting this flag.
-</entry>
 
 </namelist_definition>

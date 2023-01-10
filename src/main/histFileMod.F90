@@ -14,12 +14,9 @@ module histFileMod
   use abortutils     , only : endrun
   use clm_varctl     , only : iulog
   use clm_varcon     , only : spval, ispval
-  use clm_varcon     , only : grlnd, nameg, namel, namec, namep
+  use clm_varcon     , only : grlnd, nameg
   use decompMod      , only : get_proc_bounds, get_proc_global, bounds_type
   use GridcellType   , only : grc                
-  use LandunitType   , only : lun                
-  use ColumnType     , only : col                
-  use PatchType      , only : patch                
   use ncdio_pio 
 
   !
@@ -38,16 +35,6 @@ module histFileMod
   integer , private, parameter :: avgflag_strlen = 3 ! maximum number of characters for avgflag
   integer , private, parameter :: hist_dim_name_length = 16 ! lenngth of character strings in dimension names
 
-  ! Possible ways to treat multi-layer snow fields at times when no snow is present in a
-  ! given layer. Note that the public parameters are the only ones that can be used by
-  ! calls to hist_addfld2d; the private parameters are just used internally by the
-  ! histFile implementation.
-  integer , private, parameter :: no_snow_MIN = 1                 ! minimum valid value for this flag
-  integer , public , parameter :: no_snow_normal = 1              ! normal treatment, which should be used for most fields (use spval when snow layer not present)
-  integer , public , parameter :: no_snow_zero = 2                ! average in a 0 value for times when the snow layer isn't present
-  integer , private, parameter :: no_snow_MAX = 2                 ! maximum valid value for this flag
-  integer , private, parameter :: no_snow_unset = no_snow_MIN - 1 ! flag specifying that field is NOT a multi-layer snow field
-  !
   ! Counters
   !
   integer , public :: ntapes = 0         ! index of max history file requested
@@ -122,8 +109,6 @@ module histFileMod
   private :: masterlist_change_timeavg ! Override default history tape contents for specific tape
   private :: htape_addfld              ! Add a field to the active list for a history tape
   private :: htape_create              ! Define contents of history file t
-  private :: htape_add_ltype_metadata  ! Add global metadata defining landunit types
-  private :: htape_add_ctype_metadata  ! Add global metadata defining column types
   private :: htape_timeconst           ! Write time constant values to history tape
   private :: htape_timeconst3D         ! Write time constant 3D values to primary history tape
   private :: hfields_normalize         ! Normalize history file fields by number of accumulations
@@ -132,7 +117,6 @@ module histFileMod
   private :: hfields_1dinfo            ! Define/output 1d subgrid info if appropriate
   private :: hist_update_hbuf_field_1d ! Updates history buffer for specific field and tape
   private :: hist_update_hbuf_field_2d ! Updates history buffer for specific field and tape 
-  private :: hist_set_snow_field_2d    ! Set values in history field dimensioned by levsno
   private :: list_index                ! Find index of field in exclude list
   private :: set_hist_filename         ! Determine history dataset filenames
   private :: getname                   ! Retrieve name portion of input "inname"
@@ -159,7 +143,7 @@ module histFileMod
      character(len=max_chars)  :: units        ! units
      character(len=hist_dim_name_length) :: type1d                ! pointer to first dimension type from data type (nameg, etc)
      character(len=hist_dim_name_length) :: type1d_out            ! hbuf first dimension type from data type (nameg, etc)
-     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","elevclas","subname(n)"]
+     character(len=hist_dim_name_length) :: type2d                ! hbuf second dimension type ["levgrnd","numrad","ltype","subname(n)"]
      integer :: beg1d                          ! on-node 1d clm pointer start index
      integer :: end1d                          ! on-node 1d clm pointer end index
      integer :: num1d                          ! size of clm pointer first dimension (all nodes)
@@ -168,10 +152,6 @@ module histFileMod
      integer :: num1d_out                      ! size of hbuf first dimension (all nodes)
      integer :: num2d                          ! size of hbuf second dimension (e.g. number of vertical levels)
      integer :: hpindex                        ! history pointer index 
-     character(len=scale_type_strlen) :: p2c_scale_type       ! scale factor when averaging patch to column
-     character(len=scale_type_strlen) :: c2l_scale_type       ! scale factor when averaging column to landunit
-     character(len=scale_type_strlen) :: l2g_scale_type       ! scale factor when averaging landunit to gridcell
-     integer :: no_snow_behavior               ! for multi-layer snow fields, flag saying how to treat times when a given snow layer is absent
   end type field_info
 
   type master_entry
@@ -282,9 +262,7 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine masterlist_addfld (fname, type1d, type1d_out, &
-        type2d, num2d, units, avgflag, long_name, hpindex, &
-        p2c_scale_type, c2l_scale_type, l2g_scale_type, &
-        no_snow_behavior)
+        type2d, num2d, units, avgflag, long_name, hpindex)
     !
     ! !DESCRIPTION:
     ! Add a field to the master field list. Put input arguments of
@@ -305,19 +283,12 @@ contains
     character(len=*), intent(in)  :: avgflag          ! time averaging flag
     character(len=*), intent(in)  :: long_name        ! long name of field
     integer         , intent(in)  :: hpindex          ! data type index for history buffer output
-    character(len=*), intent(in)  :: p2c_scale_type   ! scale type for subgrid averaging of pfts to column
-    character(len=*), intent(in)  :: c2l_scale_type   ! scale type for subgrid averaging of columns to landunits
-    character(len=*), intent(in)  :: l2g_scale_type   ! scale type for subgrid averaging of landunits to gridcells
-    integer, intent(in), optional :: no_snow_behavior ! if a multi-layer snow field, behavior to use for absent snow layers
     !
     ! !LOCAL VARIABLES:
     integer :: n            ! loop index
     integer :: f            ! masterlist index
     integer :: numa         ! total number of atm cells across all processors
     integer :: numg         ! total number of gridcells across all processors
-    integer :: numl         ! total number of landunits across all processors
-    integer :: numc         ! total number of columns across all processors
-    integer :: nump         ! total number of pfts across all processors
     type(bounds_type) :: bounds                  
     character(len=*),parameter :: subname = 'masterlist_addfld'
     !------------------------------------------------------------------------
@@ -330,7 +301,7 @@ contains
     ! Determine bounds
 
     call get_proc_bounds(bounds)
-    call get_proc_global(ng=numg, nl=numl, nc=numc, np=nump)
+    call get_proc_global(ng=numg)
 
     ! Ensure that new field is not all blanks
 
@@ -377,9 +348,6 @@ contains
     masterlist(f)%field%type2d         = type2d
     masterlist(f)%field%num2d          = num2d
     masterlist(f)%field%hpindex        = hpindex
-    masterlist(f)%field%p2c_scale_type = p2c_scale_type
-    masterlist(f)%field%c2l_scale_type = c2l_scale_type
-    masterlist(f)%field%l2g_scale_type = l2g_scale_type
 
     select case (type1d)
     case (grlnd)
@@ -390,28 +358,10 @@ contains
        masterlist(f)%field%beg1d = bounds%begg
        masterlist(f)%field%end1d = bounds%endg
        masterlist(f)%field%num1d = numg
-    case (namel)
-       masterlist(f)%field%beg1d = bounds%begl
-       masterlist(f)%field%end1d = bounds%endl
-       masterlist(f)%field%num1d = numl
-    case (namec)
-       masterlist(f)%field%beg1d = bounds%begc
-       masterlist(f)%field%end1d = bounds%endc
-       masterlist(f)%field%num1d = numc
-    case (namep)
-       masterlist(f)%field%beg1d = bounds%begp
-       masterlist(f)%field%end1d = bounds%endp
-       masterlist(f)%field%num1d = nump
     case default
        write(iulog,*) trim(subname),' ERROR: unknown 1d output type= ',type1d
        call endrun(msg=errMsg(sourcefile, __LINE__))
     end select
-
-    if (present(no_snow_behavior)) then
-       masterlist(f)%field%no_snow_behavior = no_snow_behavior
-    else
-       masterlist(f)%field%no_snow_behavior = no_snow_unset
-    end if
 
     ! The following two fields are used only in master field list,
     ! NOT in the runtime active field list
@@ -828,25 +778,6 @@ contains
     character(len=8), intent(in) :: type1d_out  ! history buffer 1d type
     !
     mapping = .false.
-    if (type1d_out == nameg .or. type1d_out == grlnd) then
-       if (type1d == namep) then
-          mapping = .true.
-       else if (type1d == namec) then
-          mapping = .true.
-       else if (type1d == namel) then
-          mapping = .true.
-       end if
-    else if (type1d_out == namel ) then
-       if (type1d == namep) then
-          mapping = .true.
-       else if (type1d == namec) then
-          mapping = .true.
-       end if
-    else if (type1d_out == namec ) then
-       if (type1d == namep) then
-          mapping = .true.
-       end if
-    end if
   end function is_mapping_upto_subgrid
 
   !-----------------------------------------------------------------------
@@ -867,9 +798,6 @@ contains
     character(len=hist_dim_name_length) :: type1d_out  ! history buffer 1d type
     integer :: numa                 ! total number of atm cells across all processors
     integer :: numg                 ! total number of gridcells across all processors
-    integer :: numl                 ! total number of landunits across all processors
-    integer :: numc                 ! total number of columns across all processors
-    integer :: nump                 ! total number of pfts across all processors
     integer :: num2d                ! size of second dimension (e.g. .number of vertical levels)
     integer :: beg1d_out,end1d_out  ! history output per-proc 1d beginning and ending indices
     integer :: beg1d,end1d          ! beginning and ending indices for this field (assume already set)
@@ -896,7 +824,7 @@ contains
     ! Determine bounds
 
     call get_proc_bounds(bounds)
-    call get_proc_global(ng=numg, nl=numl, nc=numc, np=nump)
+    call get_proc_global(ng=numg)
 
     ! Modify type1d_out if necessary
 
@@ -908,10 +836,7 @@ contains
 
        type1d = tape(t)%hlist(n)%field%type1d
 
-       if (type1d == nameg .or. &
-           type1d == namel .or. &
-           type1d == namec .or. &
-           type1d == namep) then
+       if (type1d == nameg) then
           tape(t)%hlist(n)%field%type1d_out = grlnd
        end if
        if (type1d == grlnd) then
@@ -928,12 +853,6 @@ contains
        select case (trim(hist_type1d_pertape(t)))
        case('GRID')
           tape(t)%hlist(n)%field%type1d_out = nameg
-       case('LAND')
-          tape(t)%hlist(n)%field%type1d_out = namel
-       case('COLS')
-          tape(t)%hlist(n)%field%type1d_out = namec
-       case ('PFTS')
-          tape(t)%hlist(n)%field%type1d_out = namep
        case default
           write(iulog,*) trim(subname),' ERROR: unknown input hist_type1d_pertape= ', hist_type1d_pertape(t)
           call endrun(msg=errMsg(sourcefile, __LINE__))
@@ -952,18 +871,6 @@ contains
        beg1d_out = bounds%begg
        end1d_out = bounds%endg
        num1d_out = numg
-    else if (type1d_out == namel) then
-       beg1d_out = bounds%begl
-       end1d_out = bounds%endl
-       num1d_out = numl
-    else if (type1d_out == namec) then
-       beg1d_out = bounds%begc
-       end1d_out = bounds%endc
-       num1d_out = numc
-    else if (type1d_out == namep) then
-       beg1d_out = bounds%begp
-       end1d_out = bounds%endp
-       num1d_out = nump
     else
        write(iulog,*) trim(subname),' ERROR: incorrect value of type1d_out= ',type1d_out
        call endrun(msg=errMsg(sourcefile, __LINE__))
@@ -1022,7 +929,7 @@ contains
     integer :: f                   ! field index
     integer :: num2d               ! size of second dimension (e.g. number of vertical levels)
     character(len=*),parameter :: subname = 'hist_update_hbuf'
-    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","levlak","numrad","ltype","natpft","cft","elevclas","subname(n)"]
+    character(len=hist_dim_name_length) :: type2d     ! hbuf second dimension type ["levgrnd","numrad","ltype","subname(n)"]
     !-----------------------------------------------------------------------
 
     do t = 1,ntapes
@@ -1051,7 +958,6 @@ contains
     ! call to p2g, and the lack of explicit bounds on its arguments; see also bug 1786)
     !
     ! !USES:
-    use subgridAveMod   , only : p2g, c2g, l2g, p2l, c2l, p2c
     use decompMod       , only : BOUNDS_LEVEL_PROC
     !
     ! !ARGUMENTS:
@@ -1061,23 +967,16 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer  :: hpindex                 ! history pointer index
-    integer  :: k                       ! gridcell, landunit, column or patch index
+    integer  :: k                       ! gridcell index
     integer  :: beg1d,end1d             ! beginning and ending indices
     integer  :: beg1d_out,end1d_out     ! beginning and ending indices on output grid
-    logical  :: check_active            ! true => check 'active' flag of each point (this refers to a point being active, NOT a history field being active)
     logical  :: valid                   ! true => history operation is valid
-    logical  :: map2gcell               ! true => map clm pointer field to gridcell
-    character(len=hist_dim_name_length)  :: type1d         ! 1d clm pointerr type   ["gridcell","landunit","column","pft"]
-    character(len=hist_dim_name_length)  :: type1d_out     ! 1d history buffer type ["gridcell","landunit","column","pft"]
+    character(len=hist_dim_name_length)  :: type1d         ! 1d clm pointerr type   ["gridcell"]
+    character(len=hist_dim_name_length)  :: type1d_out     ! 1d history buffer type ["gridcell"]
     character(len=avgflag_strlen) :: avgflag ! time averaging flag
-    character(len=scale_type_strlen)  :: p2c_scale_type ! scale type for subgrid averaging of pfts to column
-    character(len=scale_type_strlen)  :: c2l_scale_type ! scale type for subgrid averaging of columns to landunits
-    character(len=scale_type_strlen) :: l2g_scale_type ! scale type for subgrid averaging of landunits to gridcells
     real(r8), pointer :: hbuf(:,:)      ! history buffer
     integer , pointer :: nacs(:,:)      ! accumulation counter
     real(r8), pointer :: field(:)       ! clm 1d pointer field
-    logical , pointer :: active(:)      ! flag saying whether each point is active (used for type1d = landunit/column/pft) (this refers to a point being active, NOT a history field being active)
-    real(r8), allocatable :: field_gcell(:)  ! gricell level field (used if mapping to gridcell is done)
     integer j
     character(len=*),parameter :: subname = 'hist_update_hbuf_field_1d'
     integer k_offset                    ! offset for mapping sliced subarray pointers when outputting variables in PFT/col vector form
@@ -1094,167 +993,20 @@ contains
     end1d_out      =  tape(t)%hlist(f)%field%end1d_out
     type1d         =  tape(t)%hlist(f)%field%type1d
     type1d_out     =  tape(t)%hlist(f)%field%type1d_out
-    p2c_scale_type =  tape(t)%hlist(f)%field%p2c_scale_type
-    c2l_scale_type =  tape(t)%hlist(f)%field%c2l_scale_type
-    l2g_scale_type =  tape(t)%hlist(f)%field%l2g_scale_type
     hpindex        =  tape(t)%hlist(f)%field%hpindex
     field          => clmptr_rs(hpindex)%ptr
 
     ! set variables to check weights when allocate all pfts
 
-    map2gcell = .false.
     if (type1d_out == nameg .or. type1d_out == grlnd) then
        SHR_ASSERT(beg1d_out == bounds%begg, errMsg(sourcefile, __LINE__))
        SHR_ASSERT(end1d_out == bounds%endg, errMsg(sourcefile, __LINE__))
-       if (type1d == namep) then
-          ! In this and the following calls, we do NOT explicitly subset field using
-          ! bounds (e.g., we do NOT do field(bounds%begp:bounds%endp). This is because,
-          ! for some fields, the lower bound has been reset to 1 due to taking a pointer
-          ! to an array slice. Thus, this code will NOT work properly if done within a
-          ! threaded region! (See also bug 1786)
-          allocate( field_gcell(beg1d_out:end1d_out) )
-          call p2g(bounds, &
-               field, &
-               field_gcell(bounds%begg:bounds%endg), &
-               p2c_scale_type, c2l_scale_type, l2g_scale_type)
-          map2gcell = .true.
-       else if (type1d == namec) then
-          allocate( field_gcell(beg1d_out:end1d_out) )
-          call c2g(bounds, &
-               field, &
-               field_gcell(bounds%begg:bounds%endg), &
-               c2l_scale_type, l2g_scale_type)
-          map2gcell = .true.
-       else if (type1d == namel) then
-          allocate( field_gcell(beg1d_out:end1d_out) )
-          call l2g(bounds, &
-               field, &
-               field_gcell(bounds%begg:bounds%endg), &
-               l2g_scale_type)
-          map2gcell = .true.
-       end if
     end if
-    if (type1d_out == namel ) then
-       SHR_ASSERT(beg1d_out == bounds%begl, errMsg(sourcefile, __LINE__))
-       SHR_ASSERT(end1d_out == bounds%endl, errMsg(sourcefile, __LINE__))
-       if (type1d == namep) then
-          ! In this and the following calls, we do NOT explicitly subset field using
-          ! bounds (e.g., we do NOT do field(bounds%begp:bounds%endp). This is because,
-          ! for some fields, the lower bound has been reset to 1 due to taking a pointer
-          ! to an array slice. Thus, this code will NOT work properly if done within a
-          ! threaded region! (See also bug 1786)
-          allocate( field_gcell(beg1d_out:end1d_out) )
-          call p2l(bounds, &
-               field, &
-               field_gcell(beg1d_out:end1d_out), &
-               p2c_scale_type, c2l_scale_type)
-          map2gcell = .true.
-       else if (type1d == namec) then
-          allocate( field_gcell(beg1d_out:end1d_out) )
-          call c2l(bounds, &
-               field, &
-               field_gcell(beg1d_out:end1d_out), &
-               c2l_scale_type)
-          map2gcell = .true.
-       end if
-    end if
-    if (type1d_out == namec ) then
-       SHR_ASSERT(beg1d_out == bounds%begc, errMsg(sourcefile, __LINE__))
-       SHR_ASSERT(end1d_out == bounds%endc, errMsg(sourcefile, __LINE__))
-       if (type1d == namep) then
-          ! In this and the following calls, we do NOT explicitly subset field using
-          ! bounds (e.g., we do NOT do field(bounds%begp:bounds%endp). This is because,
-          ! for some fields, the lower bound has been reset to 1 due to taking a pointer
-          ! to an array slice. Thus, this code will NOT work properly if done within a
-          ! threaded region! (See also bug 1786)
-          allocate( field_gcell(beg1d_out:end1d_out) )
-          call p2c(bounds, &
-               field, &
-               field_gcell(beg1d_out:end1d_out), &
-               p2c_scale_type)
-          map2gcell = .true.
-       end if
-    end if
-    if ( map2gcell .and. .not. is_mapping_upto_subgrid(type1d, type1d_out) )then
-       call endrun(msg=trim(subname)//' ERROR: mapping upto subgrid level is inconsistent'//errMsg(sourcefile, __LINE__))
-    end if
-    if ( .not. map2gcell .and. is_mapping_upto_subgrid(type1d, type1d_out) )then
-       call endrun(msg=trim(subname)//' ERROR: mapping upto subgrid level is inconsistent'//errMsg(sourcefile, __LINE__))
-    end if
-
-    if (map2gcell) then  ! Map to gridcell
-
-       ! note that in this case beg1d = begg and end1d=endg
-       select case (avgflag)
-       case ('I') ! Instantaneous
-          do k = beg1d_out, end1d_out
-             if (field_gcell(k) /= spval) then
-                hbuf(k,1) = field_gcell(k)
-             else
-                hbuf(k,1) = spval
-             end if
-             nacs(k,1) = 1
-          end do
-       case ('A', 'SUM') ! Time average / sum
-          do k = beg1d_out, end1d_out
-             if (field_gcell(k) /= spval) then
-                if (nacs(k,1) == 0) hbuf(k,1) = 0._r8
-                hbuf(k,1) = hbuf(k,1) + field_gcell(k)
-                nacs(k,1) = nacs(k,1) + 1
-             else
-                if (nacs(k,1) == 0) hbuf(k,1) = spval
-             end if
-          end do
-       case ('X') ! Maximum over time
-          do k = beg1d_out, end1d_out
-             if (field_gcell(k) /= spval) then
-                if (nacs(k,1) == 0) hbuf(k,1) = -1.e50_r8
-                hbuf(k,1) = max( hbuf(k,1), field_gcell(k) )
-             else
-                hbuf(k,1) = spval
-             endif
-             nacs(k,1) = 1
-          end do
-       case ('M') ! Minimum over time
-          do k = beg1d_out, end1d_out
-             if (field_gcell(k) /= spval) then
-                if (nacs(k,1) == 0) hbuf(k,1) = +1.e50_r8
-                hbuf(k,1) = min( hbuf(k,1), field_gcell(k) )
-             else
-                hbuf(k,1) = spval
-             endif
-             nacs(k,1) = 1
-          end do
-       case default
-          write(iulog,*) trim(subname),' ERROR: invalid time averaging flag ', avgflag
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end select
-       deallocate( field_gcell )
-
-    else  ! Do not map to gridcell
-
-       ! For data defined on the pft, col or landunit, we need to check if a point is active
-       ! to determine whether that point should be assigned spval
-       if (type1d == namep) then
-          check_active = .true.
-          active => patch%active
-       else if (type1d == namec) then
-          check_active = .true.
-          active => col%active
-       else if (type1d == namel) then
-          check_active = .true.
-          active =>lun%active
-       else
-          check_active = .false.
-       end if
 
        select case (avgflag)
        case ('I') ! Instantaneous
           do k = beg1d,end1d
              valid = .true.
-             if (check_active) then
-                if (.not. active(k)) valid = .false.
-             end if
              if (valid) then
                 if (field(k) /= spval) then
                    hbuf(k,1) = field(k)
@@ -1271,13 +1023,10 @@ contains
           if ( end1d .eq. ubound(field,1) ) then
              k_offset = 0
           else
-             k_offset = 1 - beg1d 
+             k_offset = 1 - beg1d
           endif
           do k = beg1d,end1d
              valid = .true.
-             if (check_active) then
-                if (.not. active(k)) valid = .false.
-             end if
              if (valid) then
                 if (field(k+k_offset) /= spval) then   ! add k_offset
                    if (nacs(k,1) == 0) hbuf(k,1) = 0._r8
@@ -1293,9 +1042,6 @@ contains
        case ('X') ! Maximum over time
           do k = beg1d,end1d
              valid = .true.
-             if (check_active) then
-                if (.not. active(k)) valid = .false.
-             end if
              if (valid) then
                 if (field(k) /= spval) then
                    if (nacs(k,1) == 0) hbuf(k,1) = -1.e50_r8
@@ -1311,9 +1057,6 @@ contains
        case ('M') ! Minimum over time
           do k = beg1d,end1d
              valid = .true.
-             if (check_active) then
-                if (.not. active(k)) valid = .false.
-             end if
              if (valid) then
                 if (field(k) /= spval) then
                    if (nacs(k,1) == 0) hbuf(k,1) = +1.e50_r8
@@ -1330,7 +1073,6 @@ contains
           write(iulog,*) trim(subname),' ERROR: invalid time averaging flag ', avgflag
           call endrun(msg=errMsg(sourcefile, __LINE__))
        end select
-    end if
 
   end subroutine hist_update_hbuf_field_1d
 
@@ -1345,7 +1087,6 @@ contains
     ! call to p2g, and the lack of explicit bounds on its arguments; see also bug 1786)
     !
     ! !USES:
-    use subgridAveMod   , only : p2g, c2g, l2g, p2l, c2l, p2c
     use decompMod       , only : BOUNDS_LEVEL_PROC
     !
     ! !ARGUMENTS:
@@ -1356,27 +1097,18 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer  :: hpindex                 ! history pointer index
-    integer  :: k                       ! gridcell, landunit, column or patch index
+    integer  :: k                       ! gridcell index
     integer  :: j                       ! level index
     integer  :: beg1d,end1d             ! beginning and ending indices
     integer  :: beg1d_out,end1d_out     ! beginning and ending indices for output level
-    logical  :: check_active            ! true => check 'active' flag of each point (this refers to a point being active, NOT a history field being active)
     logical  :: valid                   ! true => history operation is valid
-    logical  :: map2gcell               ! true => map clm pointer field to gridcell
-    character(len=hist_dim_name_length)  :: type1d         ! 1d clm pointerr type   ["gridcell","landunit","column","pft"]
-    character(len=hist_dim_name_length)  :: type1d_out     ! 1d history buffer type ["gridcell","landunit","column","pft"]
+    character(len=hist_dim_name_length)  :: type1d         ! 1d clm pointerr type   ["gridcell"]
+    character(len=hist_dim_name_length)  :: type1d_out     ! 1d history buffer type ["gridcell"]
     character(len=avgflag_strlen) :: avgflag ! time averaging flag
-    character(len=scale_type_strlen) :: p2c_scale_type ! scale type for subgrid averaging of pfts to column
-    character(len=scale_type_strlen) :: c2l_scale_type ! scale type for subgrid averaging of columns to landunits
-    character(len=scale_type_strlen) :: l2g_scale_type ! scale type for subgrid averaging of landunits to gridcells
-    integer  :: no_snow_behavior        ! for multi-layer snow fields, behavior to use when a given layer is absent
     real(r8), pointer :: hbuf(:,:)      ! history buffer
     integer , pointer :: nacs(:,:)      ! accumulation counter
     real(r8), pointer :: field(:,:)     ! clm 2d pointer field
     logical           :: field_allocated! whether 'field' was allocated here
-    logical , pointer :: active(:)      ! flag saying whether each point is active (used for type1d = landunit/column/pft) 
-                                        !(this refers to a point being active, NOT a history field being active)
-    real(r8), allocatable :: field_gcell(:,:) ! gridcell level field (used if mapping to gridcell is done)
     character(len=*),parameter :: subname = 'hist_update_hbuf_field_2d'
     !-----------------------------------------------------------------------
 
@@ -1391,188 +1123,17 @@ contains
     end1d_out           =  tape(t)%hlist(f)%field%end1d_out
     type1d              =  tape(t)%hlist(f)%field%type1d
     type1d_out          =  tape(t)%hlist(f)%field%type1d_out
-    p2c_scale_type      =  tape(t)%hlist(f)%field%p2c_scale_type
-    c2l_scale_type      =  tape(t)%hlist(f)%field%c2l_scale_type
-    l2g_scale_type      =  tape(t)%hlist(f)%field%l2g_scale_type
-    no_snow_behavior    =  tape(t)%hlist(f)%field%no_snow_behavior
     hpindex             =  tape(t)%hlist(f)%field%hpindex
 
-    if (no_snow_behavior /= no_snow_unset) then
-       ! For multi-layer snow fields, build a special output variable that handles
-       ! missing snow layers appropriately
-
-       ! Note, regarding bug 1786: The following allocation is not what we would want if
-       ! this routine were operating in a threaded region (or, more generally, within a
-       ! loop over nclumps) - in that case we would want to use the bounds information for
-       ! this clump. But currently that's not possible because the bounds of some fields
-       ! have been reset to 1 - see also bug 1786. Similarly, if we wanted to allow
-       ! operation within a loop over clumps, we would need to pass 'bounds' to
-       ! hist_set_snow_field_2d rather than relying on beg1d & end1d (which give the proc,
-       ! bounds not the clump bounds)
-
-       allocate(field(lbound(clmptr_ra(hpindex)%ptr, 1) : ubound(clmptr_ra(hpindex)%ptr, 1), 1:num2d))
-       field_allocated = .true.
-
-       call hist_set_snow_field_2d(field, clmptr_ra(hpindex)%ptr, no_snow_behavior, type1d, &
-            beg1d, end1d)
-    else
        field => clmptr_ra(hpindex)%ptr(:,1:num2d)
        field_allocated = .false.
-    end if
 
     ! set variables to check weights when allocate all pfts
 
-    map2gcell = .false.
     if (type1d_out == nameg .or. type1d_out == grlnd) then
        SHR_ASSERT(beg1d_out == bounds%begg, errMsg(sourcefile, __LINE__))
        SHR_ASSERT(end1d_out == bounds%endg, errMsg(sourcefile, __LINE__))
-       if (type1d == namep) then
-          ! In this and the following calls, we do NOT explicitly subset field using
-          ! (e.g., we do NOT do field(bounds%begp:bounds%endp). This is because,
-          ! for some fields, the lower bound has been reset to 1 due to taking a pointer
-          ! to an array slice. Thus, this code will NOT work properly if done within a
-          ! threaded region! (See also bug 1786)
-          allocate(field_gcell(bounds%begg:bounds%endg,num2d) )
-          call p2g(bounds, num2d, &
-               field, &
-               field_gcell(bounds%begg:bounds%endg, :), &
-               p2c_scale_type, c2l_scale_type, l2g_scale_type)
-          map2gcell = .true.
-       else if (type1d == namec) then
-          allocate(field_gcell(bounds%begg:bounds%endg,num2d) )
-          call c2g(bounds, num2d, &
-               field, &
-               field_gcell(bounds%begg:bounds%endg, :), &
-               c2l_scale_type, l2g_scale_type)
-          map2gcell = .true.
-       else if (type1d == namel) then
-          allocate(field_gcell(bounds%begg:bounds%endg,num2d) )
-          call l2g(bounds, num2d, &
-               field, &
-               field_gcell(bounds%begg:bounds%endg, :), &
-               l2g_scale_type)
-          map2gcell = .true.
-       end if
-    else if ( type1d_out == namel )then
-       SHR_ASSERT(beg1d_out == bounds%begl, errMsg(sourcefile, __LINE__))
-       SHR_ASSERT(end1d_out == bounds%endl, errMsg(sourcefile, __LINE__))
-       if (type1d == namep) then
-          ! In this and the following calls, we do NOT explicitly subset field using
-          ! (e.g., we do NOT do field(bounds%begp:bounds%endp). This is because,
-          ! for some fields, the lower bound has been reset to 1 due to taking a pointer
-          ! to an array slice. Thus, this code will NOT work properly if done within a
-          ! threaded region! (See also bug 1786)
-          allocate(field_gcell(beg1d_out:end1d_out,num2d))
-          call p2l(bounds, num2d, &
-               field, &
-               field_gcell(beg1d_out:end1d_out, :), &
-               p2c_scale_type, c2l_scale_type)
-          map2gcell = .true.
-       else if (type1d == namec) then
-          allocate(field_gcell(beg1d_out:end1d_out,num2d))
-          call c2l(bounds, num2d, &
-               field, &
-               field_gcell(beg1d_out:end1d_out, :), &
-               c2l_scale_type)
-          map2gcell = .true.
-       end if
-    else if ( type1d_out == namec )then
-       SHR_ASSERT(beg1d_out == bounds%begc, errMsg(sourcefile, __LINE__))
-       SHR_ASSERT(end1d_out == bounds%endc, errMsg(sourcefile, __LINE__))
-       if (type1d == namep) then
-          ! In this and the following calls, we do NOT explicitly subset field using
-          ! (e.g., we do NOT do field(bounds%begp:bounds%endp). This is because,
-          ! for some fields, the lower bound has been reset to 1 due to taking a pointer
-          ! to an array slice. Thus, this code will NOT work properly if done within a
-          ! threaded region! (See also bug 1786)
-          allocate(field_gcell(beg1d_out:end1d_out,num2d))
-          call p2c(bounds, num2d, &
-               field, &
-               field_gcell(beg1d_out:end1d_out, :), &
-               p2c_scale_type)
-          map2gcell = .true.
-       end if
     end if
-    if ( map2gcell .and. .not. is_mapping_upto_subgrid(type1d, type1d_out) )then
-       call endrun(msg=trim(subname)//' ERROR: mapping upto subgrid level is inconsistent'//errMsg(sourcefile, __LINE__))
-    end if
-    if ( .not. map2gcell .and. is_mapping_upto_subgrid(type1d, type1d_out) )then
-       call endrun(msg=trim(subname)//' ERROR: mapping upto subgrid level is inconsistent'//errMsg(sourcefile, __LINE__))
-    end if
-
-    if (map2gcell) then  ! Map to gridcell
-
-       ! note that in this case beg1d = begg and end1d=endg
-       select case (avgflag)
-       case ('I') ! Instantaneous
-          do j = 1,num2d
-             do k = beg1d_out, end1d_out
-                if (field_gcell(k,j) /= spval) then
-                   hbuf(k,j) = field_gcell(k,j)
-                else
-                   hbuf(k,j) = spval
-                end if
-                nacs(k,j) = 1
-             end do
-          end do
-       case ('A', 'SUM') ! Time average / sum
-          do j = 1,num2d
-             do k = beg1d_out, end1d_out
-                if (field_gcell(k,j) /= spval) then
-                   if (nacs(k,j) == 0) hbuf(k,j) = 0._r8
-                   hbuf(k,j) = hbuf(k,j) + field_gcell(k,j)
-                   nacs(k,j) = nacs(k,j) + 1
-                else
-                   if (nacs(k,j) == 0) hbuf(k,j) = spval
-                endif
-             end do
-          end do
-       case ('X') ! Maximum over time
-          do j = 1,num2d
-             do k = beg1d_out, end1d_out
-                if (field_gcell(k,j) /= spval) then
-                   if (nacs(k,j) == 0) hbuf(k,j) = -1.e50_r8
-                   hbuf(k,j) = max( hbuf(k,j), field_gcell(k,j) )
-                else
-                   hbuf(k,j) = spval
-                endif
-                nacs(k,j) = 1
-             end do
-          end do
-       case ('M') ! Minimum over time
-          do j = 1,num2d
-             do k = beg1d_out, end1d_out
-                if (field_gcell(k,j) /= spval) then
-                   if (nacs(k,j) == 0) hbuf(k,j) = +1.e50_r8
-                   hbuf(k,j) = min( hbuf(k,j), field_gcell(k,j) )
-                else
-                   hbuf(k,j) = spval
-                endif
-                nacs(k,j) = 1
-             end do
-          end do
-       case default
-          write(iulog,*) trim(subname),' ERROR: invalid time averaging flag ', avgflag
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end select
-       deallocate( field_gcell )
-
-    else  ! Do not map to gridcell
-
-       ! For data defined on the pft, col or landunit, we need to check if a point is active
-       ! to determine whether that point should be assigned spval
-       if (type1d == namep) then
-          check_active = .true.
-          active => patch%active
-       else if (type1d == namec) then
-          check_active = .true.
-          active => col%active
-       else if (type1d == namel) then
-          check_active = .true.
-          active =>lun%active
-       else
-          check_active = .false.
-       end if
 
        ! Note that since field points to an array section the
        ! bounds are field(1:end1d-beg1d+1, num2d) - therefore
@@ -1583,9 +1144,6 @@ contains
           do j = 1,num2d
              do k = beg1d,end1d
                 valid = .true.
-                if (check_active) then
-                   if (.not. active(k)) valid = .false.
-                end if
                 if (valid) then
                    if (field(k-beg1d+1,j) /= spval) then
                       hbuf(k,j) = field(k-beg1d+1,j)
@@ -1602,9 +1160,6 @@ contains
           do j = 1,num2d
              do k = beg1d,end1d
                 valid = .true.
-                if (check_active) then
-                   if (.not. active(k)) valid = .false.
-                end if
                 if (valid) then
                    if (field(k-beg1d+1,j) /= spval) then
                       if (nacs(k,j) == 0) hbuf(k,j) = 0._r8
@@ -1622,9 +1177,6 @@ contains
           do j = 1,num2d
              do k = beg1d,end1d
                 valid = .true.
-                if (check_active) then
-                   if (.not. active(k)) valid = .false.
-                end if
                 if (valid) then
                    if (field(k-beg1d+1,j) /= spval) then
                       if (nacs(k,j) == 0) hbuf(k,j) = -1.e50_r8
@@ -1642,9 +1194,6 @@ contains
           do j = 1,num2d
              do k = beg1d,end1d
                 valid = .true.
-                if (check_active) then
-                   if (.not. active(k)) valid = .false.
-                end if
                 if (valid) then
                    if (field(k-beg1d+1,j) /= spval) then
                       if (nacs(k,j) == 0) hbuf(k,j) = +1.e50_r8
@@ -1662,106 +1211,12 @@ contains
           write(iulog,*) trim(subname),' ERROR: invalid time averaging flag ', avgflag
           call endrun(msg=errMsg(sourcefile, __LINE__))
        end select
-    end if
 
     if (field_allocated) then
        deallocate(field)
     end if
 
   end subroutine hist_update_hbuf_field_2d
-
-  !-----------------------------------------------------------------------
-  subroutine hist_set_snow_field_2d (field_out, field_in, no_snow_behavior, type1d, beg1d, end1d)
-    !
-    ! !DESCRIPTION:
-    ! Set values in history field dimensioned by levsno. 
-    !
-    ! This routine handles what to do when a given snow layer doesn't exist for a given
-    ! point, based on the no_snow_behavior argument. Options are:
-    !
-    ! - no_snow_normal: This is the normal behavior, which applies to most snow fields:
-    !   Use spval (missing value flag). This means that temporal averages will just
-    !   consider times when a particular snow layer actually existed
-    !
-    ! - no_snow_zero: Average in a 0 value for times when the snow layer isn't present
-    !
-    ! Input and output fields can be defined at the patch or column level
-    !
-    ! !ARGUMENTS:
-    integer         , intent(in)  :: beg1d                    ! beginning spatial index
-    integer         , intent(in)  :: end1d                    ! ending spatial index
-    real(r8)        , intent(out) :: field_out( beg1d: , 1: ) ! output field [point, lev]
-    real(r8)        , intent(in)  :: field_in ( beg1d: , 1: ) ! input field [point, lev]
-    integer         , intent(in)  :: no_snow_behavior         ! behavior to use when a snow layer is absent
-    character(len=*), intent(in)  :: type1d                   ! 1d clm pointer type ("column" or "pft")
-    !
-    ! !LOCAL VARIABLES:
-    integer :: num_levels             ! total number of possible snow layers
-    integer :: point
-    integer :: level
-    integer :: num_snow_layers        ! number of snow layers that exist at a point
-    integer :: num_nonexistent_layers
-    integer :: c                      ! column index
-    real(r8):: no_snow_val            ! value to use when a snow layer is missing
-    character(len=*), parameter :: subname = 'hist_set_snow_field_2d'
-    !-----------------------------------------------------------------------
-
-    SHR_ASSERT_ALL((ubound(field_out, 1) == end1d), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(field_in , 1) == end1d), errMsg(sourcefile, __LINE__))
-    SHR_ASSERT_ALL((ubound(field_out, 2) == ubound(field_in, 2)), errMsg(sourcefile, __LINE__))
-
-    associate(&
-    snl            => col%snl  &   ! Input: [integer (:)] number of snow layers (negative)
-    )
-
-    num_levels = ubound(field_in, 2)
-
-    ! Determine no_snow_val
-    select case (no_snow_behavior)
-    case (no_snow_normal)
-       no_snow_val = spval
-    case (no_snow_zero)
-       no_snow_val = 0._r8
-    case default
-       write(iulog,*) trim(subname), ' ERROR: unrecognized no_snow_behavior: ', &
-            no_snow_behavior
-       call endrun()
-    end select
-
-    do point = beg1d, end1d
-
-       ! Get number of snow layers at this point
-
-       if (type1d == namec) then
-          c = point
-       else if (type1d == namep) then
-          c = patch%column(point)
-       else
-          write(iulog,*) trim(subname), ' ERROR: Only implemented for patch and col-level fields'
-          write(iulog,*) 'type1d = ', trim(type1d)
-          call endrun()
-       end if
-
-       num_snow_layers = abs(snl(c))
-       num_nonexistent_layers = num_levels - num_snow_layers
-      
-       ! Fill output field appropriately for each layer
-       ! When only a subset of snow layers exist, it is the LAST num_snow_layers that exist
-       ! Levels are rearranged such that the top snow layer (surface layer) becomes level 1, etc.
-
-       do level = num_levels, (num_levels-num_nonexistent_layers+1), -1
-          field_out(point, level) = no_snow_val
-       end do
-       do level = (num_levels-num_nonexistent_layers), 1, -1
-          field_out(point, level) = field_in(point, level+num_nonexistent_layers)
-       end do
-          
-    end do
-
-    end associate
-
-  end subroutine hist_set_snow_field_2d
-
 
   !-----------------------------------------------------------------------
   subroutine hfields_normalize (t)
@@ -1849,10 +1304,8 @@ contains
     ! wrapper calls to define the history file contents.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, nlevurb, numrad, nlevsoi
-    use clm_varpar      , only : natpft_size
-    use landunit_varcon , only : max_lunit
-    use clm_varctl      , only : caseid, ctitle, fsurdat, finidat
+    use clm_varpar      , only : nlevgrnd, numrad
+    use clm_varctl      , only : caseid, ctitle, mml_surdat, finidat
     use clm_varctl      , only : version, hostname, username, conventions, source
     use domainMod       , only : ldomain
     use fileutils       , only : get_filename
@@ -1873,9 +1326,6 @@ contains
     integer :: omode               ! returned mode from netCDF call
     integer :: ncprec              ! output netCDF write precision
     integer :: ret                 ! netCDF error status
-    integer :: nump                ! total number of pfts across all processors
-    integer :: numc                ! total number of columns across all processors
-    integer :: numl                ! total number of landunits across all processors
     integer :: numg                ! total number of gridcells across all processors
     integer :: numa                ! total number of atm cells across all processors
     logical :: avoid_pnetcdf       ! whether we should avoid using pnetcdf
@@ -1897,7 +1347,7 @@ contains
 
     ! Determine necessary indices
 
-    call get_proc_global(ng=numg, nl=numl, nc=numc, np=nump)
+    call get_proc_global(ng=numg)
 
     ! define output write precsion for tape
 
@@ -1962,7 +1412,7 @@ contains
     call ncd_putatt(lnfid, ncd_global, 'revision_id', trim(str))
     call ncd_putatt(lnfid, ncd_global, 'case_title', trim(ctitle))
     call ncd_putatt(lnfid, ncd_global, 'case_id', trim(caseid))
-    str = get_filename(fsurdat)
+    str = get_filename(mml_surdat)
     call ncd_putatt(lnfid, ncd_global, 'Surface_dataset', trim(str))
     if (finidat == ' ') then
        str = 'arbitrary initialization'
@@ -1984,26 +1434,10 @@ contains
 
     ! Global compressed dimensions (not including non-land points)
     call ncd_defdim(lnfid, trim(nameg), numg, dimid)
-    call ncd_defdim(lnfid, trim(namel), numl, dimid)
-    call ncd_defdim(lnfid, trim(namec), numc, dimid)
-    call ncd_defdim(lnfid, trim(namep), nump, dimid)
 
     ! "level" dimensions
     call ncd_defdim(lnfid, 'levgrnd', nlevgrnd, dimid)
-    call ncd_defdim(lnfid, 'levsoi', nlevsoi, dimid)
-    if (nlevurb > 0) then
-       call ncd_defdim(lnfid, 'levurb' , nlevurb, dimid)
-    end if
-    call ncd_defdim(lnfid, 'levlak' , nlevlak, dimid)
     call ncd_defdim(lnfid, 'numrad' , numrad , dimid)
-    call ncd_defdim(lnfid, 'levsno' , nlevsno , dimid)
-    call ncd_defdim(lnfid, 'ltype', max_lunit, dimid)
-    call htape_add_ltype_metadata(lnfid)
-    call htape_add_ctype_metadata(lnfid)
-    call ncd_defdim(lnfid, 'natpft', natpft_size, dimid)
-    ! elevclas includes elevation class 0 (bare land)
-    ! (although on the history file it will go 1:(nec+1) rather than 0:nec)
-    call ncd_defdim(lnfid, 'elevclas' , 11, dimid)
 
     do n = 1,num_subs
        call ncd_defdim(lnfid, subs_name(n), subs_dim(n), dimid)
@@ -2034,55 +1468,6 @@ contains
   end subroutine htape_create
 
   !-----------------------------------------------------------------------
-  subroutine htape_add_ltype_metadata(lnfid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining landunit types
-    !
-    ! !USES:
-    use landunit_varcon, only : max_lunit, landunit_names, landunit_name_length
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: lnfid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    integer :: ltype  ! landunit type
-    character(len=*), parameter :: att_prefix = 'ltype_'  ! prefix for attributes
-    character(len=len(att_prefix)+landunit_name_length) :: attname ! attribute name
-
-    character(len=*), parameter :: subname = 'htape_add_ltype_metadata'
-    !-----------------------------------------------------------------------
-    
-    do ltype = 1, max_lunit
-       attname = att_prefix // landunit_names(ltype)
-       call ncd_putatt(lnfid, ncd_global, attname, ltype)
-    end do
-
-  end subroutine htape_add_ltype_metadata
-
-  !-----------------------------------------------------------------------
-  subroutine htape_add_ctype_metadata(lnfid)
-    !
-    ! !DESCRIPTION:
-    ! Add global metadata defining column types
-    !
-    ! !USES:
-    use column_varcon, only : write_coltype_metadata
-    !
-    ! !ARGUMENTS:
-    type(file_desc_t), intent(inout) :: lnfid ! local file id
-    !
-    ! !LOCAL VARIABLES:
-    character(len=*), parameter :: att_prefix = 'ctype_'  ! prefix for attributes
-
-    character(len=*), parameter :: subname = 'htape_add_ctype_metadata'
-    !-----------------------------------------------------------------------
-
-    call write_coltype_metadata(att_prefix, lnfid)
-
-  end subroutine htape_add_ctype_metadata
-
-  !-----------------------------------------------------------------------
   subroutine htape_timeconst3D(t, bounds, mode)
     !
     ! !DESCRIPTION:
@@ -2093,15 +1478,13 @@ contains
     ! contents.
     !
     ! !USES:
-    use subgridAveMod  , only : c2g
-    use clm_varpar     , only : nlevgrnd ,nlevlak
+    use clm_varpar     , only : nlevgrnd
     use shr_string_mod , only : shr_string_listAppend
     use domainMod      , only : ldomain
     !
     ! !ARGUMENTS:
     integer           , intent(in) :: t    ! tape index
     type(bounds_type) , intent(in) :: bounds           
-!   real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
     character(len=*)  , intent(in) :: mode ! 'define' or 'write'
     !
     ! !LOCAL VARIABLES:
@@ -2110,27 +1493,11 @@ contains
     character(len=max_chars) :: long_name ! variable long name
     character(len=max_namlen):: varname   ! variable name
     character(len=max_namlen):: units     ! variable units
-    character(len=scale_type_strlen) :: l2g_scale_type    ! scale type for subgrid averaging of landunits to grid cells
     !
-    real(r8), pointer :: histi(:,:)       ! temporary
     real(r8), pointer :: histo(:,:)       ! temporary
-    integer, parameter :: nflds = 2       ! Number of 3D time-constant fields
+    integer, parameter :: nflds = 1       ! Number of 3D time-constant fields
     character(len=*),parameter :: subname = 'htape_timeconst3D'
-    character(len=*),parameter :: varnames(nflds) = (/ &
-                                                        'ZSOI  ', &
-                                                        'DZSOI '  &
-                                                    /)
-    real(r8), pointer :: histil(:,:)      ! temporary
-    real(r8), pointer :: histol(:,:)
-    integer, parameter :: nfldsl = 2
-    character(len=*),parameter :: varnamesl(nfldsl) = (/ &
-                                                          'ZLAKE ', &
-                                                          'DZLAKE' &
-                                                      /)
-    !-----------------------------------------------------------------------
-
-!   SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
-
+    character(len=*),parameter :: varnames(nflds) = (/ 'ZSOI  ' /)
     !-------------------------------------------------------------------------------
     !***      Non-time varying 3D fields                    ***
     !***      Only write out when this subroutine is called ***
@@ -2143,8 +1510,6 @@ contains
           ! Field indices MUST match varnames array order above!
           if (ifld == 1) then
              long_name='soil depth'; units = 'm'
-          else if (ifld == 2) then
-             long_name='soil thickness'; units = 'm'
           else
              call endrun(msg=' ERROR: bad 3D time-constant field index'//errMsg(sourcefile, __LINE__))
           end if
@@ -2158,21 +1523,11 @@ contains
                         dim1name=grlnd, dim2name='levgrnd', &
                      long_name=long_name, units=units, missing_value=spval, fill_value=spval)
              end if
-          else
-             call ncd_defvar(ncid=nfid(t), varname=trim(varnames(ifld)), xtype=tape(t)%ncprec, &
-                  dim1name=namec, dim2name='levgrnd', &
-                  long_name=long_name, units=units, missing_value=spval, fill_value=spval)
           end if
           call shr_string_listAppend(TimeConst3DVars,varnames(ifld))
        end do
 
     else if (mode == 'write') then
-
-       allocate(histi(bounds%begc:bounds%endc,nlevgrnd), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*) trim(subname),' ERROR: allocation error for histi'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
 
        ! Write time constant fields
 
@@ -2186,38 +1541,8 @@ contains
 
        do ifld = 1,nflds
 
-          ! WJS (10-25-11): Note about l2g_scale_type in the following: ZSOI & DZSOI are
-          ! currently constant in space, except for urban points, so their scale type
-          ! doesn't matter at the moment as long as it excludes urban points. I am using
-          ! 'nonurb' so that the values are output everywhere where the fields are
-          ! constant (i.e., everywhere except urban points). For the other fields, I am
-          ! using 'veg' to be consistent with the l2g_scale_type that is now used for many
-          ! of the 3-d time-variant fields; in theory, though, one might want versions of
-          ! these variables output for different landunits.
-
-          ! Field indices MUST match varnames array order above!
-          if      (ifld == 1) then  ! ZSOI
-             l2g_scale_type = 'nonurb'
-          else if (ifld == 2) then  ! DZSOI
-             l2g_scale_type = 'nonurb'
-          end if
-
-          histi(:,:) = spval
-          do lev = 1,nlevgrnd
-             do c = bounds%begc,bounds%endc
-                l = col%landunit(c)
-                   ! Field indices MUST match varnames array order above!
-                   if (ifld ==1) histi(c,lev) = col%z(c,lev)
-                   if (ifld ==2) histi(c,lev) = col%dz(c,lev)
-             end do
-          end do
           if (tape(t)%dov2xy) then
              histo(:,:) = spval
-
-             call c2g(bounds, nlevgrnd, &
-                  histi(bounds%begc:bounds%endc, :), &
-                  histo(bounds%begg:bounds%endg, :), &
-                  c2l_scale_type='unity', l2g_scale_type=l2g_scale_type)
 
              if (ldomain%isgrid2d) then
                 call ncd_io(varname=trim(varnames(ifld)), dim1name=grlnd, &
@@ -2226,96 +1551,10 @@ contains
                 call ncd_io(varname=trim(varnames(ifld)), dim1name=grlnd, &
                      data=histo, ncid=nfid(t), flag='write')
              end if
-          else
-             call ncd_io(varname=trim(varnames(ifld)), dim1name=namec, &
-                  data=histi, ncid=nfid(t), flag='write')
           end if
        end do
 
        if (tape(t)%dov2xy) deallocate(histo)
-       deallocate(histi)
-
-    end if  ! (define/write mode
-
-    if (mode == 'define') then
-       do ifld = 1,nfldsl
-          ! Field indices MUST match varnamesl array order above!
-          if (ifld == 1) then
-             long_name='lake layer node depth'; units = 'm'
-          else if (ifld == 2) then
-             long_name='lake layer thickness'; units = 'm'
-          else
-             call endrun(msg=' ERROR: bad 3D time-constant field index'//errMsg(sourcefile, __LINE__))
-          end if
-          if (tape(t)%dov2xy) then
-             if (ldomain%isgrid2d) then
-                call ncd_defvar(ncid=nfid(t), varname=trim(varnamesl(ifld)), xtype=tape(t)%ncprec,&
-                     dim1name='lon', dim2name='lat', dim3name='levlak', &
-                     long_name=long_name, units=units, missing_value=spval, fill_value=spval)
-             else
-                call ncd_defvar(ncid=nfid(t), varname=trim(varnamesl(ifld)), xtype=tape(t)%ncprec, &
-                        dim1name=grlnd, dim2name='levlak', &
-                     long_name=long_name, units=units, missing_value=spval, fill_value=spval)
-             end if
-          else
-             call ncd_defvar(ncid=nfid(t), varname=trim(varnamesl(ifld)), xtype=tape(t)%ncprec, &
-                  dim1name=namec, dim2name='levlak', &
-                  long_name=long_name, units=units, missing_value=spval, fill_value=spval)
-          end if
-          call shr_string_listAppend(TimeConst3DVars,varnamesl(ifld))
-       end do
-
-    else if (mode == 'write') then
-
-       allocate(histil(bounds%begc:bounds%endc,nlevlak), stat=ier)
-       if (ier /= 0) then
-          write(iulog,*) trim(subname),' ERROR: allocation error for histil'
-          call endrun(msg=errMsg(sourcefile, __LINE__))
-       end if
-
-       ! Write time constant fields
-
-       if (tape(t)%dov2xy) then
-          allocate(histol(bounds%begg:bounds%endg,nlevlak), stat=ier)
-          if (ier /= 0) then
-             write(iulog,*)  trim(subname),' ERROR: allocation error for histol'
-             call endrun(msg=errMsg(sourcefile, __LINE__))
-          end if
-       end if
-
-       do ifld = 1,nfldsl
-          histil(:,:) = spval
-          do lev = 1,nlevlak
-             do c = bounds%begc,bounds%endc
-                l = col%landunit(c)
-                if (lun%lakpoi(l)) then
-                   ! Field indices MUST match varnamesl array order above!
-                   if (ifld ==1) histil(c,lev) = col%z_lake(c,lev) 
-                   if (ifld ==2) histil(c,lev) = col%dz_lake(c,lev)
-                end if
-             end do
-          end do
-          if (tape(t)%dov2xy) then
-             histol(:,:) = spval
-             call c2g(bounds, nlevlak, &
-                  histil(bounds%begc:bounds%endc, :), &
-                  histol(bounds%begg:bounds%endg, :), &
-                  c2l_scale_type='unity', l2g_scale_type='lake')
-             if (ldomain%isgrid2d) then
-                call ncd_io(varname=trim(varnamesl(ifld)), dim1name=grlnd, &
-                     data=histol, ncid=nfid(t), flag='write')
-             else
-                call ncd_io(varname=trim(varnamesl(ifld)), dim1name=grlnd, &
-                     data=histol, ncid=nfid(t), flag='write')
-             end if
-          else
-             call ncd_io(varname=trim(varnamesl(ifld)), dim1name=namec,  &
-                  data=histil, ncid=nfid(t), flag='write')
-          end if
-       end do
-
-       if (tape(t)%dov2xy) deallocate(histol)
-       deallocate(histil)
 
     end if  ! (define/write mode
 
@@ -2331,7 +1570,7 @@ contains
     ! contents.
     !
     ! !USES:
-    use clm_varcon      , only : zsoi, zlak, secspday, isecspday, isecsphr, isecspmin
+    use clm_varcon      , only : secspday, isecspday, isecsphr, isecspmin
     use domainMod       , only : ldomain, lon1d, lat1d
     use clm_time_manager, only : get_nstep, get_curr_date, get_curr_time
     use clm_time_manager, only : get_ref_date, get_calendar, NO_LEAP_C, GREGORIAN_C
@@ -2368,7 +1607,6 @@ contains
     character(len=256):: str              ! global attribute string
     real(r8), pointer :: histo(:,:)       ! temporary
     integer :: status
-    real(r8) :: zsoi_1d(1)
     character(len=*),parameter :: subname = 'htape_timeconst'
     
     ! MML soil z:
@@ -2407,13 +1645,6 @@ contains
 
     if (tape(t)%ntimes == 1) then
        if (mode == 'define') then
-          call ncd_defvar(varname='levgrnd', xtype=tape(t)%ncprec, &
-               dim1name='levgrnd', &
-               long_name='coordinate soil levels', units='m', ncid=nfid(t))
-          call ncd_defvar(varname='levlak', xtype=tape(t)%ncprec, &
-               dim1name='levlak', &
-               long_name='coordinate lake levels', units='m', ncid=nfid(t))
-
       	  ! Add MML soil layers
           call ncd_defvar(varname='mml_lev', xtype=tape(t)%ncprec, dim1name='mml_lev', &
                long_name='mml soil levels', units='m', ncid=nfid(t))
@@ -2422,10 +1653,6 @@ contains
                long_name='mml dust bins', units='unknown', ncid=nfid(t))
       
        elseif (mode == 'write') then
-          if ( masterproc ) write(iulog, *) ' zsoi:',zsoi
-          call ncd_io(varname='levgrnd', data=zsoi, ncid=nfid(t), flag='write')
-          call ncd_io(varname='levlak' , data=zlak, ncid=nfid(t), flag='write')
-          zsoi_1d(1) = 1._r8
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')
           
@@ -2842,129 +2069,12 @@ contains
           call ncd_defvar(varname='grid1d_jxy', xtype=ncd_int, dim1name=nameg, &
                long_name='2d latitude index of corresponding gridcell', ncid=ncid)
 
-          ! Define landunit info
-
-          call ncd_defvar(varname='land1d_lon', xtype=ncd_double, dim1name=namel, &
-               long_name='landunit longitude', units='degrees_east', ncid=ncid)
-
-          call ncd_defvar(varname='land1d_lat', xtype=ncd_double, dim1name=namel, &
-               long_name='landunit latitude', units='degrees_north', ncid=ncid)
-
-          call ncd_defvar(varname='land1d_ixy', xtype=ncd_int, dim1name=namel, &
-               long_name='2d longitude index of corresponding landunit', ncid=ncid)
-
-          call ncd_defvar(varname='land1d_jxy', xtype=ncd_int, dim1name=namel, &
-               long_name='2d latitude index of corresponding landunit', ncid=ncid)
-
-          ! --- EBK Do NOT write out indices that are incorrect 4/1/2011 --- Bug 1310
-          !call ncd_defvar(varname='land1d_gi', xtype=ncd_int, dim1name='landunit', &
-          !     long_name='1d grid index of corresponding landunit', ncid=ncid)
-          ! ----------------------------------------------------------------
-
-          call ncd_defvar(varname='land1d_wtgcell', xtype=ncd_double, dim1name=namel, &
-               long_name='landunit weight relative to corresponding gridcell', ncid=ncid)
-
-          call ncd_defvar(varname='land1d_ityplunit', xtype=ncd_int, dim1name=namel, &
-               long_name='landunit type (vegetated,urban,lake,wetland,glacier or glacier_mec)', &
-                  ncid=ncid)
-
-          call ncd_defvar(varname='land1d_active', xtype=ncd_log, dim1name=namel, &
-               long_name='true => do computations on this landunit', ncid=ncid)
-
-          ! Define column info
-
-          call ncd_defvar(varname='cols1d_lon', xtype=ncd_double, dim1name=namec, &
-               long_name='column longitude', units='degrees_east', ncid=ncid)
-
-          call ncd_defvar(varname='cols1d_lat', xtype=ncd_double, dim1name=namec, &
-               long_name='column latitude', units='degrees_north', ncid=ncid)
-
-          call ncd_defvar(varname='cols1d_ixy', xtype=ncd_int, dim1name=namec, &
-               long_name='2d longitude index of corresponding column', ncid=ncid)
-
-          call ncd_defvar(varname='cols1d_jxy', xtype=ncd_int, dim1name=namec, &
-               long_name='2d latitude index of corresponding column', ncid=ncid)
-
-          ! --- EBK Do NOT write out indices that are incorrect 4/1/2011 --- Bug 1310
-          !call ncd_defvar(varname='cols1d_gi', xtype=ncd_int, dim1name='column', &
-          !     long_name='1d grid index of corresponding column', ncid=ncid)
-
-          !call ncd_defvar(varname='cols1d_li', xtype=ncd_int, dim1name='column', &
-          !     long_name='1d landunit index of corresponding column', ncid=ncid)
-          ! ----------------------------------------------------------------
-
-          call ncd_defvar(varname='cols1d_wtgcell', xtype=ncd_double, dim1name=namec, &
-               long_name='column weight relative to corresponding gridcell', ncid=ncid)
-
-          call ncd_defvar(varname='cols1d_wtlunit', xtype=ncd_double, dim1name=namec, &
-               long_name='column weight relative to corresponding landunit', ncid=ncid)
-
-          call ncd_defvar(varname='cols1d_itype_col', xtype=ncd_int, dim1name=namec, &
-               long_name='column type (see global attributes)', ncid=ncid)
-
-          call ncd_defvar(varname='cols1d_itype_lunit', xtype=ncd_int, dim1name=namec, &
-               long_name='column landunit type (vegetated,urban,lake,wetland,glacier or glacier_mec)', &
-                  ncid=ncid)
-
-          call ncd_defvar(varname='cols1d_active', xtype=ncd_log, dim1name=namec, &
-               long_name='true => do computations on this column', ncid=ncid)
-
-          ! Define patch info
-
-          call ncd_defvar(varname='pfts1d_lon', xtype=ncd_double, dim1name=namep, &
-               long_name='pft longitude', units='degrees_east', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_lat', xtype=ncd_double, dim1name=namep, &
-               long_name='pft latitude', units='degrees_north', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_ixy', xtype=ncd_int, dim1name=namep, &
-               long_name='2d longitude index of corresponding pft', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_jxy', xtype=ncd_int, dim1name=namep, &
-               long_name='2d latitude index of corresponding pft', ncid=ncid)
-
-          ! --- EBK Do NOT write out indices that are incorrect 4/1/2011 --- Bug 1310
-          !call ncd_defvar(varname='pfts1d_gi', xtype=ncd_int, dim1name='pft', &
-          !     long_name='1d grid index of corresponding pft', ncid=ncid)
-
-          !call ncd_defvar(varname='pfts1d_li', xtype=ncd_int, dim1name='pft', &
-          !     long_name='1d landunit index of corresponding pft', ncid=ncid)
-
-          !call ncd_defvar(varname='pfts1d_ci', xtype=ncd_int, dim1name='pft', &
-          !     long_name='1d column index of corresponding pft', ncid=ncid)
-          ! ----------------------------------------------------------------
-
-          call ncd_defvar(varname='pfts1d_wtgcell', xtype=ncd_double, dim1name=namep, &
-               long_name='pft weight relative to corresponding gridcell', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_wtlunit', xtype=ncd_double, dim1name=namep, &
-               long_name='pft weight relative to corresponding landunit', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_wtcol', xtype=ncd_double, dim1name=namep, &
-               long_name='pft weight relative to corresponding column', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_itype_veg', xtype=ncd_int, dim1name=namep, &
-               long_name='pft vegetation type', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_itype_col', xtype=ncd_int, dim1name=namep, &
-               long_name='pft column type (see global attributes)', ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_itype_lunit', xtype=ncd_int, dim1name=namep, &
-               long_name='pft landunit type (vegetated,urban,lake,wetland,glacier or glacier_mec)',  &
-                  ncid=ncid)
-
-          call ncd_defvar(varname='pfts1d_active', xtype=ncd_log, dim1name=namep, &
-               long_name='true => do computations on this pft', ncid=ncid)
-
     else if (mode == 'write') then
 
        ! Determine bounds
 
        allocate(&
             rgarr(bounds%begg:bounds%endg),&
-            rlarr(bounds%begl:bounds%endl),&
-            rcarr(bounds%begc:bounds%endc),&
-            rparr(bounds%begp:bounds%endp),&
             stat=ier)
        if (ier /= 0) then
           call endrun(msg=' hfields_1dinfo allocation error of rarrs'//errMsg(sourcefile, __LINE__))
@@ -2972,9 +2082,7 @@ contains
 
        allocate(&
             igarr(bounds%begg:bounds%endg),&
-            ilarr(bounds%begl:bounds%endl),&
-            icarr(bounds%begc:bounds%endc),&
-            iparr(bounds%begp:bounds%endp),stat=ier)
+            stat=ier)
        if (ier /= 0) then
           call endrun(msg=' hfields_1dinfo allocation error of iarrs'//errMsg(sourcefile, __LINE__))
        end if
@@ -2992,106 +2100,8 @@ contains
        enddo
        call ncd_io(varname='grid1d_jxy', data=igarr      , dim1name=nameg, ncid=ncid, flag='write')
 
-       ! Write landunit info
-
-       do l = bounds%begl,bounds%endl
-         rlarr(l) = grc%londeg(lun%gridcell(l))
-       enddo
-       call ncd_io(varname='land1d_lon', data=rlarr, dim1name=namel, ncid=ncid, flag='write')
-       do l = bounds%begl,bounds%endl
-         rlarr(l) = grc%latdeg(lun%gridcell(l))
-       enddo
-       call ncd_io(varname='land1d_lat', data=rlarr, dim1name=namel, ncid=ncid, flag='write')
-       do l= bounds%begl,bounds%endl
-         ilarr(l) = mod(ldecomp%gdc2glo(lun%gridcell(l))-1,ldomain%ni) + 1
-       enddo
-       call ncd_io(varname='land1d_ixy', data=ilarr, dim1name=namel, ncid=ncid, flag='write')
-       do l = bounds%begl,bounds%endl
-         ilarr(l) = (ldecomp%gdc2glo(lun%gridcell(l))-1)/ldomain%ni + 1
-       enddo
-       call ncd_io(varname='land1d_jxy'      , data=ilarr        , dim1name=namel, ncid=ncid, flag='write')
-       ! --- EBK Do NOT write out indices that are incorrect 4/1/2011 Bug 1310
-       !call ncd_io(varname='land1d_gi'       , data=lun%gridcell, dim1name=namel, ncid=ncid, flag='write')
-       ! ----------------------------------------------------------------
-       call ncd_io(varname='land1d_wtgcell'  , data=lun%wtgcell , dim1name=namel, ncid=ncid, flag='write')
-       call ncd_io(varname='land1d_ityplunit', data=lun%itype   , dim1name=namel, ncid=ncid, flag='write')
-       call ncd_io(varname='land1d_active'   , data=lun%active  , dim1name=namel, ncid=ncid, flag='write')
-
-       ! Write column info
-
-       do c = bounds%begc,bounds%endc
-         rcarr(c) = grc%londeg(col%gridcell(c))
-       enddo
-       call ncd_io(varname='cols1d_lon', data=rcarr, dim1name=namec, ncid=ncid, flag='write')
-       do c = bounds%begc,bounds%endc
-         rcarr(c) = grc%latdeg(col%gridcell(c))
-       enddo
-       call ncd_io(varname='cols1d_lat', data=rcarr, dim1name=namec, ncid=ncid, flag='write')
-       do c = bounds%begc,bounds%endc
-         icarr(c) = mod(ldecomp%gdc2glo(col%gridcell(c))-1,ldomain%ni) + 1
-       enddo
-       call ncd_io(varname='cols1d_ixy', data=icarr, dim1name=namec, ncid=ncid, flag='write')
-       do c = bounds%begc,bounds%endc
-         icarr(c) = (ldecomp%gdc2glo(col%gridcell(c))-1)/ldomain%ni + 1
-       enddo
-       call ncd_io(varname='cols1d_jxy'    , data=icarr         ,dim1name=namec, ncid=ncid, flag='write')
-       ! --- EBK Do NOT write out indices that are incorrect 4/1/2011 Bug 1310
-       !call ncd_io(varname='cols1d_gi'     , data=col%gridcell, dim1name=namec, ncid=ncid, flag='write')
-       !call ncd_io(varname='cols1d_li'     , data=col%landunit, dim1name=namec, ncid=ncid, flag='write')
-       ! ----------------------------------------------------------------
-       call ncd_io(varname='cols1d_wtgcell', data=col%wtgcell , dim1name=namec, ncid=ncid, flag='write')
-       call ncd_io(varname='cols1d_wtlunit', data=col%wtlunit , dim1name=namec, ncid=ncid, flag='write')
-       call ncd_io(varname='cols1d_itype_col', data=col%itype , dim1name=namec, ncid=ncid, flag='write')
-
-       do c = bounds%begc,bounds%endc
-         icarr(c) = lun%itype(col%landunit(c))
-       enddo
-       call ncd_io(varname='cols1d_itype_lunit', data=icarr    , dim1name=namec, ncid=ncid, flag='write')
-
-       call ncd_io(varname='cols1d_active' , data=col%active  , dim1name=namec, ncid=ncid, flag='write')
-
-       ! Write patch info
-
-       do p = bounds%begp,bounds%endp
-         rparr(p) = grc%londeg(patch%gridcell(p))
-       enddo
-       call ncd_io(varname='pfts1d_lon', data=rparr, dim1name=namep, ncid=ncid, flag='write')
-       do p = bounds%begp,bounds%endp
-         rparr(p) = grc%latdeg(patch%gridcell(p))
-       enddo
-       call ncd_io(varname='pfts1d_lat', data=rparr, dim1name=namep, ncid=ncid, flag='write')
-       do p = bounds%begp,bounds%endp
-         iparr(p) = mod(ldecomp%gdc2glo(patch%gridcell(p))-1,ldomain%ni) + 1
-       enddo
-       call ncd_io(varname='pfts1d_ixy', data=iparr, dim1name=namep, ncid=ncid, flag='write')
-       do p = bounds%begp,bounds%endp
-         iparr(p) = (ldecomp%gdc2glo(patch%gridcell(p))-1)/ldomain%ni + 1
-       enddo
-       call ncd_io(varname='pfts1d_jxy'      , data=iparr        , dim1name=namep, ncid=ncid, flag='write')
-       ! --- EBK Do NOT write out indices that are incorrect 4/1/2011 --- Bug 1310
-       !call ncd_io(varname='pfts1d_gi'       , data=patch%gridcell, dim1name=namep, ncid=ncid, flag='write')
-       !call ncd_io(varname='pfts1d_li'       , data=patch%landunit, dim1name=namep, ncid=ncid, flag='write')
-       !call ncd_io(varname='pfts1d_ci'       , data=patch%column  , dim1name=namep, ncid=ncid, flag='write')
-       ! ----------------------------------------------------------------
-       call ncd_io(varname='pfts1d_wtgcell'  , data=patch%wtgcell , dim1name=namep, ncid=ncid, flag='write')
-       call ncd_io(varname='pfts1d_wtlunit'  , data=patch%wtlunit , dim1name=namep, ncid=ncid, flag='write')
-       call ncd_io(varname='pfts1d_wtcol'    , data=patch%wtcol   , dim1name=namep, ncid=ncid, flag='write')
-       call ncd_io(varname='pfts1d_itype_veg', data=patch%itype   , dim1name=namep, ncid=ncid, flag='write')
-
-       do p = bounds%begp,bounds%endp
-          iparr(p) = col%itype(patch%column(p))
-       end do
-       call ncd_io(varname='pfts1d_itype_col', data=iparr         , dim1name=namep, ncid=ncid, flag='write')
-
-       do p = bounds%begp,bounds%endp
-          iparr(p) = lun%itype(patch%landunit(p))
-       enddo
-       call ncd_io(varname='pfts1d_itype_lunit', data=iparr      , dim1name=namep, ncid=ncid, flag='write')
-
-       call ncd_io(varname='pfts1d_active'   , data=patch%active  , dim1name=namep, ncid=ncid, flag='write')
-
-       deallocate(rgarr,rlarr,rcarr,rparr)
-       deallocate(igarr,ilarr,icarr,iparr)
+       deallocate(rgarr)
+       deallocate(igarr)
 
     end if
 
@@ -3130,7 +2140,6 @@ contains
     logical, intent(in) :: rstwr    ! true => write restart file this step
     logical, intent(in) :: nlend    ! true => end of run on this step
     type(bounds_type) , intent(in) :: bounds           
-!   real(r8)          , intent(in) :: watsat_col( bounds%begc:,1: ) 
     !
     ! !LOCAL VARIABLES:
     integer :: t                          ! tape index
@@ -3153,8 +2162,6 @@ contains
     logical, save :: do_3Dtconst = .true. ! true => write out 3D time-constant data
     character(len=*),parameter :: subname = 'hist_htapes_wrapup'
     !-----------------------------------------------------------------------
-
-!   SHR_ASSERT_ALL((ubound(watsat_col) == (/bounds%endc, nlevgrnd/)), errMsg(sourcefile, __LINE__))
 
     ! get current step
 
@@ -3224,12 +2231,6 @@ contains
              ! Define time-constant field variables
              call htape_timeconst(t, mode='define')
 
-!            ! Define 3D time-constant field variables only to first primary tape
-!            if ( do_3Dtconst .and. t == 1 ) then
-!               call htape_timeconst3D(t, bounds, watsat_col, mode='define')
-!               TimeConst3DVars_Filename = trim(locfnh(t))
-!            end if
-
              ! Define model field variables
              call hfields_write(t, mode='define')
 
@@ -3241,12 +2242,6 @@ contains
           call t_startf('hist_htapes_wrapup_tconst')
           ! Write time constant history variables
           call htape_timeconst(t, mode='write')
-
-!         ! Write 3D time constant history variables only to first primary tape
-!         if ( do_3Dtconst .and. t == 1 .and. tape(t)%ntimes == 1 )then
-!            call htape_timeconst3D(t, bounds, watsat_col, mode='write')
-!            do_3Dtconst = .false.
-!         end if
 
           if (masterproc) then
              write(iulog,*)
@@ -3337,7 +2332,7 @@ contains
     use clm_varctl      , only : nsrest, caseid, inst_suffix, nsrStartup, nsrBranch
     use fileutils       , only : getfil
     use domainMod       , only : ldomain
-    use clm_varpar      , only : nlevgrnd, nlevlak, numrad
+    use clm_varpar      , only : nlevgrnd, numrad
     use clm_time_manager, only : is_restart
     use restUtilMod     , only : iflag_skip
     use pio
@@ -3355,9 +2350,6 @@ contains
     integer :: num2d                         ! 2d size (e.g. number of vertical levels)
     integer :: numa                 ! total number of atm cells across all processors
     integer :: numg                 ! total number of gridcells across all processors
-    integer :: numl                 ! total number of landunits across all processors
-    integer :: numc                 ! total number of columns across all processors
-    integer :: nump                 ! total number of pfts across all processors
     character(len=max_namlen) :: name            ! variable name
     character(len=max_namlen) :: name_acc        ! accumulator variable name
     character(len=max_namlen) :: long_name       ! long name of variable
@@ -3370,9 +2362,6 @@ contains
     character(len=max_namlen),allocatable :: tname(:)
     character(len=max_chars), allocatable :: tunits(:),tlongname(:)
     character(len=hist_dim_name_length), allocatable :: tmpstr(:,:)
-    character(len=scale_type_strlen), allocatable :: p2c_scale_type(:)
-    character(len=scale_type_strlen), allocatable :: c2l_scale_type(:)
-    character(len=scale_type_strlen), allocatable :: l2g_scale_type(:)
     character(len=avgflag_strlen), allocatable :: tavgflag(:)
     integer :: start(2)
 
@@ -3389,9 +2378,6 @@ contains
     type(var_desc_t)   :: type1d_out_desc        ! variable descriptor for type1d_out
     type(var_desc_t)   :: type2d_desc            ! variable descriptor for type2d
     type(var_desc_t)   :: avgflag_desc           ! variable descriptor for avgflag
-    type(var_desc_t)   :: p2c_scale_type_desc    ! variable descriptor for p2c_scale_type
-    type(var_desc_t)   :: c2l_scale_type_desc    ! variable descriptor for c2l_scale_type
-    type(var_desc_t)   :: l2g_scale_type_desc    ! variable descriptor for l2g_scale_type
     integer :: status                            ! error status
     integer :: dimid                             ! dimension ID
     integer :: k                                 ! 1d index
@@ -3410,7 +2396,7 @@ contains
     character(len=*),parameter :: subname = 'hist_restart_ncd'
 !------------------------------------------------------------------------
 
-    call get_proc_global(ng=numg, nl=numl, nc=numc, np=nump)
+    call get_proc_global(ng=numg)
 
     ! If branch run, initialize file times and return
 
@@ -3620,15 +2606,6 @@ contains
           call ncd_defvar(ncid=ncid_hist(t), varname='type2d', xtype=ncd_char, &
                long_name="2nd dimension type", &
                dim1name='string_length', dim2name='max_nflds' )
-          call ncd_defvar(ncid=ncid_hist(t), varname='p2c_scale_type', xtype=ncd_char, &
-               long_name="PFT to column scale type", &
-               dim1name='scale_type_string_length', dim2name='max_nflds' )
-          call ncd_defvar(ncid=ncid_hist(t), varname='c2l_scale_type', xtype=ncd_char, &
-               long_name="column to landunit scale type", &
-               dim1name='scale_type_string_length', dim2name='max_nflds' )
-          call ncd_defvar(ncid=ncid_hist(t), varname='l2g_scale_type', xtype=ncd_char, &
-               long_name="landunit to gridpoint scale type", &
-               dim1name='scale_type_string_length', dim2name='max_nflds' )
 
           call ncd_enddef(ncid_hist(t))
 
@@ -3701,9 +2678,7 @@ contains
           call ncd_io('ncprec',  tape(t)%ncprec,  'write', ncid_hist(t) )
           call ncd_io('begtime',      tape(t)%begtime, 'write', ncid_hist(t) )
           allocate(tmpstr(tape(t)%nflds,3 ),tname(tape(t)%nflds), &
-               tavgflag(tape(t)%nflds),tunits(tape(t)%nflds),tlongname(tape(t)%nflds), &
-               p2c_scale_type(tape(t)%nflds), c2l_scale_type(tape(t)%nflds), &
-               l2g_scale_type(tape(t)%nflds))
+               tavgflag(tape(t)%nflds),tunits(tape(t)%nflds),tlongname(tape(t)%nflds))
           do f=1,tape(t)%nflds
              tname(f)  = tape(t)%hlist(f)%field%name
              tunits(f) = tape(t)%hlist(f)%field%units
@@ -3712,9 +2687,6 @@ contains
              tmpstr(f,2) = tape(t)%hlist(f)%field%type1d_out
              tmpstr(f,3) = tape(t)%hlist(f)%field%type2d
              tavgflag(f) = tape(t)%hlist(f)%avgflag
-             p2c_scale_type(f) = tape(t)%hlist(f)%field%p2c_scale_type
-             c2l_scale_type(f) = tape(t)%hlist(f)%field%c2l_scale_type
-             l2g_scale_type(f) = tape(t)%hlist(f)%field%l2g_scale_type
           end do
           call ncd_io( 'name', tname, 'write',ncid_hist(t))
           call ncd_io('long_name', tlongname, 'write', ncid_hist(t))
@@ -3723,11 +2695,7 @@ contains
           call ncd_io('type1d_out', tmpstr(:,2), 'write', ncid_hist(t))
           call ncd_io('type2d', tmpstr(:,3), 'write', ncid_hist(t))
           call ncd_io('avgflag',tavgflag , 'write', ncid_hist(t))
-          call ncd_io('p2c_scale_type', p2c_scale_type, 'write', ncid_hist(t))
-          call ncd_io('c2l_scale_type', c2l_scale_type, 'write', ncid_hist(t))
-          call ncd_io('l2g_scale_type', l2g_scale_type, 'write', ncid_hist(t))
           deallocate(tname,tlongname,tunits,tmpstr,tavgflag)
-          deallocate(p2c_scale_type, c2l_scale_type, l2g_scale_type)
        enddo       
        deallocate(itemp)
 
@@ -3778,9 +2746,6 @@ contains
              call ncd_inqvid(ncid_hist(t), 'type1d_out',     varid, type1d_out_desc)
              call ncd_inqvid(ncid_hist(t), 'type2d',         varid, type2d_desc)
              call ncd_inqvid(ncid_hist(t), 'avgflag',        varid, avgflag_desc)
-             call ncd_inqvid(ncid_hist(t), 'p2c_scale_type', varid, p2c_scale_type_desc)
-             call ncd_inqvid(ncid_hist(t), 'c2l_scale_type', varid, c2l_scale_type_desc)
-             call ncd_inqvid(ncid_hist(t), 'l2g_scale_type', varid, l2g_scale_type_desc)
 
              call ncd_io(varname='fincl', data=fincl(:,t), ncid=ncid_hist(t), flag='read')
 
@@ -3827,21 +2792,12 @@ contains
                              'read', ncid_hist(t), start )
                 call ncd_io( avgflag_desc,        tape(t)%hlist(f)%avgflag,          &
                              'read', ncid_hist(t), start )
-                call ncd_io( p2c_scale_type_desc, tape(t)%hlist(f)%field%p2c_scale_type,   &
-                             'read', ncid_hist(t), start )
-                call ncd_io( c2l_scale_type_desc, tape(t)%hlist(f)%field%c2l_scale_type,   &
-                             'read', ncid_hist(t), start )
-                call ncd_io( l2g_scale_type_desc, tape(t)%hlist(f)%field%l2g_scale_type,   &
-                             'read', ncid_hist(t), start )
                 call strip_null(tape(t)%hlist(f)%field%name)
                 call strip_null(tape(t)%hlist(f)%field%long_name)
                 call strip_null(tape(t)%hlist(f)%field%units)
                 call strip_null(tape(t)%hlist(f)%field%type1d)
                 call strip_null(tape(t)%hlist(f)%field%type1d_out)
                 call strip_null(tape(t)%hlist(f)%field%type2d)
-                call strip_null(tape(t)%hlist(f)%field%p2c_scale_type)
-                call strip_null(tape(t)%hlist(f)%field%c2l_scale_type)
-                call strip_null(tape(t)%hlist(f)%field%l2g_scale_type)
                 call strip_null(tape(t)%hlist(f)%avgflag)
 
                 type1d_out = trim(tape(t)%hlist(f)%field%type1d_out)
@@ -3854,18 +2810,6 @@ contains
                    num1d_out = numg
                    beg1d_out = bounds%begg
                    end1d_out = bounds%endg
-                case (namel)
-                   num1d_out = numl
-                   beg1d_out = bounds%begl
-                   end1d_out = bounds%endl
-                case (namec)
-                   num1d_out = numc
-                   beg1d_out = bounds%begc
-                   end1d_out = bounds%endc
-                case (namep)
-                   num1d_out = nump
-                   beg1d_out = bounds%begp
-                   end1d_out = bounds%endp
                 case default
                    write(iulog,*) trim(subname),' ERROR: read unknown 1d output type=',trim(type1d_out)
                    call endrun(msg=errMsg(sourcefile, __LINE__))
@@ -3896,18 +2840,6 @@ contains
                    num1d = numg
                    beg1d = bounds%begg
                    end1d = bounds%endg
-                case (namel)
-                   num1d = numl
-                   beg1d = bounds%begl
-                   end1d = bounds%endl
-                case (namec)
-                   num1d = numc
-                   beg1d = bounds%begc
-                   end1d = bounds%endc
-                case (namep)
-                   num1d = nump
-                   beg1d = bounds%begp
-                   end1d = bounds%endp
                 case default
                    write(iulog,*) trim(subname),' ERROR: read unknown 1d type=',type1d
                    call endrun(msg=errMsg(sourcefile, __LINE__))
@@ -4228,10 +3160,7 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine hist_addfld1d (fname, units, avgflag, long_name, type1d_out, &
-                        ptr_gcell, ptr_lunit, ptr_col, ptr_patch, ptr_lnd, &
-                        ptr_atm, p2c_scale_type, c2l_scale_type, &
-                        l2g_scale_type, set_lake, set_nolake, set_urb, set_nourb, &
-                        set_noglcmec, set_spec, default)
+                        ptr_gcell, ptr_lnd, ptr_atm, default)
     !
     ! !DESCRIPTION:
     ! Initialize a single level history field. The pointer, ptrhist,
@@ -4250,20 +3179,8 @@ contains
     character(len=*), intent(in)           :: long_name      ! long name of field
     character(len=*), optional, intent(in) :: type1d_out     ! output type (from data type)
     real(r8)        , optional, pointer    :: ptr_gcell(:)   ! pointer to gridcell array
-    real(r8)        , optional, pointer    :: ptr_lunit(:)   ! pointer to landunit array
-    real(r8)        , optional, pointer    :: ptr_col(:)     ! pointer to column array
-    real(r8)        , optional, pointer    :: ptr_patch(:)   ! pointer to patch array
     real(r8)        , optional, pointer    :: ptr_lnd(:)     ! pointer to lnd array
     real(r8)        , optional, pointer    :: ptr_atm(:)     ! pointer to atm array
-    real(r8)        , optional, intent(in) :: set_lake       ! value to set lakes to
-    real(r8)        , optional, intent(in) :: set_nolake     ! value to set non-lakes to
-    real(r8)        , optional, intent(in) :: set_urb        ! value to set urban to
-    real(r8)        , optional, intent(in) :: set_nourb      ! value to set non-urban to
-    real(r8)        , optional, intent(in) :: set_noglcmec   ! value to set non-glacier_mec to
-    real(r8)        , optional, intent(in) :: set_spec       ! value to set special to
-    character(len=*), optional, intent(in) :: p2c_scale_type ! scale type for subgrid averaging of pfts to column
-    character(len=*), optional, intent(in) :: c2l_scale_type ! scale type for subgrid averaging of columns to landunits
-    character(len=*), optional, intent(in) :: l2g_scale_type ! scale type for subgrid averaging of landunits to gridcells
     character(len=*), optional, intent(in) :: default        ! if set to 'inactive, field will not appear on primary tape
     !
     ! !LOCAL VARIABLES:
@@ -4271,9 +3188,6 @@ contains
     integer :: hpindex                 ! history buffer pointer index
     character(len=hist_dim_name_length) :: l_type1d       ! 1d data type
     character(len=hist_dim_name_length) :: l_type1d_out   ! 1d output type
-    character(len=scale_type_strlen) :: scale_type_p2c ! scale type for subgrid averaging of pfts to column
-    character(len=scale_type_strlen) :: scale_type_c2l ! scale type for subgrid averaging of columns to landunits
-    character(len=scale_type_strlen) :: scale_type_l2g ! scale type for subgrid averaging of landunits to gridcells
     type(bounds_type):: bounds         ! boudns 
     character(len=16):: l_default      ! local version of 'default'
     character(len=*),parameter :: subname = 'hist_addfld1d'
@@ -4296,142 +3210,22 @@ contains
        l_type1d = nameg
        l_type1d_out = nameg
        clmptr_rs(hpindex)%ptr => ptr_gcell
-
-    else if (present(ptr_lunit)) then
-       l_type1d = namel
-       l_type1d_out = namel
-       clmptr_rs(hpindex)%ptr => ptr_lunit
-       if (present(set_lake)) then
-          do l = bounds%begl,bounds%endl
-             if (lun%lakpoi(l)) ptr_lunit(l) = set_lake
-          end do
-       end if
-       if (present(set_nolake)) then
-          do l = bounds%begl,bounds%endl
-             if (.not.(lun%lakpoi(l))) ptr_lunit(l) = set_nolake
-          end do
-       end if
-       if (present(set_urb)) then
-          do l = bounds%begl,bounds%endl
-             if (lun%urbpoi(l)) ptr_lunit(l) = set_urb
-          end do
-       end if
-       if (present(set_nourb)) then
-          do l = bounds%begl,bounds%endl
-             if (.not.(lun%urbpoi(l))) ptr_lunit(l) = set_nourb
-          end do
-       end if
-       if (present(set_spec)) then
-          do l = bounds%begl,bounds%endl
-             if (lun%ifspecial(l)) ptr_lunit(l) = set_spec
-          end do
-       end if
-
-    else if (present(ptr_col)) then
-       l_type1d = namec
-       l_type1d_out = namec
-       clmptr_rs(hpindex)%ptr => ptr_col
-       if (present(set_lake)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (lun%lakpoi(l)) ptr_col(c) = set_lake
-          end do
-       end if
-       if (present(set_nolake)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (.not.(lun%lakpoi(l))) ptr_col(c) = set_nolake
-          end do
-       end if
-       if (present(set_urb)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (lun%urbpoi(l)) ptr_col(c) = set_urb
-          end do
-       end if
-       if (present(set_nourb)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (.not.(lun%urbpoi(l))) ptr_col(c) = set_nourb
-          end do
-       end if
-       if (present(set_spec)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (lun%ifspecial(l)) ptr_col(c) = set_spec
-          end do
-       end if
-       if (present(set_noglcmec)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (.not.(lun%glcmecpoi(l))) ptr_col(c) = set_noglcmec
-          end do
-       endif
-
-    else if (present(ptr_patch)) then
-       l_type1d = namep
-       l_type1d_out = namep
-       clmptr_rs(hpindex)%ptr => ptr_patch
-       if (present(set_lake)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (lun%lakpoi(l)) ptr_patch(p) = set_lake
-          end do
-       end if
-       if (present(set_nolake)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (.not.(lun%lakpoi(l))) ptr_patch(p) = set_nolake
-          end do
-       end if
-       if (present(set_urb)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (lun%urbpoi(l)) ptr_patch(p) = set_urb
-          end do
-       end if
-       if (present(set_nourb)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (.not.(lun%urbpoi(l))) ptr_patch(p) = set_nourb
-          end do
-       end if
-       if (present(set_spec)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (lun%ifspecial(l)) ptr_patch(p) = set_spec
-          end do
-       end if
-       if (present(set_noglcmec)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (.not.(lun%glcmecpoi(l))) ptr_patch(p) = set_noglcmec
-          end do
-       end if
     else
        write(iulog,*) trim(subname),' ERROR: must specify a valid pointer index,', &
-          ' choices are [ptr_atm, ptr_lnd, ptr_gcell, ptr_lunit, ptr_col, ptr_patch] '
+          ' choices are [ptr_atm, ptr_lnd, ptr_gcell] '
        call endrun(msg=errMsg(sourcefile, __LINE__))
 
     end if
 
     ! Set scaling factor
 
-    scale_type_p2c = 'unity'
-    scale_type_c2l = 'unity'
-    scale_type_l2g = 'unity'
-
-    if (present(p2c_scale_type)) scale_type_p2c = p2c_scale_type
-    if (present(c2l_scale_type)) scale_type_c2l = c2l_scale_type
-    if (present(l2g_scale_type)) scale_type_l2g = l2g_scale_type
     if (present(type1d_out)) l_type1d_out = type1d_out
 
     ! Add field to masterlist
 
     call masterlist_addfld (fname=trim(fname), type1d=l_type1d, type1d_out=l_type1d_out, &
          type2d='unset', num2d=1, &
-         units=units, avgflag=avgflag, long_name=long_name, hpindex=hpindex, &
-         p2c_scale_type=scale_type_p2c, c2l_scale_type=scale_type_c2l, l2g_scale_type=scale_type_l2g)
+         units=units, avgflag=avgflag, long_name=long_name, hpindex=hpindex)
 
     l_default = 'active'
     if (present(default)) then
@@ -4447,10 +3241,7 @@ contains
 
   !-----------------------------------------------------------------------
   subroutine hist_addfld2d (fname, type2d, units, avgflag, long_name, type1d_out, &
-                        ptr_gcell, ptr_lunit, ptr_col, ptr_patch, ptr_lnd, ptr_atm, &
-                        p2c_scale_type, c2l_scale_type, l2g_scale_type, &
-                        set_lake, set_nolake, set_urb, set_nourb, set_spec, &
-                        no_snow_behavior, mml_dim, default)
+                        ptr_gcell, ptr_lnd, ptr_atm, mml_dim, default)
     !
     ! !DESCRIPTION:
     ! Initialize a single level history field. The pointer, ptrhist,
@@ -4463,9 +3254,7 @@ contains
     ! initial or branch run to initialize the actual history tapes.
     !
     ! !USES:
-    use clm_varpar      , only : nlevgrnd, nlevsno, nlevlak, numrad, nlevsoi
-    use clm_varpar      , only : natpft_size, cft_size
-    use landunit_varcon , only : max_lunit
+    use clm_varpar      , only : nlevgrnd, numrad
     !
     ! !ARGUMENTS:
     character(len=*), intent(in) :: fname                      ! field name
@@ -4477,18 +3266,6 @@ contains
     real(r8)        , optional, pointer    :: ptr_atm(:,:)     ! pointer to atm array
     real(r8)        , optional, pointer    :: ptr_lnd(:,:)     ! pointer to lnd array
     real(r8)        , optional, pointer    :: ptr_gcell(:,:)   ! pointer to gridcell array
-    real(r8)        , optional, pointer    :: ptr_lunit(:,:)   ! pointer to landunit array
-    real(r8)        , optional, pointer    :: ptr_col(:,:)     ! pointer to column array
-    real(r8)        , optional, pointer    :: ptr_patch(:,:)     ! pointer to patch array
-    real(r8)        , optional, intent(in) :: set_lake         ! value to set lakes to
-    real(r8)        , optional, intent(in) :: set_nolake       ! value to set non-lakes to
-    real(r8)        , optional, intent(in) :: set_urb          ! value to set urban to
-    real(r8)        , optional, intent(in) :: set_nourb        ! value to set non-urban to
-    real(r8)        , optional, intent(in) :: set_spec         ! value to set special to
-    integer         , optional, intent(in) :: no_snow_behavior ! if a multi-layer snow field, behavior to use for absent snow layers (should be one of the public no_snow_* parameters defined above)
-    character(len=*), optional, intent(in) :: p2c_scale_type   ! scale type for subgrid averaging of pfts to column
-    character(len=*), optional, intent(in) :: c2l_scale_type   ! scale type for subgrid averaging of columns to landunits
-    character(len=*), optional, intent(in) :: l2g_scale_type   ! scale type for subgrid averaging of landunits to gridcells
     integer			, optional, intent(in) :: mml_dim		   ! size of second dimension for MML variables
     character(len=*), optional, intent(in) :: default          ! if set to 'inactive, field will not appear on primary tape
     !
@@ -4498,9 +3275,6 @@ contains
     integer :: hpindex                 ! history buffer index
     character(len=hist_dim_name_length) :: l_type1d         ! 1d data type
     character(len=hist_dim_name_length) :: l_type1d_out     ! 1d output type
-    character(len=scale_type_strlen) :: scale_type_p2c ! scale type for subgrid averaging of pfts to column
-    character(len=scale_type_strlen) :: scale_type_c2l ! scale type for subgrid averaging of columns to landunits
-    character(len=scale_type_strlen) :: scale_type_l2g ! scale type for subgrid averaging of landunits to gridcells
     type(bounds_type):: bounds          
     character(len=16):: l_default      ! local version of 'default'
     character(len=*),parameter :: subname = 'hist_addfld2d'
@@ -4508,59 +3282,13 @@ contains
 
     call get_proc_bounds(bounds)
     
-    ! Error-check no_snow_behavior optional argument: It should be present if and only if
-    ! type2d is 'levsno', and its value should be one of the public no_snow_* parameters
-    ! defined above.
-    if (present(no_snow_behavior)) then
-       if (type2d /= 'levsno') then
-          write(iulog,*) trim(subname), &
-               ' ERROR: Only specify no_snow_behavior for fields with dimension levsno'
-          call endrun()
-       end if
-
-       if (no_snow_behavior < no_snow_MIN .or. no_snow_behavior > no_snow_MAX) then
-          write(iulog,*) trim(subname), &
-               ' ERROR: Invalid value for no_snow_behavior: ', no_snow_behavior
-          call endrun()
-       end if
-
-    else  ! no_snow_behavior is absent
-       if (type2d == 'levsno') then
-          write(iulog,*) trim(subname), &
-               ' ERROR: must specify no_snow_behavior for fields with dimension levsno'
-          call endrun()
-       end if
-    end if
-
     ! Determine second dimension size
 
     select case (type2d)
     case ('levgrnd')
        num2d = nlevgrnd
-    case ('levsoi')
-       num2d = nlevsoi
-    case ('levlak')
-       num2d = nlevlak
     case ('numrad')
        num2d = numrad
-    case ('ltype')
-       num2d = max_lunit
-    case ('natpft')
-       num2d = natpft_size
-    case('cft')
-       if (cft_size > 0) then
-          num2d = cft_size
-       else
-          write(iulog,*) trim(subname),' ERROR: 2d type =', trim(type2d), &
-               ' only valid for cft_size > 0'
-          call endrun()
-       end if
-    case ('elevclas')
-       ! add one because indexing starts at 0 (elevclas includes the
-       ! bare ground "elevation class")
-       num2d = 11
-    case ('levsno')
-       num2d = nlevsno
     ! MML: adding my own 
     case ('mml_lev')
     	num2d = 10 !mml_nsoi ! mml_dim ! mml_nsoi not defined in this subroutine, so hard coding until I get more clever...
@@ -4569,7 +3297,7 @@ contains
     case default
        write(iulog,*) trim(subname),' ERROR: unsupported 2d type ',type2d, &
           ' currently supported types for multi level fields are: ', &
-          '[levgrnd,levsoi,levlak,numrad,levtrc,ltype,natpft,cft,elevclas,levsno]'
+          '[levgrnd,levsoi,numrad,ltype]'
        call endrun(msg=errMsg(sourcefile, __LINE__))
     end select
 
@@ -4586,132 +3314,22 @@ contains
        l_type1d = nameg
        l_type1d_out = nameg
        clmptr_ra(hpindex)%ptr => ptr_gcell
-
-    else if (present(ptr_lunit)) then
-       l_type1d = namel
-       l_type1d_out = namel
-       clmptr_ra(hpindex)%ptr => ptr_lunit
-       if (present(set_lake)) then
-          do l = bounds%begl,bounds%endl
-             if (lun%lakpoi(l)) ptr_lunit(l,:) = set_lake
-          end do
-       end if
-       if (present(set_nolake)) then
-          do l = bounds%begl,bounds%endl
-             if (.not.(lun%lakpoi(l))) ptr_lunit(l,:) = set_nolake
-          end do
-       end if
-       if (present(set_urb)) then
-          do l = bounds%begl,bounds%endl
-             if (lun%urbpoi(l)) ptr_lunit(l,:) = set_urb
-          end do
-       end if
-       if (present(set_nourb)) then
-          do l = bounds%begl,bounds%endl
-             if (.not.(lun%urbpoi(l))) ptr_lunit(l,:) = set_nourb
-          end do
-       end if
-       if (present(set_spec)) then
-          do l = bounds%begl,bounds%endl
-             if (lun%ifspecial(l)) ptr_lunit(l,:) = set_spec
-          end do
-       end if
-
-    else if (present(ptr_col)) then
-       l_type1d = namec
-       l_type1d_out = namec
-       clmptr_ra(hpindex)%ptr => ptr_col
-       if (present(set_lake)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (lun%lakpoi(l)) ptr_col(c,:) = set_lake
-          end do
-       end if
-       if (present(set_nolake)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (.not.(lun%lakpoi(l))) ptr_col(c,:) = set_nolake
-          end do
-       end if
-       if (present(set_urb)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (lun%urbpoi(l)) ptr_col(c,:) = set_urb
-          end do
-       end if
-       if (present(set_nourb)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (.not.(lun%urbpoi(l))) ptr_col(c,:) = set_nourb
-          end do
-       end if
-       if (present(set_spec)) then
-          do c = bounds%begc,bounds%endc
-             l =col%landunit(c)
-             if (lun%ifspecial(l)) ptr_col(c,:) = set_spec
-          end do
-       end if
-
-    else if (present(ptr_patch)) then
-       l_type1d = namep
-       l_type1d_out = namep
-       clmptr_ra(hpindex)%ptr => ptr_patch
-       if (present(set_lake)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (lun%lakpoi(l)) ptr_patch(p,:) = set_lake
-          end do
-       end if
-       if (present(set_nolake)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (.not.(lun%lakpoi(l))) ptr_patch(p,:) = set_nolake
-          end do
-       end if
-       if (present(set_urb)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (lun%urbpoi(l)) ptr_patch(p,:) = set_urb
-          end do
-       end if
-       if (present(set_nourb)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (.not.(lun%urbpoi(l))) ptr_patch(p,:) = set_nourb
-          end do
-       end if
-       if (present(set_spec)) then
-          do p = bounds%begp,bounds%endp
-             l =patch%landunit(p)
-             if (lun%ifspecial(l)) ptr_patch(p,:) = set_spec
-          end do
-       end if
-
     else
        write(iulog,*) trim(subname),' ERROR: must specify a valid pointer index,', &
-          ' choices are ptr_atm, ptr_lnd, ptr_gcell, ptr_lunit, ptr_col, ptr_patch'
+          ' choices are ptr_atm, ptr_lnd, ptr_gcell'
        call endrun(msg=errMsg(sourcefile, __LINE__))
 
     end if
 
     ! Set scaling factor
 
-    scale_type_p2c = 'unity'
-    scale_type_c2l = 'unity'
-    scale_type_l2g = 'unity'
-
-    if (present(p2c_scale_type)) scale_type_p2c = p2c_scale_type
-    if (present(c2l_scale_type)) scale_type_c2l = c2l_scale_type
-    if (present(l2g_scale_type)) scale_type_l2g = l2g_scale_type
     if (present(type1d_out)) l_type1d_out = type1d_out
 
     ! Add field to masterlist
 
     call masterlist_addfld (fname=trim(fname), type1d=l_type1d, type1d_out=l_type1d_out, &
          type2d=type2d, num2d=num2d, &
-         units=units, avgflag=avgflag, long_name=long_name, hpindex=hpindex, &
-         p2c_scale_type=scale_type_p2c, c2l_scale_type=scale_type_c2l, l2g_scale_type=scale_type_l2g, &
-         no_snow_behavior=no_snow_behavior)
+         units=units, avgflag=avgflag, long_name=long_name, hpindex=hpindex)
 
     l_default = 'active'
     if (present(default)) then
