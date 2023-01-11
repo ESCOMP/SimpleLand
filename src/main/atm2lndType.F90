@@ -517,57 +517,57 @@ contains
     ! (don't typically print these - waste of space. But for now, could be useful... 
     ! Skipping because I'm lazy; add later
 !    this%mml_nc_alb_grc(begg:endg) = spval
-!    call hist_addfld1d (fname='MML_albdeo', units='unitless',  &
-!         avgflag='A', long_name='MML prescribed snow-free surface albedo', &
+!    call hist_addfld1d (fname='albedo', units='unitless',  &
+!         avgflag='A', long_name='prescribed snow-free surface albedo', &
 !         ptr_lnd=this%mml_nc_alb_grc)
 !         
 !	this%mml_nc_snoalb_grc(begg:endg) = spval
-!    call hist_addfld1d (fname='MML_snow_albdeo', units='unitless',  &
-!         avgflag='A', long_name='MML prescribed deep-snow albedo', &
+!    call hist_addfld1d (fname='snow_albedo', units='unitless',  &
+!         avgflag='A', long_name='prescribed deep-snow albedo', &
 !         ptr_lnd=this%mml_nc_snoalb_grc)
     
          
 	this%mml_nc_snowmask_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_snowmaskdepth', units='kg/m2',  &
-         avgflag='A', long_name='MML snow required to toggle deep snow albedo', &
+    call hist_addfld1d (fname='snowmaskdepth', units='kg/m2',  &
+         avgflag='A', long_name='snow required to toggle deep snow albedo', &
          ptr_lnd=this%mml_nc_snowmask_grc)
     
     this%mml_nc_evaprs_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_evap_rs', units='s/m',  &
-         avgflag='A', long_name='MML like stomatal resistance of soil', &
+    call hist_addfld1d (fname='evap_rs', units='s/m',  &
+         avgflag='A', long_name='like stomatal resistance of soil', &
          ptr_lnd=this%mml_nc_evaprs_grc)
     
     this%mml_nc_bucket_cap_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_bucket_cap', units='kg/m2',  &
-         avgflag='A', long_name='MML soil water bucket capacity (maximum water soil can hold)', &
+    call hist_addfld1d (fname='bucket_cap', units='kg/m2',  &
+         avgflag='A', long_name='soil water bucket capacity (maximum water soil can hold)', &
          ptr_lnd=this%mml_nc_bucket_cap_grc)
     
     !this%mml_nc_soil_maxice_grc(begg:endg,:) = spval
-    !call hist_addfld1d (fname='MML_maxice', units='kg/m3',  &
-    !     avgflag='A', long_name='MML maximum freezable water in each soil layer; for thermal calculations', &
+    !call hist_addfld1d (fname='maxice', units='kg/m3',  &
+    !     avgflag='A', long_name='maximum freezable water in each soil layer; for thermal calculations', &
     !     ptr_lnd=this%mml_nc_soil_maxice_grc)
     !data2dptr => this%mml_nc_soil_maxice_grc(begg:endg,:)
-    !fieldname = 'MML_maxice'
-    !longname =  'MML maximum freezable water in each soil layer; for thermal calculations'
+    !fieldname = 'maxice'
+    !longname =  'maximum freezable water in each soil layer; for thermal calculations'
     
     this%mml_nc_soil_type_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_soiltype', units='unitless',  &
-         avgflag='A', long_name='MML Soil type (sand/clay), of 11 possible types; for thermal calculations', &
+    call hist_addfld1d (fname='soiltype', units='unitless',  &
+         avgflag='A', long_name='Soil type (sand/clay), of 11 possible types; for thermal calculations', &
          ptr_lnd=this%mml_nc_soil_type_grc)
     
     this%mml_nc_roughness_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_roughness', units='m',  &
-         avgflag='A', long_name='MML surface roughness length (e.g. canopy height) ', &
+    call hist_addfld1d (fname='roughness', units='m',  &
+         avgflag='A', long_name='surface roughness length (e.g. canopy height) ', &
          ptr_lnd=this%mml_nc_roughness_grc)
     
     this%mml_nc_emiss_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_emiss', units='unitless',  &
-         avgflag='A', long_name='MML surface emissivity ', &
+    call hist_addfld1d (fname='emiss', units='unitless',  &
+         avgflag='A', long_name='surface emissivity ', &
          ptr_lnd=this%mml_nc_emiss_grc)
          
     this%mml_nc_glcmask_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_glcmask', units='unitless',  &
-         avgflag='A', long_name='MML logical mask saying which cells should be treated as glaciers', &
+    call hist_addfld1d (fname='glcmask', units='unitless',  &
+         avgflag='A', long_name='logical mask saying which cells should be treated as glaciers', &
          ptr_lnd=this%mml_nc_glcmask_grc)     
     
    
@@ -576,256 +576,256 @@ contains
    ! write(iulog,*)  'MML write to h0: atm vars '
     
     this%mml_atm_fsds_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsds', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave radiation', &
+    call hist_addfld1d (fname='fsds', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave radiation', &
          ptr_lnd=this%mml_atm_fsds_grc)
     
     this%mml_atm_fsdsnd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsnd', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave nir direct radiation', &
+    call hist_addfld1d (fname='fsdsnd', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave nir direct radiation', &
          ptr_lnd=this%mml_atm_fsdsnd_grc)
 	
 	this%mml_atm_fsdsvd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsvd', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave visible direct radiation', &
+    call hist_addfld1d (fname='fsdsvd', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave visible direct radiation', &
          ptr_lnd=this%mml_atm_fsdsvd_grc)
     
     this%mml_atm_fsdsni_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsni', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave nir diffuse radiation', &
+    call hist_addfld1d (fname='fsdsni', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave nir diffuse radiation', &
          ptr_lnd=this%mml_atm_fsdsni_grc)
     
     this%mml_atm_fsdsvi_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsvi', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave visible diffuse radiation', &
+    call hist_addfld1d (fname='fsdsvi', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave visible diffuse radiation', &
          ptr_lnd=this%mml_atm_fsdsvi_grc)
          
     this%mml_atm_lwdn_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lwdn', units='W/m2',  &
-         avgflag='A', long_name='MML incoming longwave radiation', &
+    call hist_addfld1d (fname='lwdn', units='W/m2',  &
+         avgflag='A', long_name='incoming longwave radiation', &
          ptr_lnd=this%mml_atm_lwdn_grc)
     
     this%mml_atm_zref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_zref', units='m',  &
-         avgflag='A', long_name='MML height of atm reference level', &
+    call hist_addfld1d (fname='zref', units='m',  &
+         avgflag='A', long_name='height of atm reference level', &
          ptr_lnd=this%mml_atm_zref_grc)
     
     this%mml_atm_tbot_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tbot', units='K',  &
-         avgflag='A', long_name='MML temperature midpoint of lowest atm layer', &
+    call hist_addfld1d (fname='tbot', units='K',  &
+         avgflag='A', long_name='temperature midpoint of lowest atm layer', &
          ptr_lnd=this%mml_atm_tbot_grc)
     
     this%mml_atm_thref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_thref', units='K',  &
-         avgflag='A', long_name='MML potential temperature theta at reference height', &
+    call hist_addfld1d (fname='thref', units='K',  &
+         avgflag='A', long_name='potential temperature theta at reference height', &
          ptr_lnd=this%mml_atm_thref_grc)
     
     this%mml_atm_qbot_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qbot', units='kg/kg',  &
-         avgflag='A', long_name='MML specific humidity midpoint of lowest atm layer', &
+    call hist_addfld1d (fname='qbot', units='kg/kg',  &
+         avgflag='A', long_name='specific humidity midpoint of lowest atm layer', &
          ptr_lnd=this%mml_atm_qbot_grc)
     
     this%mml_atm_uref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_uref', units='m/s',  &
-         avgflag='A', long_name='MML wind speed at reference height', &
+    call hist_addfld1d (fname='uref', units='m/s',  &
+         avgflag='A', long_name='wind speed at reference height', &
          ptr_lnd=this%mml_atm_uref_grc)
     
     this%mml_atm_eref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_eref', units='Pa',  &
-         avgflag='A', long_name='MML vapor pressure at reference height', &
+    call hist_addfld1d (fname='eref', units='Pa',  &
+         avgflag='A', long_name='vapor pressure at reference height', &
          ptr_lnd=this%mml_atm_eref_grc)
     
     this%mml_atm_pbot_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_pbot', units='Pa',  &
-         avgflag='A', long_name='MML atmospheric pressure midpoint of lowest atm layer', &
+    call hist_addfld1d (fname='pbot', units='Pa',  &
+         avgflag='A', long_name='atmospheric pressure midpoint of lowest atm layer', &
          ptr_lnd=this%mml_atm_pbot_grc)
     
     this%mml_atm_psrf_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_psrf', units='Pa',  &
-         avgflag='A', long_name='MML atmospheric pressure surface', &
+    call hist_addfld1d (fname='psrf', units='Pa',  &
+         avgflag='A', long_name='atmospheric pressure surface', &
          ptr_lnd=this%mml_atm_psrf_grc)
     
     this%mml_atm_rhomol_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_rhomol', units='mol/m3',  &
-         avgflag='A', long_name='MML molar density of air at reference height', &
+    call hist_addfld1d (fname='rhomol', units='mol/m3',  &
+         avgflag='A', long_name='molar density of air at reference height', &
          ptr_lnd=this%mml_atm_rhomol_grc)
     
     this%mml_atm_rhoair_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_rhoair', units='kg/m3',  &
-         avgflag='A', long_name='MML mass density of air at reference height', &
+    call hist_addfld1d (fname='rhoair', units='kg/m3',  &
+         avgflag='A', long_name='mass density of air at reference height', &
          ptr_lnd=this%mml_atm_rhoair_grc)
          
     this%mml_atm_cp_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_cpair', units='J/kg/K',  &
-         avgflag='A', long_name='MML specific heat of air at constant pressure at ref height', &
+    call hist_addfld1d (fname='cpair', units='J/kg/K',  &
+         avgflag='A', long_name='specific heat of air at constant pressure at ref height', &
          ptr_lnd=this%mml_atm_cp_grc)
     
     this%mml_atm_prec_liq_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_prec_liq', units='mm/s',  &	! or mm/s? 
-         avgflag='A', long_name='MML rate of liquid precipitation (rain)', &
+    call hist_addfld1d (fname='prec_liq', units='mm/s',  &	! or mm/s? 
+         avgflag='A', long_name='rate of liquid precipitation (rain)', &
          ptr_lnd=this%mml_atm_prec_liq_grc)
     
     this%mml_atm_prec_frz_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_prec_frz', units='mm/s',  &
-         avgflag='A', long_name='MML rate of frozen precipitation (snow)', &
+    call hist_addfld1d (fname='prec_frz', units='mm/s',  &
+         avgflag='A', long_name='rate of frozen precipitation (snow)', &
          ptr_lnd=this%mml_atm_prec_frz_grc)
     
     ! Land calculated surface variables
     !write(iulog,*)  'MML write to h0: 1d land vars '
     
     this%mml_lnd_ts_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_ts', units='K',  &
-         avgflag='A', long_name='MML surface skin temperature', &
+    call hist_addfld1d (fname='ts', units='K',  &
+         avgflag='A', long_name='surface skin temperature', &
          ptr_lnd=this%mml_lnd_ts_grc)
     
     this%mml_lnd_qs_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qs', units='kg/kg',  &
+    call hist_addfld1d (fname='qs', units='kg/kg',  &
          avgflag='A', long_name='surface specific humidity [kg/kg] or [mol/mol]', &
          ptr_lnd=this%mml_lnd_qs_grc)
     
     this%mml_lnd_qa_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qa', units='W/m2',  &
-         avgflag='A', long_name='MML radiative forcing (SWin*albedo + LWin)', &
+    call hist_addfld1d (fname='qa', units='W/m2',  &
+         avgflag='A', long_name='radiative forcing (SWin*albedo + LWin)', &
          ptr_lnd=this%mml_lnd_qa_grc)
     
     this%mml_lnd_swabs_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_swabs', units='W/m2',  &
-         avgflag='A', long_name='MML absorbed shortwave radiation', &
+    call hist_addfld1d (fname='swabs', units='W/m2',  &
+         avgflag='A', long_name='absorbed shortwave radiation', &
          ptr_lnd=this%mml_lnd_swabs_grc)
     
     this%mml_lnd_fsr_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsr', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave radation', &
+    call hist_addfld1d (fname='fsr', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave radation', &
          ptr_lnd=this%mml_lnd_fsr_grc)
     
     this%mml_lnd_fsrnd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrnd', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave nir direct radation', &
+    call hist_addfld1d (fname='fsrnd', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave nir direct radation', &
          ptr_lnd=this%mml_lnd_fsrnd_grc)
     
     this%mml_lnd_fsrni_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrni', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave nir diffuse radation', &
+    call hist_addfld1d (fname='fsrni', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave nir diffuse radation', &
          ptr_lnd=this%mml_lnd_fsrni_grc)
     
     this%mml_lnd_fsrvd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrvd', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave visible direct radation', &
+    call hist_addfld1d (fname='fsrvd', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave visible direct radation', &
          ptr_lnd=this%mml_lnd_fsrvd_grc)
     
     this%mml_lnd_fsrvi_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrvi', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave visible diffuse radation', &
+    call hist_addfld1d (fname='fsrvi', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave visible diffuse radation', &
          ptr_lnd=this%mml_lnd_fsrvi_grc)
     
     this%mml_lnd_lwup_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lwup', units='W/m2',  &
-         avgflag='A', long_name='MML emitted longwave radiation', &
+    call hist_addfld1d (fname='lwup', units='W/m2',  &
+         avgflag='A', long_name='emitted longwave radiation', &
          ptr_lnd=this%mml_lnd_lwup_grc)
     
     this%mml_lnd_shflx_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_shflx', units='W/m2',  &
-         avgflag='A', long_name='MML sensible heat flux', &
+    call hist_addfld1d (fname='shflx', units='W/m2',  &
+         avgflag='A', long_name='sensible heat flux', &
          ptr_lnd=this%mml_lnd_shflx_grc)
     
     this%mml_lnd_lhflx_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lhflx', units='W/m2',  &
-         avgflag='A', long_name='MML latent heat flux', &
+    call hist_addfld1d (fname='lhflx', units='W/m2',  &
+         avgflag='A', long_name='latent heat flux', &
          ptr_lnd=this%mml_lnd_lhflx_grc)
     
     this%mml_lnd_gsoi_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_gsoi', units='W/m2',  &
-         avgflag='A', long_name='MML flux of energy into the soil', &
+    call hist_addfld1d (fname='gsoi', units='W/m2',  &
+         avgflag='A', long_name='flux of energy into the soil', &
          ptr_lnd=this%mml_lnd_gsoi_grc)
     
     this%mml_lnd_gsnow_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_gsnow', units='W/m2',  &
-         avgflag='A', long_name='MML flux of energy into snowmelt', &
+    call hist_addfld1d (fname='gsnow', units='W/m2',  &
+         avgflag='A', long_name='flux of energy into snowmelt', &
          ptr_lnd=this%mml_lnd_gsnow_grc)
     
     this%mml_lnd_evap_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_evap', units='kg H20 / m2 / s = mm/s',  &
-         avgflag='A', long_name='MML evapotranspiration (in kg water over whole time step)', &
+    call hist_addfld1d (fname='evap', units='kg H20 / m2 / s = mm/s',  &
+         avgflag='A', long_name='evapotranspiration (in kg water over whole time step)', &
          ptr_lnd=this%mml_lnd_evap_grc)
     
     this%mml_lnd_ustar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_ustar', units='m/s',  &
-         avgflag='A', long_name='MML friction velocity from MO theory', &
+    call hist_addfld1d (fname='ustar', units='m/s',  &
+         avgflag='A', long_name='friction velocity from MO theory', &
          ptr_lnd=this%mml_lnd_ustar_grc)
     
     this%mml_lnd_tstar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tstar', units='K',  &
-         avgflag='A', long_name='MML temperature scale from MO theory', &
+    call hist_addfld1d (fname='tstar', units='K',  &
+         avgflag='A', long_name='temperature scale from MO theory', &
          ptr_lnd=this%mml_lnd_tstar_grc)
          
     this%mml_lnd_qstar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qstar', units='kg/kg',  &
-         avgflag='A', long_name='MML humidity scale (?) from MO theory', &
+    call hist_addfld1d (fname='qstar', units='kg/kg',  &
+         avgflag='A', long_name='humidity scale (?) from MO theory', &
          ptr_lnd=this%mml_lnd_qstar_grc)
          
     this%mml_lnd_tvstar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tvstar', units='K',  &
-         avgflag='A', long_name='MML virtual potential temperature scale from MO theory', &
+    call hist_addfld1d (fname='tvstar', units='K',  &
+         avgflag='A', long_name='virtual potential temperature scale from MO theory', &
          ptr_lnd=this%mml_lnd_tvstar_grc)
     
     this%mml_lnd_obu_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_obu', units='m',  &
-         avgflag='A', long_name='MML Obukhov length from MO theory', &
+    call hist_addfld1d (fname='obu', units='m',  &
+         avgflag='A', long_name='Obukhov length from MO theory', &
          ptr_lnd=this%mml_lnd_obu_grc)
     
     this%mml_lnd_ram_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_ram', units='s/m',  &
-         avgflag='A', long_name='MML aerodynamic resistance for momentum (and moisture; from MO theory)', &
+    call hist_addfld1d (fname='ram', units='s/m',  &
+         avgflag='A', long_name='aerodynamic resistance for momentum (and moisture; from MO theory)', &
          ptr_lnd=this%mml_lnd_ram_grc)
     
     this%mml_lnd_rah_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_rah', units='s/m',  &
-         avgflag='A', long_name='MML aerodynamic resistance for heat', &
+    call hist_addfld1d (fname='rah', units='s/m',  &
+         avgflag='A', long_name='aerodynamic resistance for heat', &
          ptr_lnd=this%mml_lnd_rah_grc)
          
     this%mml_lnd_res_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_res_tot', units='s/m',  &
-         avgflag='A', long_name='MML lid resistance + aerodynamic resistance for heat (MML_evap_rs + MML_rah)', &
+    call hist_addfld1d (fname='res_tot', units='s/m',  &
+         avgflag='A', long_name='lid resistance + aerodynamic resistance for heat (evap_rs + rah)', &
          ptr_lnd=this%mml_lnd_res_grc)
 
     this%mml_lnd_effective_res_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_res_effective', units='s/m',  &
-         avgflag='A', long_name='MML effective surface resistance = 1/beta * (MML_evap_rs + MML_rah)', &
+    call hist_addfld1d (fname='res_effective', units='s/m',  &
+         avgflag='A', long_name='effective surface resistance = 1/beta * (evap_rs + rah)', &
          ptr_lnd=this%mml_lnd_effective_res_grc)
 
     this%mml_lnd_beta_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_beta', units='unitless',  &
-         avgflag='A', long_name='MML beta factor for resistance due to bucket emptiness (between 0 and 1)', &
+    call hist_addfld1d (fname='beta', units='unitless',  &
+         avgflag='A', long_name='beta factor for resistance due to bucket emptiness (between 0 and 1)', &
          ptr_lnd=this%mml_lnd_beta_grc)
                      
     this%mml_lnd_z0m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_z0m', units='m',  &
-         avgflag='A', long_name='MML roughness length for momentum', &
+    call hist_addfld1d (fname='z0m', units='m',  &
+         avgflag='A', long_name='roughness length for momentum', &
          ptr_lnd=this%mml_lnd_z0m_grc)
     
     this%mml_lnd_z0h_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_z0h', units='m',  &
-         avgflag='A', long_name='MML roughness length for heat', &
+    call hist_addfld1d (fname='z0h', units='m',  &
+         avgflag='A', long_name='roughness length for heat', &
          ptr_lnd=this%mml_lnd_z0h_grc)
     
     this%mml_lnd_alb_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_alb', units='unitless',  &
-         avgflag='A', long_name='MML actual albedo (accounting for snow) used', &
+    call hist_addfld1d (fname='alb', units='unitless',  &
+         avgflag='A', long_name='actual albedo (accounting for snow) used', &
          ptr_lnd=this%mml_lnd_alb_grc)
     
     this%mml_lnd_fsns_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsns', units='W/m2',  &
-         avgflag='A', long_name='MML net flux of shortwave at surface (in - out), pos into land', &
+    call hist_addfld1d (fname='fsns', units='W/m2',  &
+         avgflag='A', long_name='net flux of shortwave at surface (in - out), pos into land', &
          ptr_lnd=this%mml_lnd_fsns_grc)
     
     this%mml_lnd_flns_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_flns', units='W/m2',  &
-         avgflag='A', long_name='MML net flux of longwave at surface (out-in), pos out of land', &
+    call hist_addfld1d (fname='flns', units='W/m2',  &
+         avgflag='A', long_name='net flux of longwave at surface (out-in), pos out of land', &
          ptr_lnd=this%mml_lnd_flns_grc)
          
     this%mml_lnd_snowmelt(begg:endg) = spval
-    call hist_addfld1d (fname='MML_snowmelt', units='kg/m2',  &
-         avgflag='A', long_name='MML snow that melted into water bucket', &
+    call hist_addfld1d (fname='snowmelt', units='kg/m2',  &
+         avgflag='A', long_name='snow that melted into water bucket', &
          ptr_lnd=this%mml_lnd_snowmelt)
          
     ! Soil variables
@@ -836,85 +836,85 @@ contains
  	!write(iulog,*)  'MML write to h0: 2d soil vars '
  	
  	this%mml_nc_dust_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_dust_2atm', units='unknown',  type2d='mml_dust', &
-         avgflag='A', long_name='MML surface dust flux to atmosphere ', &
+    call hist_addfld2d (fname='dust_2atm', units='unknown',  type2d='mml_dust', &
+         avgflag='A', long_name='surface dust flux to atmosphere ', &
          ptr_lnd=this%mml_nc_dust_grc)
  	
     this%mml_nc_soil_maxice_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_maxice', units='kg/m3',  type2d='mml_lev', &
-         avgflag='A', long_name='MML maximum freezable water in each soil layer; for thermal calculations', &
+    call hist_addfld2d (fname='maxice', units='kg/m3',  type2d='mml_lev', &
+         avgflag='A', long_name='maximum freezable water in each soil layer; for thermal calculations', &
          ptr_lnd=this%mml_nc_soil_maxice_grc)     
 
 
     this%mml_nc_soil_levels_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soilz', units='m',  type2d='mml_lev', &
-         avgflag='A', long_name='MML depth (negative) from surface of midpoint of each soil layer', &
+    call hist_addfld2d (fname='soilz', units='m',  type2d='mml_lev', &
+         avgflag='A', long_name='depth (negative) from surface of midpoint of each soil layer', &
          ptr_lnd=this%mml_nc_soil_levels_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_t_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soil_t', units='K', type2d='mml_lev', &
-         avgflag='A', long_name='MML soil temperature at each layer', &
+    call hist_addfld2d (fname='soil_t', units='K', type2d='mml_lev', &
+         avgflag='A', long_name='soil temperature at each layer', &
          ptr_lnd=this%mml_soil_t_grc, mml_dim=mml_nsoi)
          
     
     this%mml_soil_liq_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soil_liq', units='kg/m2',  type2d='mml_lev', &
-         avgflag='A', long_name='MML kg of liquid water in each soil layer (Thermodynamic ONLY)', &
+    call hist_addfld2d (fname='soil_liq', units='kg/m2',  type2d='mml_lev', &
+         avgflag='A', long_name='kg of liquid water in each soil layer (Thermodynamic ONLY)', &
          ptr_lnd=this%mml_soil_liq_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_ice_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soil_ice', units='kg/m2', type2d='mml_lev',  &
-         avgflag='A', long_name='MML kg of frozen water in each soil layer (Thermodynamic ONLY)', &
+    call hist_addfld2d (fname='soil_ice', units='kg/m2', type2d='mml_lev',  &
+         avgflag='A', long_name='kg of frozen water in each soil layer (Thermodynamic ONLY)', &
          ptr_lnd=this%mml_soil_ice_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_dz_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_dz', units='m', type2d='mml_lev',  &
-         avgflag='A', long_name='MML thickness of each soil layer', &
+    call hist_addfld2d (fname='dz', units='m', type2d='mml_lev',  &
+         avgflag='A', long_name='thickness of each soil layer', &
          ptr_lnd=this%mml_soil_dz_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_zh_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_zh', units='m', type2d='mml_lev',  &
-         avgflag='A', long_name='MML soil depth at interface between each soil layer', &
+    call hist_addfld2d (fname='zh', units='m', type2d='mml_lev',  &
+         avgflag='A', long_name='soil depth at interface between each soil layer', &
          ptr_lnd=this%mml_soil_zh_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_tk_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_tk', units='W/m/K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML thermal conductivity of each soil layer', &
+    call hist_addfld2d (fname='tk', units='W/m/K', type2d='mml_lev',  &
+         avgflag='A', long_name='thermal conductivity of each soil layer', &
          ptr_lnd=this%mml_soil_tk_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_tk_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tk_1d', units='W/m/K',  &
-         avgflag='A', long_name='MML thermal resistance of every soil layer', &
+    call hist_addfld1d (fname='tk_1d', units='W/m/K',  &
+         avgflag='A', long_name='thermal resistance of every soil layer', &
          ptr_lnd=this%mml_soil_tk_1d_grc)
     
     this%mml_soil_tkh_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_tkh', units='W/m/K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML thermal conductivity at bottom boundary of each soil layer', &
+    call hist_addfld2d (fname='tkh', units='W/m/K', type2d='mml_lev',  &
+         avgflag='A', long_name='thermal conductivity at bottom boundary of each soil layer', &
          ptr_lnd=this%mml_soil_tkh_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_dtsoi_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_dtsoi', units='K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temperature tendency in each soil layer', &
+    call hist_addfld2d (fname='dtsoi', units='K', type2d='mml_lev',  &
+         avgflag='A', long_name='temperature tendency in each soil layer', &
          ptr_lnd=this%mml_soil_dtsoi_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_cv_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_cv', units='J/m3/K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML heat capacity of each soil layer (depends on soil type)', &
+    call hist_addfld2d (fname='cv', units='J/m3/K', type2d='mml_lev',  &
+         avgflag='A', long_name='heat capacity of each soil layer (depends on soil type)', &
          ptr_lnd=this%mml_soil_cv_grc, mml_dim=mml_nsoi)
 	
 	this%mml_soil_cv_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_cv_1d', units='J/m3/K',  &
-         avgflag='A', long_name='MML heat capacity of every soil layer', &
+    call hist_addfld1d (fname='cv_1d', units='J/m3/K',  &
+         avgflag='A', long_name='heat capacity of every soil layer', &
          ptr_lnd=this%mml_soil_cv_1d_grc)
 	
 	this%mml_glc_tk_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_glc_tk_1d', units='W/m/K',  &
-         avgflag='A', long_name='MML thermal resistance of every ice layer where glaciated', &
+    call hist_addfld1d (fname='glc_tk_1d', units='W/m/K',  &
+         avgflag='A', long_name='thermal resistance of every ice layer where glaciated', &
          ptr_lnd=this%mml_glc_tk_1d_grc)
     
     this%mml_glc_cv_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_glc_cv_1d', units='J/m3/K',  &
-         avgflag='A', long_name='MML heat capacity of every ice layer where glaciated', &
+    call hist_addfld1d (fname='glc_cv_1d', units='J/m3/K',  &
+         avgflag='A', long_name='heat capacity of every ice layer where glaciated', &
          ptr_lnd=this%mml_glc_cv_1d_grc)
          
 ! end 2d
@@ -922,126 +922,126 @@ contains
     !write(iulog,*)  'MML write to h0: 1d soil vars '
     
     this%mml_soil_water_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_water', units='kg/m2',   &
-         avgflag='A', long_name='MML total amount of liquid water in soil bucket (hydrology)', &
+    call hist_addfld1d (fname='water', units='kg/m2',   &
+         avgflag='A', long_name='total amount of liquid water in soil bucket (hydrology)', &
          ptr_lnd=this%mml_soil_water_grc)
     
     this%mml_soil_snow_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_snow', units='kg/m2',  &
-         avgflag='A', long_name='MML total amount of snow in snow bucket (hydrology)', &
+    call hist_addfld1d (fname='snow', units='kg/m2',  &
+         avgflag='A', long_name='total amount of snow in snow bucket (hydrology)', &
          ptr_lnd=this%mml_soil_snow_grc)
     
     this%mml_soil_runoff_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_runoff', units='kg/m2',  &
-         avgflag='A', long_name='MML water in excess of bucket capacity (runoff, but it disappears)', &
+    call hist_addfld1d (fname='runoff', units='kg/m2',  &
+         avgflag='A', long_name='water in excess of bucket capacity (runoff, but it disappears)', &
          ptr_lnd=this%mml_soil_runoff_grc)
     
     ! lnd2atm MML vars
     this%mml_out_tref2m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_tref2m', units='K',  &
-         avgflag='A', long_name='MML 2m ref height temperature calculated from tsrf and tstar', &
+    call hist_addfld1d (fname='l2a_tref2m', units='K',  &
+         avgflag='A', long_name='2m ref height temperature calculated from tsrf and tstar', &
          ptr_lnd=this%mml_out_tref2m_grc)
     
     this%mml_out_qref2m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_qref2m', units='kg/kg',  &
-         avgflag='A', long_name='MML 2m ref height humidity calculated from qsrf and qstar', &
+    call hist_addfld1d (fname='l2a_qref2m', units='kg/kg',  &
+         avgflag='A', long_name='2m ref height humidity calculated from qsrf and qstar', &
          ptr_lnd=this%mml_out_qref2m_grc)
     
     this%mml_out_uref10m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_uref10m', units='m/s',  &
-         avgflag='A', long_name='MML 10m ref wind calculated from ustar', &
+    call hist_addfld1d (fname='l2a_uref10m', units='m/s',  &
+         avgflag='A', long_name='10m ref wind calculated from ustar', &
          ptr_lnd=this%mml_out_uref10m_grc)
     
     this%mml_out_taux(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_taux', units='m/s',  &
-         avgflag='A', long_name='MML zonal surface stress	', &
+    call hist_addfld1d (fname='l2a_taux', units='m/s',  &
+         avgflag='A', long_name='zonal surface stress	', &
          ptr_lnd=this%mml_out_taux)
     
     this%mml_out_tauy(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_tauy', units='m/s',  &
-         avgflag='A', long_name='MML meridional surface stress	', &
+    call hist_addfld1d (fname='l2a_tauy', units='m/s',  &
+         avgflag='A', long_name='meridional surface stress	', &
          ptr_lnd=this%mml_out_tauy)
     
     ! MML check if latent heat flux is larger than atm can support (giant dew)
     this%mml_q_excess(begg:endg) = spval
-    call hist_addfld1d (fname='MML_q_excess', units='kg/m2/s',  &
-         avgflag='A', long_name='MML over-demand of dew (positive downwards) by land from atmosphere', &
+    call hist_addfld1d (fname='q_excess', units='kg/m2/s',  &
+         avgflag='A', long_name='over-demand of dew (positive downwards) by land from atmosphere', &
          ptr_lnd=this%mml_q_excess)
     
     this%mml_lh_excess(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lh_excess', units='W/m2',  &
-         avgflag='A', long_name='MML over-demand of latent heat flux (dew; positive downwards) by land from atmosphere', &
+    call hist_addfld1d (fname='lh_excess', units='W/m2',  &
+         avgflag='A', long_name='over-demand of latent heat flux (dew; positive downwards) by land from atmosphere', &
          ptr_lnd=this%mml_lh_excess)
     
     this%mml_q_demand(begg:endg) = spval
-    call hist_addfld1d (fname='MML_q_demand', units='kg/m2/s',  &
-         avgflag='A', long_name='MML initial demand of water flux by land from atmosphere (before correction for excess dew)', &
+    call hist_addfld1d (fname='q_demand', units='kg/m2/s',  &
+         avgflag='A', long_name='initial demand of water flux by land from atmosphere (before correction for excess dew)', &
          ptr_lnd=this%mml_q_demand)
     
     this%mml_lh_demand(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lh_demand', units='W/m2',  &
-         avgflag='A', long_name='MML initial demand of latent heat flux by land from atmosphere (before correction for excess dew)', &
+    call hist_addfld1d (fname='lh_demand', units='W/m2',  &
+         avgflag='A', long_name='initial demand of latent heat flux by land from atmosphere (before correction for excess dew)', &
          ptr_lnd=this%mml_lh_demand)
          
          
     ! mml diagnostic vars (temproary)
     
     this%mml_diag1_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_diag1_1d', units='n/a',  &
-         avgflag='A', long_name='MML temporary 1d diagnostic var 1', &
+    call hist_addfld1d (fname='diag1_1d', units='n/a',  &
+         avgflag='A', long_name='temporary 1d diagnostic var 1', &
          ptr_lnd=this%mml_diag1_1d_grc)
     
     this%mml_diag2_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_diag2_1d', units='n/a',  &
-         avgflag='A', long_name='MML temporary 1d diagnostic var 2', &
+    call hist_addfld1d (fname='diag2_1d', units='n/a',  &
+         avgflag='A', long_name='temporary 1d diagnostic var 2', &
          ptr_lnd=this%mml_diag2_1d_grc)
     
     this%mml_diag3_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_diag3_1d', units='n/a',  &
-         avgflag='A', long_name='MML temporary 1d diagnostic var 3', &
+    call hist_addfld1d (fname='diag3_1d', units='n/a',  &
+         avgflag='A', long_name='temporary 1d diagnostic var 3', &
          ptr_lnd=this%mml_diag3_1d_grc)
     
     this%mml_diag1_2d_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_diag1_2d', units='n/a', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temporary 2d diagnostic var 1', &
+    call hist_addfld2d (fname='diag1_2d', units='n/a', type2d='mml_lev',  &
+         avgflag='A', long_name='temporary 2d diagnostic var 1', &
          ptr_lnd=this%mml_diag1_2d_grc, mml_dim=mml_nsoi)
     
     this%mml_diag2_2d_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_diag2_2d', units='n/a', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temporary 2d diagnostic var 2', &
+    call hist_addfld2d (fname='diag2_2d', units='n/a', type2d='mml_lev',  &
+         avgflag='A', long_name='temporary 2d diagnostic var 2', &
          ptr_lnd=this%mml_diag2_2d_grc, mml_dim=mml_nsoi)
     
     this%mml_diag3_2d_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_diag3_2d', units='n/a', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temporary 2d diagnostic var 3', &
+    call hist_addfld2d (fname='diag3_2d', units='n/a', type2d='mml_lev',  &
+         avgflag='A', long_name='temporary 2d diagnostic var 3', &
          ptr_lnd=this%mml_diag3_2d_grc, mml_dim=mml_nsoi)
     
     
     ! mml error flux/balance vars
     
     this%mml_err_h2o(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_h2o', units='n/a',  &
-         avgflag='A', long_name='MML total water conservation error', &
+    call hist_addfld1d (fname='err_h2o', units='n/a',  &
+         avgflag='A', long_name='total water conservation error', &
          ptr_lnd=this%mml_err_h2o)
          
     this%mml_err_h2osno(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_h2osno', units='n/a',  &
-         avgflag='A', long_name='MML imbalance in snow depth (liquid water)', &
+    call hist_addfld1d (fname='err_h2osno', units='n/a',  &
+         avgflag='A', long_name='imbalance in snow depth (liquid water)', &
          ptr_lnd=this%mml_err_h2osno) 
     
     this%mml_err_seb(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_seb', units='n/a',  &
-         avgflag='A', long_name='MML surface energy conservation error', &
+    call hist_addfld1d (fname='err_seb', units='n/a',  &
+         avgflag='A', long_name='surface energy conservation error', &
          ptr_lnd=this%mml_err_seb)
          
     this%mml_err_soi(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_soi', units='n/a',  &
-         avgflag='A', long_name='MML soil/lake energy conservation error', &
+    call hist_addfld1d (fname='err_soi', units='n/a',  &
+         avgflag='A', long_name='soil/lake energy conservation error', &
          ptr_lnd=this%mml_err_soi)
          
     this%mml_err_sol(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_sol', units='n/a',  &
-         avgflag='A', long_name='MML solar radiation conservation error', &
+    call hist_addfld1d (fname='err_sol', units='n/a',  &
+         avgflag='A', long_name='solar radiation conservation error', &
          ptr_lnd=this%mml_err_sol)
          
                            
@@ -1375,128 +1375,128 @@ contains
      write(iulog,*)  ' MML trying to write r 1d restart vars '
     
     ! MML: surface
-    call restartvar(ncid=ncid, flag=flag, varname='mml_lnd_ts_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='lnd_ts_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Surface Temperature for MO', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_lnd_ts_grc) 
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_lnd_qs_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='lnd_qs_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='surface specific humidity for MO', units='kg/kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_lnd_qs_grc) 
     
   	! MML soil:
   	! MML Hydrology variables:
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_water_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_water_grc', xtype=ncd_double, &
          dim1name='gridcell', &
          long_name='soil bucket water content', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_water_grc)
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_snow_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_snow_grc', xtype=ncd_double, &
          dim1name='gridcell', &
          long_name='snow bucket snow content', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_snow_grc)
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_runoff_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_runoff_grc', xtype=ncd_double, &
          dim1name='gridcell', &
          long_name='water runoff', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_runoff_grc)
     
    !  write(iulog,*)  'MML trying to write r 2d restart vars '
     ! MML Thermodynamic vars for each soil level (3d)
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_liq_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_liq_grc', xtype=ncd_double, &
          dim1name='gridcell',  dim2name='mml_lev', switchdim=.true., &  ! dim2 mml_lev?
          long_name='amount of liquid water in each soil layer', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_liq_grc)
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_ice_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_ice_grc', xtype=ncd_double, &
          dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
          long_name='amount of frozen water in each soil layer', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_ice_grc)          
    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_t_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_t_grc', xtype=ncd_double, &
          dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
-         long_name='MML soil temperature at each layer', units='K', &
+         long_name='soil temperature at each layer', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_t_grc)   
 
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_dtsoi_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_dtsoi_grc', xtype=ncd_double, &
          dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
-         long_name='MML temperature tendency in each soil layer', units='K', &
+         long_name='temperature tendency in each soil layer', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_dtsoi_grc) 
 
  
     ! MML nc vars, so if I stop mid-month / mid-day I can still know what that month's nc params are
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gvd_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gvd_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Ground visible direct albedo (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gvd_grc) 
          
-     call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_svd_grc', xtype=ncd_double, &
+     call restartvar(ncid=ncid, flag=flag, varname='nc_alb_svd_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Snow visible direct albedo (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_svd_grc) 
        
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gnd_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gnd_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Ground NIR direct albedo (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gnd_grc) 
        
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_snd_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_snd_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Snow NIR direct albedo (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_snd_grc) 
      
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gvf_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gvf_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Ground visible diffuse albedo (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gvf_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_svf_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_svf_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='snow visible diffuse albedo (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_svf_grc) 
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gnf_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gnf_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Ground NIR diffuse albedo (from netcdf file)', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gnf_grc) 
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_snf_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_snf_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Snow NIR diffuse albedo (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_snf_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_snowmask_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_snowmask_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Amount of snow required to fully mask ground albedo (from netcdf file)', units='kg/m2', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_snowmask_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_evaprs_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_evaprs_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Evaporative resistance (from netcdf file)', units='s/m', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_evaprs_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_bucket_cap_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_bucket_cap_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Bucket Capacity (from netcdf file)', units='kg/m2', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_bucket_cap_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_roughness_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_roughness_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Surface roughness (vegetation height) (from netcdf file)', units='m', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_roughness_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_emiss_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_emiss_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Surface emissivity (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_emiss_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_glcmask_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_glcmask_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Mask of glaciated points (from netcdf file)', units='none', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_glcmask_grc) 
     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_dust_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='nc_dust_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Dust flux to atm (from netcdf file)', units='unknown', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_nc_dust_grc) 
