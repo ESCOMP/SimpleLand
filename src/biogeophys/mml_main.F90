@@ -980,235 +980,219 @@ contains
 		lhflx(:)	= lambda / dt * ( water + snow )	! [W/m2] = [J/kg] / [s] * [kg/m2] ->  J/s * kg/kg/m2 = W/m2
 		dlhflx(:) 	= 0._r8								! [W/m2/K]
 	end where
-	
 
 
+    begg_to_endg_1: do g = begg, endg
+       ! Net flux of energy into soil [W/m2] and temperature derivative [W/m2/K] from the 
+       ! surface energy imbalance given other fluxes:
+       f0(g) = radforc(g) - ( lwrad(g) + lhflx(g) + shflx(g) )  ! [W/m2]
+       df0(g) = - ( dlwrad(g) + dlhflx(g) + dshflx(g) )  ! [W/m2]
 
-	
-	! Net flux of energy into soil [W/m2] and temperature derivative [W/m2/K] from the 
-	! surface energy imbalance given other fluxes:
-	f0(:) 	=	radforc - ( lwrad + lhflx + shflx )							! [W/m2]
-	df0(:) 	= 	- ( dlwrad + dlhflx + dshflx )								! [W/m2]
-    
-    ! lets temporarily save this value out as gsoi (not the real gsoi, but the right "family"
-    gsoi(:) = f0							! [W/m2]
+       ! lets temporarily save this value out as gsoi (not the real gsoi, but the right "family"
+       gsoi(g) = f0(g)  ! [W/m2]
      
-     
-	! -------------------------------------------------------------
-	! Initial pass at soil temperatures
-    ! -------------------------------------------------------------
-    
-    ! Initial change in soil temperatures = 0
-    dtsoi(:,:) = 0.0_r8 ! see if this helps?
-    
-    ! -------------------------------------------------------------
-    ! Set up tri-diagonal matrix
-    
-    ! surface
-    i = 1
-    
-    aa(:,i) = 0.0_r8
-    cc(:,i) = -soil_tkh(:,i) / ( soil_z(:,i) - soil_z(:,i+1) )
-    bb(:,i) = soil_cv(:,i) * soil_dz(:,i) / dt - cc(:,i) - df0
-    dd(:,i) = -soil_tkh(:,i) * ( tsoi(:,i) - tsoi(:,i+1) ) / ( soil_z(:,i) - soil_z(:,i+1) ) + f0
-    
-    ! layers 2 to nsoi-1
-    dummy = mml_nsoi - 1
-    do i = 2, dummy
-    	aa(:,i) = -soil_tkh(:,i-1) / ( soil_z(:,i-1) - soil_z(:,i) )
-    	cc(:,i) = -soil_tkh(:,i) / ( soil_z(:,i) - soil_z(:,i+1) )
-    	bb(:,i) = soil_cv(:,i) * soil_dz(:,i) / dt - aa(:,i) - cc(:,i)
-    	dd(:,i) = soil_tkh(:,i-1) * ( tsoi(:,i-1) - tsoi(:,i) ) / (soil_z(:,i-1) - soil_z(:,i)) &
-    			- soil_tkh(:,i) * (tsoi(:,i) - tsoi(:,i+1)) / (soil_z(:,i) - soil_z(:,i+1))
-    end do 
-    
-    ! Bottom soil layer
-    i = mml_nsoi
-    aa(:,i) = -soil_tkh(:,i-1) / (soil_z(:,i-1) - soil_z(:,i))
-    cc(:,i) = 0.0_r8
-    bb(:,i) = soil_cv(:,i) * soil_dz(:,i) / dt - aa(:,i)
-    dd(:,i) = soil_tkh(:,i-1) * (tsoi(:,i-1) - tsoi(:,i)) / (soil_z(:,i-1) - soil_z(:,i))
-    
-    ! ----------------------------------------------------------
-    ! Begin forward (upward) sweep of tridiagonal matrix from layer N to 1
-    
-    ! Bottom soil layer
-    i = mml_nsoi
-    ee(:,i) = aa(:,i) / bb(:,i)
-    ff(:,i) = dd(:,i) / bb(:,i)
-    
-    ! Layers nsoi-1 to 2
-    dummy = mml_nsoi-1
-    do i = dummy, 2, -1
-    	den = bb(:,i) - cc(:,i)*ee(:,i+1)
-    	ee(:,i) = aa(:,i) / den
-    	ff(:,i) = (dd(:,i) - cc(:,i)*ff(:,i+1)) / den
-    end do
-    
-    ! Complete tridiagonal sol'n to get initial temperature guess for top soil layer
-    i = 1
-    num = dd(:,i) - cc(:,i) * ff(:,i+1)
-    den = bb(:,i) - cc(:,i) * ee(:,i+1)
-    do g = begg, endg
+
+       ! -------------------------------------------------------------
+       ! Initial pass at soil temperatures
+       ! -------------------------------------------------------------
+
+       ! Initial change in soil temperatures = 0
+       dtsoi(g,:) = 0.0_r8  ! see if this helps?
+
+       ! -------------------------------------------------------------
+       ! Set up tri-diagonal matrix
+
+       ! surface
+       i = 1
+
+       aa(g,i) = 0.0_r8
+       cc(g,i) = -soil_tkh(g,i) / ( soil_z(g,i) - soil_z(g,i+1) )
+       bb(g,i) = soil_cv(g,i) * soil_dz(g,i) / dt - cc(g,i) - df0(g)
+       dd(g,i) = -soil_tkh(g,i) * ( tsoi(g,i) - tsoi(g,i+1) ) / ( soil_z(g,i) - soil_z(g,i+1) ) + f0(g)
+
+       ! layers 2 to nsoi-1
+       dummy = mml_nsoi - 1
+       do i = 2, dummy
+          aa(g,i) = -soil_tkh(g,i-1) / ( soil_z(g,i-1) - soil_z(g,i) )
+          cc(g,i) = -soil_tkh(g,i) / ( soil_z(g,i) - soil_z(g,i+1) )
+          bb(g,i) = soil_cv(g,i) * soil_dz(g,i) / dt - aa(g,i) - cc(g,i)
+          dd(g,i) = soil_tkh(g,i-1) * ( tsoi(g,i-1) - tsoi(g,i) ) / (soil_z(g,i-1) - soil_z(g,i)) &
+                    - soil_tkh(g,i) * (tsoi(g,i) - tsoi(g,i+1)) / (soil_z(g,i) - soil_z(g,i+1))
+       end do 
+
+       ! Bottom soil layer
+       i = mml_nsoi
+       aa(g,i) = -soil_tkh(g,i-1) / (soil_z(g,i-1) - soil_z(g,i))
+       cc(g,i) = 0.0_r8
+       bb(g,i) = soil_cv(g,i) * soil_dz(g,i) / dt - aa(g,i)
+       dd(g,i) = soil_tkh(g,i-1) * (tsoi(g,i-1) - tsoi(g,i)) / (soil_z(g,i-1) - soil_z(g,i))
+
+       ! ----------------------------------------------------------
+       ! Begin forward (upward) sweep of tridiagonal matrix from layer N to 1
+
+       ! Bottom soil layer
+       i = mml_nsoi
+       ee(g,i) = aa(g,i) / bb(g,i)
+       ff(g,i) = dd(g,i) / bb(g,i)
+
+       ! Layers nsoi-1 to 2
+       dummy = mml_nsoi-1
+       do i = dummy, 2, -1
+          den = bb(g,i) - cc(g,i) * ee(g,i+1)
+          ee(g,i) = aa(g,i) / den(g)
+          ff(g,i) = (dd(g,i) - cc(g,i) * ff(g,i+1)) / den(g)
+       end do
+
+       ! Complete tridiagonal sol'n to get initial temperature guess for top soil layer
+       i = 1
+       num = dd(g,i) - cc(g,i) * ff(g,i+1)
+       den = bb(g,i) - cc(g,i) * ee(g,i+1)
        tsrf(g) = tsoi0(g,i) + num(g) / den(g)
-    end do
     
-	
-	!write(iulog,*)subname, 'MML new tridiagonal solver IS being used'
-	
-	! -------------------------------------------------------------
-    ! Snow accounting: 
-    ! if tsrf>freezing and there is snow on the ground, melt some snow!
-    ! -------------------------------------------------------------
-        	
-    !t_to_snow(:) = soil_cv(:,1) * soil_dz(:,1) / hfus	! factor to convert a change in temperature to snow melt
+       !write(iulog,*)subname, 'MML new tridiagonal solver IS being used'
+
+       ! -------------------------------------------------------------
+       ! Snow accounting: 
+       ! if tsrf>freezing and there is snow on the ground, melt some snow!
+       ! -------------------------------------------------------------
+
+       !t_to_snow(:) = soil_cv(:,1) * soil_dz(:,1) / hfus	! factor to convert a change in temperature to snow melt
     
-    ! how much snow can we melt given the temperature? 
-    snow_melt = 0.0_r8
-    !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) * t_to_snow(:)
+       ! how much snow can we melt given the temperature? 
+       snow_melt(g) = 0.0_r8
+       !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) * t_to_snow(:)
     
-    ! Maximum snow melt RATE based on temperature above freezing:
-    ptl_snow_melt(:) = max(0.0 , (tsrf(:) - tfrz) * den(:) / hfus)
-    !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) / hfus 
+       ! Maximum snow melt RATE based on temperature above freezing:
+       ptl_snow_melt(g) = max(0.0 , (tsrf(g) - tfrz) * den(g) / hfus)
+       !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) / hfus 
     
-    ! Maximum melt RATE is the rate it would take to melt all the snow that is currently present:
-    max_snow_melt(:) = snow / dt
+       ! Maximum melt RATE is the rate it would take to melt all the snow that is currently present:
+       max_snow_melt(g) = snow(g) / dt
     
-    ! Set actual snow melt RATE to either the total the potential (if enough snow is present) or the total (if enoguh energy is present)
-    snow_melt(:) = min( max_snow_melt(:) , ptl_snow_melt(:) )
+       ! Set actual snow melt RATE to either the total the potential (if enough snow is present) or the total (if enoguh energy is present)
+       snow_melt(g) = min( max_snow_melt(g) , ptl_snow_melt(g) )
     
-    ! Energy flux associated with realized snow melt
-    gsnow(:) = snow_melt(:) * hfus		! [kg/m2/s]*[J/kg] = [J/s/m2] = [W/m2]
+       ! Energy flux associated with realized snow melt
+       gsnow(g) = snow_melt(g) * hfus  ! [kg/m2/s]*[J/kg] = [J/s/m2] = [W/m2]
     
-    ! Recalculate melt based off how much snow is actually present (can't melt more
-    ! than what is actually present)
-    ! If we have more energy than snow to melt, update surface temperature accordingly
-    !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt <= snow ) tsrf(:) = tfrz	! where snow_melt < snow, temperature stays at freezing
-    !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt > snow )
-    !	snow_melt(:) = snow	! melt all available snow
-    !	tsrf(:) = tsoi(:,1) + (num(:) - snow_melt(:)/t_to_snow(:))/den(:)
-    !end where
+       ! Recalculate melt based off how much snow is actually present (can't melt more
+       ! than what is actually present)
+       ! If we have more energy than snow to melt, update surface temperature accordingly
+       !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt <= snow ) tsrf(:) = tfrz	! where snow_melt < snow, temperature stays at freezing
+       !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt > snow )
+       !	snow_melt(:) = snow	! melt all available snow
+       !	tsrf(:) = tsoi(:,1) + (num(:) - snow_melt(:)/t_to_snow(:))/den(:)
+       !end where
         
-    ! Update snow and water buckets accordingly -> convert to water units, not rates
-    snow(:)  = snow  - snow_melt*dt			! [kg/m2] = [kg/m2] - [kg/m2/s]*[s]
-    water(:) = water + snow_melt*dt
-       		
-    ! Update surface temperature to reflect snow melt:
-    !	If there is no snow melt, tsoi(1) = tsrf as above, unmodified
-    !	While snow is actively melting, tsrf should be tfrz
-    ! 	If snow melt was less than the total energy, tsrf should be > trfz but less tahn tsrf above
-    do g = begg, endg
+       ! Update snow and water buckets accordingly -> convert to water units, not rates
+       snow(g) = snow(g) - snow_melt(g) * dt  ! [kg/m2] = [kg/m2] - [kg/m2/s]*[s]
+       water(g) = water(g) + snow_melt(g) * dt
+
+       ! Update surface temperature to reflect snow melt:
+       !	If there is no snow melt, tsoi(1) = tsrf as above, unmodified
+       !	While snow is actively melting, tsrf should be tfrz
+       ! 	If snow melt was less than the total energy, tsrf should be > trfz but less tahn tsrf above
        tsoi(g,1) = tsoi(g,1) + (num(g) - gsnow(g)) / den(g)
        dtsoi(g,1) = tsoi(g,1) - tsoi0(g,1)
-    end do
     
+       ! -------------------------------------------------------------
+       ! Complete the tri-diagonal solver for soil temperature given we now know the 
+       ! surface temperature after snow melting
+       ! -------------------------------------------------------------	
+  
+       !dtsoi(:,1) 	= tsrf(:) - tsoi(:,1)	! save change in top soil layer
+       !tsoi(:,1) 	= tsrf(:)					! update top soil layer to be surface temperature
     
-  	! -------------------------------------------------------------
-  	! Complete the tri-diagonal solver for soil temperature given we now know the 
-  	! surface temperature after snow melting
-    ! -------------------------------------------------------------	
-        	
-    !dtsoi(:,1) 	= tsrf(:) - tsoi(:,1)	! save change in top soil layer
-    !tsoi(:,1) 	= tsrf(:)					! update top soil layer to be surface temperature
+       !------ Complete tri-diagonal solver (downwards sweep)
+       do i = 2,mml_nsoi
+          dtsoi(g,i) = ff(g,i) - ee(g,i) * dtsoi(g,i-1)
+          tsoi(g,i) = tsoi(g,i) + dtsoi(g,i)
+       end do
     
-    !------ Complete tri-diagonal solver (downwards sweep)
-	do i = 2,mml_nsoi
-		dtsoi(:,i) = ff(:,i) - ee(:,i)*dtsoi(:,i-1)
-		tsoi(:,i) = tsoi(:,i) + dtsoi(:,i)
-	end do
-    
-    !dummy = mml_nsoi - 1
-    !do i = 1, dummy
-    !    dtsoi(:,i+1) = dp(:,i) + cp(:,i)*dtsoi(:,i)	! ah, this hsould have been i+1
-    !    tsoi(:,i+1) = tsoi(:,i+1) + dtsoi(:,i+1) 	! old tsoi + dtsoi
-    !end do
-	
-	
-	! -------------------------------------------------------------
-    ! Update surface energy fluxes based on the change in surface temperature
-    ! -------------------------------------------------------------	
-		
-	lwrad(:) = lwrad + dlwrad * dtsoi(:,1)
-	lhflx(:) = lhflx + dlhflx * dtsoi(:,1)	! if lhflx = snow+water, dlhflx = 0
-	shflx(:) = shflx + dshflx * dtsoi(:,1)
-	! and the ground energy flux:
-	gsoi(:)	 = f0 + df0 * dtsoi(:,1)
-	
-	! split energy flux into ground into flux into soil (gsoi) and snow (gsnow)
-	gsoi(:) = gsoi(:) - gsnow(:)
-	!gsoi(:)  = gsoi - snow_melt / dt * hfus
-	!gsnow(:) = snow_melt / dt * hfus
-	
-	
-	! Energy conservation check:
-	! Sum change in energy (W/m2)
-	edif(:) = 0._r8
-	do i = 1,mml_nsoi
-		edif(:) = edif(:) + soil_cv(:,i) * soil_dz(:,i) * ( tsoi(:,i) - tsoi0(:,i) ) / dt
-	end do
-	! Energy conservation check:
-	err(:) = 0._r8
-	err(:) = edif(:) - gsoi(:)
-	do g = begg,endg
-		if ( abs( err(g) ) > 1.0e-06 ) then
-			write(iulog,*)subname, 'MML ERROR: Soil temperature energy conservation error: pre-phase change'
-			call endrun(msg=errmsg(__FILE__, __LINE__))
-		end if
-	end do
-	
-	! Maybe should be checking lhflx HERE for if it is larger than water+snow
-	
-	
-	lwup(:) = lwup + lwrad	! reflected longwave (0 at the moment) plus sigma*T^4
-	
-	
-	! -------------------------------------------------------------
-	! TO DO:
-	! If lhflx < 0 and the total amount of water the land tries to suck out of the atmosphere is
-	! larger than the total water available in the lowest level of the atmosphere, cap the negative LHFLX
-	! at the amount of water in the atm_bot and put the excess energy into SHFLX (cam has a check
-	! that does this (qneg4.f90)
-	
-	! check 1: if evap*dt > water + snow at this point, take excess and put into sensible heat flux?
-	do g = begg, endg
-		if ( lhflx(g) * dt / lambda(g) > (water(g) + snow(g)) ) then
-	!where ( lhflx * dt / lambda > (water + snow) )
-			temp(g) = lhflx(g) - (water(g) + snow(g)) * lambda(g) / dt	!excess energy that we don't have water for
-			lhflx(g) = lhflx(g) - temp(g)	! remove the excess from lh
-			shflx(g) = shflx(g) + temp(g)	! give it to shflx 	...  ask Gordon about a better way to do this...
-			write(iulog,*)subname, 'MML Warning: lhflx > available water; put excess in shflx'
-	!end where 
-		end if	! put in an if loop just so I could get it to write the warning
-	
-	
-           ! MML 2021.09.13: move update of evap (in water units) to AFTER the lh/sh check - otherwise lh and evap won't match (once put into proper units)
-        
-           ! LHFLX in water units [kg/m2/s = mm/s]
-           ! update evap(g) 
-           !evap(:) = lhflx * dt / lambda
-           evap(g) = lhflx(g) / lambda(g)  ! kg/m2/s or mm/s, NOT times dt!!!!
-	end do
+       !dummy = mml_nsoi - 1
+       !do i = 1, dummy
+       !    dtsoi(:,i+1) = dp(:,i) + cp(:,i)*dtsoi(:,i)	! ah, this should have been i+1
+       !    tsoi(:,i+1) = tsoi(:,i+1) + dtsoi(:,i+1) 	! old tsoi + dtsoi
+       !end do
+
+       ! -------------------------------------------------------------
+       ! Update surface energy fluxes based on the change in surface temperature
+       ! -------------------------------------------------------------	
+
+       lwrad(g) = lwrad(g) + dlwrad(g) * dtsoi(g,1)
+       lhflx(g) = lhflx(g) + dlhflx(g) * dtsoi(g,1)  ! if lhflx = snow+water, dlhflx = 0
+       shflx(g) = shflx(g) + dshflx(g) * dtsoi(g,1)
+       ! and the ground energy flux:
+       gsoi(g) = f0(g) + df0(g) * dtsoi(g,1)
+
+       ! split energy flux into ground into flux into soil (gsoi) and snow (gsnow)
+       gsoi(g) = gsoi(g) - gsnow(g)
+       !gsoi(g)  = gsoi(g) - snow_melt(g) / dt * hfus
+       !gsnow(g) = snow_melt(g) / dt * hfus
 
 
-	! -------------------------------------------------------------
-	!	Check that dew doesn't exceed water available in lowest atm level
-	! -------------------------------------------------------------
-	! check 2: if evap*dt < 0 and requires more water than is available in the bottom of the atmosphere,
-	! that is bad... the atmosphere corrects for it, but I want the atm and land to be self-consistent...
-	! TODO STILL!
-	! GBB: CLM does not do this
-	!
-	! MML: implement a check for this (go back to CAM QNEG3 OR QNEG4 to check how CAM does it)
-	!	Then limit the CLM LHFLX to whatever CAM is going to adjust it to. Also, print out how
-	!	big that energy difference is and save it somewhere - it'll be big in the first couple
-	! 	of time steps, but I'm not sure how big/negligible it is after the model is sort of spun
-	! 	up. Gordon said there was O(1) W/m2 of energy that sort of gets lost in the coupled 
-	!	model - I'm curious if this contributes to that, or if this is totally negligible once
-	!	the models spins up. 
-	! 	(What CAM does is takes the excess energy that was in LHFLX (but there isn't enough water available
-	! 	in the lower level of the atmosphere for) and adds it to the SHFLX, so its still conserving ENERGY
-	! 	(ie shouldn't be a source of an energy leak), but its changing the PATHWAY the energy takes.
-	
+       ! Energy conservation check:
+       ! Sum change in energy (W/m2)
+       edif(g) = 0._r8
+       do i = 1,mml_nsoi
+          edif(g) = edif(g) + soil_cv(g,i) * soil_dz(g,i) * ( tsoi(g,i) - tsoi0(g,i) ) / dt
+       end do
+       ! Energy conservation check:
+       err(g) = 0._r8
+       err(g) = edif(g) - gsoi(g)
+
+       if ( abs( err(g) ) > 1.0e-06 ) then
+          write(iulog,*)subname, 'MML ERROR: Soil temperature energy conservation error: pre-phase change'
+          call endrun(msg=errmsg(__FILE__, __LINE__))
+       end if
+
+       ! Maybe should be checking lhflx HERE for if it is larger than water+snow
+
+       lwup(g) = lwup(g) + lwrad(g)  ! reflected longwave (0 at the moment) plus sigma*T^4
+
+       ! -------------------------------------------------------------
+       ! TO DO:
+       ! If lhflx < 0 and the total amount of water the land tries to suck out of the atmosphere is
+       ! larger than the total water available in the lowest level of the atmosphere, cap the negative LHFLX
+       ! at the amount of water in the atm_bot and put the excess energy into SHFLX (cam has a check
+       ! that does this (qneg4.f90)
+
+       ! check 1: if evap*dt > water + snow at this point, take excess and put into sensible heat flux?
+       if ( lhflx(g) * dt / lambda(g) > (water(g) + snow(g)) ) then
+          !where ( lhflx * dt / lambda > (water + snow) )
+          temp(g) = lhflx(g) - (water(g) + snow(g)) * lambda(g) / dt  !excess energy that we don't have water for
+          lhflx(g) = lhflx(g) - temp(g)  ! remove the excess from lh
+          shflx(g) = shflx(g) + temp(g)  ! give it to shflx 	...  ask Gordon about a better way to do this...
+          write(iulog,*)subname, 'MML Warning: lhflx > available water; put excess in shflx'
+          !end where 
+       end if  ! put in an if loop just so I could get it to write the warning
+
+       ! MML 2021.09.13: move update of evap (in water units) to AFTER the lh/sh check - otherwise lh and evap won't match (once put into proper units)
+
+       ! LHFLX in water units [kg/m2/s = mm/s]
+       ! update evap(g) 
+       !evap(:) = lhflx * dt / lambda
+       evap(g) = lhflx(g) / lambda(g)  ! kg/m2/s or mm/s, NOT times dt!!!!
+
+! -------------------------------------------------------------
+!	Check that dew doesn't exceed water available in lowest atm level
+! -------------------------------------------------------------
+! check 2: if evap*dt < 0 and requires more water than is available in the bottom of the atmosphere,
+! that is bad... the atmosphere corrects for it, but I want the atm and land to be self-consistent...
+! TODO STILL!
+! GBB: CLM does not do this
+!
+! MML: implement a check for this (go back to CAM QNEG3 OR QNEG4 to check how CAM does it)
+!	Then limit the CLM LHFLX to whatever CAM is going to adjust it to. Also, print out how
+!	big that energy difference is and save it somewhere - it'll be big in the first couple
+! 	of time steps, but I'm not sure how big/negligible it is after the model is sort of spun
+! 	up. Gordon said there was O(1) W/m2 of energy that sort of gets lost in the coupled 
+!	model - I'm curious if this contributes to that, or if this is totally negligible once
+!	the models spins up. 
+! 	(What CAM does is takes the excess energy that was in LHFLX (but there isn't enough water available
+! 	in the lower level of the atmosphere for) and adds it to the SHFLX, so its still conserving ENERGY
+! 	(ie shouldn't be a source of an energy leak), but its changing the PATHWAY the energy takes.
+
 !	! Method:
 !	! Following that of the CAM routine qneg4.F90 in cam/src/physics
 !	! 
@@ -1341,97 +1325,92 @@ contains
 !		write(iulog,*)subname, 'MML Warning: initial shflx = ', shflx(endg)
 !		!call endrun(msg=errmsg(__FILE__, __LINE__))
 !	end if
-	
-	
-	
-	! -------------------------------------------------------------
-	! Update fsns and flns 
-	fsns = fsds - fsr
-	! compare to sw_abs, should be the same. Put in diag3_1d
-	!diag3_1d = sw_abs
-	
-	flns = lwdn - lwup
-	
 
+       ! -------------------------------------------------------------
+       ! Update fsns and flns 
+       fsns(g) = fsds(g) - fsr(g)
+       ! compare to sw_abs, should be the same. Put in diag3_1d
+       !diag3_1d = sw_abs
 
-	! -------------------------------------------------------------
-	! Adjust soil temperatures for phase change (freezing/thawing in soil)
-    ! -------------------------------------------------------------	
-	
-	! have to translate that function first :p
-	! returns new tsoi and epc, where epc is the energy used in phase change [W/m2]
-	epc(:) = 0.0 ! for now
-	
-	call phase_change (begg, endg, tsoi, soil_cv, soil_dz, &
-  							soil_maxice, soil_liq, soil_ice, &
-  							mml_nsoi, dt, hfus, tfrz, epc &
-  							!diag1_1d, diag1_2d, diag2_2d, diag3_2d			& ! temporary diagnostics
-  							)
-	
-	! -------------------------------------------------------------
-  	! Check soil temperature energy conservation
- 	! -------------------------------------------------------------	
-	edif(:) = 0.0		! change in energy in each layer
-	do i = 1, mml_nsoi
-		edif(:) = edif(:) + soil_cv(:,i) * soil_dz(:,i) * (tsoi(:,i) - tsoi0(:,i)) / dt
-	end do
-	
-	err(:) = edif(:) - gsoi(:) - epc(:)	! not counting gsnow here, because it didn't heat/cool soil
-	
-	do g = begg, endg
-		if ( abs(err(g)) .gt. 1.0e-06 ) then
-			write(iulog,*)subname, 'MML Soil Temperature Conservation Error :( at g = ', g, &
-								'err(g) = ', err(g), ', edif(g) = ', edif(g),', gsoi(g) = ', gsoi(g)
-			call endrun(msg=errmsg(__FILE__, __LINE__))
-		end if
-	end do
-		
-	! -------------------------------------------------------------
-    ! Bucket hydrology!
-    ! Remove water that evaporated via LHFLX from ye-old water and snow buckets
-    ! Also add rain/snow falling in from the great-big-sometimes-blue sky
-    ! Then calculate runoff if the bucket overflowed 
-    !
-    ! Ask Gordon - should I be raining into the bucket at the start of the time step?
-    ! then let the bucket exceed capacity, do evaporation, and only if there is excess water
-    ! at the end of the time step send it to runoff? 
-    ! (right now, I'm raining after LHFLX is calculated, so if it was dry then rains,
-    ! we have small lhflx, but it could catch up next time step...
-    ! ... probably doesn't matter much on the monthly mean scale, but if doing it one
-    ! way vs the other results in wibbly-wobbly surface fluxes from time step to time 
-    ! step which can be avoided, should do it right... 
-    !
-    ! GBB: This is how I would do it (calculate latent heat flux on current soil
-	! water) and then update the soil water. See what GFDL did.
-    ! -------------------------------------------------------------	
-        	
-    !write(iulog,*)subname, 'MML welcome to bucket hydrology land!'
-        	
-    ! If there is snow on the ground, sublimate that to get lhflx
-    ! If there isn't enough snow to accomodate evap(g) when there is snow, steal it from 
-    ! the water bucket (without accounting for hvap or soil wetness or anything like that - 
-    ! treating the snow like it has a magic straw into the soil pool)
-    ! If there isn't snow, take the water in evap(g) right from the soil water bucket
-    
-    
-    !------------------------------------
-    ! Rain into buckets 
-    
-    ! (should I do this at the start of the time step? would up the amount of lh possible...)
-    water = water + mms2kgm * prec_liq			! water in bucket [kg/m2]
-    snow  = snow  + mms2kgm * prec_frz			! snow in bucket  [kg/m2]
-    
-            	
-    ! -------------------------------------------------------------	
-    ! Evaporation
-    
-    ! shouldn't ever be in a case where evap > snow + water, it checks that when calculating lhflx
-    ! though its possible if lhflx was close to snow + water, that when we update with dTsrf, it goes negative... hmm...
-    ! (allow it for now?) 
-    
-    ! Snow Evaporation:
-    snow0  = snow
-    water0 = water
+       flns(g) = lwdn(g) - lwup(g)
+
+       ! -------------------------------------------------------------
+       ! Adjust soil temperatures for phase change (freezing/thawing in soil)
+       ! -------------------------------------------------------------	
+
+       ! have to translate that function first :p
+       ! returns new tsoi and epc, where epc is the energy used in phase change [W/m2]
+       epc(g) = 0.0 ! for now
+    end do begg_to_endg_1
+
+    call phase_change (begg, endg, tsoi, soil_cv, soil_dz, &
+        soil_maxice, soil_liq, soil_ice, &
+        mml_nsoi, dt, hfus, tfrz, epc &
+        !diag1_1d, diag1_2d, diag2_2d, diag3_2d			& ! temporary diagnostics
+        )
+
+    begg_to_endg_2: do g = begg, endg
+       ! -------------------------------------------------------------
+       ! Check soil temperature energy conservation
+       ! -------------------------------------------------------------	
+       edif(g) = 0.0  ! change in energy in each layer
+       do i = 1, mml_nsoi
+          edif(g) = edif(g) + soil_cv(g,i) * soil_dz(g,i) * (tsoi(g,i) - tsoi0(g,i)) / dt
+       end do
+
+       err(g) = edif(g) - gsoi(g) - epc(g)  ! not counting gsnow here, because it didn't heat/cool soil
+
+       if ( abs(err(g)) .gt. 1.0e-06 ) then
+          write(iulog,*)subname, 'MML Soil Temperature Conservation Error :( at g = ', g, &
+          'err(g) = ', err(g), ', edif(g) = ', edif(g),', gsoi(g) = ', gsoi(g)
+          call endrun(msg=errmsg(__FILE__, __LINE__))
+       end if
+
+       ! -------------------------------------------------------------
+       ! Bucket hydrology!
+       ! Remove water that evaporated via LHFLX from ye-old water and snow buckets
+       ! Also add rain/snow falling in from the great-big-sometimes-blue sky
+       ! Then calculate runoff if the bucket overflowed 
+       !
+       ! Ask Gordon - should I be raining into the bucket at the start of the time step?
+       ! then let the bucket exceed capacity, do evaporation, and only if there is excess water
+       ! at the end of the time step send it to runoff? 
+       ! (right now, I'm raining after LHFLX is calculated, so if it was dry then rains,
+       ! we have small lhflx, but it could catch up next time step...
+       ! ... probably doesn't matter much on the monthly mean scale, but if doing it one
+       ! way vs the other results in wibbly-wobbly surface fluxes from time step to time 
+       ! step which can be avoided, should do it right... 
+       !
+       ! GBB: This is how I would do it (calculate latent heat flux on current soil
+       ! water) and then update the soil water. See what GFDL did.
+       ! -------------------------------------------------------------	
+
+       !write(iulog,*)subname, 'MML welcome to bucket hydrology land!'
+
+       ! If there is snow on the ground, sublimate that to get lhflx
+       ! If there isn't enough snow to accomodate evap(g) when there is snow, steal it from 
+       ! the water bucket (without accounting for hvap or soil wetness or anything like that - 
+       ! treating the snow like it has a magic straw into the soil pool)
+       ! If there isn't snow, take the water in evap(g) right from the soil water bucket
+
+       !------------------------------------
+       ! Rain into buckets 
+
+       ! (should I do this at the start of the time step? would up the amount of lh possible...)
+       water(g) = water(g) + mms2kgm * prec_liq(g)  ! water in bucket [kg/m2]
+       snow(g)  = snow(g) + mms2kgm * prec_frz(g)  ! snow in bucket  [kg/m2]
+
+       ! -------------------------------------------------------------	
+       ! Evaporation
+
+       ! shouldn't ever be in a case where evap > snow + water, it checks that when calculating lhflx
+       ! though its possible if lhflx was close to snow + water, that when we update with dTsrf, it goes negative... hmm...
+       ! (allow it for now?) 
+
+       ! Snow Evaporation:
+       snow0(g) = snow(g)
+       water0(g) = water(g)
+    end do begg_to_endg_2
     
     where (snow0 > 0 .and. evap*dt <= snow0)
     	! where snow is enough to cover all evaporation, take lhflx out of snow bucket
