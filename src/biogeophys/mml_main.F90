@@ -1049,7 +1049,9 @@ contains
     i = 1
     num = dd(:,i) - cc(:,i) * ff(:,i+1)
     den = bb(:,i) - cc(:,i) * ee(:,i+1)
-    tsrf = tsoi0(:,i) + num/den
+    do g = begg, endg
+       tsrf(g) = tsoi0(g,i) + num(g) / den(g)
+    end do
     
 	
 	!write(iulog,*)subname, 'MML new tridiagonal solver IS being used'
@@ -1095,8 +1097,10 @@ contains
     !	If there is no snow melt, tsoi(1) = tsrf as above, unmodified
     !	While snow is actively melting, tsrf should be tfrz
     ! 	If snow melt was less than the total energy, tsrf should be > trfz but less tahn tsrf above
-    tsoi(:,1) = tsoi(:,1) + (num - gsnow) / den;
-    dtsoi(:,1) = tsoi(:,1) - tsoi0(:,1)
+    do g = begg, endg
+       tsoi(g,1) = tsoi(g,1) + (num(g) - gsnow(g)) / den(g)
+       dtsoi(g,1) = tsoi(g,1) - tsoi0(g,1)
+    end do
     
     
   	! -------------------------------------------------------------
@@ -1175,15 +1179,15 @@ contains
 			write(iulog,*)subname, 'MML Warning: lhflx > available water; put excess in shflx'
 	!end where 
 		end if	! put in an if loop just so I could get it to write the warning
-	end do
 	
 	
-        ! MML 2021.09.13: move update of evap (in water units) to AFTER the lh/sh check - otherwise lh and evap won't match (once put into proper units)
+           ! MML 2021.09.13: move update of evap (in water units) to AFTER the lh/sh check - otherwise lh and evap won't match (once put into proper units)
         
-        ! LHFLX in water units [kg/m2/s = mm/s]
-        ! update evap(g) 
-        !evap(:) = lhflx * dt / lambda
-        evap(:) = lhflx / lambda        ! kg/m2/s or mm/s, NOT times dt!!!!
+           ! LHFLX in water units [kg/m2/s = mm/s]
+           ! update evap(g) 
+           !evap(:) = lhflx * dt / lambda
+           evap(g) = lhflx(g) / lambda(g)  ! kg/m2/s or mm/s, NOT times dt!!!!
+	end do
 
 
 	! -------------------------------------------------------------
