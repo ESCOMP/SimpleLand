@@ -444,28 +444,28 @@ contains
   	 !-----------------------------------------------------------------------
   	 ! Re-assign atmospheric forcing data to simple land model equivalent
   	 ! (this is all the "forcing" data
-  	 fsds 		= atm2lnd_inst%forc_solar_grc
-  	 fsds_dir	= atm2lnd_inst%forc_solad_grc
-     fsds_dif	= atm2lnd_inst%forc_solai_grc
-  	 lwdn 		= atm2lnd_inst%forc_lwrad_not_downscaled_grc
-  	 zref		= atm2lnd_inst%forc_hgt_grc   ! Note, there is a u, t , and q height in atm2lnd... compare? 
+         fsds(begg:endg) = atm2lnd_inst%forc_solar_grc(begg:endg)
+         fsds_dir(begg:endg,:) = atm2lnd_inst%forc_solad_grc(begg:endg,:)
+         fsds_dif(begg:endg,:) = atm2lnd_inst%forc_solai_grc(begg:endg,:)
+         lwdn(begg:endg) = atm2lnd_inst%forc_lwrad_not_downscaled_grc(begg:endg)
+         zref(begg:endg) = atm2lnd_inst%forc_hgt_grc(begg:endg)  ! Note, there is a u, t , and q height in atm2lnd... compare? 
  ! GBB: No need to use the separate values for t, u, q; only need zref
  ! MML: Keith said there are 3 separate ones for historical reasons, but all three should be the same as zref    
-     zref_t		= atm2lnd_inst%forc_hgt_t_grc
-     zref_u		= atm2lnd_inst%forc_hgt_u_grc
-     zref_q		= atm2lnd_inst%forc_hgt_q_grc
-     tref		= atm2lnd_inst%forc_t_not_downscaled_grc ! is this right? or does atm have a ref height value?
-     uref		= atm2lnd_inst%forc_wind_grc
-     eref		= atm2lnd_inst%forc_vp_grc
-     qref		= atm2lnd_inst%forc_q_not_downscaled_grc
-     pref		= atm2lnd_inst%forc_pbot_not_downscaled_grc
-     rhoair		= atm2lnd_inst%forc_rho_not_downscaled_grc 
-     prec_liq	= atm2lnd_inst%forc_rain_not_downscaled_grc
-     prec_frz	= atm2lnd_inst%forc_snow_not_downscaled_grc
-     ! For checking the big neg lhflx:
-     psrf		= atm2lnd_inst%forc_psrf_grc  ! surface pressure (Pa)
-     pbot		= atm2lnd_inst%forc_pbot_not_downscaled_grc ! not downscaled atm pressure (Pa)
-     qbot		= atm2lnd_inst%forc_q_not_downscaled_grc   ! not downscaled atm specific humidity (kg/kg) 
+         zref_t(begg:endg) = atm2lnd_inst%forc_hgt_t_grc(begg:endg)
+         zref_u(begg:endg) = atm2lnd_inst%forc_hgt_u_grc(begg:endg)
+         zref_q(begg:endg) = atm2lnd_inst%forc_hgt_q_grc(begg:endg)
+         tref(begg:endg) = atm2lnd_inst%forc_t_not_downscaled_grc(begg:endg)  ! is this right? or does atm have a ref height value?
+         uref(begg:endg) = atm2lnd_inst%forc_wind_grc(begg:endg)
+         eref(begg:endg) = atm2lnd_inst%forc_vp_grc(begg:endg)
+         qref(begg:endg) = atm2lnd_inst%forc_q_not_downscaled_grc(begg:endg)
+         pref(begg:endg) = atm2lnd_inst%forc_pbot_not_downscaled_grc(begg:endg)
+         rhoair(begg:endg) = atm2lnd_inst%forc_rho_not_downscaled_grc(begg:endg) 
+         prec_liq(begg:endg) = atm2lnd_inst%forc_rain_not_downscaled_grc(begg:endg)
+         prec_frz(begg:endg) = atm2lnd_inst%forc_snow_not_downscaled_grc(begg:endg)
+         ! For checking the big neg lhflx:
+         psrf(begg:endg) = atm2lnd_inst%forc_psrf_grc(begg:endg)  ! surface pressure (Pa)
+         pbot(begg:endg) = atm2lnd_inst%forc_pbot_not_downscaled_grc(begg:endg)  ! not downscaled atm pressure (Pa)
+         qbot(begg:endg) = atm2lnd_inst%forc_q_not_downscaled_grc(begg:endg)  ! not downscaled atm specific humidity (kg/kg) 
      ! NOTE: this is NOT going to be consistent with CAM, still, if I use pbot and psrf as the "edges" of 
      ! my lowest atm layer; cam uses the actual pressure levels at the edges of the lowermost 
      ! atmospheric layer, but all I've got is pbot (which is likely in the middle of the lowest layer)
@@ -476,25 +476,25 @@ contains
      ! total layer thickness, in pressure, which I should then be able to plug in to their equation.
      ! Yes, lets do it that way!  
      
-     ! Put direct/diffuse fsds vis/nir into right variable to be output:
-     fsdsnd = fsds_dir(:,2)
-     fsdsvd = fsds_dir(:,1)
-     fsdsni = fsds_dif(:,2)
-     fsdsvi = fsds_dif(:,1)	! I think? check...
+         ! Put direct/diffuse fsds vis/nir into right variable to be output:
+         fsdsnd(begg:endg) = fsds_dir(begg:endg,2)
+         fsdsvd(begg:endg) = fsds_dir(begg:endg,1)
+         fsdsni(begg:endg) = fsds_dif(begg:endg,2)
+         fsdsvi(begg:endg) = fsds_dif(begg:endg,1)  ! I think? check...
 
-	 ! Theta = T + 0.0098 * z  (Gamma = 0.0098)
-	 thref = tref + 0.0098_r8 * zref
-	 
-	 ! Have to calculate rhomol from the vapor pressure, actual pressure, and actual temperature
-	 rhomol	= pref / (rgas*tref);
-	  ! rho_mol = (pd + forcvar.eref)/(physcon.rgas * forcvar.tref)
-	 ! rho_kg = ((pref - eref)*mmdry + eref*mmh2o)/(rgas*tref)
-	 
-	 ! MML: might need to move into g loop if I can't figure out how to allocate a matrix of size 
-	 ! begg:endg before I know begg and endg ... 
-	 ! calculate heat capacity based off specific humidity:
-	 mmair = rhomol / rhoair 					! mol/kg
-	 cpair = cpd * (1._r8 + (cpw/cpd - 1._r8)*qref)	! J/kg/K
+         ! Theta = T + 0.0098 * z  (Gamma = 0.0098)
+         thref(begg:endg) = tref(begg:endg) + 0.0098_r8 * zref(begg:endg)
+
+         ! Have to calculate rhomol from the vapor pressure, actual pressure, and actual temperature
+         rhomol(begg:endg) = pref(begg:endg) / (rgas * tref(begg:endg));
+         ! rho_mol = (pd + forcvar.eref)/(physcon.rgas * forcvar.tref)
+         ! rho_kg = ((pref - eref)*mmdry + eref*mmh2o)/(rgas*tref)
+
+         ! MML: might need to move into g loop if I can't figure out how to allocate a matrix of size 
+         ! begg:endg before I know begg and endg ... 
+         ! calculate heat capacity based off specific humidity:
+         mmair(begg:endg) = rhomol(begg:endg) / rhoair(begg:endg)  ! mol/kg
+         cpair(begg:endg) = cpd * (1._r8 + (cpw / cpd - 1._r8) * qref(begg:endg))  ! J/kg/K
 	! cpair = mmair * cpair_kg					! J/mol/K
 	! physcon.cpd * (1.0 + (physcon.cpw/physcon.cpd - 1.0) * forcvar.qref) (* mmair); 
 	 
@@ -594,31 +594,28 @@ contains
  
      !write(iulog,*)'MML: Commence actually running the model!'    
  
-     ! displacement height
-     		! for now, set equal to 0.7 * canopy height
-     h_disp = 0.7_r8 * roughness
+     begg_to_endg_0: do g = begg, endg
+        ! displacement height
+        ! for now, set equal to 0.7 * canopy height
+        h_disp(g) = 0.7_r8 * roughness(g)
+
+        ! Roughness length for momentum
+        ! for now, set equal to 0.1 * canopy height
+        z0m(g) = 0.1_r8 * roughness(g)
+
+        ! Roughness length for heat
+        ! for now, set equal to 0.1 * momentum roughness length
+        z0h(g) = 0.1_r8 * z0m(g)
+
+        ! snow masking factor
+        ! SHOULD ALWAYS BE BETWEEN 0 AND 1!!!!!
      
-     ! Roughness length for momentum
-     		! for now, set equal to 0.1 * canopy height
-     z0m	= 0.1_r8 * roughness
+        ! If snow is negative (it shouldn't be, but if it went a bit neg), set temp = 0
      
-     ! Roughness length for heat
-     		! for now, set equal to 0.1 * momentum roughness length
-     z0h	= 0.1_r8 * z0m
-     
-     
-     
-     ! snow masking factor
-     ! SHOULD ALWAYS BE BETWEEN 0 AND 1!!!!!
-     
-     ! If snow is negative (it shouldn't be, but if it went a bit neg), set temp = 0
-     
-     !temp(begg:endg) = snow(begg:endg)/(snow(begg:endg) + snowmask(begg:endg)) ! snow masking factor
-     !diag3_1d = temp
-    
-     
- 
-     do g = begg, endg
+        !temp(begg:endg) = snow(begg:endg)/(snow(begg:endg) + snowmask(begg:endg)) ! snow masking factor
+        !diag3_1d = temp
+
+
           ! MML 2021.09.29: initialize temp as all zeros, otherwise it might just not have a value in some places!
           temp(g) = 0.0_r8	
 
@@ -651,113 +648,103 @@ contains
                   'Instead, snowmasking factor = ',temp(g)
                  call endrun(msg=errmsg(__FILE__, __LINE__))
         end if
-  	 
-  	 end do
      
      
-     ! -------------------------------------------------------------
-	 ! Albedo stuff
-	 
-     ! Direct/Diffuse Visible/NIR
-     ! for consistent coding, shove vis and nir into a (:,2) sized matrix
-     alb_vis_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvd(begg:endg) + &
-     							temp(begg:endg) * albedo_svd(begg:endg)
-     alb_nir_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnd(begg:endg) + &
-	 							temp(begg:endg) * albedo_snd(begg:endg)
-     alb_vis_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvf(begg:endg) + &
-	 							temp(begg:endg) * albedo_svf(begg:endg)
-     alb_nir_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnf(begg:endg) + &
-	 							temp(begg:endg) * albedo_snf(begg:endg)
-	 
-	 ! for now, output one of these as albedo_fin just so there is a value:
-	 !albedo_fin = alb_vis_dir
-	 diag2_1d = alb_vis_dir
-	 
-	 !diag3_1d = alb_vis_dif	! why is the albedo going to 1e22 in h0? try this one...
-	 
-	 ! Do something special for albedo where there is a glacier? 
-	 ! at present, I'm just feeding in albedos that already "make sense" for a glacier
-	 
-	
-	 !albedo_fin = 0.3_r8 ! see if that overwrites... 
-	 
-	 ! -------------------------------------------------------------
-	 ! Net radiation
-     ! variables from atm: 			lwdn, fsds, fsds_dir, fsds_dif ! sw is handed as total, direct, and diffuse
-     ! variables to end up with: 	sw_abs, fsr, radforc (into ground) 
-     !
-     ! for lw, emissivity = absorptivity
-     ! alpha (albed0) = reflected, so (1-alpha) = absorbed
+        ! -------------------------------------------------------------
+        ! Albedo stuff
+
+        ! Direct/Diffuse Visible/NIR
+        ! for consistent coding, shove vis and nir into a (:,2) sized matrix
+        alb_vis_dir(g) = (1._r8 - temp(g)) * albedo_gvd(g) + &
+                         temp(g) * albedo_svd(g)
+        alb_nir_dir(g) = (1._r8 - temp(g)) * albedo_gnd(g) + &
+                         temp(g) * albedo_snd(g)
+        alb_vis_dif(g) = (1._r8 - temp(g)) * albedo_gvf(g) + &
+                         temp(g) * albedo_svf(g)
+        alb_nir_dif(g) = (1._r8 - temp(g)) * albedo_gnf(g) + &
+                         temp(g) * albedo_snf(g)
+
+        ! for now, output one of these as albedo_fin just so there is a value:
+        !albedo_fin = alb_vis_dir
+        diag2_1d(g) = alb_vis_dir(g)
+
+        !diag3_1d = alb_vis_dif	! why is the albedo going to 1e22 in h0? try this one...
+
+        ! Do something special for albedo where there is a glacier? 
+        ! at present, I'm just feeding in albedos that already "make sense" for a glacier
+
+
+        !albedo_fin = 0.3_r8 ! see if that overwrites... 
+
+        ! -------------------------------------------------------------
+        ! Net radiation
+        ! variables from atm: 			lwdn, fsds, fsds_dir, fsds_dif ! sw is handed as total, direct, and diffuse
+        ! variables to end up with: 	sw_abs, fsr, radforc (into ground) 
+        !
+        ! for lw, emissivity = absorptivity
+        ! alpha (albed0) = reflected, so (1-alpha) = absorbed
      
-     ! longwave
-     lw_abs(begg:endg) = emiss(begg:endg)*lwdn(begg:endg)
-     lwup(begg:endg) = (1._r8 - emiss(begg:endg)) * lwdn(begg:endg) ! reflected longwave. Later, add surface emission 
-     ! Shortwave direct visible
-     sw_abs_dir(begg:endg,1) = (1._r8 - alb_vis_dir(begg:endg)) * fsds_dir(begg:endg,1)
-     ! Shortwave direct NIR
-     sw_abs_dir(begg:endg,2) = (1._r8 - alb_nir_dir(begg:endg)) * fsds_dir(begg:endg,2)
-     ! Shortwave diffuse visible
-     sw_abs_dif(begg:endg,1) = (1._r8 - alb_vis_dif(begg:endg)) * fsds_dif(begg:endg,1)
-     ! Shortwave diffuse NIR
-     sw_abs_dif(begg:endg,2) = (1._r8 - alb_nir_dif(begg:endg)) * fsds_dif(begg:endg,2)
+        ! longwave
+        lw_abs(g) = emiss(g) * lwdn(g)
+        lwup(g) = (1._r8 - emiss(g)) * lwdn(g)  ! reflected longwave. Later, add surface emission 
+        ! Shortwave direct visible
+        sw_abs_dir(g,1) = (1._r8 - alb_vis_dir(g)) * fsds_dir(g,1)
+        ! Shortwave direct NIR
+        sw_abs_dir(g,2) = (1._r8 - alb_nir_dir(g)) * fsds_dir(g,2)
+        ! Shortwave diffuse visible
+        sw_abs_dif(g,1) = (1._r8 - alb_vis_dif(g)) * fsds_dif(g,1)
+        ! Shortwave diffuse NIR
+        sw_abs_dif(g,2) = (1._r8 - alb_nir_dif(g)) * fsds_dif(g,2)
      
-     !fsr(begg:endg)  = alb_vis_dir(begg:endg) * fsds_dir(begg:endg,1) + &
-    ! 					alb_nir_dir(begg:endg) * fsds_dir(begg:endg,2) + &
-    ! 		 			alb_vis_dif(begg:endg) * fsds_dif(begg:endg,1) + &
-    ! 		 			alb_nir_dif(begg:endg) * fsds_dif(begg:endg,2)
+        !fsr(g) = alb_vis_dir(g) * fsds_dir(g,1) + &
+        !         alb_nir_dir(g) * fsds_dir(g,2) + &
+        !         alb_vis_dif(g) * fsds_dif(g,1) + &
+        !         alb_nir_dif(g) * fsds_dif(g,2)
      
-     ! fsr by  vis/nir/dir/dif
-     fsrnd	=	alb_nir_dir(begg:endg) * fsds_dir(begg:endg,2)
-     fsrni	=	alb_nir_dif(begg:endg) * fsds_dif(begg:endg,2)
-     fsrvd	=	alb_vis_dir(begg:endg) * fsds_dir(begg:endg,1)
-     fsrvi	=	alb_vis_dif(begg:endg) * fsds_dif(begg:endg,1)
+        ! fsr by  vis/nir/dir/dif
+        fsrnd(g) = alb_nir_dir(g) * fsds_dir(g,2)
+        fsrni(g) = alb_nir_dif(g) * fsds_dif(g,2)
+        fsrvd(g) = alb_vis_dir(g) * fsds_dir(g,1)
+        fsrvi(g) = alb_vis_dif(g) * fsds_dif(g,1)
      
-     ! put sum of these in diag2, should equal fsr... well, it will. thats math. don't bother. 
+        ! put sum of these in diag2, should equal fsr... well, it will. thats math. don't bother. 
      
-     		 
-     sw_abs(begg:endg) = sw_abs_dir(begg:endg,1) + sw_abs_dir(begg:endg,2) + &
-     						sw_abs_dif(begg:endg,1) + sw_abs_dif(begg:endg,2)
-     						
-     						
-     ! should be able to write like:
-	 fsr(:)  = alb_vis_dir * fsds_dir(:,1) + &
-     					alb_nir_dir * fsds_dir(:,2) + &
-     		 			alb_vis_dif * fsds_dif(:,1) + &
-     		 			alb_nir_dif * fsds_dif(:,2)
-     		 
-     sw_abs(:) = sw_abs_dir(:,1) + sw_abs_dir(:,2) + &
-     						sw_abs_dif(:,1) + sw_abs_dif(:,2)
+        sw_abs(g) = sw_abs_dir(g,1) + sw_abs_dir(g,2) + &
+                    sw_abs_dif(g,1) + sw_abs_dif(g,2)
+
+        ! should be able to write like:
+        fsr(g) = alb_vis_dir(g) * fsds_dir(g,1) + &
+                 alb_nir_dir(g) * fsds_dir(g,2) + &
+                 alb_vis_dif(g) * fsds_dif(g,1) + &
+                 alb_nir_dif(g) * fsds_dif(g,2)
+
+        sw_abs(g) = sw_abs_dir(g,1) + sw_abs_dir(g,2) + &
+                    sw_abs_dif(g,1) + sw_abs_dif(g,2)
      
-     
-     ! Make output albedo to be a combination of all 4 albedo streams:
-     albedo_fin(:) = 1.0e36_r8
-     do g = begg, endg
+        ! Make output albedo to be a combination of all 4 albedo streams:
         fsds_tot = fsds_dir(g,1) + fsds_dir(g,2) + fsds_dif(g,1) +  fsds_dif(g,2)
         if ( fsds_tot > 0.0_r8 )then
            albedo_fin(g) = fsr(g) / fsds_tot
+        else
+           albedo_fin(g) = 1.0e36_r8
         end if
-     end do
-     ! temporary fix:
-     !lw_abs(begg:endg) = lwdn(begg:endg)
-     !sw_abs(begg:endg) = 0.7*fsds(begg:endg)
+
+        ! temporary fix:
+        !lw_abs(g) = lwdn(g)
+        !sw_abs(g) = 0.7*fsds(g)
      
+        radforc(g) = lw_abs(g) + sw_abs(g)
      
-     radforc(begg:endg) = lw_abs(begg:endg) + sw_abs(begg:endg)
-     
-     
-     !-----------------------------------------------------------------------
-  	 ! Initial Checks -> crash run if these fail
-  	 
-  	 do g = begg, endg
-  	 
-  	       if ( zref(g) < h_disp(g) ) then
-            write(iulog,*)'Error: Forcing height is below canopy displacement height (zref < h_disp) '
-            call endrun(msg=errmsg(__FILE__, __LINE__))
-         end if
-  	 
-  	 end do
-     
-     
+        !-----------------------------------------------------------------------
+        ! Initial Checks -> crash run if these fail
+  
+        if ( zref(g) < h_disp(g) ) then
+           write(iulog,*)'Error: Forcing height is below canopy displacement height (zref < h_disp) '
+           call endrun(msg=errmsg(__FILE__, __LINE__))
+        end if
+  
+     end do begg_to_endg_0
+
      ! -------------------------------------------------------------
      ! -------- Monin-Obukhov Stuff
      ! -------------------------------------------------------------
@@ -809,21 +796,20 @@ contains
      
 	! calculate aerodynamic resistances for momentum (ram) and heat (rah) in [s/m], and 
 	! the effective resistance combining ram with the canopy resistance (res)	
-     ram(:)		=	uref / (ustar * ustar)				! [s/m] = [m/s] / ([m/s] * [m/s])
-     rah(:)		=	(thref - tsrf) / (ustar * tstar)	! [s/m] = [K] / ([m/s] * [K])
-     res(:)		=  	(evaprs + rah)						! [s/m]
+     ram(begg:endg) = uref(begg:endg) / (ustar(begg:endg) * ustar(begg:endg))  ! [s/m] = [m/s] / ([m/s] * [m/s])
+     rah(begg:endg) = (thref(begg:endg) - tsrf(begg:endg)) / (ustar(begg:endg) * tstar(begg:endg))  ! [s/m] = [K] / ([m/s] * [K])
+     res(begg:endg) = (evaprs(begg:endg) + rah(begg:endg))  ! [s/m]
      
      ! cap res at 100,000 ()
-     where ( res > 100000. )
-		res(:) = 100000.0_r8
-	 end where
-
+     where ( res(begg:endg) > 100000.0_r8 )
+        res(begg:endg) = 100000.0_r8
+     end where
 
      ! GBB: See what GFDL does for its evaporative resistance; should be a function
-	 ! of stomatal conductance and LAI
-	 
- 	 ! Save initial temperature profile for energy conservation check:
- 	 tsoi0(:,:) = tsoi
+     ! of stomatal conductance and LAI
+
+     ! Save initial temperature profile for energy conservation check:
+     tsoi0(begg:endg,:) = tsoi(begg:endg,:)
  	 
  	 ! Call soil thermal properties for this time step: (right now, it doesn't matter b/c 
  	 ! it doesn't have water dependence, or soil type dependence, for that matter, 
@@ -892,30 +878,30 @@ contains
     ! GBB: hsub is used if snow is on the ground (check GFDL code). Or CLM uses hvap
     ! (gfdl says sublimation if snow, CLM says sublimation if frozen... check and make sure,
     ! then choose one and run with it)
-    lambda(:) = hvap
-	where ( tsrf < tfrz) lambda(:) = hsub	
-	
-	
-	! Psychometric Constant [Pa/K]
-	gamma(:) = cpair(:) * pref(:) / lambda(:)		! [J/kg/K] * [Pa] / [J/kg]
-	
-	!lhflx(:) = lambda
-	
-    ! --------------------------------------------------
-	! ---- Surface Fluxes
-	! -------------------------------------------------- 
+    lambda(begg:endg) = hvap
+    where ( tsrf(begg:endg) < tfrz) lambda(begg:endg) = hsub
+
+
+       ! Psychometric Constant [Pa/K]
+       gamma(begg:endg) = cpair(begg:endg) * pref(begg:endg) / lambda(begg:endg)  ! [J/kg/K] * [Pa] / [J/kg]
+
+       !lhflx(:) = lambda
+
+       ! --------------------------------------------------
+       ! ---- Surface Fluxes
+       ! -------------------------------------------------- 
      
-    ! Emitted longwave radiation from surface [W/m2] and temperature derivative [W/m2/K]
-	lwrad(:) 	=	emiss * sigma * tsrf**4
-	dlwrad(:) 	=	4.0_r8 * emiss * sigma * tsrf**3
-	! GBB: dlwrad(:) = 4.0_r8 * emiss * sigma * tsrf**3
-	! The exponents do not need to be real; but the factor 4 should be real
-	
-	! Sensible heat flux [W/m2] and temperature derivative [W/m2/K]
-	! GBB: Need to multiply by rhoair: J/s/m2 = kg/m3 * J/kg/K * K * m/s
-	shflx(:) 	=	cpair * (tsrf - thref) / rah * rhoair	! [W/m2] = [J/kg/K] * [K] / [s/m] * [kg/m3]
-	dshflx(:)	=	cpair / rah	* rhoair					! [W/m2/K] = [J/kg/K] / [s/m] * [ kg/m3] 
-	
+       ! Emitted longwave radiation from surface [W/m2] and temperature derivative [W/m2/K]
+       lwrad(begg:endg) = emiss(begg:endg) * sigma * tsrf(begg:endg)**4
+       dlwrad(begg:endg) = 4.0_r8 * emiss(begg:endg) * sigma * tsrf(begg:endg)**3
+       ! GBB: dlwrad(:) = 4.0_r8 * emiss * sigma * tsrf**3
+       ! The exponents do not need to be real; but the factor 4 should be real
+
+       ! Sensible heat flux [W/m2] and temperature derivative [W/m2/K]
+       ! GBB: Need to multiply by rhoair: J/s/m2 = kg/m3 * J/kg/K * K * m/s
+       shflx(begg:endg) = cpair(begg:endg) * (tsrf(begg:endg) - thref(begg:endg)) / rah(begg:endg) * rhoair(begg:endg)  ! [W/m2] = [J/kg/K] * [K] / [s/m] * [kg/m3]
+       dshflx(begg:endg) = cpair(begg:endg) / rah(begg:endg) * rhoair(begg:endg)  ! [W/m2/K] = [J/kg/K] / [s/m] * [ kg/m3] 
+
 	! Latent heat flux [W/m2] and temperature derivative [W/m2/K]
 	! (check if lhflx > water available in snow and soil, in which case limit lhflx
 	! to available water; also, if there is snow, don't use soil moisture as a factor)
@@ -939,47 +925,47 @@ contains
 		! MML: plan - use qsat instead of esat, by calling CLM function QSat. Modify these
 		! equations accordingly (and check units!!!!) 
 	
-	! Initialize beta = 1.0 (no extra bucket resistance) everywhere. Overwrite with smaller values where appropriate.
-	beta(:) = 1.0_r8
+        ! Initialize beta = 1.0 (no extra bucket resistance) everywhere. Overwrite with smaller values where appropriate.
+        beta(begg:endg) = 1.0_r8
 
-	! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
-	atm2lnd_inst%mml_lnd_effective_res_grc = 1.0_r8 !9999.99_r8
-	atm2lnd_inst%mml_lnd_res_grc = 1.0_r8 ! 9999.99_r8 
-	
-	where ( snow <= 0 )
-		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
-		! OH I bet the problem is that I only end up defining beta in places where snow<0 -- hence the nan problem!!! So I should initialize
-		! a starting beta matrix where everywhere is 1.0 or something! 
-		! add minimum beta value in case water is negative?
-		!lhflx(:) 	= cpair / gamma * (esat - eref) / res * beta * rhoair 	! [W/m2] = [J/kg/K] / [Pa/K] * [Pa] / [s/m] * [unitless] * [kg/m3] 
-		!dlhflx(:) 	= cpair / gamma * desat / res * beta * rhoair			! [W/m2/K]
-		lhflx(:)	= rhoair * lambda * (qsrf - qref) * beta / res 	! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
-		dlhflx(:) 	= rhoair * lambda * dqsrf * beta / res			! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
-		! got here doing unit analysis - make sure this is actually the right equation!!!  
-	end where
-	
-	! make sure beta isn't negative (if neg, set equal to 0)
-	where ( beta <= 0.0 )
-		beta(:) = 0.0_r8
-	end where
-	
-	where ( snow > 0 ) ! go where there is snow and overwrite the value of lhflx and dlhflx
-		!lhflx(:) = cpair / gamma * ( esat - eref ) / res * rhoair			! [W/m2]
-		!dlhflx(:) = cpair / gamma * desat / res * rhoair					! [W/m2]
-		lhflx(:)	= rhoair * lambda * (qsrf - qref) / res 	! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
-		dlhflx(:) 	= rhoair * lambda * dqsrf / res			! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
-	end where
+        ! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
+        atm2lnd_inst%mml_lnd_effective_res_grc(begg:endg) = 1.0_r8  !9999.99_r8
+        atm2lnd_inst%mml_lnd_res_grc(begg:endg) = 1.0_r8  ! 9999.99_r8 
 
-	! Check if we tried to evaporate more water than is available
-	! ... probably isn't the sneakiest way to do this... what if dlhflx is <0? then we might
-	! be okay - would have to check at end of time step...
-	where ( lhflx * dt / lambda > ( water + snow ) ) 	! [W/m2] * [s] / [J/kg] -> W * [s/J] * kg/m2 = kg/m2
-		!write(iulog,*)subname, 'MML tried to evaporate more water than there is in snow + water, adjusting accordingly'
-		!lhflx(:) = lambda / dt * ( water + snow ) * rhoair					! [W/m2]
-		!dlhflx(:) = 0._r8														! [W/m2]
-		lhflx(:)	= lambda / dt * ( water + snow )	! [W/m2] = [J/kg] / [s] * [kg/m2] ->  J/s * kg/kg/m2 = W/m2
-		dlhflx(:) 	= 0._r8								! [W/m2/K]
-	end where
+     where ( snow(begg:endg) <= 0 )
+        beta(begg:endg) = min ( water(begg:endg) / (0.75_r8 * bucket_cap(begg:endg)) , 1.0_r8 )  ! scaling factor [unitless]
+        ! OH I bet the problem is that I only end up defining beta in places where snow<0 -- hence the nan problem!!! So I should initialize
+        ! a starting beta matrix where everywhere is 1.0 or something! 
+        ! add minimum beta value in case water is negative?
+        !lhflx(:) 	= cpair / gamma * (esat - eref) / res * beta * rhoair 	! [W/m2] = [J/kg/K] / [Pa/K] * [Pa] / [s/m] * [unitless] * [kg/m3] 
+        !dlhflx(:) 	= cpair / gamma * desat / res * beta * rhoair			! [W/m2/K]
+        lhflx(begg:endg) = rhoair(begg:endg) * lambda(begg:endg) * (qsrf(begg:endg) - qref(begg:endg)) * beta(begg:endg) / res(begg:endg)  ! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
+        dlhflx(begg:endg) = rhoair(begg:endg) * lambda(begg:endg) * dqsrf(begg:endg) * beta(begg:endg) / res(begg:endg)  ! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
+        ! got here doing unit analysis - make sure this is actually the right equation!!!
+     end where
+
+     ! make sure beta isn't negative (if neg, set equal to 0)
+     where ( beta(begg:endg) <= 0.0_r8 )
+        beta(begg:endg) = 0.0_r8
+     end where
+
+     where ( snow(begg:endg) > 0 ) ! go where there is snow and overwrite the value of lhflx and dlhflx
+        !lhflx(:) = cpair / gamma * ( esat - eref ) / res * rhoair			! [W/m2]
+        !dlhflx(:) = cpair / gamma * desat / res * rhoair					! [W/m2]
+        lhflx(begg:endg) = rhoair(begg:endg) * lambda(begg:endg) * (qsrf(begg:endg) - qref(begg:endg)) / res(begg:endg)  ! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
+        dlhflx(begg:endg) = rhoair(begg:endg) * lambda(begg:endg) * dqsrf(begg:endg) / res(begg:endg)  ! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
+     end where
+
+     ! Check if we tried to evaporate more water than is available
+     ! ... probably isn't the sneakiest way to do this... what if dlhflx is <0? then we might
+     ! be okay - would have to check at end of time step...
+     where ( lhflx(begg:endg) * dt / lambda(begg:endg) > ( water(begg:endg) + snow(begg:endg) ) )  ! [W/m2] * [s] / [J/kg] -> W * [s/J] * kg/m2 = kg/m2
+        !write(iulog,*)subname, 'MML tried to evaporate more water than there is in snow + water, adjusting accordingly'
+        !lhflx(:) = lambda / dt * ( water + snow ) * rhoair					! [W/m2]
+        !dlhflx(:) = 0._r8														! [W/m2]
+        lhflx(begg:endg) = lambda(begg:endg) / dt * ( water(begg:endg) + snow(begg:endg) )  ! [W/m2] = [J/kg] / [s] * [kg/m2] ->  J/s * kg/kg/m2 = W/m2
+        dlhflx(begg:endg) = 0._r8  ! [W/m2/K]
+    end where
 
 
     begg_to_endg_1: do g = begg, endg
