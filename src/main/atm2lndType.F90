@@ -488,11 +488,6 @@ contains
          avgflag='A', long_name='atmospheric incident solar radiation', &
          ptr_lnd=this%forc_solar_grc)
 
-    this%forc_solar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='SWdown', units='W/m^2',  &
-         avgflag='A', long_name='atmospheric incident solar radiation', &
-         ptr_gcell=this%forc_solar_grc, default='inactive')
-
     this%forc_t_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='Tair_from_atm', units='K',  &
          avgflag='A', long_name='atmospheric air temperature received from atmosphere (pre-downscaling)', &
@@ -575,17 +570,17 @@ contains
     ! Carried from atmosphere:
    ! write(iulog,*)  'MML write to h0: atm vars '
     
-    this%mml_atm_fsds_grc(begg:endg) = spval
+    this%forc_solar_grc(begg:endg) = spval
     call hist_addfld1d (fname='fsds', units='W/m2',  &
          avgflag='A', long_name='incoming shortwave radiation', &
-         ptr_lnd=this%mml_atm_fsds_grc)
+         ptr_lnd=this%forc_solar_grc)
     
     this%mml_atm_fsdsnd_grc(begg:endg) = spval
     call hist_addfld1d (fname='fsdsnd', units='W/m2',  &
          avgflag='A', long_name='incoming shortwave nir direct radiation', &
          ptr_lnd=this%mml_atm_fsdsnd_grc)
-	
-	this%mml_atm_fsdsvd_grc(begg:endg) = spval
+
+    this%mml_atm_fsdsvd_grc(begg:endg) = spval
     call hist_addfld1d (fname='fsdsvd', units='W/m2',  &
          avgflag='A', long_name='incoming shortwave visible direct radiation', &
          ptr_lnd=this%mml_atm_fsdsvd_grc)
@@ -600,15 +595,15 @@ contains
          avgflag='A', long_name='incoming shortwave visible diffuse radiation', &
          ptr_lnd=this%mml_atm_fsdsvi_grc)
          
-    this%mml_atm_lwdn_grc(begg:endg) = spval
+    this%forc_lwrad_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='lwdn', units='W/m2',  &
          avgflag='A', long_name='incoming longwave radiation', &
-         ptr_lnd=this%mml_atm_lwdn_grc)
+         ptr_lnd=this%forc_lwrad_not_downscaled_grc)
     
-    this%mml_atm_zref_grc(begg:endg) = spval
+    this%forc_hgt_grc(begg:endg) = spval
     call hist_addfld1d (fname='zref', units='m',  &
          avgflag='A', long_name='height of atm reference level', &
-         ptr_lnd=this%mml_atm_zref_grc)
+         ptr_lnd=this%forc_hgt_grc)
     
     this%mml_atm_tbot_grc(begg:endg) = spval
     call hist_addfld1d (fname='tbot', units='K',  &
@@ -620,25 +615,25 @@ contains
          avgflag='A', long_name='potential temperature theta at reference height', &
          ptr_lnd=this%mml_atm_thref_grc)
     
-    this%mml_atm_qbot_grc(begg:endg) = spval
+    this%forc_q_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='qbot', units='kg/kg',  &
          avgflag='A', long_name='specific humidity midpoint of lowest atm layer', &
-         ptr_lnd=this%mml_atm_qbot_grc)
+         ptr_lnd=this%forc_q_not_downscaled_grc)
     
-    this%mml_atm_uref_grc(begg:endg) = spval
+    this%forc_wind_grc(begg:endg) = spval
     call hist_addfld1d (fname='uref', units='m/s',  &
          avgflag='A', long_name='wind speed at reference height', &
-         ptr_lnd=this%mml_atm_uref_grc)
+         ptr_lnd=this%forc_wind_grc)
     
-    this%mml_atm_eref_grc(begg:endg) = spval
+    this%forc_vp_grc(begg:endg) = spval
     call hist_addfld1d (fname='eref', units='Pa',  &
          avgflag='A', long_name='vapor pressure at reference height', &
-         ptr_lnd=this%mml_atm_eref_grc)
+         ptr_lnd=this%forc_vp_grc)
     
-    this%mml_atm_pbot_grc(begg:endg) = spval
+    this%forc_pbot_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='pbot', units='Pa',  &
          avgflag='A', long_name='atmospheric pressure midpoint of lowest atm layer', &
-         ptr_lnd=this%mml_atm_pbot_grc)
+         ptr_lnd=this%forc_pbot_not_downscaled_grc)
     
     this%mml_atm_psrf_grc(begg:endg) = spval
     call hist_addfld1d (fname='psrf', units='Pa',  &
@@ -650,25 +645,25 @@ contains
          avgflag='A', long_name='molar density of air at reference height', &
          ptr_lnd=this%mml_atm_rhomol_grc)
     
-    this%mml_atm_rhoair_grc(begg:endg) = spval
+    this%forc_rho_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='rhoair', units='kg/m3',  &
          avgflag='A', long_name='mass density of air at reference height', &
-         ptr_lnd=this%mml_atm_rhoair_grc)
+         ptr_lnd=this%forc_rho_not_downscaled_grc)
          
     this%mml_atm_cp_grc(begg:endg) = spval
     call hist_addfld1d (fname='cpair', units='J/kg/K',  &
          avgflag='A', long_name='specific heat of air at constant pressure at ref height', &
          ptr_lnd=this%mml_atm_cp_grc)
     
-    this%mml_atm_prec_liq_grc(begg:endg) = spval
+    this%forc_rain_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='prec_liq', units='mm/s',  &	! or mm/s? 
          avgflag='A', long_name='rate of liquid precipitation (rain)', &
-         ptr_lnd=this%mml_atm_prec_liq_grc)
+         ptr_lnd=this%forc_rain_not_downscaled_grc)
     
-    this%mml_atm_prec_frz_grc(begg:endg) = spval
+    this%forc_snow_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='prec_frz', units='mm/s',  &
          avgflag='A', long_name='rate of frozen precipitation (snow)', &
-         ptr_lnd=this%mml_atm_prec_frz_grc)
+         ptr_lnd=this%forc_snow_not_downscaled_grc)
     
     ! Land calculated surface variables
     !write(iulog,*)  'MML write to h0: 1d land vars '
