@@ -76,7 +76,6 @@ contains
     integer              :: nclumps                 ! number of clumps on this processor
     character(len=256)   :: filer                   ! restart file name
     integer              :: ier                     ! error code
-    type(bounds_type)    :: bounds_clump    
     type(bounds_type)    :: bounds_proc     
 
     ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) Workaround for internal compiler error with
@@ -89,12 +88,6 @@ contains
 
     call get_proc_bounds(bounds_proc)
     nclumps = get_proc_clumps()
-
-    !$OMP PARALLEL DO PRIVATE (nc,bounds_clump)
-    do nc = 1,nclumps
-       call get_clump_bounds(nc, bounds_clump)
-    end do
-    !$OMP END PARALLEL DO
 
 	! ============================================================================
     ! MML: Simple Land Model Override
@@ -109,9 +102,9 @@ contains
     ! I give it everything it needs. I think lnd2atm (but check!) actually hands the data
     ! off to the coupler, so if thats the case I need to make my changes before hand.
 
-	call t_startf('mml_main')
-		call mml_main(bounds_clump, atm2lnd_inst, lnd2atm_inst)
-	call t_stopf('mml_main')
+    call t_startf('mml_main')
+    call mml_main(bounds_proc, atm2lnd_inst, lnd2atm_inst)
+    call t_stopf('mml_main')
 	
 	!write(iulog,*) 'MML: done with simple model, back at clm_driver'
 	
