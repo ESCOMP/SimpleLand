@@ -78,10 +78,6 @@ contains
     integer              :: ier                     ! error code
     type(bounds_type)    :: bounds_proc     
 
-    ! COMPILER_BUG(wjs, 2014-11-29, pgi 14.7) Workaround for internal compiler error with
-    ! pgi 14.7 ('normalize_forall_array: non-conformable'), which appears in the call to
-    ! CalcIrrigationNeeded. Simply declaring this variable makes the ICE go away.
-    real(r8), allocatable :: dummy1_to_make_pgi_happy(:)
     !-----------------------------------------------------------------------
 
     ! Determine processor bounds and clumps for this processor
