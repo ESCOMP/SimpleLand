@@ -24,6 +24,4 @@ nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> mac
 nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
 --xml-category aux_slim --xml-machine izumi --xml-compiler gnu &
 nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
---xml-category aux_slim --xml-machine izumi --xml-compiler pgi &
-nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
 --xml-category aux_slim --xml-machine izumi --xml-compiler intel &
