@@ -34,6 +34,15 @@
       <option name="comment">smoke test with SOM for CAM5 at 1850 (historical starting in 1850) saving cplhist files</option>
     </options>
   </test>
+  <test name="ERS_D_Ld3" grid="f19_g16" compset="H_MML_2000_CAM5" testmods="clm/global_uniform_g16_SOM">
+    <machines>
+      <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Short term debug restart test with SOM for CAM5</option>
+    </options>
+  </test>
   <test name="ERS_D_Ld60" grid="f19_g16" compset="H_MML_2000_CAM5" testmods="clm/global_uniform_g16_SOM">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
