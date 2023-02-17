@@ -42,7 +42,7 @@ module mml_mainMod
   use perf_mod			! for t_startf and t_stopf
    
   ! For using month-dependent values from forcing files
-  use clm_time_manager, only : get_curr_date, get_nstep, get_step_size
+  use clm_time_manager, only : get_curr_date, is_beg_curr_day, get_step_size
   use clm_time_manager, only : is_first_step_of_this_run_segment
   
   ! For namelist var
@@ -141,7 +141,6 @@ contains
     integer :: mon     ! month (1, ..., 12) for nstep+1
     integer :: day     ! day of month (1, ..., 31) for nstep+1
     integer :: sec     ! seconds into current date for nstep+1
-    integer :: mcdate  ! Current model date (yyyymmdd)
     
     real(r8)	:: dt	   ! length of time step, in seconds
    
@@ -495,8 +494,7 @@ contains
   	 ! Get outside data 
   	 
      !MML: Grab the current model time so we know what month we're in
-     call get_curr_date(year, mon, day, sec)   ! Actually all I need for now is mon
-     mcdate = year*10000 + mon*100 + day
+     call get_curr_date(year, mon, day, sec)
   
   	!write(iulog,*)subname, 'MML month = ', mon
   	!write(iulog,*)subname, 'MML day = ', day
@@ -526,7 +524,10 @@ contains
 !	 enddo
 
      call t_startf('mml_nc_import')
-     if (is_first_step_of_this_run_segment()) then
+     ! Read mml_surdat file at the beginning of a run and at the
+     ! beginning of the first day of every month
+!    if (is_first_step_of_this_run_segment() .or. (is_beg_curr_day() .and. day == 1)) then
+     if (is_first_step_of_this_run_segment() .or. (day == 1 .and. sec <= 1800)) then
         if ( masterproc ) write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
         call nc_import(begg, endg, mml_nsoi, lfsurdat, mon, &
            albedo_gvd(begg:endg), albedo_svd(begg:endg), &
@@ -1880,7 +1881,6 @@ end do
    ! integer :: mon     ! month (1, ..., 12) for nstep+1
     integer :: day     ! day of month (1, ..., 31) for nstep+1
     integer :: sec     ! seconds into current date for nstep+1
-    integer :: mcdate  ! Current model date (yyyymmdd)
         
     character(len=256)	:: locfn                ! local file name
     logical           	:: readvar              ! true => variable is on dataset
@@ -2504,10 +2504,10 @@ tsoi0(begg:endg,:) = phase_tsoi(begg:endg,:)
         real(r8), intent(in) :: soil_liq(begg:endg,mml_nsoi)  ! soil layer water content (kg/m2)
         real(r8), intent(in) :: soil_ice(begg:endg,mml_nsoi)  ! soil layer ice content (kg/m2)
   	
-        real(r8), intent(inout) :: soil_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
-        real(r8), intent(inout) :: soil_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
-        real(r8), intent(inout) :: glc_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
-        real(r8), intent(inout) :: glc_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
+        real(r8), intent(in) :: soil_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
+        real(r8), intent(in) :: soil_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
+        real(r8), intent(in) :: glc_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
+        real(r8), intent(in) :: glc_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
   	
   	
         real(r8), intent(in) :: glc_mask(begg:endg)  ! mask of glaciated cells, use ice properties here.
