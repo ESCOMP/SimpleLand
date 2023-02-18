@@ -6,13 +6,13 @@ For description and instructions, please see README.
 import os
 import sys
 
-_CTSM_PYTHON = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+_SLIM_PYTHON = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             os.pardir,
                             os.pardir,
                             'python')
-sys.path.insert(1, _CTSM_PYTHON)
+sys.path.insert(1, _SLIM_PYTHON)
 
-from ctsm.modify_input_files.fsurdat_modifier import main
+from slim.modify_input_files.surdat_modifier import main
 
 if __name__ == "__main__":
     main()
