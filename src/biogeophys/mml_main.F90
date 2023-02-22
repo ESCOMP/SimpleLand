@@ -526,8 +526,13 @@ contains
      call t_startf('mml_nc_import')
      ! Read mml_surdat file at the beginning of a run and at the
      ! beginning of the first day of every month
-!    if (is_first_step_of_this_run_segment() .or. (is_beg_curr_day() .and. day == 1)) then
-     if (is_first_step_of_this_run_segment() .or. (day == 1 .and. sec <= 1800)) then
+     ! TODO (slevis) Current if statement maintains same answers with
+     ! baselines and fixes problem with short restart tests (less than
+     ! one month). Preferred solution may be something like
+     ! if (is_first_step_of_this_run_segment() .or. (is_beg_curr_day() .and. day == 1)) then
+     ! but we need to test it before deciding. An corresponding issue will
+     ! be opened.
+     if (is_first_step_of_this_run_segment() .or. (day == 1 .and. sec <= dt)) then
         if ( masterproc ) write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
         call nc_import(begg, endg, mml_nsoi, lfsurdat, mon, &
            albedo_gvd(begg:endg), albedo_svd(begg:endg), &
