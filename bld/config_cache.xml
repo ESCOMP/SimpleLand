@@ -25,5 +25,8 @@ User source directories to prepend to the filepath.  Multiple directories
 are specified as a comma separated list with no embedded white space.
 Normally this is SourceMods/src.clm in your case.
 </entry>
+<entry id="hgrid" value="1.9x2.5" list="" valid_values="1.9x2.5,4x5,10x15">
+Specifies surdat resolution
+</entry>
 
 </config_definition>
