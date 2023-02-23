@@ -64,6 +64,7 @@ class ModifySurdat:
                     ), errmsg
 
         self.not_rectangle = np.logical_not(self.rectangle)
+        self.months = int(max(self.file.time))  # number of months (typically 12)
 
     @classmethod
     def init_from_file(
@@ -161,41 +162,28 @@ class ModifySurdat:
         -----------
         If user has specified monthly values, use them. Else do nothing.
         """
-        months = int(max(self.file.time))  # 12 months
-        if len(val) != months:
+        if len(val) != self.months:
             errmsg = (
                 "Error: Variable should have exactly "
-                + months
+                + self.months
                 + " entries in the configure file: "
                 + var
             )
             abort(errmsg)
-        for mon in self.file.time - 1:  # loop over 12 months
+        for mon in self.file.time - 1:  # loop over the months
             # set 3D variable
             self.setvar_lev1(var, val[int(mon)], lev1_dim=mon)
-
-    def setvar_lev0(self, var, val):
-        """
-        Sets 2d variable var to value val in user-defined rectangle,
-        defined as "other" in the function
-        """
-        self.file[var] = self.file[var].where(self.not_rectangle, other=val)
 
     def setvar_lev1(self, var, val, lev1_dim):
         """
         Sets 3d variable var to value val in user-defined rectangle,
         defined as "other" in the function
+
+        See ctsm subdirectory /python/ctsm/modify_input_files,
+        file modify_fsurdat.py for templates of the corresponding
+        functions that set 2d and 4d variables in the user-defined rectangle
         """
         self.file[var][lev1_dim, ...] = self.file[var][lev1_dim, ...].where(
-            self.not_rectangle, other=val
-        )
-
-    def setvar_lev2(self, var, val, lev1_dim, lev2_dim):
-        """
-        Sets 4d variable var to value val in user-defined rectangle,
-        defined as "other" in the function
-        """
-        self.file[var][lev2_dim, lev1_dim, ...] = self.file[var][lev2_dim, lev1_dim, ...].where(
             self.not_rectangle, other=val
         )
 
@@ -209,20 +197,61 @@ class ModifySurdat:
         # Overwrite in rectangle(s)
         # ------------------------
         # If idealized, the user makes changes to variables as follows.
-        # "other" assigns the corresponding value in the rectangle.
+        # Values in the user-defined rectangle are replaced.
         # Values outside the rectangle are preserved.
         # ------------------------
 
         # Default values
-    #   soil_type = ?
+        glc_mask = [0] * self.months
+        alb_gvd = [0] * self.months
+        alb_svd = [0] * self.months
+        alb_gnd = [0] * self.months
+        alb_snd = [0] * self.months
+        alb_gvf = [0] * self.months
+        alb_svf = [0] * self.months
+        alb_gnf = [0] * self.months
+        alb_snf = [0] * self.months
+        bucketdepth = [0] * self.months
+        emissivity = [0] * self.months
+        snowmask = [0] * self.months
+        roughness = [0] * self.months
+        evap_res = [0] * self.months
+        l2xavg_Fall_flxdst1 = [0] * self.months
+        l2xavg_Fall_flxdst2 = [0] * self.months
+        l2xavg_Fall_flxdst3 = [0] * self.months
+        l2xavg_Fall_flxdst4 = [0] * self.months
+        soil_type = [0] * self.months
+        soil_tk_1d = [0] * self.months
+        soil_cv_1d = [0] * self.months
+        glc_tk_1d = [0] * self.months
+        glc_cv_1d = [0] * self.months
 
         # dictionary of 3d variables to loop over
-    #   vars_3d = {
-    #       "soil_type": soil_type,
-    #       "": ,
-    #       "": ,
-    #       "": ,
-    #   }
-    #   for var, val in vars_3d.items():
-    #       if val is not None:
-    #           self.set_monthly_values(var=var, val=val)
+        vars_3d = {
+            "glc_mask": glc_mask,
+            "alb_gvd": alb_gvd,
+            "alb_svd": alb_svd,
+            "alb_gnd": alb_gnd,
+            "alb_snd": alb_snd,
+            "alb_gvf": alb_gvf,
+            "alb_svf": alb_svf,
+            "alb_gnf": alb_gnf,
+            "alb_snf": alb_snf,
+            "bucketdepth": bucketdepth,
+            "emissivity": emissivity,
+            "snowmask": snowmask,
+            "roughness": roughness,
+            "evap_res": evap_res,
+            "l2xavg_Fall_flxdst1": l2xavg_Fall_flxdst1,
+            "l2xavg_Fall_flxdst2": l2xavg_Fall_flxdst2,
+            "l2xavg_Fall_flxdst3": l2xavg_Fall_flxdst3,
+            "l2xavg_Fall_flxdst4": l2xavg_Fall_flxdst4,
+            "soil_type": soil_type,
+            "soil_tk_1d": soil_tk_1d,
+            "soil_cv_1d": soil_cv_1d,
+            "glc_tk_1d": glc_tk_1d,
+            "glc_cv_1d": glc_cv_1d,
+        }
+        for var, val in vars_3d.items():
+            if val is not None:
+                self.set_monthly_values(var=var, val=val)

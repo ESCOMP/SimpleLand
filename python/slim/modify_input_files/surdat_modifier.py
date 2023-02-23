@@ -168,10 +168,9 @@ def surdat_modifier(cfg_path):
         modify_surdat.set_idealized()  # set 3D variables
         logger.info("idealized complete")
 
-    # TODO slevis: All surdat variables are dimensioned (time, lsmlat, lsmlon)
-    if soil_type is not None:  # overwrite "idealized" value
-        modify_surdat.set_monthly_values("soil_type", soil_type)
-        logger.info("soil_type complete")
+    # TODO slevis
+    # Move vars_3d before if idealized and pass as arg into set_idealized
+    # Repeat var, val loop from modify_surdat.py here
 
     # ----------------------------------------------
     # Output the now modified CTSM surface data file
