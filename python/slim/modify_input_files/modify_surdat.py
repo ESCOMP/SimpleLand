@@ -201,57 +201,31 @@ class ModifySurdat:
         # Values outside the rectangle are preserved.
         # ------------------------
 
-        # Default values
-        glc_mask = [0] * self.months
-        alb_gvd = [0] * self.months
-        alb_svd = [0] * self.months
-        alb_gnd = [0] * self.months
-        alb_snd = [0] * self.months
-        alb_gvf = [0] * self.months
-        alb_svf = [0] * self.months
-        alb_gnf = [0] * self.months
-        alb_snf = [0] * self.months
-        bucketdepth = [0] * self.months
-        emissivity = [0] * self.months
-        snowmask = [0] * self.months
-        roughness = [0] * self.months
-        evap_res = [0] * self.months
-        l2xavg_Fall_flxdst1 = [0] * self.months
-        l2xavg_Fall_flxdst2 = [0] * self.months
-        l2xavg_Fall_flxdst3 = [0] * self.months
-        l2xavg_Fall_flxdst4 = [0] * self.months
-        soil_type = [0] * self.months
-        soil_tk_1d = [0] * self.months
-        soil_cv_1d = [0] * self.months
-        glc_tk_1d = [0] * self.months
-        glc_cv_1d = [0] * self.months
-
-        # dictionary of 3d variables to loop over
+        # Default values of 3d variables
+        # Dimensions are time,lsmlat,lsmlon
+        # Dictionary of the variables that we will loop over
         vars_3d = {
-            "glc_mask": glc_mask,
-            "alb_gvd": alb_gvd,
-            "alb_svd": alb_svd,
-            "alb_gnd": alb_gnd,
-            "alb_snd": alb_snd,
-            "alb_gvf": alb_gvf,
-            "alb_svf": alb_svf,
-            "alb_gnf": alb_gnf,
-            "alb_snf": alb_snf,
-            "bucketdepth": bucketdepth,
-            "emissivity": emissivity,
-            "snowmask": snowmask,
-            "roughness": roughness,
-            "evap_res": evap_res,
-            "l2xavg_Fall_flxdst1": l2xavg_Fall_flxdst1,
-            "l2xavg_Fall_flxdst2": l2xavg_Fall_flxdst2,
-            "l2xavg_Fall_flxdst3": l2xavg_Fall_flxdst3,
-            "l2xavg_Fall_flxdst4": l2xavg_Fall_flxdst4,
-            "soil_type": soil_type,
-            "soil_tk_1d": soil_tk_1d,
-            "soil_cv_1d": soil_cv_1d,
-            "glc_tk_1d": glc_tk_1d,
-            "glc_cv_1d": glc_cv_1d,
+            "glc_mask": [0] * self.months,
+            "alb_gvd": [0] * self.months,
+            "alb_svd": [0] * self.months,
+            "alb_gnd": [0] * self.months,
+            "alb_snd": [0] * self.months,
+            "alb_gvf": [0] * self.months,
+            "alb_svf": [0] * self.months,
+            "alb_gnf": [0] * self.months,
+            "alb_snf": [0] * self.months,
+            "bucketdepth": [0] * self.months,
+            "emissivity": [0] * self.months,
+            "snowmask": [0] * self.months,
+            "roughness": [0] * self.months,
+            "evap_res": [0] * self.months,
+            "soil_type": [0] * self.months,
+            "soil_tk_1d": [0] * self.months,
+            "soil_cv_1d": [0] * self.months,
+            "glc_tk_1d": [0] * self.months,
+            "glc_cv_1d": [0] * self.months,
         }
+
         for var, val in vars_3d.items():
             if val is not None:
                 self.set_monthly_values(var=var, val=val)

@@ -127,6 +127,132 @@ def surdat_modifier(cfg_path):
         abort(errmsg)
 
     # not required: user may set these in the .cfg file
+    glc_mask = get_config_value(
+        config=config,
+        section=section,
+        item="glc_mask",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_gvd = get_config_value(
+        config=config,
+        section=section,
+        item="alb_gvd",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_svd = get_config_value(
+        config=config,
+        section=section,
+        item="alb_svd",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_gnd = get_config_value(
+        config=config,
+        section=section,
+        item="alb_gnd",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_snd = get_config_value(
+        config=config,
+        section=section,
+        item="alb_snd",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_gvf = get_config_value(
+        config=config,
+        section=section,
+        item="alb_gvf",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_svf = get_config_value(
+        config=config,
+        section=section,
+        item="alb_svf",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_gnf = get_config_value(
+        config=config,
+        section=section,
+        item="alb_gnf",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    alb_snf = get_config_value(
+        config=config,
+        section=section,
+        item="alb_snf",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    bucketdepth = get_config_value(
+        config=config,
+        section=section,
+        item="bucketdepth",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    emissivity = get_config_value(
+        config=config,
+        section=section,
+        item="emissivity",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    snowmask = get_config_value(
+        config=config,
+        section=section,
+        item="snowmask",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    roughness = get_config_value(
+        config=config,
+        section=section,
+        item="roughness",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    evap_res = get_config_value(
+        config=config,
+        section=section,
+        item="evap_res",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
 #   max_soil_type = int(modify_surdat.file.mxsoil_type)
     soil_type = get_config_value(
         config=config,
@@ -134,15 +260,16 @@ def surdat_modifier(cfg_path):
         item="soil_type",
         file_path=cfg_path,
 #       allowed_values=range(1, max_soil_type + 1),  # 1 to max_soil_type
+        is_list=True,
         convert_to_type=int,
         can_be_unset=True,
     )
-
     soil_tk_1d = get_config_value(
         config=config,
         section=section,
         item="soil_tk_1d",
         file_path=cfg_path,
+        is_list=True,
         convert_to_type=float,
         can_be_unset=True,
     )
@@ -151,6 +278,25 @@ def surdat_modifier(cfg_path):
         section=section,
         item="soil_cv_1d",
         file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    glc_tk_1d = get_config_value(
+        config=config,
+        section=section,
+        item="glc_tk_1d",
+        file_path=cfg_path,
+        is_list=True,
+        convert_to_type=float,
+        can_be_unset=True,
+    )
+    glc_cv_1d = get_config_value(
+        config=config,
+        section=section,
+        item="glc_cv_1d",
+        file_path=cfg_path,
+        is_list=True,
         convert_to_type=float,
         can_be_unset=True,
     )
@@ -168,9 +314,35 @@ def surdat_modifier(cfg_path):
         modify_surdat.set_idealized()  # set 3D variables
         logger.info("idealized complete")
 
-    # TODO slevis
-    # Move vars_3d before if idealized and pass as arg into set_idealized
-    # Repeat var, val loop from modify_surdat.py here
+    # User-selected values will overwrite either
+    # - set_idealized's default values if idealized = True or
+    # - the input surdat's values if idealized = False
+    # Dictionary of 3d variables to loop over
+    vars_3d = {
+        "glc_mask": glc_mask,
+        "alb_gvd": alb_gvd,
+        "alb_svd": alb_svd,
+        "alb_gnd": alb_gnd,
+        "alb_snd": alb_snd,
+        "alb_gvf": alb_gvf,
+        "alb_svf": alb_svf,
+        "alb_gnf": alb_gnf,
+        "alb_snf": alb_snf,
+        "bucketdepth": bucketdepth,
+        "emissivity": emissivity,
+        "snowmask": snowmask,
+        "roughness": roughness,
+        "evap_res": evap_res,
+        "soil_type": soil_type,
+        "soil_tk_1d": soil_tk_1d,
+        "soil_cv_1d": soil_cv_1d,
+        "glc_tk_1d": glc_tk_1d,
+        "glc_cv_1d": glc_cv_1d,
+    }
+
+    for var, val in vars_3d.items():
+        if val is not None:
+            modify_surdat.set_monthly_values(var=var, val=val)
 
     # ----------------------------------------------
     # Output the now modified CTSM surface data file
