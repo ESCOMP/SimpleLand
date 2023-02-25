@@ -87,8 +87,10 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 >hgrid=1.9x2.5 maxpft=79 mask=gx1v6 
 </init_interp_attributes>
 
-<!-- MML data sets; should add 1degree --> 
+<!-- MML data sets --> 
 <!-- for any year (2000 or 1850) -->
+<mml_surdat hgrid="0.9x1.25">
+lnd/slim/surdat/slim_realistic_f19_20190110_reverse_cutout_to_f09_c20230224.nc</mml_surdat>
 <mml_surdat hgrid="1.9x2.5">
 lnd/slim/surdat/mml_1.9x2.5_default_cdf5_c20211105.nc</mml_surdat>
 <mml_surdat hgrid="4x5">
