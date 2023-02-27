@@ -1021,7 +1021,7 @@ sub setup_logic_surface_dataset {
   $flanduse_timeseries = $nl_flags->{'flanduse_timeseries'};
 
   # MML: try and add my own namelist variable for mml_surdat forcing file
-  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'mml_surdat');
+  add_default($opts, $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'mml_surdat', 'hgrid'=>$nl_flags->{'res'});
   
   
 }

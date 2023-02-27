@@ -34,6 +34,61 @@
       <option name="comment">smoke test with SOM for CAM5 at 1850 (historical starting in 1850) saving cplhist files</option>
     </options>
   </test>
+  <test name="ERS_D_Ld3" grid="f45_g37" compset="I2000SlimRsGs" testmods="clm/default">
+    <machines>
+      <machine name="izumi" compiler="gnu"   category="aux_slim"/>
+      <machine name="izumi" compiler="nag"   category="aux_slim"/>
+      <machine name="izumi" compiler="intel" category="aux_slim"/>
+      <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Short term debug restart test with I case at f45 resolution</option>
+    </options>
+  </test>
+  <test name="ERS_D_Ld3" grid="f10_f10_mg37" compset="I2000SlimRsGs" testmods="clm/default">
+    <machines>
+      <machine name="izumi" compiler="gnu"   category="aux_slim"/>
+      <machine name="izumi" compiler="nag"   category="aux_slim"/>
+      <machine name="izumi" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Short term debug restart test with I case at f10 resolution on izumi</option>
+    </options>
+  </test>
+  <test name="ERS_Ld3" grid="f10_f10_mg37" compset="F2000Cam6SlimRsGs" testmods="clm/default">
+    <machines>
+      <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:40:00</option>
+      <option name="comment">Short term debug restart test with F case at f10 resolution on cheyenne</option>
+    </options>
+  </test>
+  <test name="ERS_D_Ld3" grid="f09_g17" compset="I2000SlimRsGs" testmods="clm/default">
+    <machines>
+      <machine name="izumi" compiler="gnu"   category="aux_slim"/>
+      <machine name="izumi" compiler="nag"   category="aux_slim"/>
+      <machine name="izumi" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Short term debug restart test with I case at f09 resolution on izumi</option>
+    </options>
+  </test>
+  <test name="ERS_Ld3_P144x1" grid="f09_g16" compset="F2000Cam6SlimRsGs" testmods="clm/default">
+    <machines>
+      <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:40:00</option>
+      <option name="comment">Short term debug restart test with F case at f09 resolution on cheyenne; override tasks and threads to 144x1 because F cases get their tasks and threads from CAM and SLIM needs threads = 1</option>
+    </options>
+  </test>
   <test name="ERS_D_Ld60" grid="f19_g16" compset="H_MML_2000_CAM5" testmods="clm/global_uniform_g16_SOM">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
@@ -51,7 +106,7 @@
   <!-- need debug on and off, intel and gnu compilers and restart tests for the 2000 case-->
   <!-- PEM tests should ONLY be with DOCN -->
   <!-- Run one longer test with production compiler for a few months to make sure longer science runs will continue to work -->
-  <!-- The important science simualtions for this configuration is the 2000_CMIP6_AMIP_1deg_ensemble case for Wenwen -->
+  <!-- The important science simualtions for this configuration is the 2000_CMIP6_AMIP_ensemble case for Wenwen -->
   <test name="SMS" grid="f19_g16" compset="H_MML_2000_CAM6" testmods="clm/global_uniform_g16_SOM">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
@@ -62,7 +117,7 @@
       <option name="comment">smoke test with SOM for CAM6 for global uniform</option>
     </options>
   </test>
-  <test name="SMS" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensemble">
+  <test name="SMS" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_ensemble">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -71,7 +126,7 @@
       <option name="comment">smoke test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="SMS_Lm3" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensembleMonthly">
+  <test name="SMS_Lm3" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_ensembleMonthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -80,7 +135,7 @@
       <option name="comment">Longer smoke test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="PEM" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensemble">
+  <test name="PEM" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_ensemble">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -89,7 +144,7 @@
       <option name="comment">change Processors test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="ERS_Ld60" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensembleMonthly">
+  <test name="ERS_Ld60" grid="f19_g16" compset="F2000Cam6SlimRsGs" testmods="clm/2000_CMIP6_AMIP_ensembleMonthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -145,7 +200,7 @@
       <option name="comment">Smoke 1850 compset test for standalone SLIM with realistic conditions</option>
     </options>
   </test>
-  <test name="SMS_Lm1" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensembleMonthly">
+  <test name="SMS_Lm1" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_ensembleMonthly">
     <machines>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
     </machines>
@@ -154,7 +209,7 @@
       <option name="comment">Longer smoke 2000 compset test for standalone SLIM with realistic conditions</option>
     </options>
   </test>
-  <test name="SMS_D_Lm1" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensembleMonthly">
+  <test name="SMS_D_Lm1" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_ensembleMonthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
@@ -167,7 +222,7 @@
       <option name="comment">Longer smoke 2000 compset test for standalone SLIM with realistic conditions and DEBUG on</option>
     </options>
   </test>
-  <test name="ERP_Ld60_D" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_1deg_ensembleMonthly">
+  <test name="ERP_Ld60_D" grid="f19_g17" compset="I2000SlimRsGs" testmods="clm/2000_CMIP6_AMIP_ensembleMonthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
