@@ -42,7 +42,8 @@ module mml_mainMod
   use perf_mod			! for t_startf and t_stopf
    
   ! For using month-dependent values from forcing files
-  use clm_time_manager, only : get_curr_date, get_nstep, get_step_size
+  use clm_time_manager, only : get_curr_date, is_beg_curr_day, get_step_size
+  use clm_time_manager, only : is_first_step_of_this_run_segment
   
   ! For namelist var
   use clm_varctl       , only: mml_surdat
@@ -140,7 +141,6 @@ contains
     integer :: mon     ! month (1, ..., 12) for nstep+1
     integer :: day     ! day of month (1, ..., 31) for nstep+1
     integer :: sec     ! seconds into current date for nstep+1
-    integer :: mcdate  ! Current model date (yyyymmdd)
     
     real(r8)	:: dt	   ! length of time step, in seconds
    
@@ -494,8 +494,7 @@ contains
   	 ! Get outside data 
   	 
      !MML: Grab the current model time so we know what month we're in
-     call get_curr_date(year, mon, day, sec)   ! Actually all I need for now is mon
-     mcdate = year*10000 + mon*100 + day
+     call get_curr_date(year, mon, day, sec)
   
   	!write(iulog,*)subname, 'MML month = ', mon
   	!write(iulog,*)subname, 'MML day = ', day
@@ -522,45 +521,27 @@ contains
 !		else
 !			soil_maxice(begg:endg,i) = 300._r8
 !		end if
-		
 !	 enddo
-	
 
-  	! write(iulog,*) 'MML: Yikes! Pre-nc reading, albedo_gvd at some point begg = ', albedo_gvd(begg)
-  	call t_startf('mml_nc_import')
-  	
-  		! ONLY actually run nc_import if we're on the first timestep of the first day of the month...
-  		!if (sec <= 1800) then !( day == 1 .and. sec <= 1800) then
-  		if ( day == 1 .and. sec .le. 1800 ) then
-  			! <= 1800 will read it in both first 2 time steps... but after a restart it 
-  			! seems to start on 1800, not 0, so it needs to be able to read them then, too...
-  			! Is there a better way to say "if you haven't still got the last values, read these in?"
-  			!
-  			! Added the nc vars to the restart file, so maybe now I can revert to just saying if sec = 0? 
-  			! (sec <1800) -> as long as that instance HAPPENS that would work... I think...
-  			if ( masterproc ) write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
-  			
-  			call nc_import(begg, endg, mml_nsoi, lfsurdat, mon, &
- 					albedo_gvd(begg:endg), albedo_svd(begg:endg), &
- 					albedo_gnd(begg:endg), albedo_snd(begg:endg), &
- 					albedo_gvf(begg:endg), albedo_svf(begg:endg), &
- 					albedo_gnf(begg:endg), albedo_snf(begg:endg), &
- 					snowmask(begg:endg), evaprs(begg:endg), &
- 					bucket_cap(begg:endg), & 
- 					soil_type(begg:endg), roughness(begg:endg), &
- 					emiss(begg:endg), glc_mask(begg:endg), dust(begg:endg,:), &
- 					soil_tk_1d(begg:endg), soil_cv_1d(begg:endg), &
- 					glc_tk_1d(begg:endg), glc_cv_1d(begg:endg)   ) !, &
+     call t_startf('mml_nc_import')
+     ! Read mml_surdat file at the beginning of a run and at the
+     ! beginning of the first day of every month
+     if (is_first_step_of_this_run_segment() .or. (day == 1 .and. sec == 0)) then
+        if ( masterproc ) write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
+        call nc_import(begg, endg, mml_nsoi, lfsurdat, mon, &
+           albedo_gvd(begg:endg), albedo_svd(begg:endg), &
+           albedo_gnd(begg:endg), albedo_snd(begg:endg), &
+           albedo_gvf(begg:endg), albedo_svf(begg:endg), &
+           albedo_gnf(begg:endg), albedo_snf(begg:endg), &
+           snowmask(begg:endg), evaprs(begg:endg), &
+           bucket_cap(begg:endg), & 
+           soil_type(begg:endg), roughness(begg:endg), &
+           emiss(begg:endg), glc_mask(begg:endg), dust(begg:endg,:), &
+           soil_tk_1d(begg:endg), soil_cv_1d(begg:endg), &
+           glc_tk_1d(begg:endg), glc_cv_1d(begg:endg)   )
+     end if
+     call t_stopf('mml_nc_import')
 
-                       !write(iulog,*)'read netcdf'
- 					
-		end if
-	call t_stopf('mml_nc_import')
-	
-
-		! Hard code snowmask and see if it'll run with the new files using that
-		!snowmask(begg:endg) = 100.0_r8
-			
      ! *************************************************************
      ! ***       Start the simple model (science part)  		 ***
      ! *************************************************************
@@ -1899,7 +1880,6 @@ end do
    ! integer :: mon     ! month (1, ..., 12) for nstep+1
     integer :: day     ! day of month (1, ..., 31) for nstep+1
     integer :: sec     ! seconds into current date for nstep+1
-    integer :: mcdate  ! Current model date (yyyymmdd)
         
     character(len=256)	:: locfn                ! local file name
     logical           	:: readvar              ! true => variable is on dataset
@@ -2523,10 +2503,10 @@ tsoi0(begg:endg,:) = phase_tsoi(begg:endg,:)
         real(r8), intent(in) :: soil_liq(begg:endg,mml_nsoi)  ! soil layer water content (kg/m2)
         real(r8), intent(in) :: soil_ice(begg:endg,mml_nsoi)  ! soil layer ice content (kg/m2)
   	
-        real(r8), intent(inout) :: soil_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
-        real(r8), intent(inout) :: soil_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
-        real(r8), intent(inout) :: glc_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
-        real(r8), intent(inout) :: glc_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
+        real(r8), intent(in) :: soil_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
+        real(r8), intent(in) :: soil_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
+        real(r8), intent(in) :: glc_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
+        real(r8), intent(in) :: glc_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
   	
   	
         real(r8), intent(in) :: glc_mask(begg:endg)  ! mask of glaciated cells, use ice properties here.

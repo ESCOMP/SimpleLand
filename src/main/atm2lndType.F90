@@ -1419,83 +1419,6 @@ contains
          long_name='temperature tendency in each soil layer', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_dtsoi_grc) 
 
- 
-    ! MML nc vars, so if I stop mid-month / mid-day I can still know what that month's nc params are
-    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gvd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground visible direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gvd_grc) 
-         
-     call restartvar(ncid=ncid, flag=flag, varname='nc_alb_svd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Snow visible direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_svd_grc) 
-       
-    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gnd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground NIR direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gnd_grc) 
-       
-    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_snd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Snow NIR direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_snd_grc) 
-     
-    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gvf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground visible diffuse albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gvf_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_svf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='snow visible diffuse albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_svf_grc) 
-         
-    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_gnf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground NIR diffuse albedo (from netcdf file)', units='K', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gnf_grc) 
-         
-    call restartvar(ncid=ncid, flag=flag, varname='nc_alb_snf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Snow NIR diffuse albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_snf_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_snowmask_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Amount of snow required to fully mask ground albedo (from netcdf file)', units='kg/m2', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_snowmask_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_evaprs_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Evaporative resistance (from netcdf file)', units='s/m', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_evaprs_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_bucket_cap_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Bucket Capacity (from netcdf file)', units='kg/m2', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_bucket_cap_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_roughness_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Surface roughness (vegetation height) (from netcdf file)', units='m', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_roughness_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_emiss_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Surface emissivity (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_emiss_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_glcmask_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Mask of glaciated points (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_glcmask_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='nc_dust_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Dust flux to atm (from netcdf file)', units='unknown', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_dust_grc) 
-    
     write(iulog,*)  ' MML end of 1d restart vars '
     
     ! 3d restart var example (soilbiogeochem carbon mod):
@@ -1504,8 +1427,8 @@ contains
     !           long_name='',  units='', fill_value=spval, &
     !           interpinic_flag='interp', readvar=readvar, data=ptr2d)
                          
-	! End MML simple land model added variables
-	!-----------------------------------------------------------------------
+    ! End MML simple land model added variables
+    !-----------------------------------------------------------------------
 
   end subroutine Restart
 
