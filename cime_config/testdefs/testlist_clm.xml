@@ -79,14 +79,14 @@
       <option name="comment">Short term debug restart test with I case at f09 resolution on izumi</option>
     </options>
   </test>
-  <test name="ERS_Ld3" grid="f09_g17" compset="F2000Cam6SlimRsGs" testmods="clm/default">
+  <test name="ERS_Ld3_P144x1" grid="f09_g16" compset="F2000Cam6SlimRsGs" testmods="clm/default">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
     <options>
       <option name="wallclock">00:40:00</option>
-      <option name="comment">Short term debug restart test with F case at f09 resolution on cheyenne</option>
+      <option name="comment">Short term debug restart test with F case at f09 resolution on cheyenne; override tasks and threads to 144x1 because F cases get their tasks and threads from CAM and SLIM needs threads = 1</option>
     </options>
   </test>
   <test name="ERS_D_Ld60" grid="f19_g16" compset="H_MML_2000_CAM5" testmods="clm/global_uniform_g16_SOM">
