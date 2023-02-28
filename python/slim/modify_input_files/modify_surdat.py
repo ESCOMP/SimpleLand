@@ -201,29 +201,30 @@ class ModifySurdat:
         # Values outside the rectangle are preserved.
         # ------------------------
 
-        # Default values of 3d variables
+        # Default values of 3d variables. For guidance in selecting values, see
+        # /glade/p/cesmdata/cseg/inputdata/lnd/slim/surdat/globalconst_alpha0.2_soilcv2e6_hc0.1_rs100.0_glc_hc0.01_f19_cdf5_20211105.nc
         # Dimensions are time,lsmlat,lsmlon
         # Dictionary of the variables that we will loop over
         vars_3d = {
             "glc_mask": [0] * self.months,
-            "alb_gvd": [0] * self.months,
-            "alb_svd": [0] * self.months,
-            "alb_gnd": [0] * self.months,
-            "alb_snd": [0] * self.months,
-            "alb_gvf": [0] * self.months,
-            "alb_svf": [0] * self.months,
-            "alb_gnf": [0] * self.months,
-            "alb_snf": [0] * self.months,
-            "bucketdepth": [0] * self.months,
-            "emissivity": [0] * self.months,
-            "snowmask": [0] * self.months,
-            "roughness": [0] * self.months,
-            "evap_res": [0] * self.months,
+            "alb_gvd": [0.2] * self.months,
+            "alb_svd": [0.8] * self.months,
+            "alb_gnd": [0.3] * self.months,
+            "alb_snd": [0.6] * self.months,
+            "alb_gvf": [0.2] * self.months,
+            "alb_svf": [0.8] * self.months,
+            "alb_gnf": [0.3] * self.months,
+            "alb_snf": [0.6] * self.months,
+            "bucketdepth": [200] * self.months,
+            "emissivity": [1] * self.months,
+            "snowmask": [50] * self.months,
+            "roughness": [0.1] * self.months,
+            "evap_res": [100] * self.months,
             "soil_type": [0] * self.months,
-            "soil_tk_1d": [0] * self.months,
-            "soil_cv_1d": [0] * self.months,
-            "glc_tk_1d": [0] * self.months,
-            "glc_cv_1d": [0] * self.months,
+            "soil_tk_1d": [1.5] * self.months,
+            "soil_cv_1d": [2e6] * self.months,
+            "glc_tk_1d": [2.4] * self.months,
+            "glc_cv_1d": [1.9e6] * self.months,
         }
 
         for var, val in vars_3d.items():
