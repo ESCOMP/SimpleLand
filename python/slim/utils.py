@@ -142,7 +142,7 @@ def write_output(file, file_in, file_out, file_type):
     file_out:
         (str) User-defined entry of output file
     file_type:
-        (str) examples: mesh, fsurdat
+        (str) examples: mesh, surdat
     """
 
     # update attributes
