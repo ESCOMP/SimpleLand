@@ -253,13 +253,13 @@ def surdat_modifier(cfg_path):
         convert_to_type=float,
         can_be_unset=True,
     )
-#   max_soil_type = int(modify_surdat.file.mxsoil_type)
+    # max_soil_type = int(modify_surdat.file.mxsoil_type)  # TODO placeholder
     soil_type = get_config_value(
         config=config,
         section=section,
         item="soil_type",
         file_path=cfg_path,
-#       allowed_values=range(1, max_soil_type + 1),  # 1 to max_soil_type
+        # allowed_values=range(1, max_soil_type + 1),  # 1 to max_soil_type
         is_list=True,
         convert_to_type=int,
         can_be_unset=True,

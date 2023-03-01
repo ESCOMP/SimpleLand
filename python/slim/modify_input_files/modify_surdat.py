@@ -202,7 +202,8 @@ class ModifySurdat:
         # ------------------------
 
         # Default values of 3d variables. For guidance in selecting values, see
-        # /glade/p/cesmdata/cseg/inputdata/lnd/slim/surdat/globalconst_alpha0.2_soilcv2e6_hc0.1_rs100.0_glc_hc0.01_f19_cdf5_20211105.nc
+        # /glade/p/cesmdata/cseg/inputdata/lnd/slim/surdat/
+        # globalconst_alpha0.2_soilcv2e6_hc0.1_rs100.0_glc_hc0.01_f19_cdf5_20211105.nc
         # Dimensions are time,lsmlat,lsmlon
         # Dictionary of the variables that we will loop over
         vars_3d = {

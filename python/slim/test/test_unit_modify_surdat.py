@@ -21,8 +21,7 @@ from slim.modify_input_files.modify_surdat import ModifySurdat
 
 
 class TestModifySurdat(unittest.TestCase):
-    """Tests the setvar_lev functions and the _get_rectangle function
-    """
+    """Tests the setvar_lev functions and the _get_rectangle function"""
 
     def test_setvarLev1(self):
         """
