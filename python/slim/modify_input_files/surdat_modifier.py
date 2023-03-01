@@ -132,8 +132,9 @@ def surdat_modifier(cfg_path):
         section=section,
         item="glc_mask",
         file_path=cfg_path,
+        allowed_values=[0, 1],
         is_list=True,
-        convert_to_type=float,
+        convert_to_type=int,
         can_be_unset=True,
     )
     alb_gvd = get_config_value(
