@@ -345,6 +345,6 @@ def surdat_modifier(cfg_path):
             modify_surdat.set_monthly_values(var=var, val=val)
 
     # ----------------------------------------------
-    # Output the now modified CTSM surface data file
+    # Output the now modified SLIM surface data file
     # ----------------------------------------------
     write_output(modify_surdat.file, surdat_in, surdat_out, "surdat")
