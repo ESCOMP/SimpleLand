@@ -38,8 +38,11 @@ class TestSysSurdatModifier(unittest.TestCase):
         self._cfg_template_path = os.path.join(
             path_to_slim_root(), "tools/modify_input_files/modify_surdat_template.cfg"
         )
-        # TODO Generate simple surdat dataset (see test_unit_modify_surdat.py)
+        # TODO Generate simple surdat_in (see test_unit_modify_surdat.py)
         # rather than pointing to a /testinputs directory?
+        # If so, then need to output this to _tempdir and read back in
+        # as _surdat_in. For call to write_output see surdat_modifier.py.
+        # Now see next TODO.
         testinputs_path = os.path.join(path_to_slim_root(), "python/slim/test/testinputs")
         self._surdat_in = os.path.join(
             testinputs_path,
@@ -93,8 +96,8 @@ class TestSysSurdatModifier(unittest.TestCase):
         self.assertFalse(surdat_out_data.equals(surdat_in_data))
 
         # compare surdat_out to surdat_out_baseline located in /testinputs
-        # TODO Generate modified surdat dataset (see test_unit_modify_surdat.py)
-        # rather than pointing to /testinputs?
+        # TODO Generate surdat_out_baseline as was done above for _surdat_in.
+        # No need to output surdat_out_baseline; just compare.
         surdat_out_baseline = self._surdat_in[:-3] + "_modified" + self._surdat_in[-3:]
         surdat_out_base_data = xr.open_dataset(surdat_out_baseline)
         # assert that surdat_out equals surdat_out_baseline
