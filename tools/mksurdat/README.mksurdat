@@ -4,6 +4,7 @@ CTSM history files and outputs a SLIM surdat file.
 Files involved
 --------------
 python/slim/mksurdat/mksurdat.py
+python/slim/mksurdat/history_averager.py # TODO Move this up one directory?
 tools/mksurdat/mksurdat
 tools/mksurdat/mksurdat_template.cfg
 
