@@ -6,7 +6,8 @@ SLIM tools for analysis of SLIM history files or
 I.  General directory structure:
 
     $SLIMROOT/tools
-	mksurfdat       -- Create surface datasets (surdat files) NOT AVAILABLE, YET.
+	mksurdat           Create SLIM surface dataset (surdat file) from CTSM
+                           history output files. TOOL NOT AVAILABLE
 
         modify_input_files Scripts to modify SLIM input files. Currently
                            there is one available tool and it can modify
@@ -97,8 +98,8 @@ III. Process sequence to create input datasets needed to run SLIM
 
   http://www.cesm.ucar.edu/models/cesm1.0/clm/models/lnd/clm/doc/UsersGuide/book1.html
 
-         If you don't do this step, you'll need to specify the file to mksurfdata_esmf
-         in step (3) using the "-f" option.
+         If you don't do this step, you'll need to specify the file to mksurdat
+         in step (3) using the "-f" option (?).
 
     4.) Convert map of ocean to atm for use by DATM and CTSM with gen_domain
         (See $CIMEROOT/tools/mapping/README for more help on doing this)
@@ -121,30 +122,8 @@ III. Process sequence to create input datasets needed to run SLIM
         file for CTSM. Output domain files will be named according to the input OCN/LND
         gridnames.
 
-    5.) Create surface datasets with mksurfdata_esmf on cheyenne
-        (See mksurfdata_esmf/README for more help on doing this)
-
-       - gen_mksurfdata_build.sh to build
-       - gen_mksurfdata_namelist.py to build the namelist
-       - gen_mksurfdata_jobscript_single.py to build a batch script to run on cheyenne
-       - Submit the batch script just created above
-
-       - This step uses the results of step (3) entered into the XML database
-         in step (4).
-       - If datasets were NOT entered into the XML database, set the resolution
-         by entering the mesh file using the options: --model-mesh --model-mesh-nx --model-mesh-ny
-
-       Example: for 0.9x1.25 resolution fro 1850
-
-       cd mksurfdata_esmf
-       ./gen_mksurfdata_build.sh
-       ./gen_mksurfdata_namelist.py --res 0.9x1.25 --start-year 1850 --end-year 1850
-       ./gen_mksurfdata_jobscript_single.py --number-of-nodes 24 --tasks-per-node 12 --namelist-file target.namelist
-       qsub mksurfdata_jobscript_single
-   
-       NOTE that surface dataset will be used by default for fatmgrid - and it will 
-       contain the lat,lon,edges and area values for the atm grid - ASSUMING that 
-       the atm and land grid are the same 
+    5.) Create SLIM surface dataset (surdat file) with mksurdat tool
+        (See mksurdat/README for more information)
 
     6.) Add new files to XML data or using user_nl_clm (optional)
 
@@ -155,5 +134,5 @@ IV.  Notes on which input datasets are needed for CTSM
        global or regional/single-point grids
          - need fsurdata and fatmlndfrc
 
-      fsurdata ---- from mksurfdata_esmf in step (III.7)
-      fatmlndfrc -- use the domain.lnd file from gen_domain in step (III.6)
+      mml_surdat -- from mksurdat in step (III.5)
+      fatmlndfrc -- use the domain.lnd file from gen_domain in step (III.4)
