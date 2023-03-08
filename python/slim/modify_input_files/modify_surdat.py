@@ -12,8 +12,7 @@ from math import isclose
 import numpy as np
 import xarray as xr
 
-from slim.utils import abort, update_metadata
-from slim.git_utils import get_slim_git_short_hash
+from slim.utils import abort
 from slim.config_utils import lon_range_0_to_360
 
 logger = logging.getLogger(__name__)
@@ -115,46 +114,6 @@ class ModifySurdat:
         rectangle = np.logical_and(union_1, union_2)
 
         return rectangle
-
-    def write_output(self, surdat_in, surdat_out):
-        """
-        Description
-        -----------
-        Write output file
-
-        Arguments
-        ---------
-        surdat_in:
-            (str) Command line entry of input surface dataset
-        surdat_out:
-            (str) Command line entry of output surface dataset
-        """
-
-        # update attributes
-        title = "Modified SLIM surdat file"
-        summary = "Modified SLIM surdat file"
-        contact = "N/A"
-        data_script = os.path.abspath(__file__) + " -- " + get_slim_git_short_hash()
-        description = "Modified this file: " + surdat_in
-        update_metadata(
-            self.file,
-            title=title,
-            summary=summary,
-            contact=contact,
-            data_script=data_script,
-            description=description,
-        )
-
-        # abort if output file already exists
-        file_exists = os.path.exists(surdat_out)
-        if file_exists:
-            errmsg = "Output file already exists: " + surdat_out
-            abort(errmsg)
-
-        # mode 'w' overwrites file if it exists
-        self.file.to_netcdf(path=surdat_out, mode="w", format="NETCDF3_64BIT")
-        logger.info("Successfully created surdat_out: %s", surdat_out)
-        self.file.close()
 
     def set_monthly_values(self, var, val):
         """
