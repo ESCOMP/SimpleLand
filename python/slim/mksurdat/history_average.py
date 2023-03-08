@@ -5,7 +5,6 @@ Run this code by using the following wrapper script:
 The wrapper script and its README include a full description and instructions.
 """
 
-import os
 import logging
 
 import xarray as xr
@@ -54,34 +53,35 @@ class HistoryAverage:
         # Same as the list found in modify_input_files/surdat_modifier.py but
         # with four l2xavg_Fall_flxdst variables added
         # TODO Currently assigning history vars to surdat vars as a test
-        # TODO Later will need a calculation for each surdat var
+        # TODO Later will need a calculation for each surdat var and will want
+        #      to assign the 3d vars that include the time dimension
         vars_out = {
             "glc_mask": "TSA",
-#           "alb_gvd": 
-#           "alb_svd": 
-#           "alb_gnd": 
-#           "alb_snd": 
-#           "alb_gvf": 
-#           "alb_svf": 
-#           "alb_gnf": 
-#           "alb_snf": 
-#           "bucketdepth": 
-#           "emissivity": 
-#           "snowmask": 
-#           "roughness": 
-#           "evap_res": 
-#           "l2xavg_Fall_flxdst1": 
-#           "l2xavg_Fall_flxdst2": 
-#           "l2xavg_Fall_flxdst3": 
-#           "l2xavg_Fall_flxdst4": 
-#           "soil_type": 
-#           "soil_tk_1d": 
-#           "soil_cv_1d": 
-#           "glc_tk_1d": 
-#           "glc_cv_1d": 
+            "alb_gvd": "TSA",
+            "alb_svd": "TSA",
+            "alb_gnd": "TSA",
+            "alb_snd": "TSA",
+            "alb_gvf": "TSA",
+            "alb_svf": "TSA",
+            "alb_gnf": "TSA",
+            "alb_snf": "TSA",
+            "bucketdepth": "TSA",
+            "emissivity": "TSA",
+            "snowmask": "TSA",
+            "roughness": "TSA",
+            "evap_res": "TSA",
+            "l2xavg_Fall_flxdst1": "TSA",
+            "l2xavg_Fall_flxdst2": "TSA",
+            "l2xavg_Fall_flxdst3": "TSA",
+            "l2xavg_Fall_flxdst4": "TSA",
+            "soil_type": "TSA",
+            "soil_tk_1d": "TSA",
+            "soil_cv_1d": "TSA",
+            "glc_tk_1d": "TSA",
+            "glc_cv_1d": "TSA",
             "lsmlon": "lon",
             "lsmlat": "lat",
-#           "time": ,
+            "time": "time",  # TODO Replace with months 1 to 12
         }
 
         for var, val in vars_out.items():
