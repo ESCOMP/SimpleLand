@@ -12,8 +12,7 @@ from math import isclose
 import numpy as np
 import xarray as xr
 
-from slim.utils import abort, update_metadata
-from slim.git_utils import get_slim_git_short_hash
+from slim.utils import abort
 from slim.config_utils import lon_range_0_to_360
 
 logger = logging.getLogger(__name__)
