@@ -90,3 +90,4 @@ class HistoryAverage:
             self.setvar(self, var, val)
 
         # TODO Clear unnecessary variables from file
+        # TODO Add metadata to surdat vars
