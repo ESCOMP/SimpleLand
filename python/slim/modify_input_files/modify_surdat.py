@@ -145,16 +145,16 @@ class ModifySurdat:
             self.not_rectangle, other=val
         )
 
-    def set_idealized(self):
+    def set_defaults(self):
         """
         Description
         -----------
-        Set surdat variables in a rectangle defined by lon/lat limits
+        Set default surdat values in a rectangle defined by lon/lat limits
         """
 
         # Overwrite in rectangle(s)
         # ------------------------
-        # If idealized, the user makes changes to variables as follows.
+        # If defaults, then user makes changes to variables as follows.
         # Values in the user-defined rectangle are replaced.
         # Values outside the rectangle are preserved.
         # ------------------------

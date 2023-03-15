@@ -193,8 +193,8 @@ class TestSysSurdatModifier(unittest.TestCase):
                         line = f"surdat_in = {self._surdat_in}"
                     elif re.match(r" *surdat_out *=", line):
                         line = f"surdat_out = {self._surdat_out}"
-                    elif re.match(r" *idealized *=", line):
-                        line = "idealized = False"
+                    elif re.match(r" *defaults *=", line):
+                        line = "defaults = False"
                     elif re.match(r" *lnd_lat_1 *=", line):
                         line = "lnd_lat_1 = " + str(min(self._lat_range)) + "\n"
                     elif re.match(r" *lnd_lat_2 *=", line):

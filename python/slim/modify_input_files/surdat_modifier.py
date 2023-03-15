@@ -58,10 +58,10 @@ def surdat_modifier(cfg_path):
 
     # required but fallback values available for variables omitted
     # entirely from the .cfg file
-    idealized = get_config_value(
+    defaults = get_config_value(
         config=config,
         section=section,
-        item="idealized",
+        item="defaults",
         file_path=cfg_path,
         convert_to_type=bool,
     )
@@ -311,13 +311,13 @@ def surdat_modifier(cfg_path):
     # MCT or the ocean mesh files for NUOPC. Here the user may specify
     # surdat variables inside a box but cannot change which points will
     # run as land and which as ocean.
-    if idealized:
-        modify_surdat.set_idealized()  # set 3D variables
-        logger.info("idealized complete")
+    if defaults:
+        modify_surdat.set_defaults()  # set 3D variables
+        logger.info("defaults complete")
 
     # User-selected values will overwrite either
-    # - set_idealized's default values if idealized = True or
-    # - the input surdat's values if idealized = False
+    # - set_default's values if defaults = True or
+    # - the input surdat's values if defaults = False
     # Dictionary of 3d variables to loop over
     vars_3d = {
         "glc_mask": glc_mask,
