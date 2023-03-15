@@ -187,5 +187,4 @@ class ModifySurdat:
         }
 
         for var, val in vars_3d.items():
-            if val is not None:
-                self.set_monthly_values(var=var, val=val)
+            self.set_monthly_values(var=var, val=val)
