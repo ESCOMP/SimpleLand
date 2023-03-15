@@ -137,9 +137,9 @@ class ModifySurdat:
         Sets 3d variable var to value val in user-defined rectangle,
         defined as "other" in the function
 
+        HINT for working with 2d or 4d variables instead:
         See ctsm subdirectory /python/ctsm/modify_input_files,
-        file modify_fsurdat.py for templates of the corresponding
-        functions that set 2d and 4d variables in the user-defined rectangle
+        file modify_fsurdat.py for templates of the corresponding functions
         """
         self.file[var][lev1_dim, ...] = self.file[var][lev1_dim, ...].where(
             self.not_rectangle, other=val
