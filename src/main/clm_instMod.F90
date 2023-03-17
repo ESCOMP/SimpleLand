@@ -9,31 +9,19 @@ module clm_instMod
   use decompMod       , only : bounds_type
   use clm_varcon      , only : bdsno
   use clm_varctl      , only : iulog
-  use landunit_varcon , only : istice_mec, istsoil
   use perf_mod        , only : t_startf, t_stopf
 
   !-----------------------------------------
   ! Constants
   !-----------------------------------------
 
-  use UrbanParamsType                    , only : urbanparams_type   ! Constants 
   !-----------------------------------------
   ! Definition of component types 
   !-----------------------------------------
 
-  use EnergyFluxType                  , only : energyflux_type
-  use SurfaceAlbedoType               , only : surfalb_type
-  use TemperatureType                 , only : temperature_type
-  use WaterStateType                  , only : waterstate_type
-  use UrbanParamsType                 , only : urbanparams_type
   use atm2lndType                     , only : atm2lnd_type
   use lnd2atmType                     , only : lnd2atm_type
-  use glcBehaviorMod                  , only : glc_behavior_type
-  use TopoMod                         , only : topo_type
   use GridcellType                    , only : grc
-  use LandunitType                    , only : lun                
-  use ColumnType                      , only : col                
-  use PatchType                       , only : patch                
   !
   implicit none
   public   ! By default everything is public 
@@ -43,15 +31,8 @@ module clm_instMod
   !-----------------------------------------
 
   ! Physics types 
-  type(energyflux_type)                   :: energyflux_inst
-  type(surfalb_type)                      :: surfalb_inst
-  type(temperature_type)                  :: temperature_inst
-  type(urbanparams_type)                  :: urbanparams_inst
-  type(waterstate_type)                   :: waterstate_inst
   type(atm2lnd_type)                      :: atm2lnd_inst
   type(lnd2atm_type)                      :: lnd2atm_inst
-  type(glc_behavior_type), target         :: glc_behavior
-  type(topo_type)                         :: topo_inst
 
   public :: clm_instInit       ! Initialize
   public :: clm_instRest       ! Setup restart
@@ -62,61 +43,11 @@ contains
   !-----------------------------------------------------------------------
   subroutine clm_instInit(bounds)
     !
-    ! !USES: 
-    use clm_varpar                         , only : nlevsno
-    use initVerticalMod                    , only : initVertical
-    !
     ! !ARGUMENTS    
     type(bounds_type), intent(in) :: bounds  ! processor bounds
     !
     ! !LOCAL VARIABLES:
-    integer               :: c,l,g
-    integer               :: begp, endp
-    integer               :: begc, endc
-    integer               :: begl, endl
-    real(r8), allocatable :: h2osno_col(:)
     !----------------------------------------------------------------------
-
-    ! Note: h2osno_col initialized as local variable 
-    ! since needed to initialize vertical data structures  
-
-    begp = bounds%begp; endp = bounds%endp 
-    begc = bounds%begc; endc = bounds%endc 
-    begl = bounds%begl; endl = bounds%endl
-
-    allocate (h2osno_col(begc:endc))
-
-    ! snow water
-    do c = begc,endc
-       l = col%landunit(c)
-       g = col%gridcell(c)
-
-       ! In areas that should be snow-covered, it can be problematic to start with 0 snow
-       ! cover, because this can affect the long-term state through soil heating, albedo
-       ! feedback, etc. On the other hand, we would introduce hysteresis by putting too
-       ! much snow in places that are in a net melt regime, because the melt-albedo
-       ! feedback may not activate on time (or at all). So, as a compromise, we start with
-       ! a small amount of snow in places that are likely to be snow-covered for much or
-       ! all of the year.
-       if (lun%itype(l)==istice_mec) then
-          h2osno_col(c) = 100._r8
-       else if (lun%itype(l)==istsoil .and. abs(grc%latdeg(g)) >= 60._r8) then 
-          h2osno_col(c) = 100._r8
-       else
-          h2osno_col(c) = 0._r8
-       endif
-    end do
-
-    ! Initialize urban constants
-
-    call urbanparams_inst%Init(bounds)
-
-    ! Initialize vertical data components 
-
-    call initVertical(bounds,               &
-         glc_behavior, &
-         urbanparams_inst%thick_wall(begl:endl), &
-         urbanparams_inst%thick_roof(begl:endl))
 
     ! Initialize clm->drv and drv->clm data structures
 
@@ -125,28 +56,17 @@ contains
 
     ! Initialization of public data types
 
-    call temperature_inst%Init(bounds)
+! TODO SLIM: slevis keeping an example of an accumulated field as template
+!   ! ------------------------------------------------------------------------
+!   ! Initialize accumulated fields
+!   ! ------------------------------------------------------------------------
 
-    call waterstate_inst%Init(bounds, h2osno_col(begc:endc))
+!   ! The time manager needs to be initialized before this called is made, since
+!   ! the step size is needed. 
 
-    call energyflux_inst%Init(bounds, temperature_inst%t_grnd_col(begc:endc))
-
-    call surfalb_inst%Init(bounds)
-
-    call topo_inst%Init(bounds)
-
-    deallocate (h2osno_col)
-
-    ! ------------------------------------------------------------------------
-    ! Initialize accumulated fields
-    ! ------------------------------------------------------------------------
-
-    ! The time manager needs to be initialized before this called is made, since
-    ! the step size is needed. 
-
-    call t_startf('init_accflds')
-    call atm2lnd_inst%InitAccBuffer(bounds)
-    call t_stopf('init_accflds')
+!   call t_startf('init_accflds')
+!   call atm2lnd_inst%InitAccBuffer(bounds)
+!   call t_stopf('init_accflds')
 
   end subroutine clm_instInit
 
@@ -166,16 +86,6 @@ contains
     !-----------------------------------------------------------------------
 
     call atm2lnd_inst%restart (bounds, ncid, flag=flag)
-
-    call energyflux_inst%restart (bounds, ncid, flag=flag)
-
-    call temperature_inst%restart (bounds, ncid, flag=flag)
-
-    call waterstate_inst%restart (bounds, ncid, flag=flag)
-
-    call surfalb_inst%restart (bounds, ncid, flag=flag)
-
-    call topo_inst%restart (bounds, ncid, flag=flag)
 
  end subroutine clm_instRest
 

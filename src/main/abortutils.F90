@@ -62,7 +62,7 @@ CONTAINS
     character(len=*) , intent(in), optional :: msg    ! string to be printed
     !
     ! Local Variables:
-    integer :: igrc, ilun, icol 
+    integer :: igrc
     !-----------------------------------------------------------------------
 
     write(6,*)'calling getglobalwrite with decomp_index= ',decomp_index,' and clmlevel= ',trim(clmlevel)
