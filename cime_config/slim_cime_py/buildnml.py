@@ -366,13 +366,6 @@ def check_nml_data(nmlgen, case):
     if finidat_dest is not None and not interp:
         raise SystemExit("finidat_interp_dest can NOT be set if use_init_interp is not on")
 
-    # -----------------------------------------------------------------------------------------
-    # Requirements still in clm_inparm
-    # -----------------------------------------------------------------------------------------
-    fsurdat = nmlgen.get_value("fsurdat")
-    if fsurdat == "UNSET":
-        raise SystemExit("fsurdat file is NOT set and is required")
-
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 # Turn off unused-argument for inst_string, since isn't in place right now
