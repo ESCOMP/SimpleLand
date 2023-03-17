@@ -57,11 +57,13 @@ class TestSysSurdatModifier(unittest.TestCase):
         self._lon_range = [2, 10]  # expected in ascending order: [min, max]
         self._lat_range = [3, 12]  # expected in ascending order: [min, max]
         longxy, latixy, cols, rows = self._get_longxy_latixy(
-            _min_lon=min(self._lon_range), _max_lon=max(self._lon_range),
-            _min_lat=min(self._lat_range), _max_lat=max(self._lat_range)
+            _min_lon=min(self._lon_range),
+            _max_lon=max(self._lon_range),
+            _min_lat=min(self._lat_range),
+            _max_lat=max(self._lat_range),
         )
-        lon_1d = longxy[0,:]
-        lat_1d = latixy[:,0]
+        lon_1d = longxy[0, :]
+        lat_1d = latixy[:, 0]
         # create xarray dataset containing lev1 variables;
         # the surdat_modify tool reads variables like this from a surdat file
         var_1d = np.arange(cols)
@@ -98,7 +100,7 @@ class TestSysSurdatModifier(unittest.TestCase):
             )
         )
         # save in tempdir; _in and _out files are the same file in this case
-        write_output(self._surdat_in_data, self._surdat_in, self._surdat_in, 'surdat')
+        write_output(self._surdat_in_data, self._surdat_in, self._surdat_in, "surdat")
         # come up with modifications to be introduced to surdat_in
         self._modified_1 = ones_3d.astype(int)
         self._modified_2 = 0 * self._modified_1
@@ -160,7 +162,7 @@ class TestSysSurdatModifier(unittest.TestCase):
                 bucketdepth=(["time", "lsmlat", "lsmlon"], self._modified_4),
             )
         )
-        surdat_out_base_data = modified_1_through_4.merge(self._surdat_in_data, compat='override')
+        surdat_out_base_data = modified_1_through_4.merge(self._surdat_in_data, compat="override")
 
         # assert that surdat_out equals surdat_out_baseline
         self.assertTrue(surdat_out_data.equals(surdat_out_base_data))
@@ -206,19 +208,19 @@ class TestSysSurdatModifier(unittest.TestCase):
                     elif re.match(r" *glc_mask *=", line):
                         # in .cfg file user enters list of monthly (i.e. 12)
                         # values without punctuation (e.g. brackets or commas)
-                        line = "glc_mask = " + str(self._modified_1[:,0,0])[1:-1] + "\n"
+                        line = "glc_mask = " + str(self._modified_1[:, 0, 0])[1:-1] + "\n"
                     elif re.match(r" *alb_gvd *=", line):
                         # in .cfg file user enters list of monthly (i.e. 12)
                         # values without punctuation (e.g. brackets or commas)
-                        line = "alb_gvd = " + str(self._modified_2[:,0,0])[1:-1] + "\n"
+                        line = "alb_gvd = " + str(self._modified_2[:, 0, 0])[1:-1] + "\n"
                     elif re.match(r" *alb_svd *=", line):
                         # in .cfg file user enters list of monthly (i.e. 12)
                         # values without punctuation (e.g. brackets or commas)
-                        line = "alb_svd = " + str(self._modified_3[:,0,0])[1:-1] + "\n"
+                        line = "alb_svd = " + str(self._modified_3[:, 0, 0])[1:-1] + "\n"
                     elif re.match(r" *bucketdepth *=", line):
                         # in .cfg file user enters list of monthly (i.e. 12)
                         # values without punctuation (e.g. brackets or commas)
-                        line = "bucketdepth = " + str(self._modified_4[:,0,0])[1:-1] + "\n"
+                        line = "bucketdepth = " + str(self._modified_4[:, 0, 0])[1:-1] + "\n"
                     cfg_out.write(line)
 
     def _get_longxy_latixy(self, _min_lon, _max_lon, _min_lat, _max_lat):

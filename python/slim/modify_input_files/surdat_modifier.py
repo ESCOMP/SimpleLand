@@ -129,7 +129,7 @@ def surdat_modifier(cfg_path):
     # dictionary of entries to loop over
     # "variable name": [type, allowed_values, index]
     vars_3d = {
-        "glc_mask": [int, 'from_file', 0],
+        "glc_mask": [int, "from_file", 0],
         "alb_gvd": [float, None, 1],
         "alb_svd": [float, None, 2],
         "alb_gnd": [float, None, 3],
@@ -143,14 +143,14 @@ def surdat_modifier(cfg_path):
         "snowmask": [float, None, 11],
         "roughness": [float, None, 12],
         "evap_res": [float, None, 13],
-        "soil_type": [int, 'from_file', 14],
+        "soil_type": [int, "from_file", 14],
         "soil_tk_1d": [float, None, 15],
         "soil_cv_1d": [float, None, 16],
         "glc_tk_1d": [float, None, 17],
         "glc_cv_1d": [float, None, 18],
     }
     # initialize entry
-    entry = [None,None,None,None,None,None,None,None,None,None,None,None] * len(vars_3d)
+    entry = [None, None, None, None, None, None, None, None, None, None, None, None] * len(vars_3d)
     # not required: user may set these in the .cfg file
     for var, val in vars_3d.items():
         # obtain allowed values from surdat_in variable directly
