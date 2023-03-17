@@ -129,7 +129,7 @@ def surdat_modifier(cfg_path):
     # dictionary of entries to loop over
     # "variable name": [type, allowed_values, index]
     vars_3d = {
-        "glc_mask": [int, [0,1], 0],
+        "glc_mask": [int, 'from_file', 0],
         "alb_gvd": [float, None, 1],
         "alb_svd": [float, None, 2],
         "alb_gnd": [float, None, 3],
@@ -143,7 +143,7 @@ def surdat_modifier(cfg_path):
         "snowmask": [float, None, 11],
         "roughness": [float, None, 12],
         "evap_res": [float, None, 13],
-        "soil_type": [int, [0,2], 14],  # TODO I have not seen other values, yet
+        "soil_type": [int, 'from_file', 14],
         "soil_tk_1d": [float, None, 15],
         "soil_cv_1d": [float, None, 16],
         "glc_tk_1d": [float, None, 17],
@@ -153,12 +153,20 @@ def surdat_modifier(cfg_path):
     entry = [None,None,None,None,None,None,None,None,None,None,None,None] * len(vars_3d)
     # not required: user may set these in the .cfg file
     for var, val in vars_3d.items():
+        # obtain allowed values from surdat_in variable directly
+        # TODO prefer to obtain from surdat_in variable's metadata which will
+        #      contain more accurate information
+        if val[1] is not None:
+            allowed = modify_surdat.file[var]
+        else:
+            allowed = None
+        # obtain user-defined values from the configure file
         entry[val[2]] = get_config_value(
             config=config,
             section=section,
             item=var,
             file_path=cfg_path,
-            allowed_values=val[1],
+            allowed_values=allowed,
             is_list=True,
             convert_to_type=val[0],
             can_be_unset=True,
