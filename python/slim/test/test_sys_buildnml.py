@@ -72,6 +72,7 @@ class TestBuildNML(unittest.TestCase):
         )
         self.case = FakeCase(compiler=None, mpilib=None, debug=None)
         self.case.set_value("CASEROOT", self._testdir)
+        self.case.set_value("COMPSET", "2000_DATM%GSWP3v1_SLIM_SICE_SOCN_SROF_SGLC_SWAV")
         self.case.set_value("RUN_TYPE", "any")
         self.case.set_value("RUN_STARTDATE", "2000-01-01")
         self.case.set_value("RUN_REFCASE", "case.std")

@@ -413,7 +413,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # ----------------------------------------------------
     logger.info("Write namelists")
     namelist_file = os.path.join(confdir, "lnd_in")
-    # Include clm_inparm until can be removed...
     nmlgen.write_output_file(
         namelist_file,
         data_list_path,
@@ -423,8 +422,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
             "slim_history",
             "slim_perf",
             "finidat_consistency_checks",
-            "clm_initinterp_inparm",
-            "clm_inparm",
         ],
     )
 
