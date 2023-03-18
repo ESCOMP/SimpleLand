@@ -128,6 +128,7 @@ def surdat_modifier(cfg_path):
 
     # dictionary of entries to loop over
     # "variable name": [type, allowed_values, index]
+    # dimensions are time,lsmlat,lsmlon
     vars_3d = {
         "glc_mask": [int, "from_file", 0],
         "alb_gvd": [float, None, 1],
@@ -182,7 +183,7 @@ def surdat_modifier(cfg_path):
     # surdat variables inside a box but cannot change which points will
     # run as land and which as ocean.
     if defaults:
-        modify_surdat.set_defaults()  # set 3D variables
+        modify_surdat.set_defaults(vars_3d, allowed)  # set 3D variables
         logger.info("defaults complete")
 
     # User-selected values will overwrite either

@@ -5,14 +5,17 @@ Run this code by using the following wrapper script:
 The wrapper script includes a full description and instructions.
 """
 
+import os
 import logging
+from configparser import ConfigParser
 
 from math import isclose
 import numpy as np
 import xarray as xr
 
 from slim.utils import abort
-from slim.config_utils import lon_range_0_to_360
+from slim.path_utils import path_to_slim_root
+from slim.config_utils import lon_range_0_to_360, get_config_value
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +148,7 @@ class ModifySurdat:
             self.not_rectangle, other=val
         )
 
-    def set_defaults(self):
+    def set_defaults(self, vars_3d, allowed):
         """
         Description
         -----------
@@ -162,29 +165,27 @@ class ModifySurdat:
         # Default values of 3d variables. For guidance in selecting values, see
         # /glade/p/cesmdata/cseg/inputdata/lnd/slim/surdat/
         # globalconst_alpha0.2_soilcv2e6_hc0.1_rs100.0_glc_hc0.01_f19_cdf5_20211105.nc
-        # Dimensions are time,lsmlat,lsmlon
-        # Dictionary of the variables that we will loop over
-        vars_3d = {
-            "glc_mask": [0] * self.months,
-            "alb_gvd": [0.2] * self.months,
-            "alb_svd": [0.8] * self.months,
-            "alb_gnd": [0.3] * self.months,
-            "alb_snd": [0.6] * self.months,
-            "alb_gvf": [0.2] * self.months,
-            "alb_svf": [0.8] * self.months,
-            "alb_gnf": [0.3] * self.months,
-            "alb_snf": [0.6] * self.months,
-            "bucketdepth": [200] * self.months,
-            "emissivity": [1] * self.months,
-            "snowmask": [50] * self.months,
-            "roughness": [0.1] * self.months,
-            "evap_res": [100] * self.months,
-            "soil_type": [0] * self.months,
-            "soil_tk_1d": [1.5] * self.months,
-            "soil_cv_1d": [2e6] * self.months,
-            "glc_tk_1d": [2.4] * self.months,
-            "glc_cv_1d": [1.9e6] * self.months,
-        }
+        # read the .cfg (config) file containing the defaults
+        config = ConfigParser()
+        cfg_path = os.path.join(
+            path_to_slim_root(), "tools/modify_input_files/modify_surdat_defaults.cfg"
+        )
+        config.read(cfg_path)
+        section = config.sections()[0]  # name of the first section
 
+        # initialize entry
+        entry = [None, None, None, None, None, None, None, None, None, None,
+                 None, None] * len(vars_3d)
         for var, val in vars_3d.items():
-            self.set_monthly_values(var=var, val=val)
+            # obtain default values from the configure file
+            entry[val[2]] = get_config_value(
+                config=config,
+                section=section,
+                item=var,
+                file_path=cfg_path,
+                allowed_values=allowed,
+                is_list=True,
+                convert_to_type=val[0],
+                can_be_unset=True,
+            )
+            self.set_monthly_values(var=var, val=entry[val[2]])
