@@ -58,10 +58,10 @@ def surdat_modifier(cfg_path):
 
     # required but fallback values available for variables omitted
     # entirely from the .cfg file
-    idealized = get_config_value(
+    defaults = get_config_value(
         config=config,
         section=section,
-        item="idealized",
+        item="defaults",
         file_path=cfg_path,
         convert_to_type=bool,
     )
@@ -126,181 +126,52 @@ def surdat_modifier(cfg_path):
         errmsg = "Output file already exists: " + surdat_out
         abort(errmsg)
 
+    # dictionary of entries to loop over
+    # "variable name": [type, allowed_values, index]
+    # dimensions are time,lsmlat,lsmlon
+    vars_3d = {
+        "glc_mask": [int, "from_file", 0],
+        "alb_gvd": [float, None, 1],
+        "alb_svd": [float, None, 2],
+        "alb_gnd": [float, None, 3],
+        "alb_snd": [float, None, 4],
+        "alb_gvf": [float, None, 5],
+        "alb_svf": [float, None, 6],
+        "alb_gnf": [float, None, 7],
+        "alb_snf": [float, None, 8],
+        "bucketdepth": [float, None, 9],
+        "emissivity": [float, None, 10],
+        "snowmask": [float, None, 11],
+        "roughness": [float, None, 12],
+        "evap_res": [float, None, 13],
+        "soil_type": [int, "from_file", 14],
+        "soil_tk_1d": [float, None, 15],
+        "soil_cv_1d": [float, None, 16],
+        "glc_tk_1d": [float, None, 17],
+        "glc_cv_1d": [float, None, 18],
+    }
+    # initialize entry
+    entry = [None, None, None, None, None, None, None, None, None, None, None, None] * len(vars_3d)
     # not required: user may set these in the .cfg file
-    glc_mask = get_config_value(
-        config=config,
-        section=section,
-        item="glc_mask",
-        file_path=cfg_path,
-        allowed_values=[0, 1],
-        is_list=True,
-        convert_to_type=int,
-        can_be_unset=True,
-    )
-    alb_gvd = get_config_value(
-        config=config,
-        section=section,
-        item="alb_gvd",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    alb_svd = get_config_value(
-        config=config,
-        section=section,
-        item="alb_svd",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    alb_gnd = get_config_value(
-        config=config,
-        section=section,
-        item="alb_gnd",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    alb_snd = get_config_value(
-        config=config,
-        section=section,
-        item="alb_snd",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    alb_gvf = get_config_value(
-        config=config,
-        section=section,
-        item="alb_gvf",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    alb_svf = get_config_value(
-        config=config,
-        section=section,
-        item="alb_svf",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    alb_gnf = get_config_value(
-        config=config,
-        section=section,
-        item="alb_gnf",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    alb_snf = get_config_value(
-        config=config,
-        section=section,
-        item="alb_snf",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    bucketdepth = get_config_value(
-        config=config,
-        section=section,
-        item="bucketdepth",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    emissivity = get_config_value(
-        config=config,
-        section=section,
-        item="emissivity",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    snowmask = get_config_value(
-        config=config,
-        section=section,
-        item="snowmask",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    roughness = get_config_value(
-        config=config,
-        section=section,
-        item="roughness",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    evap_res = get_config_value(
-        config=config,
-        section=section,
-        item="evap_res",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    # max_soil_type = int(modify_surdat.file.mxsoil_type)  # TODO placeholder
-    soil_type = get_config_value(
-        config=config,
-        section=section,
-        item="soil_type",
-        file_path=cfg_path,
-        # allowed_values=range(1, max_soil_type + 1),  # 1 to max_soil_type
-        is_list=True,
-        convert_to_type=int,
-        can_be_unset=True,
-    )
-    soil_tk_1d = get_config_value(
-        config=config,
-        section=section,
-        item="soil_tk_1d",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    soil_cv_1d = get_config_value(
-        config=config,
-        section=section,
-        item="soil_cv_1d",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    glc_tk_1d = get_config_value(
-        config=config,
-        section=section,
-        item="glc_tk_1d",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
-    glc_cv_1d = get_config_value(
-        config=config,
-        section=section,
-        item="glc_cv_1d",
-        file_path=cfg_path,
-        is_list=True,
-        convert_to_type=float,
-        can_be_unset=True,
-    )
+    for var, val in vars_3d.items():
+        # obtain allowed values from surdat_in variable directly
+        # TODO prefer to obtain from surdat_in variable's metadata which will
+        #      contain more accurate information
+        if val[1] is not None:
+            allowed = modify_surdat.file[var]
+        else:
+            allowed = None
+        # obtain user-defined values from the configure file
+        entry[val[2]] = get_config_value(
+            config=config,
+            section=section,
+            item=var,
+            file_path=cfg_path,
+            allowed_values=allowed,
+            is_list=True,
+            convert_to_type=val[0],
+            can_be_unset=True,
+        )
 
     # ------------------------------
     # modify surface data properties
@@ -311,39 +182,17 @@ def surdat_modifier(cfg_path):
     # MCT or the ocean mesh files for NUOPC. Here the user may specify
     # surdat variables inside a box but cannot change which points will
     # run as land and which as ocean.
-    if idealized:
-        modify_surdat.set_idealized()  # set 3D variables
-        logger.info("idealized complete")
+    if defaults:
+        modify_surdat.set_defaults(vars_3d, allowed)  # set 3D variables
+        logger.info("defaults complete")
 
     # User-selected values will overwrite either
-    # - set_idealized's default values if idealized = True or
-    # - the input surdat's values if idealized = False
-    # Dictionary of 3d variables to loop over
-    vars_3d = {
-        "glc_mask": glc_mask,
-        "alb_gvd": alb_gvd,
-        "alb_svd": alb_svd,
-        "alb_gnd": alb_gnd,
-        "alb_snd": alb_snd,
-        "alb_gvf": alb_gvf,
-        "alb_svf": alb_svf,
-        "alb_gnf": alb_gnf,
-        "alb_snf": alb_snf,
-        "bucketdepth": bucketdepth,
-        "emissivity": emissivity,
-        "snowmask": snowmask,
-        "roughness": roughness,
-        "evap_res": evap_res,
-        "soil_type": soil_type,
-        "soil_tk_1d": soil_tk_1d,
-        "soil_cv_1d": soil_cv_1d,
-        "glc_tk_1d": glc_tk_1d,
-        "glc_cv_1d": glc_cv_1d,
-    }
+    # - set_default's values if defaults = True or
+    # - the input surdat's values if defaults = False
 
     for var, val in vars_3d.items():
-        if val is not None:
-            modify_surdat.set_monthly_values(var=var, val=val)
+        if entry[val[2]] is not None:
+            modify_surdat.set_monthly_values(var=var, val=entry[val[2]])
 
     # ----------------------------------------------
     # Output the now modified SLIM surface data file
