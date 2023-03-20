@@ -174,8 +174,9 @@ class ModifySurdat:
         section = config.sections()[0]  # name of the first section
 
         # initialize entry
-        entry = [None, None, None, None, None, None, None, None, None, None,
-                 None, None] * len(vars_3d)
+        entry = [None, None, None, None, None, None, None, None, None, None, None, None] * len(
+            vars_3d
+        )
         for var, val in vars_3d.items():
             # obtain default values from the configure file
             entry[val[2]] = get_config_value(
