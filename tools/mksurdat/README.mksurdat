@@ -1,26 +1,42 @@
-mksurdat is a tool that generates SLIM surdat files. It reads and averages
-CTSM history files and outputs a SLIM surdat file.
+mksurdat is a jupyter notebook tool that generates SLIM surdat files.
+It reads pre-averaged ctsm and cpl history files and outputs a SLIM
+surdat file.
 
 Files involved
 --------------
-python/slim/mksurdat/mksurdat.py
-python/slim/mksurdat/history_averager.py # TODO Move this up one directory?
-tools/mksurdat/mksurdat
-tools/mksurdat/mksurdat_template.cfg
+python/slim/mksurdat/mksurdat.ipynb
 
 Instructions
 ------------
-To run on Cheyenne/Casper/Izumi
-1) (Un)load, execute, and activate the following:
-module unload python
-module load conda
-./py_env_create
-conda activate slim_pylib  # conda activate ctsm_pylib UNTIL slim separates from ctsm
-(Use "deactivate" to reverse the latter.)
-2) Copy, then modify the template configure file mksurdat_template.cfg, which
-contains all the arguments needed by the script.
-3) Run the script ./mksurdat pointing to the copied/modified .cfg file,
-e.g. mksurdat_users_copy.cfg
-./mksurdat mksurdat_users_copy.cfg
-See mksurdat_template.cfg for required and optional settings.
-4) Use the --verbose option to see progress output on your screen
+To run on Cheyenne/Casper
+1) Before starting the jupyter session for the first time, set up your
+conda environment:
+
+> cd /path/to/your_checked_out_ctsm_directory
+> ./py_env_create  # needed the first time & periodically for environment updates
+> conda activate ctsm_pylib
+> pip install ipykernel
+
+Also you need the next line to use nco (netcdf operators) a bit later:
+> module load nco
+
+2) On your browser go here:
+https://jupyterhub.hpc.ucar.edu/
+
+a) Start default server
+b) Launch server
+c) Use jupyter's file navigation to get to
+your_checked_out_ctsm_directory/python/slim/mksurdat
+d) Open mksurdat.ipynb
+e) Use the menu to select Kernel --> Change Kernel --> ctsm_pylib
+f) In the notebook's second cell, modify the following settings:
+- casename
+- start_yr
+- surfdat_file (not required; tool will work without this file)
+g) In the notebook's third cell, find a suggestion for generating
+concatenated ctsm and cpl history files using nco
+
+9) Using the menu, select Run, Run all cells
+
+10) You should have a new surdat file in the same directory as the .ipynb
+file (see Files involved above) in less than a minute
