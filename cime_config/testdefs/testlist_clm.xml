@@ -34,7 +34,7 @@
       <option name="comment">smoke test with SOM for CAM5 at 1850 (historical starting in 1850) saving cplhist files</option>
     </options>
   </test>
-  <test name="ERS_D_Ld3" grid="f45_f45_mg37" compset="I2000SlimRsGs" testmods="slim/default">
+  <test name="ERS_D_Ld5" grid="f45_f45_mg37" compset="I2000SlimRsGs" testmods="slim/default">
     <machines>
       <machine name="izumi" compiler="gnu"   category="aux_slim"/>
       <machine name="izumi" compiler="nag"   category="aux_slim"/>
@@ -47,7 +47,7 @@
       <option name="comment">Short term debug restart test with I case at f45 resolution</option>
     </options>
   </test>
-  <test name="ERS_D_Ld3" grid="f10_f10_mg37" compset="I2000SlimRsGs" testmods="slim/default">
+  <test name="ERS_D_Ld5" grid="f10_f10_mg37" compset="I2000SlimRsGs" testmods="slim/default">
     <machines>
       <machine name="izumi" compiler="gnu"   category="aux_slim"/>
       <machine name="izumi" compiler="nag"   category="aux_slim"/>
@@ -58,7 +58,7 @@
       <option name="comment">Short term debug restart test with I case at f10 resolution on izumi</option>
     </options>
   </test>
-  <test name="ERS_Ld3" grid="f10_f10_mg37" compset="FLTHISTC5I5Slim" testmods="slim/default">
+  <test name="ERS_Ld5" grid="f10_f10_mg37" compset="FLTHISTC5I5Slim" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
@@ -68,7 +68,7 @@
       <option name="comment">Short term debug restart test with F case at f10 resolution on cheyenne</option>
     </options>
   </test>
-  <test name="ERS_D_Ld3" grid="f09_f09_mg17" compset="I2000SlimRsGs" testmods="slim/default">
+  <test name="ERS_D_Ld5" grid="f09_f09_mg17" compset="I2000SlimRsGs" testmods="slim/default">
     <machines>
       <machine name="izumi" compiler="gnu"   category="aux_slim"/>
       <machine name="izumi" compiler="nag"   category="aux_slim"/>
@@ -79,7 +79,7 @@
       <option name="comment">Short term debug restart test with I case at f09 resolution on izumi</option>
     </options>
   </test>
-  <test name="ERS_Ld3_P144x1" grid="f09_f09_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
+  <test name="ERS_Ld5_P144x1" grid="f09_f09_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
