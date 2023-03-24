@@ -127,42 +127,39 @@ def surdat_modifier(cfg_path):
         abort(errmsg)
 
     # dictionary of entries to loop over
-    # "variable name": [type, allowed_values, index]
+    # "variable name": [type, index]
     # dimensions are time,lsmlat,lsmlon
     vars_3d = {
-        "glc_mask": [int, "from_file", 0],
-        "alb_gvd": [float, None, 1],
-        "alb_svd": [float, None, 2],
-        "alb_gnd": [float, None, 3],
-        "alb_snd": [float, None, 4],
-        "alb_gvf": [float, None, 5],
-        "alb_svf": [float, None, 6],
-        "alb_gnf": [float, None, 7],
-        "alb_snf": [float, None, 8],
-        "bucketdepth": [float, None, 9],
-        "emissivity": [float, None, 10],
-        "snowmask": [float, None, 11],
-        "roughness": [float, None, 12],
-        "evap_res": [float, None, 13],
-        "soil_type": [int, "from_file", 14],
-        "soil_tk_1d": [float, None, 15],
-        "soil_cv_1d": [float, None, 16],
-        "glc_tk_1d": [float, None, 17],
-        "glc_cv_1d": [float, None, 18],
+        "glc_mask": [int, 0],
+        "alb_gvd": [float, 1],
+        "alb_svd": [float, 2],
+        "alb_gnd": [float, 3],
+        "alb_snd": [float, 4],
+        "alb_gvf": [float, 5],
+        "alb_svf": [float, 6],
+        "alb_gnf": [float, 7],
+        "alb_snf": [float, 8],
+        "bucketdepth": [float, 9],
+        "emissivity": [float, 10],
+        "snowmask": [float, 11],
+        "roughness": [float, 12],
+        "evap_res": [float, 13],
+        "soil_type": [int, 14],
+        "soil_tk_1d": [float, 15],
+        "soil_cv_1d": [float, 16],
+        "glc_tk_1d": [float, 17],
+        "glc_cv_1d": [float, 18],
     }
     # initialize entry
     entry = [None, None, None, None, None, None, None, None, None, None, None, None] * len(vars_3d)
     # not required: user may set these in the .cfg file
     for var, val in vars_3d.items():
-        # obtain allowed values from surdat_in variable directly
-        # TODO prefer to obtain from surdat_in variable's metadata which will
-        #      contain more accurate information
-        if val[1] is not None:
-            allowed = modify_surdat.file[var]
-        else:
+        # obtain allowed from surdat_in variable's metadata
+        allowed = modify_surdat.file[var].attrs['valid_range']
+        if not allowed.any():  # which means that allowed is "empty"
             allowed = None
         # obtain user-defined values from the configure file
-        entry[val[2]] = get_config_value(
+        entry[val[1]] = get_config_value(
             config=config,
             section=section,
             item=var,
@@ -191,8 +188,8 @@ def surdat_modifier(cfg_path):
     # - the input surdat's values if defaults = False
 
     for var, val in vars_3d.items():
-        if entry[val[2]] is not None:
-            modify_surdat.set_monthly_values(var=var, val=entry[val[2]])
+        if entry[val[1]] is not None:
+            modify_surdat.set_monthly_values(var=var, val=entry[val[1]])
 
     # ----------------------------------------------
     # Output the now modified SLIM surface data file
