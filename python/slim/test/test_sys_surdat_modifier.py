@@ -99,6 +99,41 @@ class TestSysSurdatModifier(unittest.TestCase):
                 glc_cv_1d=(["time", "lsmlat", "lsmlon"], var_lev1),
             )
         )
+        # Add attributes to all the variables
+        attr_map = {
+            "glc_mask": ["unitless", 1e36, "Glacier/ice sheet mask", [0, 1]],
+            "alb_gvd": ["unitless", 1e36, "Visible direct albedo for bare ground", []],
+            "alb_svd": ["unitless", 1e36, "Visible direct albedo for deep snow", []],
+            "alb_gnd": ["unitless", 1e36, "NIR direct albedo for bare ground", []],
+            "alb_snd": ["unitless", 1e36, "NIR direct albedo for deep snow", []],
+            "alb_gvf": ["unitless", 1e36, "Visible diffuse albedo for bare ground", []],
+            "alb_svf": ["unitless", 1e36, "Visible diffuse albedo for deep snow", []],
+            "alb_gnf": ["unitless", 1e36, "NIR diffuse albedo for bare ground", []],
+            "alb_snf": ["unitless", 1e36, "NIR diffuse albedo for deep snow", []],
+            "bucketdepth": ["kg/m2", 1e36, "Bucket capacity", []],
+            "emissivity": ["unitless", 1e36, "Surface emissivity for longwave radiation", []],
+            "snowmask": ["kg/m2", 1e36, "Snow-masking depth", []],
+            "roughness": ["m", 1e36, "Vegetation height", []],
+            "evap_res": ["s/m", 1e36, "Evaporative resistance", []],
+            "l2xavg_Fall_flxdst1": ["unknown", 1e36, "Dust flux", []],
+            "l2xavg_Fall_flxdst2": ["unknown", 1e36, "Dust flux", []],
+            "l2xavg_Fall_flxdst3": ["unknown", 1e36, "Dust flux", []],
+            "l2xavg_Fall_flxdst4": ["unknown", 1e36, "Dust flux", []],
+            "soil_type": ["unitless", 1e36, "Soil type (unused)", [0]],
+            "soil_tk_1d": ["W/m/K", 1e36, "Soil thermal conductivity", []],
+            "soil_cv_1d": ["J/m3/K", 1e36, "Soil heat capacity", []],
+            "glc_tk_1d": ["W/m/K", 1e36, "Ice thermal conductivity", []],
+            "glc_cv_1d": ["J/m3/K", 1e36, "Ice heat capacity", []],
+            "lsmlat": ["degrees north", False, "Coordinate latitude", []],
+            "lsmlon": ["degrees east", False, "Coordinate longitude", []],
+            "time": ["month", False, "", []],
+        }
+        for var, val in attr_map.items():
+            self._surdat_in_data[var].attrs["Units"] = val[0]
+            self._surdat_in_data[var].attrs["_FillValue"] = val[1]
+            self._surdat_in_data[var].attrs["long_name"] = val[2]
+            self._surdat_in_data[var].attrs["valid_range"] = val[3]
+
         # save in tempdir; _in and _out files are the same file in this case
         write_output(self._surdat_in_data, self._surdat_in, self._surdat_in, "surdat")
         # come up with modifications to be introduced to surdat_in

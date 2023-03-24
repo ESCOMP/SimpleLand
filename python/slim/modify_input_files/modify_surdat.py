@@ -132,7 +132,7 @@ class ModifySurdat:
             abort(errmsg)
         for mon in self.file.time - 1:  # loop over the months
             # set 3D variable
-            self.setvar_lev1(var, val[int(mon)], lev1_dim=mon)
+            self.setvar_lev1(var, val[int(mon)], lev1_dim=int(mon))
 
     def setvar_lev1(self, var, val, lev1_dim):
         """
@@ -178,7 +178,7 @@ class ModifySurdat:
         )
         for var, val in vars_3d.items():
             # obtain default values from the configure file
-            entry[val[2]] = get_config_value(
+            entry[val[1]] = get_config_value(
                 config=config,
                 section=section,
                 item=var,
@@ -188,4 +188,4 @@ class ModifySurdat:
                 convert_to_type=val[0],
                 can_be_unset=True,
             )
-            self.set_monthly_values(var=var, val=entry[val[2]])
+            self.set_monthly_values(var=var, val=entry[val[1]])
