@@ -133,7 +133,7 @@ class ModifySurdat:
             abort(errmsg)
         for mon in self.file.time - 1:  # loop over the months
             # set 3D variable
-            self.setvar_lev1(var, val[int(mon)], lev1_dim=mon)
+            self.setvar_lev1(var, val[int(mon)], lev1_dim=int(mon))
 
     def setvar_lev1(self, var, val, lev1_dim):
         """
