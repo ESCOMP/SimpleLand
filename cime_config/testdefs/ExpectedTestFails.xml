@@ -77,22 +77,10 @@
       <issue>ESCOMP/SimpleLand#14</issue>
     </phase>
   </test>
-  <test name="ERP_D_Ld60.f19_f19_mg17.I1850SlimRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850Monthly">
-    <phase name="COMPARE_base_rest">
-      <status>FAIL</status>
-      <issue>ESCOMP/SimpleLand#14</issue>
-    </phase>
-  </test>
   <test name="ERP_D_Ld60.f19_f19_mg17.I1850SlimRsGs.izumi_intel.slim-realistic_fromCLM5_1850Monthly">
     <phase name="COMPARE_base_rest">
       <status>FAIL</status>
       <issue>ESCOMP/SimpleLand#14</issue>
-    </phase>
-  </test>
-  <test name="SMS_Ld400.f19_f19_mg17.IHistSlimQianRsGs.cheyenne_intel.slim-realistic_fromCLM5_1850Monthly">
-    <phase name="RUN">
-      <status>FAIL</status>
-      <issue>ESCOMP/SimpleLand#25?</issue>
     </phase>
   </test>
   <test name="SMS.f19_f19_mg17.I2000SlimRsGs.cheyenne_intel.slim-global_uniform">
