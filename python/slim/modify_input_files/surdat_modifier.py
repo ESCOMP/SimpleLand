@@ -155,7 +155,7 @@ def surdat_modifier(cfg_path):
     # not required: user may set these in the .cfg file
     for var, val in vars_3d.items():
         # obtain allowed from surdat_in variable's metadata
-        allowed = modify_surdat.file[var].attrs['valid_range']
+        allowed = modify_surdat.file[var].attrs["valid_range"]
         if not allowed.any():  # which means that allowed is "empty"
             allowed = None
         # obtain user-defined values from the configure file
