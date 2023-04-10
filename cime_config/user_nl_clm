@@ -3,8 +3,6 @@
 ! namelist_var = new_namelist_value 
 !
 ! EXCEPTIONS: 
-! Set use_cn             by the compset you use and CLM_BLDNML_OPTS -bgc  setting
-! Set co2_ppmv           with CCSM_CO2_PPMV                      option
 ! Set dtime              with L_NCPL                             option
 ! Set fatmlndfrc         with LND_DOMAIN_PATH/LND_DOMAIN_FILE    options
 ! Set finidat            with RUN_REFCASE/RUN_REFDATE/RUN_REFTOD options for hybrid or branch cases
