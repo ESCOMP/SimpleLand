@@ -190,7 +190,7 @@
       <option name="comment">Restart test with pe layout change with 1850 compset test for standalone SLIM</option>
     </options>
   </test>
-  <test name="SMS" grid="f19_f19_mg17_PS" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850">
+  <test name="SMS_PS" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
@@ -232,7 +232,7 @@
       <option name="comment">Restart test changing PE count for 2000 compset test for standalone SLIM with realistic conditions</option>
     </options>
   </test>
-  <test name="SMS" grid="f19_f19_mg17_PS" compset="I2000SlimRsGs" testmods="slim/global_uniform">
+  <test name="SMS_PS" grid="f19_f19_mg17" compset="I2000SlimRsGs" testmods="slim/global_uniform">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
