@@ -89,7 +89,7 @@
       <option name="comment">Short term debug restart test with F case at f09 resolution on cheyenne; override tasks and threads to 144x1 because F cases get their tasks and threads from CAM and SLIM needs threads = 1</option>
     </options>
   </test>
-  <test name="ERS_D_Ld60" grid="f19_g16" compset="ELT2000ClimoTESTC5I5Slim" testmods="slim/global_uniform_g16_SOM">
+  <test name="ERS_D_L10" grid="f19_g16" compset="ELT2000ClimoTESTC5I5Slim" testmods="slim/global_uniform_g16_SOM">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
@@ -180,7 +180,7 @@
       <option name="comment">Change PE count test for standalone SLIM</option>
     </options>
   </test>
-  <test name="ERP_D_Ld60_PS" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850Monthly">
+  <test name="ERP_D_Ld10_PS" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
