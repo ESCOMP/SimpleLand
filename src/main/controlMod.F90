@@ -96,7 +96,6 @@ contains
     integer :: ierr                 ! error code
     integer :: unitn                ! unit for namelist file
     integer :: dtime                ! Integer time-step
-    integer :: override_nsrest      ! If want to override the startup type sent from driver
     !------------------------------------------------------------------------
 
     ! ----------------------------------------------------------------------
@@ -110,8 +109,7 @@ contains
     ! Other options
 
     namelist /clm_inparm/  &
-         clump_pproc, wrtdia, &
-         override_nsrest
+         clump_pproc, wrtdia
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
 
@@ -141,9 +139,6 @@ contains
 #else
     clump_pproc = 1
 #endif
-    nlevsno = 5
-
-    override_nsrest = nsrest
 
     if (masterproc) then
 
@@ -176,17 +171,6 @@ contains
        ! Check for namelist variables that SLIM can NOT use
        if ( single_column )then
           call endrun(msg='ERROR SLIM can NOT run with single_column on'//errMsg(sourcefile, __LINE__))
-       end if
-
-       ! Override start-type (can only override to branch (3)  and only 
-       ! if the driver is a startup type
-       if ( override_nsrest /= nsrest )then
-           if ( override_nsrest /= nsrBranch .and. nsrest /= nsrStartup )then
-              call endrun(msg= ' ERROR: can ONLY override clm start-type ' // &
-                   'to branch type and ONLY if driver is a startup type'// &
-                   errMsg(sourcefile, __LINE__))
-           end if
-           call clm_varctl_set( nsrest_in=override_nsrest )
        end if
 
     endif   ! end of if-masterproc if-block
