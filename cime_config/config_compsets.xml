@@ -64,7 +64,7 @@
   <!-- CAM5 Historical -->
   <compset>
     <alias>FLTHISTC5I5Slim</alias>
-    <lname>HIST_CAM50_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>HIST_CAM50_SLIM_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!--
