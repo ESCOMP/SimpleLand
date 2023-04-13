@@ -1,18 +1,3 @@
-<<<<<<< HEAD
 #!/bin/bash
 CIMEROOT=`./xmlquery --value -s CIMEROOT`
 cp $CIMEROOT/../cime_config/testdefs/testmods_dirs/slim/g16_SOM/user_docn* .
-||||||| 3ec536a
-=======
-#!/bin/bash
-CIMEROOT=`./xmlquery --value -s CIMEROOT`
-<<<<<<<< HEAD:cime_config/testdefs/testmods_dirs/slim/g16_SOM/shell_commands
-cp $CIMEROOT/../cime_config/testdefs/testmods_dirs/slim/g16_SOM/user_docn* .
-./xmlchange CLM_CO2_TYPE="diagnostic"
-|||||||| 3ec536a:cime_config/testdefs/testmods_dirs/clm/g16_SOM/shell_commands
-cp $CIMEROOT/../cime_config/testdefs/testmods_dirs/clm/g16_SOM/user_docn* .
-./xmlchange CLM_CO2_TYPE="diagnostic"
-========
-cp $CIMEROOT/../cime_config/testdefs/testmods_dirs/clm/g16_SOM/user_docn* .
->>>>>>>> escomp/cesm2_1_slim:cime_config/testdefs/testmods_dirs/clm/g16_SOM/shell_commands
->>>>>>> escomp/cesm2_1_slim
