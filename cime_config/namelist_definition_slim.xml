@@ -292,21 +292,19 @@
   <!-- Initial interpolation namelists still in place                 -->
   <!-- =============================================================  -->
 
-  <entry id="check_finidat_pct_consistency">
+  <entry id="check_finidat_year_consistency">
      <type>logical</type>
      <category>datasets</category>
      <group>finidat_consistency_checks</group>
-     <default_value>.true.</default_value>
-     <values>
-           <value>.true.</value>
-     </values>
+     <default_value>.false.</default_value>
+       <values>
+           <value>.false.</value>
+       </values>
      <desc>
-           If TRUE (which is the default), check consistency between pct_pft on the finidat file
-           and pct_pft read from the surface dataset.
+           If TRUE, check consistency between year on the finidat file
+           and the current model year. This check is only done for a transient run.
 
            This requires that finidat be non-blank.
-
-           This should probably be removed.
      </desc>
   </entry>
 
