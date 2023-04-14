@@ -231,8 +231,8 @@ contains
        end if
        call getfil( path, file, 0 )
 
-       ! tcraig, adding xx. and .clm2 makes this more robust
-       ctest = 'xx.'//trim(caseid)//'.clm2'
+       ! tcraig, adding xx. and .slim makes this more robust
+       ctest = 'xx.'//trim(caseid)//'.slim'
        ftest = 'xx.'//trim(file)
        status = index(trim(ftest),trim(ctest))
        if (status /= 0 .and. .not.(brnch_retain_casename)) then
@@ -409,7 +409,7 @@ contains
     character(len=*), intent(in) :: rdate   ! input date for restart file name 
     !-----------------------------------------------------------------------
 
-    restFile_filename = "./"//trim(caseid)//".clm2"//trim(inst_suffix)//&
+    restFile_filename = "./"//trim(caseid)//".slim"//trim(inst_suffix)//&
          ".r."//trim(rdate)//".nc"
     if (masterproc) then
        write(iulog,*)'writing restart file ',trim(restFile_filename),' for model date = ',rdate
