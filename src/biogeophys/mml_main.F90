@@ -20,10 +20,12 @@ module mml_mainMod
 
   
   ! !USES:
+#include "shr_assert.h"
   ! MML: bounds & data type
 #include "shr_assert.h"
   use decompMod , 	only : bounds_type
   use spmdMod   ,       only : masterproc
+  use shr_sys_mod,      only : shr_sys_flush
   use atm2lndType,	only : atm2lnd_type
   use lnd2atmType, 	only : lnd2atm_type  ! MML: probably going to need a lnd2atm type
   ! to hand to the coupler as data coming from the land going to the atmosphere (l2x) 
@@ -52,9 +54,12 @@ module mml_mainMod
   
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: mml_main
+
+  public :: readnml_datasets
   
   ! !PRIVATE MEMBER FUNCTIONS:
   private :: nc_import
+  private :: apply_use_init_interp  ! apply the use_init_interp namelist option, if set
   
   ! mml: can I store the subroutines in other files? (just to keep this one from getting outrageously long?
   ! try it... (move nc_import, for starters... )
@@ -79,13 +84,150 @@ module mml_mainMod
  			! then used those coeffs instead of the more recent one!) Instead, I'm using the equivalent, but newer, clm 
  			! function QSat, and doing the lhflx calculations with specific humidity rather than saturation vapour pressure
   
- 
+  character(len=*), parameter, private :: sourcefile = &
+       __FILE__
 
 contains
   
   !-----------------------------------------------------------------------
+  subroutine readnml_datasets( NLFilename )
+    use shr_mpi_mod     , only : shr_mpi_bcast
+    use spmdMod         , only : mpicom
+    use clm_nlUtilsMod  , only : find_nlgroup_name
+    use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest, nsrest
+    use clm_varctl      , only : nrevsn, fname_len, mml_surdat, finidat_interp_source
+    use clm_varctl      , only : nsrStartup, nsrContinue, nsrBranch
+  
+    implicit none
+
+    character(len=*), intent(IN) :: NLFilename   ! Namelist file names
+    !-----------------------------------------------------------------------
+    ! !LOCAL VARIABLES:
+    integer                     :: nu_nml           ! Unit for namelist file
+    integer                     :: nml_error        ! Error code
+    logical                     :: use_init_interp  ! Turn on interpolation of initial conditions
+    character(len=*), parameter :: nml_name = 'slim_data_and_initial'
+    character(len=*), parameter :: subname = 'readnml_datasets'
+    namelist /slim_data_and_initial/ mml_surdat, finidat, fatmlndfrc
+    namelist /slim_data_and_initial/ finidat_interp_dest, nrevsn, use_init_interp
+    !-----------------------------------------------------------------------
+
+    fatmlndfrc = ' '
+    use_init_interp = .false.
+    if (masterproc) then
+       open( newunit=nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
+       call find_nlgroup_name(nu_nml, nml_name, status=nml_error) 
+       if (nml_error == 0) then
+          read(nu_nml, nml=slim_data_and_initial,iostat=nml_error)
+          if (nml_error /= 0) then
+             call endrun(subname // ':: ERROR reading '//nml_name//' namelist')
+          end if
+       else
+          call endrun(subname // ':: ERROR could NOT find '//nml_name//' namelist')
+       end if
+       close(nu_nml)
+    end if
+    call shr_mpi_bcast( mml_surdat, mpicom )
+    call shr_mpi_bcast( finidat, mpicom )
+    call shr_mpi_bcast( finidat_interp_dest, mpicom )
+    call shr_mpi_bcast( nrevsn, mpicom )
+    call shr_mpi_bcast( fatmlndfrc, mpicom )
+    call shr_mpi_bcast( use_init_interp, mpicom )
+
+    if (use_init_interp) then
+       call apply_use_init_interp(finidat, finidat_interp_source)
+    end if
+
+    if (masterproc) then
+       write(iulog,*) 'nrevsn              = ', trim(nrevsn)
+       write(iulog,*) 'finidat             = ', trim(finidat)
+       if ( use_init_interp )then
+          write(iulog,*) 'Interpolate initial conditions'
+          write(iulog,*) 'finidat_interp_dest = ', trim(finidat_interp_dest)
+       end if
+
+       if (fatmlndfrc == ' ') then
+          call endrun(subname // ':: ERROR fatmlndfrc was NOT set and needs to be' )
+       else
+          write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
+       end if
+
+       if (mml_surdat == ' ') then
+           call endrun(subname // ':: ERROR mml_surdat was NOT set and needs to be' )
+       else
+           write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
+       end if
+
+       if (nsrest == nsrBranch .and. nrevsn == ' ') then
+          call endrun(msg=' ERROR: need to set restart data file name'//&
+               errMsg(sourcefile, __LINE__))
+       end if
+       ! Consistency settings for nrevsn
+
+       if (nsrest == nsrStartup ) nrevsn = ' '
+       if (nsrest == nsrContinue) nrevsn = 'set by restart pointer file file'
+       if (nsrest /= nsrStartup .and. nsrest /= nsrContinue .and. nsrest /= nsrBranch ) then
+          call endrun(msg=' ERROR: nsrest NOT set to a valid value'//&
+               errMsg(sourcefile, __LINE__))
+       end if
+       if (nsrest == nsrStartup) then
+          if (finidat /= ' ') then
+             write(iulog,*) '   initial data: ', trim(finidat)
+          else if (finidat_interp_source /= ' ') then
+             write(iulog,*) '   initial data interpolated from: ', trim(finidat_interp_source)
+          else
+             write(iulog,*) '   initial data created by model (cold start)'
+          end if
+       else
+          write(iulog,*) '   restart data   = ',trim(nrevsn)
+       end if
+
+    end if
+
+  end subroutine readnml_datasets
+
+  !-----------------------------------------------------------------------
+  subroutine apply_use_init_interp(finidat, finidat_interp_source)
+    !
+    ! !DESCRIPTION:
+    ! Applies the use_init_interp option, setting finidat_interp_source to
+    ! finidat
+    !
+    ! Should be called if use_init_interp is true.
+    !
+    ! Does error checking to ensure that it is valid to set use_init_interp to
+    ! true,
+    ! given the values of finidat and finidat_interp_source.
+    !
+    ! !USES:
+    !
+    ! !ARGUMENTS:
+    character(len=*), intent(inout) :: finidat
+    character(len=*), intent(inout) :: finidat_interp_source
+    !
+    ! !LOCAL VARIABLES:
+
+    character(len=*), parameter :: subname = 'apply_use_init_interp'
+    !-----------------------------------------------------------------------
+
+    if (finidat == ' ') then
+       call endrun(msg=subname//'::ERROR: Can only set use_init_interp if finidat is set')
+    end if
+
+    if (finidat_interp_source /= ' ') then
+       call endrun(msg=subname//'::ERROR: Cannot set use_init_interp if finidat_interp_source is &
+            &already set')
+    end if
+
+    finidat_interp_source = finidat
+    finidat = ' '
+
+  end subroutine apply_use_init_interp
+  
+  !-----------------------------------------------------------------------
   subroutine mml_main (bounds, atm2lnd_inst, lnd2atm_inst) !lnd2atm_inst
   
+    use clm_varpar, only : numrad
     implicit none
   
     type(bounds_type), intent(in) :: bounds
@@ -444,6 +586,11 @@ contains
          !         statment above and left all comments as I found them
  ! GBB: No need to use the separate values for t, u, q; only need zref
  ! MML: Keith said there are 3 separate ones for historical reasons, but all three should be the same as zref    
+     SHR_ASSERT(numrad == 2, errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((ubound(fsds_dir) == (/bounds%endg,numrad/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((lbound(fsds_dir) == (/bounds%begg,1/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((ubound(atm2lnd_inst%forc_solad_grc) == (/bounds%endg,numrad/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((lbound(atm2lnd_inst%forc_solad_grc) == (/bounds%begg,1/)), errMsg(sourcefile, __LINE__))
          ! For checking the big neg lhflx:
      ! NOTE: this is NOT going to be consistent with CAM, still, if I use pbot and psrf as the "edges" of 
      ! my lowest atm layer; cam uses the actual pressure levels at the edges of the lowermost 

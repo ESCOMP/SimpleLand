@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<file id="env_build.xml" version="2.0">
+  <header>
+  </header>
+
+<!--
+
+-->
+  <group>
+    <entry id="LND_GRID" value="1.9x2.5">
+      <type>char</type>
+      <desc>Land (lnd) grid</desc>
+    </entry>
+    <entry id="LND_NX" value="720">
+    </entry>
+    <entry id="LND_NY" value="1">
+    </entry>
+
+    <entry id="OS" value="LINUX">
+    </entry>
+    <entry id="COMPILER" value="intel">
+    </entry>
+    <entry id="MPILIB" value="mpt">
+    </entry>
+  </group>
+
+</file>

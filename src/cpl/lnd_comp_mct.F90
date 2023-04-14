@@ -459,9 +459,9 @@ contains
 
        ! Advance clm time step
        !write(*,*)'MML advance clm timestep'
-       call t_startf ('lc_clm2_adv_timestep')
+       call t_startf ('lc_slim_adv_timestep')
        call advance_timestep()
-       call t_stopf ('lc_clm2_adv_timestep')
+       call t_stopf ('lc_slim_adv_timestep')
 
     end do
 

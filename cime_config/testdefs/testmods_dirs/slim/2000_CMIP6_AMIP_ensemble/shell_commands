@@ -1,2 +1,2 @@
 #!/bin/bash
-./xmlchange CLM_FORCE_COLDSTART="on"
+./xmlchange SLIM_START_TYPE="cold"

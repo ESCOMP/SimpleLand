@@ -92,6 +92,7 @@ module histFileMod
   logical, private :: if_disphist(max_tapes)   ! restart, true => save history file
   !
   ! !PUBLIC MEMBER FUNCTIONS:
+  public :: hist_readNML         ! Read in the history namelist settings
   public :: hist_addfld1d        ! Add a 1d single-level field to the master field list
   public :: hist_addfld2d        ! Add a 2d multi-level field to the master field list
   public :: hist_add_subscript   ! Add a 2d subscript dimension
@@ -400,7 +401,7 @@ contains
     !-----------------------------------------------------------------------
 
     if (masterproc) then
-       write(iulog,*)  trim(subname),' Initializing clm2 history files'
+       write(iulog,*)  trim(subname),' Initializing slim history files'
        write(iulog,'(72a1)') ("-",i=1,60)
        call shr_sys_flush(iulog)
     endif
@@ -447,7 +448,7 @@ contains
     end do
 
     if (masterproc) then
-       write(iulog,*)  trim(subname),' Successfully initialized clm2 history files'
+       write(iulog,*)  trim(subname),' Successfully initialized slim history files'
        write(iulog,'(72a1)') ("-",i=1,60)
        call shr_sys_flush(iulog)
     endif
@@ -2460,7 +2461,7 @@ contains
 
           ! Create the restart history filename and open it
           write(hnum,'(i1.1)') t-1
-          locfnhr(t) = "./" // trim(caseid) //".clm2"// trim(inst_suffix) &
+          locfnhr(t) = "./" // trim(caseid) //".slim"// trim(inst_suffix) &
                         // ".rh" // hnum //"."// trim(rdate) //".nc"
 
           call htape_create( t, histrest=.true. )
@@ -3138,7 +3139,7 @@ contains
       write(cdate,'(i4.4,"-",i2.2,"-",i2.2,"-",i5.5)') yr,mon,day,sec
    endif
    write(hist_index,'(i1.1)') hist_file - 1
-   set_hist_filename = "./"//trim(caseid)//".clm2"//trim(inst_suffix)//&
+   set_hist_filename = "./"//trim(caseid)//".slim"//trim(inst_suffix)//&
                        ".h"//hist_index//"."//trim(cdate)//".nc"
 
    ! check to see if the concatenated filename exceeded the
@@ -3157,6 +3158,78 @@ contains
       call endrun(msg=errMsg(sourcefile, __LINE__))
    end if
   end function set_hist_filename
+
+  !-----------------------------------------------------------------------
+  subroutine hist_readNML ( NLFilename )
+    use shr_mpi_mod     , only : shr_mpi_bcast
+    use spmdMod         , only : mpicom
+    use clm_nlUtilsMod  , only : find_nlgroup_name
+    use clm_varctl      , only : use_noio
+    use shr_const_mod   , only : SHR_CONST_CDAY
+    use clm_time_manager, only : get_step_size
+
+    implicit none
+
+    character(len=*), intent(IN) :: NLFilename   ! Namelist file names
+    !-----------------------------------------------------------------------
+    ! !LOCAL VARIABLES:
+    integer                     :: i                ! Indices
+    integer                     :: nu_nml           ! Unit for namelist file
+    integer                     :: nml_error        ! Error code
+    integer                     :: dtime            ! time step
+    character(len=*), parameter :: nml_name = 'slim_history'
+    character(len=*), parameter :: subname = 'hist_readNML'
+    namelist /slim_history/ use_noio, hist_empty_htapes
+    namelist /slim_history/ hist_avgflag_pertape
+    namelist /slim_history/ hist_nhtfrq, hist_ndens
+    namelist /slim_history/ hist_mfilt, hist_fincl1, hist_fincl2, hist_fincl3
+    namelist /slim_history/ hist_fincl4, hist_fincl5
+    namelist /slim_history/ hist_fincl6, hist_fexcl1
+    !-----------------------------------------------------------------------
+
+    if (masterproc) then
+       open( newunit=nu_nml, file=trim(NLFilename), status='old', iostat=nml_error )
+       call find_nlgroup_name(nu_nml, nml_name, status=nml_error)
+       if (nml_error == 0) then
+          read(nu_nml, nml=slim_history,iostat=nml_error)
+          if (nml_error /= 0) then
+             call endrun(subname // ':: ERROR reading '//nml_name//' namelist')
+          end if
+       else
+          call endrun(subname // ':: ERROR could NOT find '//nml_name//' namelist')
+       end if
+       close(nu_nml)
+    end if
+
+    call shr_mpi_bcast( use_noio, mpicom )
+    call shr_mpi_bcast( hist_empty_htapes, mpicom )
+    call shr_mpi_bcast( hist_avgflag_pertape, mpicom )
+    call shr_mpi_bcast( hist_nhtfrq, mpicom )
+    call shr_mpi_bcast( hist_ndens, mpicom )
+    call shr_mpi_bcast( hist_mfilt, mpicom )
+    call shr_mpi_bcast( hist_fincl1, mpicom )
+    call shr_mpi_bcast( hist_fincl2, mpicom )
+    call shr_mpi_bcast( hist_fincl3, mpicom )
+    call shr_mpi_bcast( hist_fincl4, mpicom )
+    call shr_mpi_bcast( hist_fincl5, mpicom )
+    call shr_mpi_bcast( hist_fincl6, mpicom )
+    call shr_mpi_bcast( hist_fexcl1, mpicom )
+
+    ! History and restart files
+
+    dtime = get_step_size()
+    do i = 1, max_tapes
+       if (hist_nhtfrq(i) == 0) then
+          hist_mfilt(i) = 1
+       else if (hist_nhtfrq(i) < 0) then
+          hist_nhtfrq(i) = nint(-hist_nhtfrq(i)*SHR_CONST_CDAY/(24._r8*dtime))
+       endif
+    end do
+    if ( masterproc )then
+       if ( use_noio ) write(iulog,*) ' History output is turned off with use_noio = ', use_noio
+    end if
+
+  end subroutine hist_readNML
 
   !-----------------------------------------------------------------------
   subroutine hist_addfld1d (fname, units, avgflag, long_name, type1d_out, &

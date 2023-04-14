@@ -79,7 +79,7 @@
   </grid>
   <grid name="a%1.9x2.5.+l%1.9x2.5.+oi%gx1" >
     <mach name="cheyenne">
-      <pes pesize="any" compset="CAM.+CLM.+CICE.+DOCN.+">
+      <pes pesize="any" compset="CAM.+SLIM.+CICE.+DOCN.+">
 	<comment>Coupled to CAM for 2 degree on cheyenne</comment>
         <ntasks>
           <ntasks_atm>-10</ntasks_atm>
