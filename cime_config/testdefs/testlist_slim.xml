@@ -25,7 +25,7 @@
       <option name="comment">Debug smoke test with SOM for CAM5</option>
     </options>
   </test>
-  <test name="SMS" grid="f19_f19_mg16" compset="FLTHISTC5I5Slim" testmods="slim/realistic_fromCLM5_1850_g16_SOM_save_cplhist">
+  <test name="SMS" grid="f19_g16" compset="ELT1850TESTC6I5Slim" testmods="slim/g16_SOM_save_cplhist">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -117,7 +117,7 @@
       <option name="comment">smoke test with SOM for CAM6 for global uniform</option>
     </options>
   </test>
-  <test name="SMS" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/2000_CMIP6_AMIP_ensemble">
+  <test name="SMS" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -126,7 +126,7 @@
       <option name="comment">smoke test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="SMS_Lm3" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/2000_CMIP6_AMIP_ensembleMonthly">
+  <test name="SMS_Lm3" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -135,7 +135,7 @@
       <option name="comment">Longer smoke test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="PEM" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/2000_CMIP6_AMIP_ensemble">
+  <test name="PEM" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -144,7 +144,7 @@
       <option name="comment">change Processors test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="ERS_Ld60" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/2000_CMIP6_AMIP_ensembleMonthly">
+  <test name="ERS_Ld60" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -161,7 +161,7 @@
   <!-- Run restart tests for important ones, also do ERP for other compsets -->
   <!-- Eventually we should also do ERI tests to make sure branch and hybrid work, but with #19 we can't -->
   <!-- Run one longer test with production compiler for a few years  to make sure longer science runs will continue to work -->
-  <test name="SMS_Ld400_PS" grid="f19_f19_mg17" compset="IHistSlimQianRsGs" testmods="slim/realistic_fromCLM5_1850Monthly">
+  <test name="SMS_Ld400_PS" grid="f19_f19_mg17" compset="IHistSlimQianRsGs" testmods="slim/Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
@@ -171,7 +171,7 @@
       <option name="comment">Longer smoke test for standalone SLIM, go over at least a year boundary (with clm5_0 and SP to ensure same as above)</option>
     </options>
   </test>
-  <test name="PEM" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850">
+  <test name="PEM" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
     </machines>
@@ -180,7 +180,7 @@
       <option name="comment">Change PE count test for standalone SLIM</option>
     </options>
   </test>
-  <test name="ERP_D_Ld10_PS" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850Monthly">
+  <test name="ERP_D_Ld10_PS" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
@@ -190,7 +190,7 @@
       <option name="comment">Restart test with pe layout change with 1850 compset test for standalone SLIM</option>
     </options>
   </test>
-  <test name="SMS_PS" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/realistic_fromCLM5_1850">
+  <test name="SMS_PS" grid="f19_f19_mg17" compset="I1850SlimRsGs" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
@@ -200,7 +200,7 @@
       <option name="comment">Smoke 1850 compset test for standalone SLIM with realistic conditions</option>
     </options>
   </test>
-  <test name="SMS_Lm1_PS" grid="f19_f19_mg17" compset="I2000SlimRsGs" testmods="slim/2000_CMIP6_AMIP_ensembleMonthly">
+  <test name="SMS_Lm1_PS" grid="f19_f19_mg17" compset="I2000SlimRsGs" testmods="slim/Monthly">
     <machines>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
     </machines>
@@ -209,7 +209,7 @@
       <option name="comment">Longer smoke 2000 compset test for standalone SLIM with realistic conditions</option>
     </options>
   </test>
-  <test name="SMS_D_Lm1_PS" grid="f19_f19_mg17" compset="I2000SlimRsGs" testmods="slim/2000_CMIP6_AMIP_ensembleMonthly">
+  <test name="SMS_D_Lm1_PS" grid="f19_f19_mg17" compset="I2000SlimRsGs" testmods="slim/Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
@@ -222,7 +222,7 @@
       <option name="comment">Longer smoke 2000 compset test for standalone SLIM with realistic conditions and DEBUG on</option>
     </options>
   </test>
-  <test name="ERP_Ld60_D_PS" grid="f19_f19_mg17" compset="I2000SlimRsGs" testmods="slim/2000_CMIP6_AMIP_ensembleMonthly">
+  <test name="ERP_Ld60_D_PS" grid="f19_f19_mg17" compset="I2000SlimRsGs" testmods="slim/Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
