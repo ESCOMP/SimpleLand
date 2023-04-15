@@ -2,7 +2,8 @@
 Simple Land Model for CESM
 
 
-For instructions on how to run SLIM on it's own or coupled to CESM on Cheyenne, see the Wiki.
+For instructions on how to run SLIM on it's own or coupled to CESM on Cheyenne, see the Wiki, and the README file at the top of the
+SLIM checkout.
 
 To cite, please use:
 
