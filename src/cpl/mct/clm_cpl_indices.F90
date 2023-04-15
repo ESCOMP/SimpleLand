@@ -45,7 +45,6 @@ module clm_cpl_indices
   integer, public ::index_l2x_Fall_lwup       ! upward longwave heat flux
   integer, public ::index_l2x_Fall_evap       ! evaporation     water flux
   integer, public ::index_l2x_Fall_swnet      ! heat flux       shortwave net       
-  integer, public ::index_l2x_Fall_fco2_lnd   ! co2 flux **For testing set to 0
   integer, public ::index_l2x_Fall_flxdst1    ! dust flux size bin 1    
   integer, public ::index_l2x_Fall_flxdst2    ! dust flux size bin 2    
   integer, public ::index_l2x_Fall_flxdst3    ! dust flux size bin 3    
@@ -74,8 +73,6 @@ module clm_cpl_indices
   integer, public ::index_x2l_Faxa_swvdr      ! sw: vis direct  downward
   integer, public ::index_x2l_Faxa_swndf      ! sw: nir diffuse downward
   integer, public ::index_x2l_Faxa_swvdf      ! sw: vis diffuse downward
-  integer, public ::index_x2l_Sa_co2prog      ! bottom atm level prognostic co2
-  integer, public ::index_x2l_Sa_co2diag      ! bottom atm level diagnostic co2
   integer, public ::index_x2l_Faxa_bcphidry   ! flux: Black Carbon hydrophilic dry deposition
   integer, public ::index_x2l_Faxa_bcphodry   ! flux: Black Carbon hydrophobic dry deposition
   integer, public ::index_x2l_Faxa_bcphiwet   ! flux: Black Carbon hydrophilic wet deposition
@@ -91,10 +88,6 @@ module clm_cpl_indices
   integer, public ::index_x2l_Faxa_dstdry3    ! flux: Size 3 dust -- dry deposition
   integer, public ::index_x2l_Faxa_dstdry4    ! flux: Size 4 dust -- dry deposition
  
-  integer, public ::index_x2l_Flrr_flood      ! rtm->lnd rof flood flux
-  integer, public ::index_x2l_Flrr_volr       ! rtm->lnd rof volr total volume
-  integer, public ::index_x2l_Flrr_volrmch    ! rtm->lnd rof volr main channel volume
-
   ! In the following, index 0 is bare land, other indices are glc elevation classes
   integer, allocatable, public ::index_x2l_Sg_ice_covered(:) ! Fraction of glacier from glc model
   integer, allocatable, public ::index_x2l_Sg_topo(:)        ! Topo height from glc model 
@@ -181,8 +174,6 @@ contains
     index_l2x_Fall_flxdst3  = mct_avect_indexra(l2x,'Fall_flxdst3')
     index_l2x_Fall_flxdst4  = mct_avect_indexra(l2x,'Fall_flxdst4')
 
-    index_l2x_Fall_fco2_lnd = mct_avect_indexra(l2x,'Fall_fco2_lnd',perrwith='quiet')
-
     index_l2x_Fall_methane  = mct_avect_indexra(l2x,'Fall_methane',perrWith='quiet')
 
     !-------------------------------------------------------------
@@ -197,11 +188,6 @@ contains
     index_x2l_Sa_pbot       = mct_avect_indexra(x2l,'Sa_pbot')
     index_x2l_Sa_tbot       = mct_avect_indexra(x2l,'Sa_tbot')
     index_x2l_Sa_shum       = mct_avect_indexra(x2l,'Sa_shum')
-    index_x2l_Sa_co2prog    = mct_avect_indexra(x2l,'Sa_co2prog',perrwith='quiet')
-    index_x2l_Sa_co2diag    = mct_avect_indexra(x2l,'Sa_co2diag',perrwith='quiet')
-
-    index_x2l_Flrr_volr     = mct_avect_indexra(x2l,'Flrr_volr')
-    index_x2l_Flrr_volrmch  = mct_avect_indexra(x2l,'Flrr_volrmch')
 
     index_x2l_Faxa_lwdn     = mct_avect_indexra(x2l,'Faxa_lwdn')
     index_x2l_Faxa_rainc    = mct_avect_indexra(x2l,'Faxa_rainc')
@@ -226,8 +212,6 @@ contains
     index_x2l_Faxa_dstwet2  = mct_avect_indexra(x2l,'Faxa_dstwet2')
     index_x2l_Faxa_dstwet3  = mct_avect_indexra(x2l,'Faxa_dstwet3')
     index_x2l_Faxa_dstwet4  = mct_avect_indexra(x2l,'Faxa_dstwet4')
-
-    index_x2l_Flrr_flood    = mct_avect_indexra(x2l,'Flrr_flood')
 
     !-------------------------------------------------------------
     ! glc coupling

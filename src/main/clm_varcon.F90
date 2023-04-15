@@ -104,9 +104,6 @@ module clm_varcon
 
   character(len=16), parameter :: grlnd  = 'lndgrid'      ! name of lndgrid
   character(len=16), parameter :: nameg  = 'gridcell'     ! name of gridcells
-  character(len=16), parameter :: namel  = 'landunit'     ! name of landunits
-  character(len=16), parameter :: namec  = 'column'       ! name of columns
-  character(len=16), parameter :: namep  = 'pft'          ! name of patches
 
   !------------------------------------------------------------------
   ! Soil depths are constants for now; lake depths can vary by gridcell
@@ -114,14 +111,7 @@ module clm_varcon
   ! The values for the following arrays are set in routine iniTimeConst
   !------------------------------------------------------------------
 
-  real(r8), allocatable :: zlak(:)         !lake z  (layers)
-  real(r8), allocatable :: dzlak(:)        !lake dz (thickness)
   real(r8), allocatable :: zsoi(:)         !soil z  (layers)
-  real(r8), allocatable :: dzsoi(:)        !soil dz (thickness)
-  real(r8), allocatable :: zisoi(:)        !soil zi (interfaces)
-  real(r8) ,allocatable :: zsoifl(:)       !original soil midpoint (used in interpolation of sand and clay)
-  real(r8) ,allocatable :: zisoifl(:)      !original soil interface depth (used in interpolation of sand and clay)
-  real(r8) ,allocatable :: dzsoifl(:)      !original soil thickness  (used in interpolation of sand and clay)
 
 contains
 
@@ -133,7 +123,7 @@ contains
     ! MUST be called  after clm_varpar_init.
     !
     ! !USES:
-    use clm_varpar, only: nlevgrnd, nlevlak, nlevsoifl
+    use clm_varpar, only: nlevgrnd
     !
     ! !ARGUMENTS:
     implicit none
@@ -142,14 +132,7 @@ contains
     !   Created by E. Kluzek
 !------------------------------------------------------------------------------
 
-    allocate( zlak(1:nlevlak                 ))
-    allocate( dzlak(1:nlevlak                ))
     allocate( zsoi(1:nlevgrnd                ))
-    allocate( dzsoi(1:nlevgrnd               ))
-    allocate( zisoi(0:nlevgrnd               ))
-    allocate( zsoifl(1:nlevsoifl             ))
-    allocate( zisoifl(0:nlevsoifl            ))
-    allocate( dzsoifl(1:nlevsoifl            ))
 
   end subroutine clm_varcon_init
 

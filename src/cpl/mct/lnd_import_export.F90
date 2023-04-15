@@ -21,7 +21,7 @@ contains
     !
     ! !USES:
     use seq_flds_mod    , only: seq_flds_x2l_fields
-    use clm_varctl      , only: co2_type, co2_ppmv, iulog
+    use clm_varctl      , only: iulog
     use clm_varcon      , only: rair, o2_molar_const
     use shr_const_mod   , only: SHR_CONST_TKFRZ
     use shr_string_mod  , only: shr_string_listGetName
@@ -44,10 +44,6 @@ contains
     real(r8) :: forc_rainl           ! rainxy Atm flux mm/s
     real(r8) :: forc_snowc           ! snowfxy Atm flux  mm/s
     real(r8) :: forc_snowl           ! snowfxl Atm flux  mm/s
-    real(r8) :: co2_ppmv_diag        ! temporary
-    real(r8) :: co2_ppmv_prog        ! temporary
-    real(r8) :: co2_ppmv_val         ! temporary
-    integer  :: co2_type_idx         ! integer flag for co2_type options
     real(r8) :: esatw                ! saturation vapor pressure over water (Pa)
     real(r8) :: esati                ! saturation vapor pressure over ice (Pa)
     real(r8) :: a0,a1,a2,a3,a4,a5,a6 ! coefficients for esat over water
@@ -74,18 +70,6 @@ contains
     esati(t) = 100._r8*(b0+t*(b1+t*(b2+t*(b3+t*(b4+t*(b5+t*b6))))))
     !---------------------------------------------------------------------------
 
-    co2_type_idx = 0
-    if (co2_type == 'prognostic') then
-       co2_type_idx = 1
-    else if (co2_type == 'diagnostic') then
-       co2_type_idx = 2
-    end if
-    if (co2_type == 'prognostic' .and. index_x2l_Sa_co2prog == 0) then
-       call endrun( sub//' ERROR: must have nonzero index_x2l_Sa_co2prog for co2_type equal to prognostic' )
-    else if (co2_type == 'diagnostic' .and. index_x2l_Sa_co2diag == 0) then
-       call endrun( sub//' ERROR: must have nonzero index_x2l_Sa_co2diag for co2_type equal to diagnostic' )
-    end if
-
     ! Note that the precipitation fluxes received  from the coupler
     ! are in units of kg/s/m^2. To convert these precipitation rates
     ! in units of mm/sec, one must divide by 1000 kg/m^3 and multiply
@@ -96,19 +80,9 @@ contains
     do g = bounds%begg,bounds%endg
        i = 1 + (g - bounds%begg)
 
-       ! Determine flooding input, sign convention is positive downward and
-       ! hierarchy is atm/glc/lnd/rof/ice/ocn.  so water sent from rof to land is negative,
-       ! change the sign to indicate addition of water to system.
-
-       atm2lnd_inst%forc_flood_grc(g)   = -x2l(index_x2l_Flrr_flood,i)  
-
-       atm2lnd_inst%volr_grc(g)   = x2l(index_x2l_Flrr_volr,i) * (ldomain%area(g) * 1.e6_r8)
-       atm2lnd_inst%volrmch_grc(g)= x2l(index_x2l_Flrr_volrmch,i) * (ldomain%area(g) * 1.e6_r8)
-
        ! Determine required receive fields
 
        atm2lnd_inst%forc_hgt_grc(g)                  = x2l(index_x2l_Sa_z,i)         ! zgcmxy  Atm state m
-       atm2lnd_inst%forc_topo_grc(g)                 = x2l(index_x2l_Sa_topo,i)      ! Atm surface height (m)
        atm2lnd_inst%forc_u_grc(g)                    = x2l(index_x2l_Sa_u,i)         ! forc_uxy  Atm state m/s
        atm2lnd_inst%forc_v_grc(g)                    = x2l(index_x2l_Sa_v,i)         ! forc_vxy  Atm state m/s
        atm2lnd_inst%forc_solad_grc(g,2)              = x2l(index_x2l_Faxa_swndr,i)   ! forc_sollxy  Atm flux  W/m^2
@@ -116,7 +90,6 @@ contains
        atm2lnd_inst%forc_solai_grc(g,2)              = x2l(index_x2l_Faxa_swndf,i)   ! forc_solldxy Atm flux  W/m^2
        atm2lnd_inst%forc_solai_grc(g,1)              = x2l(index_x2l_Faxa_swvdf,i)   ! forc_solsdxy Atm flux  W/m^2
 
-       atm2lnd_inst%forc_th_not_downscaled_grc(g)    = x2l(index_x2l_Sa_ptem,i)      ! forc_thxy Atm state K
        atm2lnd_inst%forc_q_not_downscaled_grc(g)     = x2l(index_x2l_Sa_shum,i)      ! forc_qxy  Atm state kg/kg
        atm2lnd_inst%forc_pbot_not_downscaled_grc(g)  = x2l(index_x2l_Sa_pbot,i)      ! ptcmxy  Atm state Pa
        atm2lnd_inst%forc_t_not_downscaled_grc(g)     = x2l(index_x2l_Sa_tbot,i)      ! forc_txy  Atm state K
@@ -126,36 +99,6 @@ contains
        forc_rainl                                    = x2l(index_x2l_Faxa_rainl,i)   ! mm/s
        forc_snowc                                    = x2l(index_x2l_Faxa_snowc,i)   ! mm/s
        forc_snowl                                    = x2l(index_x2l_Faxa_snowl,i)   ! mm/s
-
-       ! atmosphere coupling, for prognostic/prescribed aerosols
-       atm2lnd_inst%forc_aer_grc(g,1)                = x2l(index_x2l_Faxa_bcphidry,i)
-       atm2lnd_inst%forc_aer_grc(g,2)                = x2l(index_x2l_Faxa_bcphodry,i)
-       atm2lnd_inst%forc_aer_grc(g,3)                = x2l(index_x2l_Faxa_bcphiwet,i)
-       atm2lnd_inst%forc_aer_grc(g,4)                = x2l(index_x2l_Faxa_ocphidry,i)
-       atm2lnd_inst%forc_aer_grc(g,5)                = x2l(index_x2l_Faxa_ocphodry,i)
-       atm2lnd_inst%forc_aer_grc(g,6)                = x2l(index_x2l_Faxa_ocphiwet,i)
-       atm2lnd_inst%forc_aer_grc(g,7)                = x2l(index_x2l_Faxa_dstwet1,i)
-       atm2lnd_inst%forc_aer_grc(g,8)                = x2l(index_x2l_Faxa_dstdry1,i)
-       atm2lnd_inst%forc_aer_grc(g,9)                = x2l(index_x2l_Faxa_dstwet2,i)
-       atm2lnd_inst%forc_aer_grc(g,10)               = x2l(index_x2l_Faxa_dstdry2,i)
-       atm2lnd_inst%forc_aer_grc(g,11)               = x2l(index_x2l_Faxa_dstwet3,i)
-       atm2lnd_inst%forc_aer_grc(g,12)               = x2l(index_x2l_Faxa_dstdry3,i)
-       atm2lnd_inst%forc_aer_grc(g,13)               = x2l(index_x2l_Faxa_dstwet4,i)
-       atm2lnd_inst%forc_aer_grc(g,14)               = x2l(index_x2l_Faxa_dstdry4,i)
-
-       ! Determine optional receive fields
-
-       if (index_x2l_Sa_co2prog /= 0) then
-          co2_ppmv_prog = x2l(index_x2l_Sa_co2prog,i)   ! co2 atm state prognostic
-       else
-          co2_ppmv_prog = co2_ppmv
-       end if
-
-       if (index_x2l_Sa_co2diag /= 0) then
-          co2_ppmv_diag = x2l(index_x2l_Sa_co2diag,i)   ! co2 atm state diagnostic
-       else
-          co2_ppmv_diag = co2_ppmv
-       end if
 
        ! Determine derived quantities for required fields
 
@@ -169,7 +112,6 @@ contains
        atm2lnd_inst%forc_vp_grc(g)    = forc_q * forc_pbot  / (0.622_r8 + 0.378_r8 * forc_q)
        atm2lnd_inst%forc_rho_not_downscaled_grc(g) = &
             (forc_pbot - 0.378_r8 * atm2lnd_inst%forc_vp_grc(g)) / (rair * forc_t)
-       atm2lnd_inst%forc_po2_grc(g)   = o2_molar_const * forc_pbot
        atm2lnd_inst%forc_wind_grc(g)  = sqrt(atm2lnd_inst%forc_u_grc(g)**2 + atm2lnd_inst%forc_v_grc(g)**2)
        atm2lnd_inst%forc_solar_grc(g) = atm2lnd_inst%forc_solad_grc(g,1) + atm2lnd_inst%forc_solai_grc(g,1) + &
                                         atm2lnd_inst%forc_solad_grc(g,2) + atm2lnd_inst%forc_solai_grc(g,2)
@@ -192,8 +134,6 @@ contains
              atm2lnd_inst%forc_q_not_downscaled_grc(g) = forc_q
           endif
        endif
-
-       atm2lnd_inst%forc_rh_grc(g) = 100.0_r8*(forc_q / qsat)
 
        ! Check that solar, specific-humidity and LW downward aren't negative
        if ( atm2lnd_inst%forc_lwrad_not_downscaled_grc(g) <= 0.0_r8 )then
@@ -222,23 +162,6 @@ contains
           call endrun( sub//' ERROR: One or more of the input from the atmosphere model are NaN '// &
                        '(Not a Number from a bad floating point calculation)' )
        end if
-
-       ! Make sure relative humidity is properly bounded
-       ! atm2lnd_inst%forc_rh_grc(g) = min( 100.0_r8, atm2lnd_inst%forc_rh_grc(g) )
-       ! atm2lnd_inst%forc_rh_grc(g) = max(   0.0_r8, atm2lnd_inst%forc_rh_grc(g) )
-
-       ! Determine derived quantities for optional fields
-       ! Note that the following does unit conversions from ppmv to partial pressures (Pa)
-       ! Note that forc_pbot is in Pa
-
-       if (co2_type_idx == 1) then
-          co2_ppmv_val = co2_ppmv_prog
-       else if (co2_type_idx == 2) then
-          co2_ppmv_val = co2_ppmv_diag 
-       else
-          co2_ppmv_val = co2_ppmv
-       end if
-       atm2lnd_inst%forc_pco2_grc(g)   = co2_ppmv_val * 1.e-6_r8 * forc_pbot 
 
     end do
 
@@ -299,9 +222,6 @@ contains
        l2x(index_l2x_Fall_lwup,i)   = -lnd2atm_inst%eflx_lwrad_out_grc(g)
        l2x(index_l2x_Fall_evap,i)   = -lnd2atm_inst%qflx_evap_tot_grc(g)
        l2x(index_l2x_Fall_swnet,i)  =  lnd2atm_inst%fsa_grc(g)
-       if (index_l2x_Fall_fco2_lnd /= 0) then
-          l2x(index_l2x_Fall_fco2_lnd,i) = -lnd2atm_inst%net_carbon_exchange_grc(g)  
-       end if
 
        ! Additional fields for DUST, PROGSSLT, dry-deposition
        ! These are now standard fields, but the check on the index makes sure the driver handles them

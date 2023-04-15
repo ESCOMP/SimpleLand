@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 ###############################################################################
 def _main_func():
-###############################################################################
+    ###############################################################################
 
     caseroot, libroot, bldroot = parse_input(sys.argv)
 
@@ -37,10 +37,13 @@ def _main_func():
         driver = case.get_value("COMP_INTERFACE").lower()
         nthrds = case.get_value("LND_NTHRDS")
 
-        if ( nthrds > 1 ):
-            expect(False, "LND_NTHRDS must be 1 as threading isn't implemented (see issue #14)" )
+        if nthrds > 1:
+            expect(
+                False,
+                "LND_NTHRDS must be 1 as threading isn't implemented (see issue #14)",
+            )
 
-        #-------------------------------------------------------
+        # -------------------------------------------------------
         # create Filepath file
         #-------------------------------------------------------
         compname = case.get_value("COMP_LND")
@@ -53,34 +56,31 @@ def _main_func():
                      os.path.join(lnd_root,"src","main"),
                      os.path.join(lnd_root,"src","init_interp"),
                      os.path.join(lnd_root,"src","utils"),
-                     os.path.join(lnd_root,"src","cpl"),
-                     os.path.join(lnd_root,"src","cpl","utils")]
-
-            if (driver == 'nuopc'):
-                paths.append(os.path.join(lnd_root,"src","cpl","share_esmf"))
+                     os.path.join(lnd_root,"src","cpl")]
 
             # Paths needed to build the current system, but won't be long term
-            paths.append( os.path.join(lnd_root,"src","biogeophys") )
-            paths.append( os.path.join(lnd_root,"src","biogeochem") )
-            paths.append( os.path.join(lnd_root,"src","soilbiogeochem") )
+            paths.append(os.path.join(lnd_root, "src", "biogeophys"))
+            paths.append(os.path.join(lnd_root, "src", "biogeochem"))
+            paths.append(os.path.join(lnd_root, "src", "soilbiogeochem"))
 
             with open(filepath_file, "w") as filepath:
                 filepath.write("\n".join(paths))
                 filepath.write("\n")
-            
-        #-------------------------------------------------------
-        # create the library in libroot
-        #-------------------------------------------------------
 
-        complib = os.path.join(libroot,"liblnd.a")
+        # -------------------------------------------------------
+        # create the library in libroot
+        # -------------------------------------------------------
+
+        complib = os.path.join(libroot, "liblnd.a")
         makefile = os.path.join(casetools, "Makefile")
 
         cmd = "{} complib -j {} COMP_NAME={} COMPLIB={} -f {} {}" \
                .format(gmake, gmake_j, compname, complib, makefile, gmake_opts )
 
         rc, out, err = run_cmd(cmd)
-        logger.info("%s: \n\n output:\n %s \n\n err:\n\n%s\n"%(cmd,out,err))
+        logger.info("%s: \n\n output:\n %s \n\n err:\n\n%s\n" % (cmd, out, err))
         expect(rc == 0, "Command %s failed with rc=%s" % (cmd, rc))
+
 
 ###############################################################################
 
@@ -88,4 +88,3 @@ if __name__ == "__main__":
     logger.warning( "WARNING: buildlib is being called as a program rather than a subroutine as " +
                     "it is expected to be in the CESM context" )
     _main_func()
-

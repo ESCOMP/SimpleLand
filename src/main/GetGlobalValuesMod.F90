@@ -28,7 +28,7 @@ contains
     use shr_log_mod, only: errMsg => shr_log_errMsg
     use decompMod  , only: bounds_type, get_clmlevel_gsmap, get_proc_bounds
     use spmdMod    , only: iam
-    use clm_varcon , only: nameg, namel, namec, namep
+    use clm_varcon , only: nameg
     use clm_varctl , only: iulog
     use mct_mod    , only: mct_gsMap, mct_gsMap_orderedPoints
     use shr_sys_mod, only: shr_sys_abort
@@ -48,12 +48,6 @@ contains
 
     if (trim(clmlevel) == nameg) then
        beg_index = bounds_proc%begg
-    else if (trim(clmlevel) == namel) then
-       beg_index = bounds_proc%begl
-    else if (trim(clmlevel) == namec) then
-       beg_index = bounds_proc%begc
-    else if (trim(clmlevel) == namep) then
-       beg_index = bounds_proc%begp
     else
        call shr_sys_abort('clmlevel of '//trim(clmlevel)//' not supported' // &
             errmsg(sourcefile, __LINE__))
@@ -77,18 +71,15 @@ contains
     use shr_sys_mod  , only : shr_sys_abort
     use shr_log_mod  , only : errMsg => shr_log_errMsg
     use clm_varctl   , only : iulog
-    use clm_varcon   , only : nameg, namel, namec, namep
+    use clm_varcon   , only : nameg
     use GridcellType , only : grc                
-    use LandunitType , only : lun                
-    use ColumnType   , only : col                
-    use PatchType    , only : patch                
     !
     ! Arguments:
     integer          , intent(in) :: decomp_index
     character(len=*) , intent(in) :: clmlevel
     !
     ! Local Variables:
-    integer :: igrc, ilun, icol, ipft 
+    integer :: igrc
     !-----------------------------------------------------------------------
 
     if (trim(clmlevel) == nameg) then
@@ -98,48 +89,6 @@ contains
        write(iulog,*)'global gridcell index = ',GetGlobalIndex(decomp_index=igrc, clmlevel=nameg)
        write(iulog,*)'gridcell longitude    = ',grc%londeg(igrc)
        write(iulog,*)'gridcell latitude     = ',grc%latdeg(igrc)
-
-    else if (trim(clmlevel) == namel) then
-
-       ilun = decomp_index
-       igrc = lun%gridcell(ilun)
-       write(iulog,*)'local  landunit index = ',ilun
-       write(iulog,*)'global landunit index = ',GetGlobalIndex(decomp_index=ilun, clmlevel=namel)
-       write(iulog,*)'global gridcell index = ',GetGlobalIndex(decomp_index=igrc, clmlevel=nameg)
-       write(iulog,*)'gridcell longitude    = ',grc%londeg(igrc)
-       write(iulog,*)'gridcell latitude     = ',grc%latdeg(igrc)
-       write(iulog,*)'landunit type         = ',lun%itype(decomp_index)
-
-    else if (trim(clmlevel) == namec) then
-
-       icol = decomp_index
-       ilun = col%landunit(icol)
-       igrc = col%gridcell(icol)
-       write(iulog,*)'local  column   index = ',icol
-       write(iulog,*)'global column   index = ',GetGlobalIndex(decomp_index=icol, clmlevel=namec)
-       write(iulog,*)'global landunit index = ',GetGlobalIndex(decomp_index=ilun, clmlevel=namel)
-       write(iulog,*)'global gridcell index = ',GetGlobalIndex(decomp_index=igrc, clmlevel=nameg)
-       write(iulog,*)'gridcell longitude    = ',grc%londeg(igrc)
-       write(iulog,*)'gridcell latitude     = ',grc%latdeg(igrc)
-       write(iulog,*)'column   type         = ',col%itype(icol)
-       write(iulog,*)'landunit type         = ',lun%itype(ilun)
-   
-    else if (trim(clmlevel) == namep) then
-
-       ipft = decomp_index
-       icol = patch%column(ipft)
-       ilun = patch%landunit(ipft)
-       igrc = patch%gridcell(ipft)
-       write(iulog,*)'local  patch      index = ',ipft
-       write(iulog,*)'global patch      index = ',GetGlobalIndex(decomp_index=ipft, clmlevel=namep)
-       write(iulog,*)'global column   index = ',GetGlobalIndex(decomp_index=icol, clmlevel=namec)
-       write(iulog,*)'global landunit index = ',GetGlobalIndex(decomp_index=ilun, clmlevel=namel)
-       write(iulog,*)'global gridcell index = ',GetGlobalIndex(decomp_index=igrc, clmlevel=nameg)
-       write(iulog,*)'gridcell longitude    = ',grc%londeg(igrc)
-       write(iulog,*)'gridcell latitude     = ',grc%latdeg(igrc)
-       write(iulog,*)'pft      type         = ',patch%itype(ipft)
-       write(iulog,*)'column   type         = ',col%itype(icol)
-       write(iulog,*)'landunit type         = ',lun%itype(ilun)
 
     else		       
        call shr_sys_abort('clmlevel '//trim(clmlevel)//'not supported '//errmsg(sourcefile, __LINE__))

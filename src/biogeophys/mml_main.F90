@@ -20,9 +20,12 @@ module mml_mainMod
 
   
   ! !USES:
+#include "shr_assert.h"
   ! MML: bounds & data type
+#include "shr_assert.h"
   use decompMod , 	only : bounds_type
   use spmdMod   ,       only : masterproc
+  use shr_sys_mod,      only : shr_sys_flush
   use atm2lndType,	only : atm2lnd_type
   use lnd2atmType, 	only : lnd2atm_type  ! MML: probably going to need a lnd2atm type
   ! to hand to the coupler as data coming from the land going to the atmosphere (l2x) 
@@ -41,7 +44,8 @@ module mml_mainMod
   use perf_mod			! for t_startf and t_stopf
    
   ! For using month-dependent values from forcing files
-  use clm_time_manager, only : get_curr_date, get_nstep, get_step_size
+  use clm_time_manager, only : get_curr_date, is_beg_curr_day, get_step_size
+  use clm_time_manager, only : is_first_step_of_this_run_segment
   
   ! For namelist var
   use clm_varctl       , only: mml_surdat
@@ -80,7 +84,8 @@ module mml_mainMod
  			! then used those coeffs instead of the more recent one!) Instead, I'm using the equivalent, but newer, clm 
  			! function QSatOld, and doing the lhflx calculations with specific humidity rather than saturation vapour pressure
   
- 
+  character(len=*), parameter, private :: sourcefile = &
+       __FILE__
 
 contains
   
@@ -89,8 +94,9 @@ contains
     use shr_mpi_mod     , only : shr_mpi_bcast
     use spmdMod         , only : mpicom
     use clm_nlUtilsMod  , only : find_nlgroup_name
-    use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest
+    use clm_varctl      , only : finidat, fatmlndfrc, finidat_interp_dest, nsrest
     use clm_varctl      , only : nrevsn, fname_len, mml_surdat, finidat_interp_source
+    use clm_varctl      , only : nsrStartup, nsrContinue, nsrBranch
   
     implicit none
 
@@ -141,16 +147,41 @@ contains
        end if
 
        if (fatmlndfrc == ' ') then
-          write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
+          call endrun(subname // ':: ERROR fatmlndfrc was NOT set and needs to be' )
        else
           write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
        end if
 
        if (mml_surdat == ' ') then
-           write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
+           call endrun(subname // ':: ERROR mml_surdat was NOT set and needs to be' )
        else
            write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
        end if
+
+       if (nsrest == nsrBranch .and. nrevsn == ' ') then
+          call endrun(msg=' ERROR: need to set restart data file name'//&
+               errMsg(sourcefile, __LINE__))
+       end if
+       ! Consistency settings for nrevsn
+
+       if (nsrest == nsrStartup ) nrevsn = ' '
+       if (nsrest == nsrContinue) nrevsn = 'set by restart pointer file file'
+       if (nsrest /= nsrStartup .and. nsrest /= nsrContinue .and. nsrest /= nsrBranch ) then
+          call endrun(msg=' ERROR: nsrest NOT set to a valid value'//&
+               errMsg(sourcefile, __LINE__))
+       end if
+       if (nsrest == nsrStartup) then
+          if (finidat /= ' ') then
+             write(iulog,*) '   initial data: ', trim(finidat)
+          else if (finidat_interp_source /= ' ') then
+             write(iulog,*) '   initial data interpolated from: ', trim(finidat_interp_source)
+          else
+             write(iulog,*) '   initial data created by model (cold start)'
+          end if
+       else
+          write(iulog,*) '   restart data   = ',trim(nrevsn)
+       end if
+
     end if
 
   end subroutine readnml_datasets
@@ -196,6 +227,7 @@ contains
   !-----------------------------------------------------------------------
   subroutine mml_main (bounds, atm2lnd_inst, lnd2atm_inst) !lnd2atm_inst
   
+    use clm_varpar, only : numrad
     implicit none
   
     type(bounds_type), intent(in) :: bounds
@@ -251,7 +283,6 @@ contains
     integer :: mon     ! month (1, ..., 12) for nstep+1
     integer :: day     ! day of month (1, ..., 31) for nstep+1
     integer :: sec     ! seconds into current date for nstep+1
-    integer :: mcdate  ! Current model date (yyyymmdd)
     
     real(r8)	:: dt	   ! length of time step, in seconds
    
@@ -285,9 +316,6 @@ contains
    					!emiss(bounds%begg:bounds%endg)	, 	&			! emissivity, from .nc file
    					!glc_mask(bounds%begg:bounds%endg)	, 	&		! mask on glaciated points (1 = glacier, 0 = not), from .nc file (aiming for greenalnd + antarctica)
    					!dust(bounds%begg:bounds%endg,4)	, 	&			! dust flux, land to atm, from .nc file  lat x lon x 3 dust bins
-   					zref_t(bounds%begg:bounds%endg)	, 	&			! reference height temperature for lnd2atm
-   					zref_u(bounds%begg:bounds%endg)	, 	&			! reference height wind speed for lnd2atm
-   					zref_q(bounds%begg:bounds%endg)	, 	&			! reference height humidity for lnd2atm
    					lwrad(bounds%begg:bounds%endg)	, 	&			! incoming longwave radiation from atm
    					lw_abs(bounds%begg:bounds%endg)	, 	&			! absorbed longwave radiation (emissivity*incoming)
    					lambda(bounds%begg:bounds%endg)	, 	&			! latent heat of vaporization, or fusion, depending on phase
@@ -327,9 +355,7 @@ contains
    					zeta(bounds%begg:bounds%endg)	
    	
    	! For the lhflx limitation				
-   	real(r8)	::	pbot(bounds%begg:bounds%endg)	,	&		! [Pa] midpoint of bottom layer (from atm)
-   					p2(bounds%begg:bounds%endg)	,	&		! [Pa] top boundary of bottom layer (calculate using hybrid coords)
-   					qbot(bounds%begg:bounds%endg)	,	&		! [kg/kg] specific humidity in lowest level of atm (check units?)
+        real(r8) :: p2(bounds%begg:bounds%endg),  &  ! [Pa] top boundary of bottom layer (calculate using hybrid coords)
    					dpbot(bounds%begg:bounds%endg)	,	&		! thickness in pressure of bottom layer, approximating as dpbot = 2*(psrf-pbot)
    					q_avail(bounds%begg:bounds%endg)	,	&	! water available in lowest level
    					lh_avail(bounds%begg:bounds%endg)	,	&	! latent heat available in lowest level
@@ -349,8 +375,6 @@ contains
    					dtsoi(bounds%begg:bounds%endg,10)	, 	&
    					cp(bounds%begg:bounds%endg,10)	, 	&
    					dp(bounds%begg:bounds%endg,10)	, 	&
-   					fsds_dir(bounds%begg:bounds%endg,2)	, 	&
-   					fsds_dif(bounds%begg:bounds%endg,2)	, 	&
    					sw_abs_dir(bounds%begg:bounds%endg,2)	, 	&
    					sw_abs_dif(bounds%begg:bounds%endg,2)	
    real(r8) :: fsds_tot      ! Total solar
@@ -369,111 +393,112 @@ contains
      !lwdown_atm			=> atm2lnd_inst%forc_lwrad_not_downscaled_grc	, 	&
      !swdown_atm			=> atm2lnd_inst%forc_solar_grc					,	&
      ! atm vars (need to grab them from atm portion, though... once this is written, can simplify by grabbing them right away)
-     fsds	   	=> atm2lnd_inst%mml_atm_fsds_grc		,	&
-      fsdsnd	   	=> atm2lnd_inst%mml_atm_fsdsnd_grc		,	&	! incoming shortwave nir direct
-      fsdsvd	   	=> atm2lnd_inst%mml_atm_fsdsvd_grc		,	&
-      fsdsni	   	=> atm2lnd_inst%mml_atm_fsdsni_grc		,	&
-      fsdsvi	   	=> atm2lnd_inst%mml_atm_fsdsvi_grc		,	&
-     lwdn		=> atm2lnd_inst%mml_atm_lwdn_grc    	,	&
-     zref		=> atm2lnd_inst%mml_atm_zref_grc    	,	&
-     tref		=> atm2lnd_inst%mml_atm_tbot_grc    	,	&
-     thref		=> atm2lnd_inst%mml_atm_thref_grc    	,	&
-     qref		=> atm2lnd_inst%mml_atm_qbot_grc    	,	&
-     uref		=> atm2lnd_inst%mml_atm_uref_grc    	,	&
-     eref		=> atm2lnd_inst%mml_atm_eref_grc    	,	&
-     pref		=> atm2lnd_inst%mml_atm_pbot_grc    	,	&
-     psrf		=> atm2lnd_inst%mml_atm_psrf_grc    	,	&
-     rhomol		=> atm2lnd_inst%mml_atm_rhomol_grc    	,	&
-     rhoair		=> atm2lnd_inst%mml_atm_rhoair_grc    	,	&
-     cpair		=> atm2lnd_inst%mml_atm_cp_grc    		,	& ! MML: this is in 
-     pco2		=> atm2lnd_inst%mml_atm_pco2			,	&
-     prec_liq	=> atm2lnd_inst%mml_atm_prec_liq_grc    ,   &	! MML: in mm/s
-     prec_frz	=> atm2lnd_inst%mml_atm_prec_frz_grc    ,   &
+     ! slevis: these were later overwritten, so now I point them directly to
+     !         their final destination here
+     fsds => atm2lnd_inst%forc_solar_grc,  &
+     fsds_dir => atm2lnd_inst%forc_solad_grc,  &
+     fsds_dif => atm2lnd_inst%forc_solai_grc,  &
+     lwdn => atm2lnd_inst%forc_lwrad_not_downscaled_grc,  &
+     zref => atm2lnd_inst%forc_hgt_grc,  &
+     tref => atm2lnd_inst%forc_t_not_downscaled_grc,  &
+     thref => atm2lnd_inst%mml_atm_thref_grc,  &
+     qref => atm2lnd_inst%forc_q_not_downscaled_grc,  &
+     uref => atm2lnd_inst%forc_wind_grc,  &
+     eref => atm2lnd_inst%forc_vp_grc,  &
+     pref => atm2lnd_inst%forc_pbot_not_downscaled_grc,  &
+     psrf => atm2lnd_inst%forc_psrf_grc,  &  ! surface pressure (Pa)
+     rhomol => atm2lnd_inst%mml_atm_rhomol_grc,  &
+     rhoair => atm2lnd_inst%forc_rho_not_downscaled_grc,  &
+     cpair => atm2lnd_inst%mml_atm_cp_grc,  &  ! MML: this is in 
+     prec_liq => atm2lnd_inst%forc_rain_not_downscaled_grc,  &
+     prec_frz => atm2lnd_inst%forc_snow_not_downscaled_grc,  &
      ! lnd variables
-     tsrf 		=> atm2lnd_inst%mml_lnd_ts_grc			,   &
-     qsrf 		=> atm2lnd_inst%mml_lnd_qs_grc			,   &
-     radforc	=> atm2lnd_inst%mml_lnd_qa_grc			,   &
-     sw_abs		=> atm2lnd_inst%mml_lnd_swabs_grc		,   &
-     fsr		=> atm2lnd_inst%mml_lnd_fsr_grc		,   &
-      fsrnd		=> atm2lnd_inst%mml_lnd_fsrnd_grc		,   &
-      fsrni		=> atm2lnd_inst%mml_lnd_fsrni_grc		,   &
-      fsrvd		=> atm2lnd_inst%mml_lnd_fsrvd_grc		,   &
-      fsrvi		=> atm2lnd_inst%mml_lnd_fsrvi_grc		,   &
-     lwup		=> atm2lnd_inst%mml_lnd_lwup_grc		,   &
-     fsns		=> atm2lnd_inst%mml_lnd_fsns_grc		,   &
-     flns		=> atm2lnd_inst%mml_lnd_flns_grc		,   &
-     shflx		=> atm2lnd_inst%mml_lnd_shflx_grc		,   &
-     lhflx		=> atm2lnd_inst%mml_lnd_lhflx_grc		,   &
-     gsoi		=> atm2lnd_inst%mml_lnd_gsoi_grc		,   &
-     gsnow		=> atm2lnd_inst%mml_lnd_gsnow_grc		,   &
-     evap		=> atm2lnd_inst%mml_lnd_evap_grc		,   &
-     ustar		=> atm2lnd_inst%mml_lnd_ustar_grc		,   &
-     tstar		=> atm2lnd_inst%mml_lnd_tstar_grc		,   &
-     qstar		=> atm2lnd_inst%mml_lnd_qstar_grc		,   &
-     tvstar		=> atm2lnd_inst%mml_lnd_tvstar_grc		,   &
-     obu		=> atm2lnd_inst%mml_lnd_obu_grc			,   &
-     ram		=> atm2lnd_inst%mml_lnd_ram_grc			,   &
-     rah		=> atm2lnd_inst%mml_lnd_rah_grc			,   &
-     h_disp		=> atm2lnd_inst%mml_lnd_disp_grc		,   &
-     z0m		=> atm2lnd_inst%mml_lnd_z0m_grc			,   &
-     z0h		=> atm2lnd_inst%mml_lnd_z0h_grc			,   &
-     albedo_fin	=> atm2lnd_inst%mml_lnd_alb_grc		,   & 
-     snow_melt	=> atm2lnd_inst%mml_lnd_snowmelt		,	&
-     taux		=> atm2lnd_inst%mml_out_taux			,	&
-     tauy		=> atm2lnd_inst%mml_out_tauy			,	&
+     tsrf => atm2lnd_inst%mml_lnd_ts_grc,  &
+     qsrf => atm2lnd_inst%mml_lnd_qs_grc,  &
+     radforc => atm2lnd_inst%mml_lnd_qa_grc,  &
+     sw_abs => atm2lnd_inst%mml_lnd_swabs_grc,  &
+     fsr => atm2lnd_inst%mml_lnd_fsr_grc,  &
+     fsrnd => atm2lnd_inst%mml_lnd_fsrnd_grc,  &
+     fsrni => atm2lnd_inst%mml_lnd_fsrni_grc,  &
+     fsrvd => atm2lnd_inst%mml_lnd_fsrvd_grc,  &
+     fsrvi => atm2lnd_inst%mml_lnd_fsrvi_grc,  &
+     lwup => atm2lnd_inst%mml_lnd_lwup_grc,  &
+     fsns => atm2lnd_inst%mml_lnd_fsns_grc,  &
+     flns => atm2lnd_inst%mml_lnd_flns_grc,  &
+     shflx => atm2lnd_inst%mml_lnd_shflx_grc,  &
+     lhflx => atm2lnd_inst%mml_lnd_lhflx_grc,  &
+     gsoi => atm2lnd_inst%mml_lnd_gsoi_grc,  &
+     gsnow => atm2lnd_inst%mml_lnd_gsnow_grc,  &
+     evap => atm2lnd_inst%mml_lnd_evap_grc,  &
+     ustar => atm2lnd_inst%mml_lnd_ustar_grc,  &
+     tstar => atm2lnd_inst%mml_lnd_tstar_grc,  &
+     qstar => atm2lnd_inst%mml_lnd_qstar_grc,  &
+     tvstar => atm2lnd_inst%mml_lnd_tvstar_grc,  &
+     obu => atm2lnd_inst%mml_lnd_obu_grc,  &
+     ram => atm2lnd_inst%mml_lnd_ram_grc,  &
+     rah => atm2lnd_inst%mml_lnd_rah_grc,  &
+     h_disp => atm2lnd_inst%mml_lnd_disp_grc,  &
+     z0m => atm2lnd_inst%mml_lnd_z0m_grc,  &
+     z0h => atm2lnd_inst%mml_lnd_z0h_grc,  &
+     albedo_fin => atm2lnd_inst%mml_lnd_alb_grc,  & 
+     snow_melt => atm2lnd_inst%mml_lnd_snowmelt,  &
+     taux => atm2lnd_inst%mml_out_taux,  &
+     tauy => atm2lnd_inst%mml_out_tauy,  &
      ! over-large dew:
-     lh_excess	=> atm2lnd_inst%mml_lh_excess		,   & 
-     q_excess	=> atm2lnd_inst%mml_q_excess		,   & 
-     lh_demand	=> atm2lnd_inst%mml_lh_demand		,   &
-     q_demand	=> atm2lnd_inst%mml_q_demand		,   &
+     lh_excess => atm2lnd_inst%mml_lh_excess,  & 
+     q_excess => atm2lnd_inst%mml_q_excess,  & 
+     lh_demand => atm2lnd_inst%mml_lh_demand,  &
+     q_demand => atm2lnd_inst%mml_q_demand,  &
      ! soil variables
-     tsoi		=> atm2lnd_inst%mml_soil_t_grc		,   &
-     soil_liq	=> atm2lnd_inst%mml_soil_liq_grc		,   &
-     soil_ice	=> atm2lnd_inst%mml_soil_ice_grc		,   &
-     soil_dz	=> atm2lnd_inst%mml_soil_dz_grc		,   &
-     soil_zh	=> atm2lnd_inst%mml_soil_zh_grc		,   &
-     soil_tk	=> atm2lnd_inst%mml_soil_tk_grc		,   &
-     soil_tk_1d	=> atm2lnd_inst%mml_soil_tk_1d_grc		,   &
-     soil_tkh	=> atm2lnd_inst%mml_soil_tkh_grc		,   &
-     soil_dtsoi	=> atm2lnd_inst%mml_soil_dtsoi_grc		,   &
-     soil_cv	=> atm2lnd_inst%mml_soil_cv_grc		,   &
-     soil_cv_1d	=> atm2lnd_inst%mml_soil_cv_1d_grc		,   &
-	 glc_tk_1d	=> atm2lnd_inst%mml_glc_tk_1d_grc		,   &
-	 glc_cv_1d	=> atm2lnd_inst%mml_glc_cv_1d_grc		,   &
-     water		=> atm2lnd_inst%mml_soil_water_grc		,   &
-     snow		=> atm2lnd_inst%mml_soil_snow_grc		,   &
-     runoff		=> atm2lnd_inst%mml_soil_runoff_grc		,   &
+     tsoi => atm2lnd_inst%mml_soil_t_grc,  &
+     soil_liq => atm2lnd_inst%mml_soil_liq_grc,  &
+     soil_ice => atm2lnd_inst%mml_soil_ice_grc,  &
+     soil_dz => atm2lnd_inst%mml_soil_dz_grc,  &
+     soil_zh => atm2lnd_inst%mml_soil_zh_grc,  &
+     soil_tk => atm2lnd_inst%mml_soil_tk_grc,  &
+     soil_tk_1d => atm2lnd_inst%mml_soil_tk_1d_grc,  &
+     soil_tkh => atm2lnd_inst%mml_soil_tkh_grc,  &
+     soil_dtsoi => atm2lnd_inst%mml_soil_dtsoi_grc,  &
+     soil_cv => atm2lnd_inst%mml_soil_cv_grc,  &
+     soil_cv_1d => atm2lnd_inst%mml_soil_cv_1d_grc,  &
+     glc_tk_1d => atm2lnd_inst%mml_glc_tk_1d_grc,  &
+     glc_cv_1d => atm2lnd_inst%mml_glc_cv_1d_grc,  &
+     water => atm2lnd_inst%mml_soil_water_grc,  &
+     snow => atm2lnd_inst%mml_soil_snow_grc,  &
+     runoff => atm2lnd_inst%mml_soil_runoff_grc,  &
      ! values from .nc file
-     albedo_gvd	=> atm2lnd_inst%mml_nc_alb_gvd_grc			,	&
-     albedo_svd	=> atm2lnd_inst%mml_nc_alb_svd_grc			,	&
-     albedo_gnd	=> atm2lnd_inst%mml_nc_alb_gnd_grc			,	&
-     albedo_snd	=> atm2lnd_inst%mml_nc_alb_snd_grc			,	&
-     albedo_gvf	=> atm2lnd_inst%mml_nc_alb_gvf_grc			,	&
-     albedo_svf	=> atm2lnd_inst%mml_nc_alb_svf_grc			,	&
-     albedo_gnf	=> atm2lnd_inst%mml_nc_alb_gnf_grc			,	&
-     albedo_snf	=> atm2lnd_inst%mml_nc_alb_snf_grc			,	&
-     snowmask		=> atm2lnd_inst%mml_nc_snowmask_grc				,	&
-     evaprs			=> atm2lnd_inst%mml_nc_evaprs_grc				,	&
-     bucket_cap		=> atm2lnd_inst%mml_nc_bucket_cap_grc			,	&
-     soil_maxice	=> atm2lnd_inst%mml_nc_soil_maxice_grc			,	&
-     soil_z			=> atm2lnd_inst%mml_nc_soil_levels_grc			,	&
-     soil_type		=> atm2lnd_inst%mml_nc_soil_type_grc			,	&
-     roughness		=> atm2lnd_inst%mml_nc_roughness_grc			,	&
-     emiss			=> atm2lnd_inst%mml_nc_emiss_grc			,	&
-     glc_mask		=> atm2lnd_inst%mml_nc_glcmask_grc			,	&
-     dust			=> atm2lnd_inst%mml_nc_dust_grc			,	&
+     albedo_gvd => atm2lnd_inst%mml_nc_alb_gvd_grc,  &
+     albedo_svd => atm2lnd_inst%mml_nc_alb_svd_grc,  &
+     albedo_gnd => atm2lnd_inst%mml_nc_alb_gnd_grc,  &
+     albedo_snd => atm2lnd_inst%mml_nc_alb_snd_grc,  &
+     albedo_gvf => atm2lnd_inst%mml_nc_alb_gvf_grc,  &
+     albedo_svf => atm2lnd_inst%mml_nc_alb_svf_grc,  &
+     albedo_gnf => atm2lnd_inst%mml_nc_alb_gnf_grc,  &
+     albedo_snf => atm2lnd_inst%mml_nc_alb_snf_grc,  &
+     snowmask => atm2lnd_inst%mml_nc_snowmask_grc,  &
+     evaprs => atm2lnd_inst%mml_nc_evaprs_grc,  &
+     bucket_cap => atm2lnd_inst%mml_nc_bucket_cap_grc,  &
+     soil_maxice => atm2lnd_inst%mml_nc_soil_maxice_grc,  &
+     soil_z => atm2lnd_inst%mml_nc_soil_levels_grc,  &
+     soil_type => atm2lnd_inst%mml_nc_soil_type_grc,  &
+     roughness => atm2lnd_inst%mml_nc_roughness_grc,  &
+     emiss => atm2lnd_inst%mml_nc_emiss_grc,  &
+     glc_mask => atm2lnd_inst%mml_nc_glcmask_grc,  &
+     dust => atm2lnd_inst%mml_nc_dust_grc,  &
      ! temporary diagnostics
-     diag1_1d		=> atm2lnd_inst%mml_diag1_1d_grc			,	&
-     diag2_1d		=> atm2lnd_inst%mml_diag2_1d_grc			,	&
-     diag3_1d		=> atm2lnd_inst%mml_diag3_1d_grc			,	&
-     diag1_2d		=> atm2lnd_inst%mml_diag1_2d_grc			,	&
-     diag2_2d		=> atm2lnd_inst%mml_diag2_2d_grc			,	&
-     diag3_2d		=> atm2lnd_inst%mml_diag3_2d_grc				&
+     diag1_1d => atm2lnd_inst%mml_diag1_1d_grc,  &
+     diag2_1d => atm2lnd_inst%mml_diag2_1d_grc,  &
+     diag3_1d => atm2lnd_inst%mml_diag3_1d_grc,  &
+     diag1_2d => atm2lnd_inst%mml_diag1_2d_grc,  &
+     diag2_2d => atm2lnd_inst%mml_diag2_2d_grc,  &
+     diag3_2d => atm2lnd_inst%mml_diag3_2d_grc  &
      !ddvel_grc		=> lnd2atm_inst%ddvel_grc						&	! lat x lon x 3 dust bins
    )
      !-----------------------------------------------------------------------
-     
-     
+
+     SHR_ASSERT_ALL((lbound(tref) == (/bounds%begg/)), errMsg(__FILE__, __LINE__))
+     SHR_ASSERT_ALL((ubound(tref) == (/bounds%endg/)), errMsg(__FILE__, __LINE__))
+
      !-----------------------------------------------------------------------
      ! Assign local values
 
@@ -557,29 +582,16 @@ contains
   	 !-----------------------------------------------------------------------
   	 ! Re-assign atmospheric forcing data to simple land model equivalent
   	 ! (this is all the "forcing" data
-  	 fsds 		= atm2lnd_inst%forc_solar_grc
-  	 fsds_dir	= atm2lnd_inst%forc_solad_grc
-     fsds_dif	= atm2lnd_inst%forc_solai_grc
-  	 lwdn 		= atm2lnd_inst%forc_lwrad_not_downscaled_grc
-  	 zref		= atm2lnd_inst%forc_hgt_grc   ! Note, there is a u, t , and q height in atm2lnd... compare? 
+         ! slevis: I pointed these to their final destinations in the associate
+         !         statment above and left all comments as I found them
  ! GBB: No need to use the separate values for t, u, q; only need zref
  ! MML: Keith said there are 3 separate ones for historical reasons, but all three should be the same as zref    
-     zref_t		= atm2lnd_inst%forc_hgt_t_grc
-     zref_u		= atm2lnd_inst%forc_hgt_u_grc
-     zref_q		= atm2lnd_inst%forc_hgt_q_grc
-     tref		= atm2lnd_inst%forc_t_not_downscaled_grc ! is this right? or does atm have a ref height value?
-     uref		= atm2lnd_inst%forc_wind_grc
-     eref		= atm2lnd_inst%forc_vp_grc
-     qref		= atm2lnd_inst%forc_q_not_downscaled_grc
-     pref		= atm2lnd_inst%forc_pbot_not_downscaled_grc
-     rhoair		= atm2lnd_inst%forc_rho_not_downscaled_grc 
-     prec_liq	= atm2lnd_inst%forc_rain_not_downscaled_grc
-     prec_frz	= atm2lnd_inst%forc_snow_not_downscaled_grc
-     pco2 		= atm2lnd_inst%forc_pco2_grc
-     ! For checking the big neg lhflx:
-     psrf		= atm2lnd_inst%forc_psrf_grc  ! surface pressure (Pa)
-     pbot		= atm2lnd_inst%forc_pbot_not_downscaled_grc ! not downscaled atm pressure (Pa)
-     qbot		= atm2lnd_inst%forc_q_not_downscaled_grc   ! not downscaled atm specific humidity (kg/kg) 
+     SHR_ASSERT(numrad == 2, errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((ubound(fsds_dir) == (/bounds%endg,numrad/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((lbound(fsds_dir) == (/bounds%begg,1/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((ubound(atm2lnd_inst%forc_solad_grc) == (/bounds%endg,numrad/)), errMsg(sourcefile, __LINE__))
+     SHR_ASSERT_ALL((lbound(atm2lnd_inst%forc_solad_grc) == (/bounds%begg,1/)), errMsg(sourcefile, __LINE__))
+         ! For checking the big neg lhflx:
      ! NOTE: this is NOT going to be consistent with CAM, still, if I use pbot and psrf as the "edges" of 
      ! my lowest atm layer; cam uses the actual pressure levels at the edges of the lowermost 
      ! atmospheric layer, but all I've got is pbot (which is likely in the middle of the lowest layer)
@@ -590,25 +602,28 @@ contains
      ! total layer thickness, in pressure, which I should then be able to plug in to their equation.
      ! Yes, lets do it that way!  
      
-     ! Put direct/diffuse fsds vis/nir into right variable to be output:
-     fsdsnd = fsds_dir(:,2)
-     fsdsvd = fsds_dir(:,1)
-     fsdsni = fsds_dif(:,2)
-     fsdsvi = fsds_dif(:,1)	! I think? check...
+         ! Put direct/diffuse fsds vis/nir into right variable to be output:
+         atm2lnd_inst%mml_atm_fsdsnd_grc(begg:endg) = fsds_dir(begg:endg,2)
+         atm2lnd_inst%mml_atm_fsdsvd_grc(begg:endg) = fsds_dir(begg:endg,1)
+         atm2lnd_inst%mml_atm_fsdsni_grc(begg:endg) = fsds_dif(begg:endg,2)
+         atm2lnd_inst%mml_atm_fsdsvi_grc(begg:endg) = fsds_dif(begg:endg,1)
+         ! slevis: Same for tbot and psrf
+         atm2lnd_inst%mml_atm_tbot_grc(begg:endg) = tref(begg:endg)
+         atm2lnd_inst%mml_atm_psrf_grc(begg:endg) = psrf(begg:endg)
 
-	 ! Theta = T + 0.0098 * z  (Gamma = 0.0098)
-	 thref = tref + 0.0098_r8 * zref
-	 
-	 ! Have to calculate rhomol from the vapor pressure, actual pressure, and actual temperature
-	 rhomol	= pref / (rgas*tref);
-	  ! rho_mol = (pd + forcvar.eref)/(physcon.rgas * forcvar.tref)
-	 ! rho_kg = ((pref - eref)*mmdry + eref*mmh2o)/(rgas*tref)
-	 
-	 ! MML: might need to move into g loop if I can't figure out how to allocate a matrix of size 
-	 ! begg:endg before I know begg and endg ... 
-	 ! calculate heat capacity based off specific humidity:
-	 mmair = rhomol / rhoair 					! mol/kg
-	 cpair = cpd * (1._r8 + (cpw/cpd - 1._r8)*qref)	! J/kg/K
+         ! Theta = T + 0.0098 * z  (Gamma = 0.0098)
+         thref(begg:endg) = tref(begg:endg) + 0.0098_r8 * zref(begg:endg)
+
+         ! Have to calculate rhomol from the vapor pressure, actual pressure, and actual temperature
+         rhomol(begg:endg) = pref(begg:endg) / (rgas * tref(begg:endg));
+         ! rho_mol = (pd + forcvar.eref)/(physcon.rgas * forcvar.tref)
+         ! rho_kg = ((pref - eref)*mmdry + eref*mmh2o)/(rgas*tref)
+
+         ! MML: might need to move into g loop if I can't figure out how to allocate a matrix of size 
+         ! begg:endg before I know begg and endg ... 
+         ! calculate heat capacity based off specific humidity:
+         mmair(begg:endg) = rhomol(begg:endg) / rhoair(begg:endg)  ! mol/kg
+         cpair(begg:endg) = cpd * (1._r8 + (cpw / cpd - 1._r8) * qref(begg:endg))  ! J/kg/K
 	! cpair = mmair * cpair_kg					! J/mol/K
 	! physcon.cpd * (1.0 + (physcon.cpw/physcon.cpd - 1.0) * forcvar.qref) (* mmair); 
 	 
@@ -626,8 +641,7 @@ contains
   	 ! Get outside data 
   	 
      !MML: Grab the current model time so we know what month we're in
-     call get_curr_date(year, mon, day, sec)   ! Actually all I need for now is mon
-     mcdate = year*10000 + mon*100 + day
+     call get_curr_date(year, mon, day, sec)
   
   	!write(iulog,*)subname, 'MML month = ', mon
   	!write(iulog,*)subname, 'MML day = ', day
@@ -654,45 +668,27 @@ contains
 !		else
 !			soil_maxice(begg:endg,i) = 300._r8
 !		end if
-		
 !	 enddo
-	
 
-  	! write(iulog,*) 'MML: Yikes! Pre-nc reading, albedo_gvd at some point begg = ', albedo_gvd(begg)
-  	call t_startf('mml_nc_import')
-  	
-  		! ONLY actually run nc_import if we're on the first timestep of the first day of the month...
-  		!if (sec <= 1800) then !( day == 1 .and. sec <= 1800) then
-  		if ( day == 1 .and. sec .le. 1800 ) then
-  			! <= 1800 will read it in both first 2 time steps... but after a restart it 
-  			! seems to start on 1800, not 0, so it needs to be able to read them then, too...
-  			! Is there a better way to say "if you haven't still got the last values, read these in?"
-  			!
-  			! Added the nc vars to the restart file, so maybe now I can revert to just saying if sec = 0? 
-  			! (sec <1800) -> as long as that instance HAPPENS that would work... I think...
-  			if ( masterproc ) write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
-  			
-  			call nc_import(begg, endg, mml_nsoi, lfsurdat, mon, &
- 					albedo_gvd(begg:endg), albedo_svd(begg:endg), &
- 					albedo_gnd(begg:endg), albedo_snd(begg:endg), &
- 					albedo_gvf(begg:endg), albedo_svf(begg:endg), &
- 					albedo_gnf(begg:endg), albedo_snf(begg:endg), &
- 					snowmask(begg:endg), evaprs(begg:endg), &
- 					bucket_cap(begg:endg), & 
- 					soil_type(begg:endg), roughness(begg:endg), &
- 					emiss(begg:endg), glc_mask(begg:endg), dust(begg:endg,:), &
- 					soil_tk_1d(begg:endg), soil_cv_1d(begg:endg), &
- 					glc_tk_1d(begg:endg), glc_cv_1d(begg:endg)   ) !, &
+     call t_startf('mml_nc_import')
+     ! Read mml_surdat file at the beginning of a run and at the
+     ! beginning of the first day of every month
+     if (is_first_step_of_this_run_segment() .or. (day == 1 .and. sec == 0)) then
+        if ( masterproc ) write(iulog,*)'reading netcdf data for mon=',mon,', day=',day,', sec=',sec,')'
+        call nc_import(begg, endg, mml_nsoi, lfsurdat, mon, &
+           albedo_gvd(begg:endg), albedo_svd(begg:endg), &
+           albedo_gnd(begg:endg), albedo_snd(begg:endg), &
+           albedo_gvf(begg:endg), albedo_svf(begg:endg), &
+           albedo_gnf(begg:endg), albedo_snf(begg:endg), &
+           snowmask(begg:endg), evaprs(begg:endg), &
+           bucket_cap(begg:endg), & 
+           soil_type(begg:endg), roughness(begg:endg), &
+           emiss(begg:endg), glc_mask(begg:endg), dust(begg:endg,:), &
+           soil_tk_1d(begg:endg), soil_cv_1d(begg:endg), &
+           glc_tk_1d(begg:endg), glc_cv_1d(begg:endg)   )
+     end if
+     call t_stopf('mml_nc_import')
 
-                       !write(iulog,*)'read netcdf'
- 					
-		end if
-	call t_stopf('mml_nc_import')
-	
-
-		! Hard code snowmask and see if it'll run with the new files using that
-		!snowmask(begg:endg) = 100.0_r8
-			
      ! *************************************************************
      ! ***       Start the simple model (science part)  		 ***
      ! *************************************************************
@@ -708,31 +704,28 @@ contains
  
      !write(iulog,*)'MML: Commence actually running the model!'    
  
-     ! displacement height
-     		! for now, set equal to 0.7 * canopy height
-     h_disp = 0.7_r8 * roughness
+     begg_to_endg_0: do g = begg, endg
+        ! displacement height
+        ! for now, set equal to 0.7 * canopy height
+        h_disp(g) = 0.7_r8 * roughness(g)
+
+        ! Roughness length for momentum
+        ! for now, set equal to 0.1 * canopy height
+        z0m(g) = 0.1_r8 * roughness(g)
+
+        ! Roughness length for heat
+        ! for now, set equal to 0.1 * momentum roughness length
+        z0h(g) = 0.1_r8 * z0m(g)
+
+        ! snow masking factor
+        ! SHOULD ALWAYS BE BETWEEN 0 AND 1!!!!!
      
-     ! Roughness length for momentum
-     		! for now, set equal to 0.1 * canopy height
-     z0m	= 0.1_r8 * roughness
+        ! If snow is negative (it shouldn't be, but if it went a bit neg), set temp = 0
      
-     ! Roughness length for heat
-     		! for now, set equal to 0.1 * momentum roughness length
-     z0h	= 0.1_r8 * z0m
-     
-     
-     
-     ! snow masking factor
-     ! SHOULD ALWAYS BE BETWEEN 0 AND 1!!!!!
-     
-     ! If snow is negative (it shouldn't be, but if it went a bit neg), set temp = 0
-     
-     !temp(begg:endg) = snow(begg:endg)/(snow(begg:endg) + snowmask(begg:endg)) ! snow masking factor
-     !diag3_1d = temp
-    
-     
- 
-     do g = begg, endg
+        !temp(begg:endg) = snow(begg:endg)/(snow(begg:endg) + snowmask(begg:endg)) ! snow masking factor
+        !diag3_1d = temp
+
+
           ! MML 2021.09.29: initialize temp as all zeros, otherwise it might just not have a value in some places!
           temp(g) = 0.0_r8	
 
@@ -765,113 +758,103 @@ contains
                   'Instead, snowmasking factor = ',temp(g)
                  call endrun(msg=errmsg(__FILE__, __LINE__))
         end if
-  	 
-  	 end do
      
      
-     ! -------------------------------------------------------------
-	 ! Albedo stuff
-	 
-     ! Direct/Diffuse Visible/NIR
-     ! for consistent coding, shove vis and nir into a (:,2) sized matrix
-     alb_vis_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvd(begg:endg) + &
-     							temp(begg:endg) * albedo_svd(begg:endg)
-     alb_nir_dir(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnd(begg:endg) + &
-	 							temp(begg:endg) * albedo_snd(begg:endg)
-     alb_vis_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gvf(begg:endg) + &
-	 							temp(begg:endg) * albedo_svf(begg:endg)
-     alb_nir_dif(begg:endg) = (1._r8 - temp(begg:endg)) * albedo_gnf(begg:endg) + &
-	 							temp(begg:endg) * albedo_snf(begg:endg)
-	 
-	 ! for now, output one of these as albedo_fin just so there is a value:
-	 !albedo_fin = alb_vis_dir
-	 diag2_1d = alb_vis_dir
-	 
-	 !diag3_1d = alb_vis_dif	! why is the albedo going to 1e22 in h0? try this one...
-	 
-	 ! Do something special for albedo where there is a glacier? 
-	 ! at present, I'm just feeding in albedos that already "make sense" for a glacier
-	 
-	
-	 !albedo_fin = 0.3_r8 ! see if that overwrites... 
-	 
-	 ! -------------------------------------------------------------
-	 ! Net radiation
-     ! variables from atm: 			lwdn, fsds, fsds_dir, fsds_dif ! sw is handed as total, direct, and diffuse
-     ! variables to end up with: 	sw_abs, fsr, radforc (into ground) 
-     !
-     ! for lw, emissivity = absorptivity
-     ! alpha (albed0) = reflected, so (1-alpha) = absorbed
+        ! -------------------------------------------------------------
+        ! Albedo stuff
+
+        ! Direct/Diffuse Visible/NIR
+        ! for consistent coding, shove vis and nir into a (:,2) sized matrix
+        alb_vis_dir(g) = (1._r8 - temp(g)) * albedo_gvd(g) + &
+                         temp(g) * albedo_svd(g)
+        alb_nir_dir(g) = (1._r8 - temp(g)) * albedo_gnd(g) + &
+                         temp(g) * albedo_snd(g)
+        alb_vis_dif(g) = (1._r8 - temp(g)) * albedo_gvf(g) + &
+                         temp(g) * albedo_svf(g)
+        alb_nir_dif(g) = (1._r8 - temp(g)) * albedo_gnf(g) + &
+                         temp(g) * albedo_snf(g)
+
+        ! for now, output one of these as albedo_fin just so there is a value:
+        !albedo_fin = alb_vis_dir
+        diag2_1d(g) = alb_vis_dir(g)
+
+        !diag3_1d = alb_vis_dif	! why is the albedo going to 1e22 in h0? try this one...
+
+        ! Do something special for albedo where there is a glacier? 
+        ! at present, I'm just feeding in albedos that already "make sense" for a glacier
+
+
+        !albedo_fin = 0.3_r8 ! see if that overwrites... 
+
+        ! -------------------------------------------------------------
+        ! Net radiation
+        ! variables from atm: 			lwdn, fsds, fsds_dir, fsds_dif ! sw is handed as total, direct, and diffuse
+        ! variables to end up with: 	sw_abs, fsr, radforc (into ground) 
+        !
+        ! for lw, emissivity = absorptivity
+        ! alpha (albed0) = reflected, so (1-alpha) = absorbed
      
-     ! longwave
-     lw_abs(begg:endg) = emiss(begg:endg)*lwdn(begg:endg)
-     lwup(begg:endg) = (1._r8 - emiss(begg:endg)) * lwdn(begg:endg) ! reflected longwave. Later, add surface emission 
-     ! Shortwave direct visible
-     sw_abs_dir(begg:endg,1) = (1._r8 - alb_vis_dir(begg:endg)) * fsds_dir(begg:endg,1)
-     ! Shortwave direct NIR
-     sw_abs_dir(begg:endg,2) = (1._r8 - alb_nir_dir(begg:endg)) * fsds_dir(begg:endg,2)
-     ! Shortwave diffuse visible
-     sw_abs_dif(begg:endg,1) = (1._r8 - alb_vis_dif(begg:endg)) * fsds_dif(begg:endg,1)
-     ! Shortwave diffuse NIR
-     sw_abs_dif(begg:endg,2) = (1._r8 - alb_nir_dif(begg:endg)) * fsds_dif(begg:endg,2)
+        ! longwave
+        lw_abs(g) = emiss(g) * lwdn(g)
+        lwup(g) = (1._r8 - emiss(g)) * lwdn(g)  ! reflected longwave. Later, add surface emission 
+        ! Shortwave direct visible
+        sw_abs_dir(g,1) = (1._r8 - alb_vis_dir(g)) * fsds_dir(g,1)
+        ! Shortwave direct NIR
+        sw_abs_dir(g,2) = (1._r8 - alb_nir_dir(g)) * fsds_dir(g,2)
+        ! Shortwave diffuse visible
+        sw_abs_dif(g,1) = (1._r8 - alb_vis_dif(g)) * fsds_dif(g,1)
+        ! Shortwave diffuse NIR
+        sw_abs_dif(g,2) = (1._r8 - alb_nir_dif(g)) * fsds_dif(g,2)
      
-     !fsr(begg:endg)  = alb_vis_dir(begg:endg) * fsds_dir(begg:endg,1) + &
-    ! 					alb_nir_dir(begg:endg) * fsds_dir(begg:endg,2) + &
-    ! 		 			alb_vis_dif(begg:endg) * fsds_dif(begg:endg,1) + &
-    ! 		 			alb_nir_dif(begg:endg) * fsds_dif(begg:endg,2)
+        !fsr(g) = alb_vis_dir(g) * fsds_dir(g,1) + &
+        !         alb_nir_dir(g) * fsds_dir(g,2) + &
+        !         alb_vis_dif(g) * fsds_dif(g,1) + &
+        !         alb_nir_dif(g) * fsds_dif(g,2)
      
-     ! fsr by  vis/nir/dir/dif
-     fsrnd	=	alb_nir_dir(begg:endg) * fsds_dir(begg:endg,2)
-     fsrni	=	alb_nir_dif(begg:endg) * fsds_dif(begg:endg,2)
-     fsrvd	=	alb_vis_dir(begg:endg) * fsds_dir(begg:endg,1)
-     fsrvi	=	alb_vis_dif(begg:endg) * fsds_dif(begg:endg,1)
+        ! fsr by  vis/nir/dir/dif
+        fsrnd(g) = alb_nir_dir(g) * fsds_dir(g,2)
+        fsrni(g) = alb_nir_dif(g) * fsds_dif(g,2)
+        fsrvd(g) = alb_vis_dir(g) * fsds_dir(g,1)
+        fsrvi(g) = alb_vis_dif(g) * fsds_dif(g,1)
      
-     ! put sum of these in diag2, should equal fsr... well, it will. thats math. don't bother. 
+        ! put sum of these in diag2, should equal fsr... well, it will. thats math. don't bother. 
      
-     		 
-     sw_abs(begg:endg) = sw_abs_dir(begg:endg,1) + sw_abs_dir(begg:endg,2) + &
-     						sw_abs_dif(begg:endg,1) + sw_abs_dif(begg:endg,2)
-     						
-     						
-     ! should be able to write like:
-	 fsr(:)  = alb_vis_dir * fsds_dir(:,1) + &
-     					alb_nir_dir * fsds_dir(:,2) + &
-     		 			alb_vis_dif * fsds_dif(:,1) + &
-     		 			alb_nir_dif * fsds_dif(:,2)
-     		 
-     sw_abs(:) = sw_abs_dir(:,1) + sw_abs_dir(:,2) + &
-     						sw_abs_dif(:,1) + sw_abs_dif(:,2)
+        sw_abs(g) = sw_abs_dir(g,1) + sw_abs_dir(g,2) + &
+                    sw_abs_dif(g,1) + sw_abs_dif(g,2)
+
+        ! should be able to write like:
+        fsr(g) = alb_vis_dir(g) * fsds_dir(g,1) + &
+                 alb_nir_dir(g) * fsds_dir(g,2) + &
+                 alb_vis_dif(g) * fsds_dif(g,1) + &
+                 alb_nir_dif(g) * fsds_dif(g,2)
+
+        sw_abs(g) = sw_abs_dir(g,1) + sw_abs_dir(g,2) + &
+                    sw_abs_dif(g,1) + sw_abs_dif(g,2)
      
-     
-     ! Make output albedo to be a combination of all 4 albedo streams:
-     albedo_fin(:) = 1.0e36_r8
-     do g = begg, endg
+        ! Make output albedo to be a combination of all 4 albedo streams:
         fsds_tot = fsds_dir(g,1) + fsds_dir(g,2) + fsds_dif(g,1) +  fsds_dif(g,2)
         if ( fsds_tot > 0.0_r8 )then
            albedo_fin(g) = fsr(g) / fsds_tot
+        else
+           albedo_fin(g) = 1.0e36_r8
         end if
-     end do
-     ! temporary fix:
-     !lw_abs(begg:endg) = lwdn(begg:endg)
-     !sw_abs(begg:endg) = 0.7*fsds(begg:endg)
+
+        ! temporary fix:
+        !lw_abs(g) = lwdn(g)
+        !sw_abs(g) = 0.7*fsds(g)
      
+        radforc(g) = lw_abs(g) + sw_abs(g)
      
-     radforc(begg:endg) = lw_abs(begg:endg) + sw_abs(begg:endg)
-     
-     
-     !-----------------------------------------------------------------------
-  	 ! Initial Checks -> crash run if these fail
-  	 
-  	 do g = begg, endg
-  	 
-  	       if ( zref(g) < h_disp(g) ) then
-            write(iulog,*)'Error: Forcing height is below canopy displacement height (zref < h_disp) '
-            call endrun(msg=errmsg(__FILE__, __LINE__))
-         end if
-  	 
-  	 end do
-     
-     
+        !-----------------------------------------------------------------------
+        ! Initial Checks -> crash run if these fail
+  
+        if ( zref(g) < h_disp(g) ) then
+           write(iulog,*)'Error: Forcing height is below canopy displacement height (zref < h_disp) '
+           call endrun(msg=errmsg(__FILE__, __LINE__))
+        end if
+  
+     end do begg_to_endg_0
+
      ! -------------------------------------------------------------
      ! -------- Monin-Obukhov Stuff
      ! -------------------------------------------------------------
@@ -923,21 +906,20 @@ contains
      
 	! calculate aerodynamic resistances for momentum (ram) and heat (rah) in [s/m], and 
 	! the effective resistance combining ram with the canopy resistance (res)	
-     ram(:)		=	uref / (ustar * ustar)				! [s/m] = [m/s] / ([m/s] * [m/s])
-     rah(:)		=	(thref - tsrf) / (ustar * tstar)	! [s/m] = [K] / ([m/s] * [K])
-     res(:)		=  	(evaprs + rah)						! [s/m]
+     ram(begg:endg) = uref(begg:endg) / (ustar(begg:endg) * ustar(begg:endg))  ! [s/m] = [m/s] / ([m/s] * [m/s])
+     rah(begg:endg) = (thref(begg:endg) - tsrf(begg:endg)) / (ustar(begg:endg) * tstar(begg:endg))  ! [s/m] = [K] / ([m/s] * [K])
+     res(begg:endg) = (evaprs(begg:endg) + rah(begg:endg))  ! [s/m]
      
      ! cap res at 100,000 ()
-     where ( res > 100000. )
-		res(:) = 100000.0_r8
-	 end where
-
+     where ( res(begg:endg) > 100000.0_r8 )
+        res = 100000.0_r8
+     end where
 
      ! GBB: See what GFDL does for its evaporative resistance; should be a function
-	 ! of stomatal conductance and LAI
-	 
- 	 ! Save initial temperature profile for energy conservation check:
- 	 tsoi0(:,:) = tsoi
+     ! of stomatal conductance and LAI
+
+     ! Save initial temperature profile for energy conservation check:
+     tsoi0(begg:endg,:) = tsoi(begg:endg,:)
  	 
  	 ! Call soil thermal properties for this time step: (right now, it doesn't matter b/c 
  	 ! it doesn't have water dependence, or soil type dependence, for that matter, 
@@ -1006,30 +988,30 @@ contains
     ! GBB: hsub is used if snow is on the ground (check GFDL code). Or CLM uses hvap
     ! (gfdl says sublimation if snow, CLM says sublimation if frozen... check and make sure,
     ! then choose one and run with it)
-    lambda(:) = hvap
-	where ( tsrf < tfrz) lambda(:) = hsub	
-	
-	
-	! Psychometric Constant [Pa/K]
-	gamma(:) = cpair(:) * pref(:) / lambda(:)		! [J/kg/K] * [Pa] / [J/kg]
-	
-	!lhflx(:) = lambda
-	
+    lambda(begg:endg) = hvap
+    where ( tsrf(begg:endg) < tfrz) lambda = hsub
+
+
+    ! Psychometric Constant [Pa/K]
+    gamma(begg:endg) = cpair(begg:endg) * pref(begg:endg) / lambda(begg:endg)  ! [J/kg/K] * [Pa] / [J/kg]
+
+    !lhflx(:) = lambda
+
     ! --------------------------------------------------
-	! ---- Surface Fluxes
-	! -------------------------------------------------- 
+    ! ---- Surface Fluxes
+    ! -------------------------------------------------- 
      
     ! Emitted longwave radiation from surface [W/m2] and temperature derivative [W/m2/K]
-	lwrad(:) 	=	emiss * sigma * tsrf**4
-	dlwrad(:) 	=	4.0_r8 * emiss * sigma * tsrf**3
-	! GBB: dlwrad(:) = 4.0_r8 * emiss * sigma * tsrf**3
-	! The exponents do not need to be real; but the factor 4 should be real
-	
-	! Sensible heat flux [W/m2] and temperature derivative [W/m2/K]
-	! GBB: Need to multiply by rhoair: J/s/m2 = kg/m3 * J/kg/K * K * m/s
-	shflx(:) 	=	cpair * (tsrf - thref) / rah * rhoair	! [W/m2] = [J/kg/K] * [K] / [s/m] * [kg/m3]
-	dshflx(:)	=	cpair / rah	* rhoair					! [W/m2/K] = [J/kg/K] / [s/m] * [ kg/m3] 
-	
+    lwrad(begg:endg) = emiss(begg:endg) * sigma * tsrf(begg:endg)**4
+    dlwrad(begg:endg) = 4.0_r8 * emiss(begg:endg) * sigma * tsrf(begg:endg)**3
+    ! GBB: dlwrad(:) = 4.0_r8 * emiss * sigma * tsrf**3
+    ! The exponents do not need to be real; but the factor 4 should be real
+
+    ! Sensible heat flux [W/m2] and temperature derivative [W/m2/K]
+    ! GBB: Need to multiply by rhoair: J/s/m2 = kg/m3 * J/kg/K * K * m/s
+    shflx(begg:endg) = cpair(begg:endg) * (tsrf(begg:endg) - thref(begg:endg)) / rah(begg:endg) * rhoair(begg:endg)  ! [W/m2] = [J/kg/K] * [K] / [s/m] * [kg/m3]
+    dshflx(begg:endg) = cpair(begg:endg) / rah(begg:endg) * rhoair(begg:endg)  ! [W/m2/K] = [J/kg/K] / [s/m] * [ kg/m3] 
+
 	! Latent heat flux [W/m2] and temperature derivative [W/m2/K]
 	! (check if lhflx > water available in snow and soil, in which case limit lhflx
 	! to available water; also, if there is snow, don't use soil moisture as a factor)
@@ -1053,272 +1035,260 @@ contains
 		! MML: plan - use qsat instead of esat, by calling CLM function QSatOld. Modify these
 		! equations accordingly (and check units!!!!) 
 	
-	! Initialize beta = 1.0 (no extra bucket resistance) everywhere. Overwrite with smaller values where appropriate.
-	beta(:) = 1.0_r8
+        ! Initialize beta = 1.0 (no extra bucket resistance) everywhere. Overwrite with smaller values where appropriate.
+        beta(begg:endg) = 1.0_r8
 
-	! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
-	atm2lnd_inst%mml_lnd_effective_res_grc = 1.0_r8 !9999.99_r8
-	atm2lnd_inst%mml_lnd_res_grc = 1.0_r8 ! 9999.99_r8 
-	
-	where ( snow <= 0 )
-		beta(:) = min ( water/(.75 * bucket_cap) , 1.0_r8 )		! scaling factor [unitless]
-		! OH I bet the problem is that I only end up defining beta in places where snow<0 -- hence the nan problem!!! So I should initialize
-		! a starting beta matrix where everywhere is 1.0 or something! 
-		! add minimum beta value in case water is negative?
-		!lhflx(:) 	= cpair / gamma * (esat - eref) / res * beta * rhoair 	! [W/m2] = [J/kg/K] / [Pa/K] * [Pa] / [s/m] * [unitless] * [kg/m3] 
-		!dlhflx(:) 	= cpair / gamma * desat / res * beta * rhoair			! [W/m2/K]
-		lhflx(:)	= rhoair * lambda * (qsrf - qref) * beta / res 	! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
-		dlhflx(:) 	= rhoair * lambda * dqsrf * beta / res			! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
-		! got here doing unit analysis - make sure this is actually the right equation!!!  
-	end where
-	
-	! make sure beta isn't negative (if neg, set equal to 0)
-	where ( beta <= 0.0 )
-		beta(:) = 0.0_r8
-	end where
-	
-	where ( snow > 0 ) ! go where there is snow and overwrite the value of lhflx and dlhflx
-		!lhflx(:) = cpair / gamma * ( esat - eref ) / res * rhoair			! [W/m2]
-		!dlhflx(:) = cpair / gamma * desat / res * rhoair					! [W/m2]
-		lhflx(:)	= rhoair * lambda * (qsrf - qref) / res 	! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
-		dlhflx(:) 	= rhoair * lambda * dqsrf / res			! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
-	end where
+        ! similarly initialize mml_lnd_effective_res_grc and mml_lnd_res_grc to avoid nans
+        atm2lnd_inst%mml_lnd_effective_res_grc(begg:endg) = 1.0_r8  !9999.99_r8
+        atm2lnd_inst%mml_lnd_res_grc(begg:endg) = 1.0_r8  ! 9999.99_r8 
 
-	! Check if we tried to evaporate more water than is available
-	! ... probably isn't the sneakiest way to do this... what if dlhflx is <0? then we might
-	! be okay - would have to check at end of time step...
-	where ( lhflx * dt / lambda > ( water + snow ) ) 	! [W/m2] * [s] / [J/kg] -> W * [s/J] * kg/m2 = kg/m2
-		!write(iulog,*)subname, 'MML tried to evaporate more water than there is in snow + water, adjusting accordingly'
-		!lhflx(:) = lambda / dt * ( water + snow ) * rhoair					! [W/m2]
-		!dlhflx(:) = 0._r8														! [W/m2]
-		lhflx(:)	= lambda / dt * ( water + snow )	! [W/m2] = [J/kg] / [s] * [kg/m2] ->  J/s * kg/kg/m2 = W/m2
-		dlhflx(:) 	= 0._r8								! [W/m2/K]
-	end where
-	
+     where ( snow(begg:endg) <= 0 )
+        beta = min ( water / (0.75_r8 * bucket_cap) , 1.0_r8 )  ! scaling factor [unitless]
+        ! OH I bet the problem is that I only end up defining beta in places where snow<0 -- hence the nan problem!!! So I should initialize
+        ! a starting beta matrix where everywhere is 1.0 or something! 
+        ! add minimum beta value in case water is negative?
+        !lhflx(:) 	= cpair / gamma * (esat - eref) / res * beta * rhoair 	! [W/m2] = [J/kg/K] / [Pa/K] * [Pa] / [s/m] * [unitless] * [kg/m3] 
+        !dlhflx(:) 	= cpair / gamma * desat / res * beta * rhoair			! [W/m2/K]
+        lhflx = rhoair * lambda * (qsrf - qref) * beta / res  ! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
+        dlhflx = rhoair * lambda * dqsrf * beta / res  ! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
+        ! got here doing unit analysis - make sure this is actually the right equation!!!
+     end where
 
+     ! make sure beta isn't negative (if neg, set equal to 0)
+     where ( beta(begg:endg) <= 0.0_r8 )
+        beta = 0.0_r8
+     end where
+
+     where ( snow(begg:endg) > 0 ) ! go where there is snow and overwrite the value of lhflx and dlhflx
+        !lhflx(:) = cpair / gamma * ( esat - eref ) / res * rhoair			! [W/m2]
+        !dlhflx(:) = cpair / gamma * desat / res * rhoair					! [W/m2]
+        lhflx = rhoair * lambda * (qsrf - qref) / res  ! [W/m2] = [kg/m3] * [J/kg] * [kg/kg] * [unitless] / [s/m] -> kg/m3 * J/kg * m/s = kg/kg J/s 1/m2 = W/m2
+        dlhflx = rhoair * lambda * dqsrf / res  ! [W/m2/K] = [kg/m3] * [J/kg] * [kg/kg/K] * [unitless] / [s/m] -> kg/m3 * J/kg * 1/K * m/s -> J/s /K /m2 = W/m2/K
+     end where
+
+     ! Check if we tried to evaporate more water than is available
+     ! ... probably isn't the sneakiest way to do this... what if dlhflx is <0? then we might
+     ! be okay - would have to check at end of time step...
+     where ( lhflx(begg:endg) * dt / lambda(begg:endg) > ( water(begg:endg) + snow(begg:endg) ) )  ! [W/m2] * [s] / [J/kg] -> W * [s/J] * kg/m2 = kg/m2
+        !write(iulog,*)subname, 'MML tried to evaporate more water than there is in snow + water, adjusting accordingly'
+        !lhflx(:) = lambda / dt * ( water + snow ) * rhoair					! [W/m2]
+        !dlhflx(:) = 0._r8														! [W/m2]
+        lhflx = lambda / dt * ( water + snow )  ! [W/m2] = [J/kg] / [s] * [kg/m2] ->  J/s * kg/kg/m2 = W/m2
+        dlhflx = 0._r8  ! [W/m2/K]
+    end where
 
 
-	
-	! Net flux of energy into soil [W/m2] and temperature derivative [W/m2/K] from the 
-	! surface energy imbalance given other fluxes:
-	f0(:) 	=	radforc - ( lwrad + lhflx + shflx )							! [W/m2]
-	df0(:) 	= 	- ( dlwrad + dlhflx + dshflx )								! [W/m2]
-    
-    ! lets temporarily save this value out as gsoi (not the real gsoi, but the right "family"
-    gsoi(:) = f0							! [W/m2]
+    begg_to_endg_1: do g = begg, endg
+       ! Net flux of energy into soil [W/m2] and temperature derivative [W/m2/K] from the 
+       ! surface energy imbalance given other fluxes:
+       f0(g) = radforc(g) - ( lwrad(g) + lhflx(g) + shflx(g) )  ! [W/m2]
+       df0(g) = - ( dlwrad(g) + dlhflx(g) + dshflx(g) )  ! [W/m2]
+
+       ! lets temporarily save this value out as gsoi (not the real gsoi, but the right "family"
+       gsoi(g) = f0(g)  ! [W/m2]
      
-     
-	! -------------------------------------------------------------
-	! Initial pass at soil temperatures
-    ! -------------------------------------------------------------
+
+       ! -------------------------------------------------------------
+       ! Initial pass at soil temperatures
+       ! -------------------------------------------------------------
+
+       ! Initial change in soil temperatures = 0
+       dtsoi(g,:) = 0.0_r8  ! see if this helps?
+
+       ! -------------------------------------------------------------
+       ! Set up tri-diagonal matrix
+
+       ! surface
+       i = 1
+
+       aa(g,i) = 0.0_r8
+       cc(g,i) = -soil_tkh(g,i) / ( soil_z(g,i) - soil_z(g,i+1) )
+       bb(g,i) = soil_cv(g,i) * soil_dz(g,i) / dt - cc(g,i) - df0(g)
+       dd(g,i) = -soil_tkh(g,i) * ( tsoi(g,i) - tsoi(g,i+1) ) / ( soil_z(g,i) - soil_z(g,i+1) ) + f0(g)
+
+       ! layers 2 to nsoi-1
+       dummy = mml_nsoi - 1
+       do i = 2, dummy
+          aa(g,i) = -soil_tkh(g,i-1) / ( soil_z(g,i-1) - soil_z(g,i) )
+          cc(g,i) = -soil_tkh(g,i) / ( soil_z(g,i) - soil_z(g,i+1) )
+          bb(g,i) = soil_cv(g,i) * soil_dz(g,i) / dt - aa(g,i) - cc(g,i)
+          dd(g,i) = soil_tkh(g,i-1) * ( tsoi(g,i-1) - tsoi(g,i) ) / (soil_z(g,i-1) - soil_z(g,i)) &
+                    - soil_tkh(g,i) * (tsoi(g,i) - tsoi(g,i+1)) / (soil_z(g,i) - soil_z(g,i+1))
+       end do 
+
+       ! Bottom soil layer
+       i = mml_nsoi
+       aa(g,i) = -soil_tkh(g,i-1) / (soil_z(g,i-1) - soil_z(g,i))
+       cc(g,i) = 0.0_r8
+       bb(g,i) = soil_cv(g,i) * soil_dz(g,i) / dt - aa(g,i)
+       dd(g,i) = soil_tkh(g,i-1) * (tsoi(g,i-1) - tsoi(g,i)) / (soil_z(g,i-1) - soil_z(g,i))
+
+       ! ----------------------------------------------------------
+       ! Begin forward (upward) sweep of tridiagonal matrix from layer N to 1
+
+       ! Bottom soil layer
+       i = mml_nsoi
+       ee(g,i) = aa(g,i) / bb(g,i)
+       ff(g,i) = dd(g,i) / bb(g,i)
+
+       ! Layers nsoi-1 to 2
+       dummy = mml_nsoi-1
+       do i = dummy, 2, -1
+          den = bb(g,i) - cc(g,i) * ee(g,i+1)
+          ee(g,i) = aa(g,i) / den(g)
+          ff(g,i) = (dd(g,i) - cc(g,i) * ff(g,i+1)) / den(g)
+       end do
+
+       ! Complete tridiagonal sol'n to get initial temperature guess for top soil layer
+       i = 1
+       num = dd(g,i) - cc(g,i) * ff(g,i+1)
+       den = bb(g,i) - cc(g,i) * ee(g,i+1)
+       tsrf(g) = tsoi0(g,i) + num(g) / den(g)
     
-    ! Initial change in soil temperatures = 0
-    dtsoi(:,:) = 0.0_r8 ! see if this helps?
+       !write(iulog,*)subname, 'MML new tridiagonal solver IS being used'
+
+       ! -------------------------------------------------------------
+       ! Snow accounting: 
+       ! if tsrf>freezing and there is snow on the ground, melt some snow!
+       ! -------------------------------------------------------------
+
+       !t_to_snow(:) = soil_cv(:,1) * soil_dz(:,1) / hfus	! factor to convert a change in temperature to snow melt
     
-    ! -------------------------------------------------------------
-    ! Set up tri-diagonal matrix
+       ! how much snow can we melt given the temperature? 
+       snow_melt(g) = 0.0_r8
+       !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) * t_to_snow(:)
     
-    ! surface
-    i = 1
+       ! Maximum snow melt RATE based on temperature above freezing:
+       ptl_snow_melt(g) = max(0.0 , (tsrf(g) - tfrz) * den(g) / hfus)
+       !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) / hfus 
     
-    aa(:,i) = 0.0_r8
-    cc(:,i) = -soil_tkh(:,i) / ( soil_z(:,i) - soil_z(:,i+1) )
-    bb(:,i) = soil_cv(:,i) * soil_dz(:,i) / dt - cc(:,i) - df0
-    dd(:,i) = -soil_tkh(:,i) * ( tsoi(:,i) - tsoi(:,i+1) ) / ( soil_z(:,i) - soil_z(:,i+1) ) + f0
+       ! Maximum melt RATE is the rate it would take to melt all the snow that is currently present:
+       max_snow_melt(g) = snow(g) / dt
     
-    ! layers 2 to nsoi-1
-    dummy = mml_nsoi - 1
-    do i = 2, dummy
-    	aa(:,i) = -soil_tkh(:,i-1) / ( soil_z(:,i-1) - soil_z(:,i) )
-    	cc(:,i) = -soil_tkh(:,i) / ( soil_z(:,i) - soil_z(:,i+1) )
-    	bb(:,i) = soil_cv(:,i) * soil_dz(:,i) / dt - aa(:,i) - cc(:,i)
-    	dd(:,i) = soil_tkh(:,i-1) * ( tsoi(:,i-1) - tsoi(:,i) ) / (soil_z(:,i-1) - soil_z(:,i)) &
-    			- soil_tkh(:,i) * (tsoi(:,i) - tsoi(:,i+1)) / (soil_z(:,i) - soil_z(:,i+1))
-    end do 
+       ! Set actual snow melt RATE to either the total the potential (if enough snow is present) or the total (if enoguh energy is present)
+       snow_melt(g) = min( max_snow_melt(g) , ptl_snow_melt(g) )
     
-    ! Bottom soil layer
-    i = mml_nsoi
-    aa(:,i) = -soil_tkh(:,i-1) / (soil_z(:,i-1) - soil_z(:,i))
-    cc(:,i) = 0.0_r8
-    bb(:,i) = soil_cv(:,i) * soil_dz(:,i) / dt - aa(:,i)
-    dd(:,i) = soil_tkh(:,i-1) * (tsoi(:,i-1) - tsoi(:,i)) / (soil_z(:,i-1) - soil_z(:,i))
+       ! Energy flux associated with realized snow melt
+       gsnow(g) = snow_melt(g) * hfus  ! [kg/m2/s]*[J/kg] = [J/s/m2] = [W/m2]
     
-    ! ----------------------------------------------------------
-    ! Begin forward (upward) sweep of tridiagonal matrix from layer N to 1
-    
-    ! Bottom soil layer
-    i = mml_nsoi
-    ee(:,i) = aa(:,i) / bb(:,i)
-    ff(:,i) = dd(:,i) / bb(:,i)
-    
-    ! Layers nsoi-1 to 2
-    dummy = mml_nsoi-1
-    do i = dummy, 2, -1
-    	den = bb(:,i) - cc(:,i)*ee(:,i+1)
-    	ee(:,i) = aa(:,i) / den
-    	ff(:,i) = (dd(:,i) - cc(:,i)*ff(:,i+1)) / den
-    end do
-    
-    ! Complete tridiagonal sol'n to get initial temperature guess for top soil layer
-    i = 1
-    num = dd(:,i) - cc(:,i) * ff(:,i+1)
-    den = bb(:,i) - cc(:,i) * ee(:,i+1)
-    tsrf = tsoi0(:,i) + num/den
-    
-	
-	!write(iulog,*)subname, 'MML new tridiagonal solver IS being used'
-	
-	! -------------------------------------------------------------
-    ! Snow accounting: 
-    ! if tsrf>freezing and there is snow on the ground, melt some snow!
-    ! -------------------------------------------------------------
-        	
-    !t_to_snow(:) = soil_cv(:,1) * soil_dz(:,1) / hfus	! factor to convert a change in temperature to snow melt
-    
-    ! how much snow can we melt given the temperature? 
-    snow_melt = 0.0_r8
-    !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) * t_to_snow(:)
-    
-    ! Maximum snow melt RATE based on temperature above freezing:
-    ptl_snow_melt(:) = max(0.0 , (tsrf(:) - tfrz) * den(:) / hfus)
-    !where ( snow > 0.0_r8 .and. tsrf > tfrz) snow_melt(:) = (tsrf(:) - tfrz) * den(:) / hfus 
-    
-    ! Maximum melt RATE is the rate it would take to melt all the snow that is currently present:
-    max_snow_melt(:) = snow / dt
-    
-    ! Set actual snow melt RATE to either the total the potential (if enough snow is present) or the total (if enoguh energy is present)
-    snow_melt(:) = min( max_snow_melt(:) , ptl_snow_melt(:) )
-    
-    ! Energy flux associated with realized snow melt
-    gsnow(:) = snow_melt(:) * hfus		! [kg/m2/s]*[J/kg] = [J/s/m2] = [W/m2]
-    
-    ! Recalculate melt based off how much snow is actually present (can't melt more
-    ! than what is actually present)
-    ! If we have more energy than snow to melt, update surface temperature accordingly
-    !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt <= snow ) tsrf(:) = tfrz	! where snow_melt < snow, temperature stays at freezing
-    !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt > snow )
-    !	snow_melt(:) = snow	! melt all available snow
-    !	tsrf(:) = tsoi(:,1) + (num(:) - snow_melt(:)/t_to_snow(:))/den(:)
-    !end where
+       ! Recalculate melt based off how much snow is actually present (can't melt more
+       ! than what is actually present)
+       ! If we have more energy than snow to melt, update surface temperature accordingly
+       !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt <= snow ) tsrf(:) = tfrz	! where snow_melt < snow, temperature stays at freezing
+       !where ( snow > 0.0_r8 .and. snow_melt > 0.0_r8 .and. snow_melt > snow )
+       !	snow_melt(:) = snow	! melt all available snow
+       !	tsrf(:) = tsoi(:,1) + (num(:) - snow_melt(:)/t_to_snow(:))/den(:)
+       !end where
         
-    ! Update snow and water buckets accordingly -> convert to water units, not rates
-    snow(:)  = snow  - snow_melt*dt			! [kg/m2] = [kg/m2] - [kg/m2/s]*[s]
-    water(:) = water + snow_melt*dt
-       		
-    ! Update surface temperature to reflect snow melt:
-    !	If there is no snow melt, tsoi(1) = tsrf as above, unmodified
-    !	While snow is actively melting, tsrf should be tfrz
-    ! 	If snow melt was less than the total energy, tsrf should be > trfz but less tahn tsrf above
-    tsoi(:,1) = tsoi(:,1) + (num - gsnow) / den;
-    dtsoi(:,1) = tsoi(:,1) - tsoi0(:,1)
+       ! Update snow and water buckets accordingly -> convert to water units, not rates
+       snow(g) = snow(g) - snow_melt(g) * dt  ! [kg/m2] = [kg/m2] - [kg/m2/s]*[s]
+       water(g) = water(g) + snow_melt(g) * dt
+
+       ! Update surface temperature to reflect snow melt:
+       !	If there is no snow melt, tsoi(1) = tsrf as above, unmodified
+       !	While snow is actively melting, tsrf should be tfrz
+       ! 	If snow melt was less than the total energy, tsrf should be > trfz but less tahn tsrf above
+       tsoi(g,1) = tsoi(g,1) + (num(g) - gsnow(g)) / den(g)
+       dtsoi(g,1) = tsoi(g,1) - tsoi0(g,1)
     
+       ! -------------------------------------------------------------
+       ! Complete the tri-diagonal solver for soil temperature given we now know the 
+       ! surface temperature after snow melting
+       ! -------------------------------------------------------------	
+  
+       !dtsoi(:,1) 	= tsrf(:) - tsoi(:,1)	! save change in top soil layer
+       !tsoi(:,1) 	= tsrf(:)					! update top soil layer to be surface temperature
     
-  	! -------------------------------------------------------------
-  	! Complete the tri-diagonal solver for soil temperature given we now know the 
-  	! surface temperature after snow melting
-    ! -------------------------------------------------------------	
-        	
-    !dtsoi(:,1) 	= tsrf(:) - tsoi(:,1)	! save change in top soil layer
-    !tsoi(:,1) 	= tsrf(:)					! update top soil layer to be surface temperature
+       !------ Complete tri-diagonal solver (downwards sweep)
+       do i = 2,mml_nsoi
+          dtsoi(g,i) = ff(g,i) - ee(g,i) * dtsoi(g,i-1)
+          tsoi(g,i) = tsoi(g,i) + dtsoi(g,i)
+       end do
     
-    !------ Complete tri-diagonal solver (downwards sweep)
-	do i = 2,mml_nsoi
-		dtsoi(:,i) = ff(:,i) - ee(:,i)*dtsoi(:,i-1)
-		tsoi(:,i) = tsoi(:,i) + dtsoi(:,i)
-	end do
-    
-    !dummy = mml_nsoi - 1
-    !do i = 1, dummy
-    !    dtsoi(:,i+1) = dp(:,i) + cp(:,i)*dtsoi(:,i)	! ah, this hsould have been i+1
-    !    tsoi(:,i+1) = tsoi(:,i+1) + dtsoi(:,i+1) 	! old tsoi + dtsoi
-    !end do
-	
-	
-	! -------------------------------------------------------------
-    ! Update surface energy fluxes based on the change in surface temperature
-    ! -------------------------------------------------------------	
-		
-	lwrad(:) = lwrad + dlwrad * dtsoi(:,1)
-	lhflx(:) = lhflx + dlhflx * dtsoi(:,1)	! if lhflx = snow+water, dlhflx = 0
-	shflx(:) = shflx + dshflx * dtsoi(:,1)
-	! and the ground energy flux:
-	gsoi(:)	 = f0 + df0 * dtsoi(:,1)
-	
-	! split energy flux into ground into flux into soil (gsoi) and snow (gsnow)
-	gsoi(:) = gsoi(:) - gsnow(:)
-	!gsoi(:)  = gsoi - snow_melt / dt * hfus
-	!gsnow(:) = snow_melt / dt * hfus
-	
-	
-	! Energy conservation check:
-	! Sum change in energy (W/m2)
-	edif(:) = 0._r8
-	do i = 1,mml_nsoi
-		edif(:) = edif(:) + soil_cv(:,i) * soil_dz(:,i) * ( tsoi(:,i) - tsoi0(:,i) ) / dt
-	end do
-	! Energy conservation check:
-	err(:) = 0._r8
-	err(:) = edif(:) - gsoi(:)
-	do g = begg,endg
-		if ( abs( err(g) ) > 1.0e-06 ) then
-			write(iulog,*)subname, 'MML ERROR: Soil temperature energy conservation error: pre-phase change'
-			call endrun(msg=errmsg(__FILE__, __LINE__))
-		end if
-	end do
-	
-	! Maybe should be checking lhflx HERE for if it is larger than water+snow
-	
-	
-	lwup(:) = lwup + lwrad	! reflected longwave (0 at the moment) plus sigma*T^4
-	
-	
-	! -------------------------------------------------------------
-	! TO DO:
-	! If lhflx < 0 and the total amount of water the land tries to suck out of the atmosphere is
-	! larger than the total water available in the lowest level of the atmosphere, cap the negative LHFLX
-	! at the amount of water in the atm_bot and put the excess energy into SHFLX (cam has a check
-	! that does this (qneg4.f90)
-	
-	! check 1: if evap*dt > water + snow at this point, take excess and put into sensible heat flux?
-	do g = begg, endg
-		if ( lhflx(g) * dt / lambda(g) > (water(g) + snow(g)) ) then
-	!where ( lhflx * dt / lambda > (water + snow) )
-			temp(g) = lhflx(g) - (water(g) + snow(g)) * lambda(g) / dt	!excess energy that we don't have water for
-			lhflx(g) = lhflx(g) - temp(g)	! remove the excess from lh
-			shflx(g) = shflx(g) + temp(g)	! give it to shflx 	...  ask Gordon about a better way to do this...
-			write(iulog,*)subname, 'MML Warning: lhflx > available water; put excess in shflx'
-	!end where 
-		end if	! put in an if loop just so I could get it to write the warning
-	end do
-	
-	
-        ! MML 2021.09.13: move update of evap (in water units) to AFTER the lh/sh check - otherwise lh and evap won't match (once put into proper units)
-        
-        ! LHFLX in water units [kg/m2/s = mm/s]
-        ! update evap(g) 
-        !evap(:) = lhflx * dt / lambda
-        evap(:) = lhflx / lambda        ! kg/m2/s or mm/s, NOT times dt!!!!
+       !dummy = mml_nsoi - 1
+       !do i = 1, dummy
+       !    dtsoi(:,i+1) = dp(:,i) + cp(:,i)*dtsoi(:,i)	! ah, this should have been i+1
+       !    tsoi(:,i+1) = tsoi(:,i+1) + dtsoi(:,i+1) 	! old tsoi + dtsoi
+       !end do
+
+       ! -------------------------------------------------------------
+       ! Update surface energy fluxes based on the change in surface temperature
+       ! -------------------------------------------------------------	
+
+       lwrad(g) = lwrad(g) + dlwrad(g) * dtsoi(g,1)
+       lhflx(g) = lhflx(g) + dlhflx(g) * dtsoi(g,1)  ! if lhflx = snow+water, dlhflx = 0
+       shflx(g) = shflx(g) + dshflx(g) * dtsoi(g,1)
+       ! and the ground energy flux:
+       gsoi(g) = f0(g) + df0(g) * dtsoi(g,1)
+
+       ! split energy flux into ground into flux into soil (gsoi) and snow (gsnow)
+       gsoi(g) = gsoi(g) - gsnow(g)
+       !gsoi(g)  = gsoi(g) - snow_melt(g) / dt * hfus
+       !gsnow(g) = snow_melt(g) / dt * hfus
 
 
-	! -------------------------------------------------------------
-	!	Check that dew doesn't exceed water available in lowest atm level
-	! -------------------------------------------------------------
-	! check 2: if evap*dt < 0 and requires more water than is available in the bottom of the atmosphere,
-	! that is bad... the atmosphere corrects for it, but I want the atm and land to be self-consistent...
-	! TODO STILL!
-	! GBB: CLM does not do this
-	!
-	! MML: implement a check for this (go back to CAM QNEG3 OR QNEG4 to check how CAM does it)
-	!	Then limit the CLM LHFLX to whatever CAM is going to adjust it to. Also, print out how
-	!	big that energy difference is and save it somewhere - it'll be big in the first couple
-	! 	of time steps, but I'm not sure how big/negligible it is after the model is sort of spun
-	! 	up. Gordon said there was O(1) W/m2 of energy that sort of gets lost in the coupled 
-	!	model - I'm curious if this contributes to that, or if this is totally negligible once
-	!	the models spins up. 
-	! 	(What CAM does is takes the excess energy that was in LHFLX (but there isn't enough water available
-	! 	in the lower level of the atmosphere for) and adds it to the SHFLX, so its still conserving ENERGY
-	! 	(ie shouldn't be a source of an energy leak), but its changing the PATHWAY the energy takes.
-	
+       ! Energy conservation check:
+       ! Sum change in energy (W/m2)
+       edif(g) = 0._r8
+       do i = 1,mml_nsoi
+          edif(g) = edif(g) + soil_cv(g,i) * soil_dz(g,i) * ( tsoi(g,i) - tsoi0(g,i) ) / dt
+       end do
+       ! Energy conservation check:
+       err(g) = 0._r8
+       err(g) = edif(g) - gsoi(g)
+
+       if ( abs( err(g) ) > 1.0e-06 ) then
+          write(iulog,*)subname, 'MML ERROR: Soil temperature energy conservation error: pre-phase change'
+          call endrun(msg=errmsg(__FILE__, __LINE__))
+       end if
+
+       ! Maybe should be checking lhflx HERE for if it is larger than water+snow
+
+       lwup(g) = lwup(g) + lwrad(g)  ! reflected longwave (0 at the moment) plus sigma*T^4
+
+       ! -------------------------------------------------------------
+       ! TO DO:
+       ! If lhflx < 0 and the total amount of water the land tries to suck out of the atmosphere is
+       ! larger than the total water available in the lowest level of the atmosphere, cap the negative LHFLX
+       ! at the amount of water in the atm_bot and put the excess energy into SHFLX (cam has a check
+       ! that does this (qneg4.f90)
+
+       ! check 1: if evap*dt > water + snow at this point, take excess and put into sensible heat flux?
+       if ( lhflx(g) * dt / lambda(g) > (water(g) + snow(g)) ) then
+          !where ( lhflx * dt / lambda > (water + snow) )
+          temp(g) = lhflx(g) - (water(g) + snow(g)) * lambda(g) / dt  !excess energy that we don't have water for
+          lhflx(g) = lhflx(g) - temp(g)  ! remove the excess from lh
+          shflx(g) = shflx(g) + temp(g)  ! give it to shflx 	...  ask Gordon about a better way to do this...
+          write(iulog,*)subname, 'MML Warning: lhflx > available water; put excess in shflx'
+          !end where 
+       end if  ! put in an if loop just so I could get it to write the warning
+
+       ! MML 2021.09.13: move update of evap (in water units) to AFTER the lh/sh check - otherwise lh and evap won't match (once put into proper units)
+
+       ! LHFLX in water units [kg/m2/s = mm/s]
+       ! update evap(g) 
+       !evap(:) = lhflx * dt / lambda
+       evap(g) = lhflx(g) / lambda(g)  ! kg/m2/s or mm/s, NOT times dt!!!!
+
+! -------------------------------------------------------------
+!	Check that dew doesn't exceed water available in lowest atm level
+! -------------------------------------------------------------
+! check 2: if evap*dt < 0 and requires more water than is available in the bottom of the atmosphere,
+! that is bad... the atmosphere corrects for it, but I want the atm and land to be self-consistent...
+! TODO STILL!
+! GBB: CLM does not do this
+!
+! MML: implement a check for this (go back to CAM QNEG3 OR QNEG4 to check how CAM does it)
+!	Then limit the CLM LHFLX to whatever CAM is going to adjust it to. Also, print out how
+!	big that energy difference is and save it somewhere - it'll be big in the first couple
+! 	of time steps, but I'm not sure how big/negligible it is after the model is sort of spun
+! 	up. Gordon said there was O(1) W/m2 of energy that sort of gets lost in the coupled 
+!	model - I'm curious if this contributes to that, or if this is totally negligible once
+!	the models spins up. 
+! 	(What CAM does is takes the excess energy that was in LHFLX (but there isn't enough water available
+! 	in the lower level of the atmosphere for) and adds it to the SHFLX, so its still conserving ENERGY
+! 	(ie shouldn't be a source of an energy leak), but its changing the PATHWAY the energy takes.
+
 !	! Method:
 !	! Following that of the CAM routine qneg4.F90 in cam/src/physics
 !	! 
@@ -1451,124 +1421,119 @@ contains
 !		write(iulog,*)subname, 'MML Warning: initial shflx = ', shflx(endg)
 !		!call endrun(msg=errmsg(__FILE__, __LINE__))
 !	end if
-	
-	
-	
-	! -------------------------------------------------------------
-	! Update fsns and flns 
-	fsns = fsds - fsr
-	! compare to sw_abs, should be the same. Put in diag3_1d
-	!diag3_1d = sw_abs
-	
-	flns = lwdn - lwup
-	
 
+       ! -------------------------------------------------------------
+       ! Update fsns and flns 
+       fsns(g) = fsds(g) - fsr(g)
+       ! compare to sw_abs, should be the same. Put in diag3_1d
+       !diag3_1d = sw_abs
 
-	! -------------------------------------------------------------
-	! Adjust soil temperatures for phase change (freezing/thawing in soil)
-    ! -------------------------------------------------------------	
-	
-	! have to translate that function first :p
-	! returns new tsoi and epc, where epc is the energy used in phase change [W/m2]
-	epc(:) = 0.0 ! for now
-	
-	call phase_change (begg, endg, tsoi, soil_cv, soil_dz, &
-  							soil_maxice, soil_liq, soil_ice, &
-  							mml_nsoi, dt, hfus, tfrz, epc &
-  							!diag1_1d, diag1_2d, diag2_2d, diag3_2d			& ! temporary diagnostics
-  							)
-	
-	! -------------------------------------------------------------
-  	! Check soil temperature energy conservation
- 	! -------------------------------------------------------------	
-	edif(:) = 0.0		! change in energy in each layer
-	do i = 1, mml_nsoi
-		edif(:) = edif(:) + soil_cv(:,i) * soil_dz(:,i) * (tsoi(:,i) - tsoi0(:,i)) / dt
-	end do
-	
-	err(:) = edif(:) - gsoi(:) - epc(:)	! not counting gsnow here, because it didn't heat/cool soil
-	
-	do g = begg, endg
-		if ( abs(err(g)) .gt. 1.0e-06 ) then
-			write(iulog,*)subname, 'MML Soil Temperature Conservation Error :( at g = ', g, &
-								'err(g) = ', err(g), ', edif(g) = ', edif(g),', gsoi(g) = ', gsoi(g)
-			call endrun(msg=errmsg(__FILE__, __LINE__))
-		end if
-	end do
-		
-	! -------------------------------------------------------------
-    ! Bucket hydrology!
-    ! Remove water that evaporated via LHFLX from ye-old water and snow buckets
-    ! Also add rain/snow falling in from the great-big-sometimes-blue sky
-    ! Then calculate runoff if the bucket overflowed 
-    !
-    ! Ask Gordon - should I be raining into the bucket at the start of the time step?
-    ! then let the bucket exceed capacity, do evaporation, and only if there is excess water
-    ! at the end of the time step send it to runoff? 
-    ! (right now, I'm raining after LHFLX is calculated, so if it was dry then rains,
-    ! we have small lhflx, but it could catch up next time step...
-    ! ... probably doesn't matter much on the monthly mean scale, but if doing it one
-    ! way vs the other results in wibbly-wobbly surface fluxes from time step to time 
-    ! step which can be avoided, should do it right... 
-    !
-    ! GBB: This is how I would do it (calculate latent heat flux on current soil
-	! water) and then update the soil water. See what GFDL did.
-    ! -------------------------------------------------------------	
-        	
-    !write(iulog,*)subname, 'MML welcome to bucket hydrology land!'
-        	
-    ! If there is snow on the ground, sublimate that to get lhflx
-    ! If there isn't enough snow to accomodate evap(g) when there is snow, steal it from 
-    ! the water bucket (without accounting for hvap or soil wetness or anything like that - 
-    ! treating the snow like it has a magic straw into the soil pool)
-    ! If there isn't snow, take the water in evap(g) right from the soil water bucket
+       flns(g) = lwdn(g) - lwup(g)
+
+       ! -------------------------------------------------------------
+       ! Adjust soil temperatures for phase change (freezing/thawing in soil)
+       ! -------------------------------------------------------------	
+
+       ! have to translate that function first :p
+       ! returns new tsoi and epc, where epc is the energy used in phase change [W/m2]
+       epc(g) = 0.0 ! for now
+    end do begg_to_endg_1
+
+    call phase_change (begg, endg, tsoi, soil_cv, soil_dz, &
+        soil_maxice, soil_liq, soil_ice, &
+        mml_nsoi, dt, hfus, tfrz, epc &
+        !diag1_1d, diag1_2d, diag2_2d, diag3_2d			& ! temporary diagnostics
+        )
+
+    begg_to_endg_2: do g = begg, endg
+       ! -------------------------------------------------------------
+       ! Check soil temperature energy conservation
+       ! -------------------------------------------------------------	
+       edif(g) = 0.0  ! change in energy in each layer
+       do i = 1, mml_nsoi
+          edif(g) = edif(g) + soil_cv(g,i) * soil_dz(g,i) * (tsoi(g,i) - tsoi0(g,i)) / dt
+       end do
+
+       err(g) = edif(g) - gsoi(g) - epc(g)  ! not counting gsnow here, because it didn't heat/cool soil
+
+       if ( abs(err(g)) .gt. 1.0e-06 ) then
+          write(iulog,*)subname, 'MML Soil Temperature Conservation Error :( at g = ', g, &
+          'err(g) = ', err(g), ', edif(g) = ', edif(g),', gsoi(g) = ', gsoi(g)
+          call endrun(msg=errmsg(__FILE__, __LINE__))
+       end if
+
+       ! -------------------------------------------------------------
+       ! Bucket hydrology!
+       ! Remove water that evaporated via LHFLX from ye-old water and snow buckets
+       ! Also add rain/snow falling in from the great-big-sometimes-blue sky
+       ! Then calculate runoff if the bucket overflowed 
+       !
+       ! Ask Gordon - should I be raining into the bucket at the start of the time step?
+       ! then let the bucket exceed capacity, do evaporation, and only if there is excess water
+       ! at the end of the time step send it to runoff? 
+       ! (right now, I'm raining after LHFLX is calculated, so if it was dry then rains,
+       ! we have small lhflx, but it could catch up next time step...
+       ! ... probably doesn't matter much on the monthly mean scale, but if doing it one
+       ! way vs the other results in wibbly-wobbly surface fluxes from time step to time 
+       ! step which can be avoided, should do it right... 
+       !
+       ! GBB: This is how I would do it (calculate latent heat flux on current soil
+       ! water) and then update the soil water. See what GFDL did.
+       ! -------------------------------------------------------------	
+
+       !write(iulog,*)subname, 'MML welcome to bucket hydrology land!'
+
+       ! If there is snow on the ground, sublimate that to get lhflx
+       ! If there isn't enough snow to accomodate evap(g) when there is snow, steal it from 
+       ! the water bucket (without accounting for hvap or soil wetness or anything like that - 
+       ! treating the snow like it has a magic straw into the soil pool)
+       ! If there isn't snow, take the water in evap(g) right from the soil water bucket
+
+       !------------------------------------
+       ! Rain into buckets 
+
+       ! (should I do this at the start of the time step? would up the amount of lh possible...)
+       water(g) = water(g) + mms2kgm * prec_liq(g)  ! water in bucket [kg/m2]
+       snow(g)  = snow(g) + mms2kgm * prec_frz(g)  ! snow in bucket  [kg/m2]
+
+       ! -------------------------------------------------------------	
+       ! Evaporation
+
+       ! shouldn't ever be in a case where evap > snow + water, it checks that when calculating lhflx
+       ! though its possible if lhflx was close to snow + water, that when we update with dTsrf, it goes negative... hmm...
+       ! (allow it for now?) 
+
+       ! Snow Evaporation:
+       snow0(g) = snow(g)
+       water0(g) = water(g)
+    end do begg_to_endg_2
     
-    
-    !------------------------------------
-    ! Rain into buckets 
-    
-    ! (should I do this at the start of the time step? would up the amount of lh possible...)
-    water = water + mms2kgm * prec_liq			! water in bucket [kg/m2]
-    snow  = snow  + mms2kgm * prec_frz			! snow in bucket  [kg/m2]
-    
-            	
-    ! -------------------------------------------------------------	
-    ! Evaporation
-    
-    ! shouldn't ever be in a case where evap > snow + water, it checks that when calculating lhflx
-    ! though its possible if lhflx was close to snow + water, that when we update with dTsrf, it goes negative... hmm...
-    ! (allow it for now?) 
-    
-    ! Snow Evaporation:
-    snow0  = snow
-    water0 = water
-    
-    where (snow0 > 0 .and. evap*dt <= snow0)
-    	! where snow is enough to cover all evaporation, take lhflx out of snow bucket
-    	snow(:) = snow0(:) - evap(:)*dt	! here I need to say evap*dt to get kg/m2 not kg/m2/s
-    	! NOTE: IF lhflx < 0, then evap < 0, so this will ADD snow to snow bucket (sucking water out of atm)
+    where (snow0(begg:endg) > 0 .and. evap(begg:endg) * dt <= snow0(begg:endg))
+       ! where snow is enough to cover all evaporation, take lhflx out of snow bucket
+       snow = snow0 - evap * dt  ! here I need to say evap*dt to get kg/m2 not kg/m2/s
+       ! NOTE: IF lhflx < 0, then evap < 0, so this will ADD snow to snow bucket (sucking water out of atm)
     end where
    
     ! MML 2021.09.21: changed from using snow to using snow0 in the where statments, otherwise I'm going to evaproate twice, aren't I?  
-    where (snow0 > 0 .and. evap*dt > snow0)
-    	! where snow isn't enough to cover all evaporation
-    	
-    	! steal excess water we need from soil bucket
-    	wat2snow(:) = evap*dt - snow0
-    	! remove wat2snow from water bucket
-    	water(:) = water0 - wat2snow			! POSSIBLE that this could go negative at one time step, but shouldn't blow up
-    	! give snow wat2snow and remove evap (should equal zero)
-    	snow(:) = snow0 + wat2snow - evap*dt
+    where (snow0(begg:endg) > 0 .and. evap(begg:endg) * dt > snow0(begg:endg))
+       ! where snow isn't enough to cover all evaporation
 
-		! NOTE: IF lhflx < 0, then evap < 0, so this will ADD water to the bucket (sucking it out of the atmosphere)
-   		! 		... shouldn't actually happen in this case b/c evap*dt < 0 shouldn't also be > snow
+       ! steal excess water we need from soil bucket
+       wat2snow = evap * dt - snow0
+       ! remove wat2snow from water bucket
+       water = water0 - wat2snow  ! POSSIBLE that this could go negative at one time step, but shouldn't blow up
+       ! give snow wat2snow and remove evap (should equal zero)
+       snow = snow0 + wat2snow - evap * dt
+
+       ! NOTE: IF lhflx < 0, then evap < 0, so this will ADD water to the bucket (sucking it out of the atmosphere)
+       ! 		... shouldn't actually happen in this case b/c evap*dt < 0 shouldn't also be > snow
     end where
     
     ! Snow-free Evaporation:
     
-    where (snow0 <= 0 )
-    	water(:) = water0 - evap*dt
-    	! NOTE: IF lhflx < 0, then evap < 0, so this will ADD water to the bucket (sucking it out of the atmosphere)
+    where (snow0(begg:endg) <= 0 )
+       water = water0 - evap * dt
+       ! NOTE: IF lhflx < 0, then evap < 0, so this will ADD water to the bucket (sucking it out of the atmosphere)
     end where
     
     ! Check water and snow buckets
@@ -1591,15 +1556,12 @@ contains
     	end if
     end do   
 
-    
-    
-    
     !------------------------------------
     ! Runoff: check if bucket overflowed
     
-    where (water > bucket_cap)
-    	runoff = water - bucket_cap	! excess h20
-    	water = bucket_cap
+    where (water(begg:endg) > bucket_cap(begg:endg))
+       runoff = water - bucket_cap  ! excess h20
+       water = bucket_cap
     end where
     
 	! Check we didn't let snow or water go negative
@@ -1648,7 +1610,7 @@ end do
     ! -------------------------------------------------------------
           ! radforc = swabs + lwabs
           ! lwup = lw_reflected + lwrad
-    err = radforc - (lwup + lhflx + shflx + gsoi + gsnow)
+    err(begg:endg) = radforc(begg:endg) - (lwup(begg:endg) + lhflx(begg:endg) + shflx(begg:endg) + gsoi(begg:endg) + gsnow(begg:endg))
     do g = begg, endg
     	if( abs(err(g)) > 1.0e-06) then
     		write(iulog,*)subname, 'MML ERROR: Not conserving energy (surface fluxes) \n', &
@@ -1662,19 +1624,14 @@ end do
     		call endrun(msg=errmsg(__FILE__, __LINE__))
     	end if
     end do
-    	
-    
-    
  
-     
-     
      
      ! -------------------------------------------------------------
      ! Update qs (surface specific humidity - need it for next round's MO calculations)
      ! -------------------------------------------------------------
      
-     ! instead of direct calculation, re-evaluate QSatOld on the new surface temperature to get qsrf
-     qsrf(:) = qref + evap*dt * res / (dt * rhoair)
+     ! instead of direct calculation, re-evaluate QSat on the new surface temperature to get qsrf
+     qsrf(begg:endg) = qref(begg:endg) + evap(begg:endg) * dt * res(begg:endg) / (dt * rhoair(begg:endg))
      ! Gordon says leave it with the above equation (the below is the inversion to calculate it...)
      !do g = begg, endg
      !	call QSatOld (tsrf(g), pref(g), esrf(g), desrf(g), qsrf(g), dqsrf(g))
@@ -1699,8 +1656,8 @@ end do
 	 ! but for taux and tauy you want to preserve the zonal and meridonal components
 	 ! taux = -rhoair * atm2lnd_inst%forc_u_grc(g) / ram
 	 ! tauy = -rhoair * atm2lnd_inst%forc_v_grc(g) / ram
-     taux = -rhoair * (atm2lnd_inst%forc_u_grc - 0._r8) / ram		! [kg/m/s2] = [kg/m3] * [m/s] / [s/m]	
-     tauy = -rhoair * (atm2lnd_inst%forc_v_grc - 0._r8) / ram		! [kg/m/s2] = [kg/m3] * [m/s] / [s/m]	
+     taux(begg:endg) = -rhoair(begg:endg) * (atm2lnd_inst%forc_u_grc(begg:endg) - 0._r8) / ram(begg:endg)  ! [kg/m/s2] = [kg/m3] * [m/s] / [s/m]	
+     tauy(begg:endg) = -rhoair(begg:endg) * (atm2lnd_inst%forc_v_grc(begg:endg) - 0._r8) / ram(begg:endg)  ! [kg/m/s2] = [kg/m3] * [m/s] / [s/m]	
      ! the - 0._r8 should be removed later, this is to remind myself I'm saying u_ref - u_srf, where u_srf = 0 by def'n
      
      
@@ -1881,48 +1838,48 @@ end do
     
  
      ! lnd -> atm
-     lnd2atm_inst%t_rad_grc = tsrf									! radiative temperature (Kelvin)
-     lnd2atm_inst%t_ref2m_grc = atm2lnd_inst%mml_out_tref2m_grc 	! 2m surface air temperature (Kelvin)
+     lnd2atm_inst%t_rad_grc(begg:endg) = tsrf(begg:endg)  ! radiative temperature (Kelvin)
+     lnd2atm_inst%t_ref2m_grc(begg:endg) = atm2lnd_inst%mml_out_tref2m_grc(begg:endg)  ! 2m surface air temperature (Kelvin)
      !atm2lnd_inst%mml_lnd_ts_grc = tsrf ! dunno what its saving out now... 
      !lnd2atm_inst%q_ref2m_grc = atm2lnd_inst%mml_out_qref2m_grc 	! 2m surface specific humidity (kg/kg)
      !lnd2atm_inst%u_ref10m_grc = atm2lnd_inst%mml_out_uref10m_grc 	! 10m surface wind speed (m/sec)
      
-     lnd2atm_inst%q_ref2m_grc = atm2lnd_inst%mml_out_qref2m_grc 	! 2m surface specific humidity (kg/kg)
-     lnd2atm_inst%u_ref10m_grc = atm2lnd_inst%mml_out_uref10m_grc 	! 10m surface wind speed (m/sec)
+     lnd2atm_inst%q_ref2m_grc(begg:endg) = atm2lnd_inst%mml_out_qref2m_grc(begg:endg)  ! 2m surface specific humidity (kg/kg)
+     lnd2atm_inst%u_ref10m_grc(begg:endg) = atm2lnd_inst%mml_out_uref10m_grc(begg:endg)  ! 10m surface wind speed (m/sec)
      
      ! note: mm h20 snow if using rhowat to convert should be the same as kg/m2
-     lnd2atm_inst%h2osno_grc = snow / rhowat * 1000	! [kg/m2] / [kg/m3]	* 1000[mm/m]! snow water (mm H2O)
+     lnd2atm_inst%h2osno_grc(begg:endg) = snow(begg:endg) / rhowat * 1000  ! [kg/m2] / [kg/m3] * 1000[mm/m]! snow water (mm H2O)
      !lnd2atm_inst%h2osoi_vol_grc									! volumetric soil water (0~watsat, m3/m3, nlevgrnd) (for dust model)
      
      ! MML: albedo (:,:) -> albd is direct, albd(:,1) direct vis, albd(:,2) direct nir
      ! 					 -> albi is diffuse, albi(:,1) diffuse vis, albi(:,2) diffuse nir (I THINK)
      ! GBB: yes
-     lnd2atm_inst%albd_grc(:,1) 		= 	alb_vis_dir				! (numrad=1, vis) surface albedo (direct)
-     lnd2atm_inst%albd_grc(:,2) 		= 	alb_nir_dir				! (numrad=2, nir) surface albedo (direct)
+     lnd2atm_inst%albd_grc(begg:endg,1) = alb_vis_dir(begg:endg)  ! (numrad=1, vis) surface albedo (direct)
+     lnd2atm_inst%albd_grc(begg:endg,2) = alb_nir_dir(begg:endg)  ! (numrad=2, nir) surface albedo (direct)
      
-     lnd2atm_inst%albi_grc(:,1) 		= 	alb_vis_dif				! (numrad=1, vis) surface albedo (diffuse)
-     lnd2atm_inst%albi_grc(:,2) 		= 	alb_nir_dif				! (numrad=2, nir) surface albedo (diffuse)
-     								
-     lnd2atm_inst%taux_grc				=	taux					! wind stress: e-w (kg/m/s**2)
-     lnd2atm_inst%tauy_grc				= 	tauy					! wind stress: n-s (kg/m/s**2)
-     lnd2atm_inst%eflx_lh_tot_grc		= 	lhflx					! total latent HF (W/m**2)  [+ to atm]
-     lnd2atm_inst%eflx_sh_tot_grc		= 	shflx					! total sensible HF (W/m**2) [+ to atm]
+     lnd2atm_inst%albi_grc(begg:endg,1) = alb_vis_dif(begg:endg)  ! (numrad=1, vis) surface albedo (diffuse)
+     lnd2atm_inst%albi_grc(begg:endg,2) = alb_nir_dif(begg:endg)  ! (numrad=2, nir) surface albedo (diffuse)
+
+     lnd2atm_inst%taux_grc(begg:endg) = taux(begg:endg)  ! wind stress: e-w (kg/m/s**2)
+     lnd2atm_inst%tauy_grc(begg:endg) = tauy(begg:endg)  ! wind stress: n-s (kg/m/s**2)
+     lnd2atm_inst%eflx_lh_tot_grc(begg:endg) = lhflx(begg:endg)  ! total latent HF (W/m**2)  [+ to atm]
+     lnd2atm_inst%eflx_sh_tot_grc(begg:endg) = shflx(begg:endg)  ! total sensible HF (W/m**2) [+ to atm]
 !     lnd2atm_inst%eflx_sh_precip_conversion_grc			! sensible HF from precipitation conversion (W/m**2) [+ to atm]				
-     			! Land group says (a) this is new (sh_precip_converstion) and I can set it to 0 since I don't have multiple levels on my (currently nonexistent) ice sheets
-     lnd2atm_inst%eflx_lwrad_out_grc	= 	lwup					! IR (longwave) radiation (W/m**2)
-     lnd2atm_inst%qflx_evap_tot_grc		= 	evap					! (mm H2O/s) ! qflx_evap_soi + qflx_evap_can + qflx_tran_veg		
-     lnd2atm_inst%fsa_grc				= 	sw_abs									! solar rad absorbed (total) (W/m**2)
+     ! Land group says (a) this is new (sh_precip_converstion) and I can set it to 0 since I don't have multiple levels on my (currently nonexistent) ice sheets
+     lnd2atm_inst%eflx_lwrad_out_grc(begg:endg) = lwup(begg:endg)  ! IR (longwave) radiation (W/m**2)
+     lnd2atm_inst%qflx_evap_tot_grc(begg:endg) = evap(begg:endg)  ! (mm H2O/s) ! qflx_evap_soi + qflx_evap_can + qflx_tran_veg		
+     lnd2atm_inst%fsa_grc(begg:endg) = sw_abs(begg:endg)  ! solar rad absorbed (total) (W/m**2)
      ! MML: not running interactive BGC, set CO2/Methane fluxes to 0
      !lnd2atm_inst%net_carbon_exchange_grc				= 	0._r8					! net CO2 flux (kg CO2/m**2/s) [+ to atm]
-     lnd2atm_inst%net_carbon_exchange_grc				= 	0._r8	
-     lnd2atm_inst%nem_grc				= 	0._r8					! gridcell average net methane correction to CO2 flux (g C/m^2/s)
-     lnd2atm_inst%ram1_grc				= 	ram						! aerodynamical resistance (s/m)
+     lnd2atm_inst%net_carbon_exchange_grc(begg:endg) = 0._r8
+     lnd2atm_inst%nem_grc(begg:endg) = 0._r8  ! gridcell average net methane correction to CO2 flux (g C/m^2/s)
+     lnd2atm_inst%ram1_grc(begg:endg) = ram(begg:endg)  ! aerodynamical resistance (s/m)
      			! MML: check if it is ram (vs res) that I should be exporting here
      !lnd2atm_inst%fv_grc				= 							! friction velocity (m/s) (for dust model)
      			! MML: should be able to calculate this from MO theory... is this ustar? 
      
      ! Need to put the dust fluxes I read from the .nc file into the right size
-     lnd2atm_inst%flxdst_grc			=   dust				! dust flux (size bins)
+     lnd2atm_inst%flxdst_grc(begg:endg,:) = dust(begg:endg,:)  ! dust flux (size bins)
      !lnd2atm_inst%flxdst_grc			=	0._r8			! (:,ndust) where ndust=4, so I need a 4th dust flux field! and I think the ones I had were wrong...
      			! MML: need some sort of forcing file - see what the aquaplanet people are using
      			! 	currently borrowing the value from CLM by running the whole CLM model first... 
@@ -2028,28 +1985,28 @@ end do
     ! !LOCAL VARIABLES:
     character(len=32) :: subname = 'nc_import_sub_mml'
     ! MML allocation variables to read from .nc file
-    real(r8), pointer  :: nc_alb_gvd(:) 	=> null()       	! ground albedo read from .nc file
-    real(r8), pointer  :: nc_alb_svd(:)     => null()   	! snow albedo read from .nc file
-    real(r8), pointer  :: nc_alb_gnd(:)     => null()   	! 
-    real(r8), pointer  :: nc_alb_snd(:)		=> null()
-    real(r8), pointer  :: nc_alb_gvf(:)     => null()   	! ground albedo read from .nc file
-    real(r8), pointer  :: nc_alb_svf(:)     => null()   	! snow albedo read from .nc file
-    real(r8), pointer  :: nc_alb_gnf(:)     => null()   	! 
-    real(r8), pointer  :: nc_alb_snf(:)		=> null()
-    real(r8), pointer  :: nc_snowmask(:)    => null()    	! snow masking depth read from .nc file
-    real(r8), pointer  :: nc_evaprs(:)      => null()  	! evap resistance from .nc file
-    real(r8), pointer  :: nc_bucket(:)      => null()  	! soil bucket depth from .nc file
-    real(r8), pointer  :: nc_ice(:,:)       => null() 	! freezeable water in each soil layer from .nc file
-    real(r8), pointer  :: nc_z(:,:)        	=> null()	! depth from surf to each soil layer from .nc file
-    real(r8), pointer  :: nc_type(:)        => null()		! soil type from .nc file
-    real(r8), pointer  :: nc_rough(:)       => null() 	! roughness length from .nc file
-    real(r8), pointer  :: nc_soil_tk(:)     => null() 	! soil thermal conductivity from .nc file
-    real(r8), pointer  :: nc_glc_tk(:)      => null() 	! glacier thermal conductivity from .nc file
-    real(r8), pointer  :: nc_soil_cv(:)     => null() 	! soil heat capacity from .nc file
-    real(r8), pointer  :: nc_glc_cv(:)      => null() 	! glacier heat capacity from .nc file
-    real(r8), pointer  :: nc_glc_mask(:)    => null() 	! glacier mask from .nc file
-    real(r8), pointer  :: nc_emiss(:)       => null() 	! emissivity (for LW) from .nc file
-    real(r8), pointer  :: nc_dust(:)       => null() 	! dust flux (clm5 climatology for now) from .nc file
+    real(r8), pointer :: nc_alb_gvd(:) => null()  ! ground albedo read from .nc file
+    real(r8), pointer :: nc_alb_svd(:) => null()  ! snow albedo read from .nc file
+    real(r8), pointer :: nc_alb_gnd(:) => null()  ! 
+    real(r8), pointer :: nc_alb_snd(:) => null()
+    real(r8), pointer :: nc_alb_gvf(:) => null()  ! ground albedo read from .nc file
+    real(r8), pointer :: nc_alb_svf(:) => null()  ! snow albedo read from .nc file
+    real(r8), pointer :: nc_alb_gnf(:) => null()  ! 
+    real(r8), pointer :: nc_alb_snf(:) => null()
+    real(r8), pointer :: nc_snowmask(:) => null()  ! snow masking depth read from .nc file
+    real(r8), pointer :: nc_evaprs(:) => null()   ! evap resistance from .nc file
+    real(r8), pointer :: nc_bucket(:) => null()   ! soil bucket depth from .nc file
+    real(r8), pointer :: nc_ice(:,:) => null()  ! freezeable water in each soil layer from .nc file
+    real(r8), pointer :: nc_z(:,:) => null()  ! depth from surf to each soil layer from .nc file
+    real(r8), pointer :: nc_type(:) => null()  ! soil type from .nc file
+    real(r8), pointer :: nc_rough(:) => null()  ! roughness length from .nc file
+    real(r8), pointer :: nc_soil_tk(:) => null()  ! soil thermal conductivity from .nc file
+    real(r8), pointer :: nc_glc_tk(:) => null()  ! glacier thermal conductivity from .nc file
+    real(r8), pointer :: nc_soil_cv(:) => null()  ! soil heat capacity from .nc file
+    real(r8), pointer :: nc_glc_cv(:) => null()  ! glacier heat capacity from .nc file
+    real(r8), pointer :: nc_glc_mask(:) => null()  ! glacier mask from .nc file
+    real(r8), pointer :: nc_emiss(:) => null()  ! emissivity (for LW) from .nc file
+    real(r8), pointer :: nc_dust(:) => null()  ! dust flux (clm5 climatology for now) from .nc file
     ! note: doing allocatable, pointer won't compile, says variable has already been 
     ! assigned the allocatbale tribute ... so does being a pointer encompass being allocatable? 
     ! same error if I do pointer, allocatable instead:
@@ -2070,7 +2027,6 @@ end do
    ! integer :: mon     ! month (1, ..., 12) for nstep+1
     integer :: day     ! day of month (1, ..., 31) for nstep+1
     integer :: sec     ! seconds into current date for nstep+1
-    integer :: mcdate  ! Current model date (yyyymmdd)
         
     character(len=256)	:: locfn                ! local file name
     logical           	:: readvar              ! true => variable is on dataset
@@ -2086,28 +2042,28 @@ end do
    	
    	ival = 0.0_r8
    	
-   	allocate( nc_alb_gvd	(begg:endg)		)		; nc_alb_gvd(:) = ival
-    allocate( nc_alb_svd	(begg:endg)		)		; nc_alb_svd(:) = ival
-    allocate( nc_alb_gnd	(begg:endg)		)		; nc_alb_gnd(:) = ival
-    allocate( nc_alb_snd	(begg:endg)		)		; nc_alb_snd(:) = ival
-    allocate( nc_alb_gvf	(begg:endg)		)		; nc_alb_gvf(:) = ival
-    allocate( nc_alb_svf	(begg:endg)		)		; nc_alb_svf(:) = ival
-	allocate( nc_alb_gnf	(begg:endg)		)		; nc_alb_gnf(:) = ival
-    allocate( nc_alb_snf	(begg:endg)		)		; nc_alb_snf(:) = ival
-    allocate( nc_snowmask	(begg:endg)		)		; nc_snowmask(:) = ival
-    allocate( nc_evaprs		(begg:endg)		)		; nc_evaprs(:) 	= ival
-    allocate( nc_bucket		(begg:endg)		)		; nc_bucket(:) 	= ival
-    allocate( nc_ice		(begg:endg,mml_nsoi) )	; nc_ice(:,:)	= ival
-    allocate( nc_z			(begg:endg,mml_nsoi) )  ; nc_z(:,:)		= ival
-    allocate( nc_type		(begg:endg)		)		; nc_type(:) 	= ival
-    allocate( nc_rough		(begg:endg)		)		; nc_rough(:) 	= ival
-    allocate( nc_soil_tk	(begg:endg)		)		; nc_soil_tk(:) 	= ival
-    allocate( nc_glc_tk		(begg:endg)		)		; nc_glc_tk(:) 	= ival
-    allocate( nc_soil_cv	(begg:endg)		)		; nc_soil_cv(:) 	= ival
-    allocate( nc_glc_cv		(begg:endg)		)		; nc_glc_cv(:) 	= ival
-    allocate( nc_glc_mask	(begg:endg)		)		; nc_glc_mask(:) 	= ival
-    allocate( nc_emiss		(begg:endg)		)		; nc_emiss(:) 	= ival
-	allocate( nc_dust		(begg:endg)		)		; nc_dust(:) 	= ival	! keep overwriting this for each dust bin
+    allocate( nc_alb_gvd(begg:endg) ); nc_alb_gvd(begg:endg) = ival
+    allocate( nc_alb_svd(begg:endg) ); nc_alb_svd(begg:endg) = ival
+    allocate( nc_alb_gnd(begg:endg) ); nc_alb_gnd(begg:endg) = ival
+    allocate( nc_alb_snd(begg:endg) ); nc_alb_snd(begg:endg) = ival
+    allocate( nc_alb_gvf(begg:endg) ); nc_alb_gvf(begg:endg) = ival
+    allocate( nc_alb_svf(begg:endg) ); nc_alb_svf(begg:endg) = ival
+    allocate( nc_alb_gnf(begg:endg) ); nc_alb_gnf(begg:endg) = ival
+    allocate( nc_alb_snf(begg:endg) ); nc_alb_snf(begg:endg) = ival
+    allocate( nc_snowmask(begg:endg) ); nc_snowmask(begg:endg) = ival
+    allocate( nc_evaprs(begg:endg) ); nc_evaprs(begg:endg) = ival
+    allocate( nc_bucket(begg:endg) ); nc_bucket(begg:endg) = ival
+    allocate( nc_ice(begg:endg,mml_nsoi) ); nc_ice(begg:endg,:) = ival
+    allocate( nc_z(begg:endg,mml_nsoi) ); nc_z(begg:endg,:) = ival
+    allocate( nc_type(begg:endg) ); nc_type(begg:endg) = ival
+    allocate( nc_rough(begg:endg) ); nc_rough(begg:endg) = ival
+    allocate( nc_soil_tk(begg:endg) ); nc_soil_tk(begg:endg) = ival
+    allocate( nc_glc_tk(begg:endg) ); nc_glc_tk(begg:endg) = ival
+    allocate( nc_soil_cv(begg:endg) ); nc_soil_cv(begg:endg) = ival
+    allocate( nc_glc_cv(begg:endg) ); nc_glc_cv(begg:endg) = ival
+    allocate( nc_glc_mask(begg:endg) ); nc_glc_mask(begg:endg) = ival
+    allocate( nc_emiss(begg:endg) ); nc_emiss(begg:endg) = ival
+    allocate( nc_dust(begg:endg) ); nc_dust(begg:endg) = ival  ! keep overwriting this for each dust bin
 
 
 !   	if (ier /= 0) then
@@ -2151,9 +2107,8 @@ end do
     if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-1, failed ', readvar
     else
-	dust(begg:endg,1) = nc_dust
-	end if 
-	
+       dust(begg:endg,1) = nc_dust(begg:endg)
+    end if 
 	
 	! second dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst2', flag='read', data=nc_dust, &
@@ -2161,9 +2116,8 @@ end do
     if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-2, failed ', readvar
     else
-	dust(begg:endg,2) = nc_dust
-	end if 
-	
+       dust(begg:endg,2) = nc_dust(begg:endg)
+    end if 
 	
 	! third dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst3', flag='read', data=nc_dust, &
@@ -2171,9 +2125,8 @@ end do
     if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-3, failed ', readvar
     else
-	dust(begg:endg,3) = nc_dust
-	end if 
-	
+       dust(begg:endg,3) = nc_dust(begg:endg)
+    end if 
 
 	! fourth dust bin:
     call ncd_io(ncid=ncid, varname='l2xavg_Fall_flxdst4', flag='read', data=nc_dust, &
@@ -2181,9 +2134,8 @@ end do
     if ( .NOT. readvar .and. masterproc) then
 		write(iulog,*)subname, 'MML tried to read dust-4, failed ', readvar
     else
-	dust(begg:endg,4) = nc_dust
-	end if 
-	
+       dust(begg:endg,4) = nc_dust(begg:endg)
+    end if 
 	
 	
     ! Albedo Direct
@@ -2376,10 +2328,10 @@ end do
 	roughness(begg:endg)	=	nc_rough(begg:endg)
 	emiss(begg:endg)		= 	nc_emiss(begg:endg)
 	glc_mask(begg:endg)		= 	nc_glc_mask(begg:endg)
-	soil_tk_1d(begg:endg)	=	nc_soil_tk
-	soil_cv_1d(begg:endg)	=	nc_soil_cv
-	glc_tk_1d(begg:endg)	=	nc_glc_tk
-	glc_cv_1d(begg:endg)	=	nc_glc_cv
+        soil_tk_1d(begg:endg) = nc_soil_tk(begg:endg)
+        soil_cv_1d(begg:endg) = nc_soil_cv(begg:endg)
+        glc_tk_1d(begg:endg) = nc_glc_tk(begg:endg)
+        glc_cv_1d(begg:endg) = nc_glc_cv(begg:endg)
 	!dust(begg:endg)			= 	nc_dust(begg:endg)
 
 !	
@@ -2431,11 +2383,11 @@ end do
   !***********************************************
   !	phase change
   !***********************************************
-  subroutine phase_change (begg, endg, tsoi, soil_cv, soil_dz, &
-  							soil_maxice, soil_liq, soil_ice, &
-  							mml_nsoi, dt, hfus, tfrz, epc &
-  							!diag1_1d, diag1_2d, diag2_2d, diag3_2d			& ! temporary diagnostics
-  							)
+  subroutine phase_change (begg, endg, tsoi, soil_cv, soil_dz,  &
+                           soil_maxice, soil_liq, soil_ice,  &
+                           mml_nsoi, dt, hfus, tfrz, epc  &
+                           !diag1_1d, diag1_2d, diag2_2d, diag3_2d  & ! temporary diagnostics
+  )
 	!% -------------------------------------------------------------------------
 	! Given the initial soil temperature calculation, go check if we should be 
 	! freezing/thawing any of the available freezeable water in that layer. 
@@ -2450,17 +2402,17 @@ end do
   	real(r8), intent(in)	:: dt
   	real(r8), intent(in)	:: hfus
   	real(r8), intent(in)	:: tfrz
-  	real(r8), intent(in)	:: soil_cv(:,:)
-  	real(r8), intent(in)	:: soil_dz(:,:)
-  	real(r8), intent(in)	:: soil_maxice(:,:)	! Not using this right now, instead using presc. soil_liq and soil_ice vals
+        real(r8), intent(in) :: soil_cv(begg:endg,mml_nsoi)
+        real(r8), intent(in) :: soil_dz(begg:endg,mml_nsoi)
+        real(r8), intent(in) :: soil_maxice(begg:endg,mml_nsoi)  ! Not using this right now, instead using presc. soil_liq and soil_ice vals
   	
   	! ----- Output Variables --------
-  	real(r8), intent(inout)		:: tsoi(:,:)	
+        real(r8), intent(inout) :: tsoi(begg:endg,mml_nsoi)
   		! tsoi(begg:endg,:)	! try defining them this way instead, to avoid the dummy vars and keep the correct g indices
-  	real(r8), intent(inout) 	:: soil_liq(:,:)	!
-  	real(r8), intent(inout) 	:: soil_ice(:,:)	! 
+        real(r8), intent(inout) :: soil_liq(begg:endg,mml_nsoi)  !
+        real(r8), intent(inout) :: soil_ice(begg:endg,mml_nsoi)  ! 
   	
-  	real(r8), intent(out) 	:: epc(:)	! (:,:) derivative of sat vapour pressure at ta [Pa/K]
+        real(r8), intent(out) :: epc(begg:endg)  ! (begg:endg,:) derivative of sat vapour pressure at ta [Pa/K]
   	
   !	real(r8), intent(out)	:: diag1_1d(:)		! put alhf here
   !	real(r8), intent(out)	:: diag1_2d(:,:)	! put rfm here
@@ -2491,104 +2443,103 @@ end do
 					phase_tsoi(begg:endg,mml_nsoi)	,	&
 					phase_liq(begg:endg,mml_nsoi)	,	&
 					phase_ice(begg:endg,mml_nsoi)	
-	
 
-	
-	phase_cv = soil_cv
-	phase_dz = soil_dz
-	phase_maxice = soil_maxice
-	phase_tsoi = tsoi
-	phase_liq = soil_liq
-	phase_ice = soil_ice
-	
-	!------------------------------------------------------
-	
-	!-----------------------------
-	! Initialization
-	wliq0 = phase_liq		! [kg/m2] per layer
-	wice0 = phase_ice
-	wmass0 = wliq0 + wice0		! should equal 300/dz in all but top layer, where it should be 0
-	tsoi0 = phase_tsoi
-	
-	!-----------------------------
-	! Identify if layers should be melting or freezing
-		!	imelt = 0 -> no phase change
-		!	imelt = 1 -> melt
-		! 	imelt = 2 -> freeze
-	imelt(:,:) = 0._r8
-	
-	!do i = 1, mml_nsoi
-	do i = 1, mml_nsoi	! should be no freezeable water in top layer... ie phase_ice and phase_liq should both ==0
-		
-		! Melting: if there is ice and phase_tsoi > 0
-		where (phase_ice(:,i) > 0._r8 .and. phase_tsoi(:,i) > tfrz)
-			imelt(:,i) = 1
-			phase_tsoi(:,i) = tfrz
-		end where
-		
-		! Freezing: if there is water and phase_tsoi < 0
-		where (phase_liq(:,i) > 0._r8 .and. phase_tsoi(:,i) < tfrz)
-			imelt(:,i) = 2
-			phase_tsoi(:,i) = tfrz
-		end where
-		
-		! otherwise, leave phase_tsoi as is and don't put energy into phase change
-		
-	end do
-	
-	!-----------------------------
-	! Energy available for freezing or melting comes from difference between phase_tsoi(:,i) and
-	! tfreeze
-	! 
-	
-	do i = 1, mml_nsoi
-		
-		hfm(:,i) = 0._r8	! all the palces imelt=0, no phase change
-		
-		! Energy for freezing or melting [W/m2]; hfm > 0 freezing, hfm < 0 melting
-		where (imelt(:,i) > 0)
-			hfm(:,i) = ( phase_tsoi(:,i) - tsoi0(:,i) ) * phase_cv(:,i) * phase_dz(:,i) / dt
-			! if I accounted for cv water/ice here, too, would that fix part of the problem?
-			
-			! how much energy for freezing or melting based only off Delta T (if you've got excess, use for T change)
-			! maybe I need to include water in cv to conserve energy? Hmm. Don't think gfdl does, though...
-		end where
-		
-		! Melting: maximum energy available for freezing or melting [W/m2]
-		where (imelt(:,i) .eq. 1)	! Melting case
-			hfmx(:,i) = - phase_ice(:,i) * hfus / dt	! total meltable = depends how much ice you've got
-		end where
-		
-		! Freezing: maximum energy available for freezing or melting [W/m2]
-		where (imelt(:,i) .eq. 2)	! freezing case
-			hfmx(:,i) = phase_liq(:,i) * hfus / dt	! total freezable = depends how much water you've got
-		end where
-		
-	end do
-  	
-  	
-  	!-----------------------------
-	! Calculate phase change
-	
-	epc(:) = 0._r8
-	
-	do i = 1, mml_nsoi
-		
-		where( imelt(:,i) > 0 )
-		
-			! Freeze or melt ice
-			rfm(:,i) = hfm(:,i) / hfus								! change in ice (>0 freeze, <0 melt) [kg/m2/s]
-			phase_ice(:,i) = wice0(:,i) + rfm(:,i) * dt				! update ice [kg/m2]
-			phase_ice(:,i) = max( 0.0 , phase_ice(:,i) )				! can't melt more ice than is present
-			phase_ice(:,i) = min( wmass0(:,i) , phase_ice(:,i) )		! can't exceed total water than is present (300*dz, should be)
-			phase_liq(:,i) = max( 0.0 , ( wmass0(:,i) - phase_ice(:,i) ) )	! update liquid water (kg/m2)
-			alhf(:) = hfus * (phase_ice(:,i) - wice0(:,i)) / dt		! actual heat flux from phase change [w/m2]
-			epc(:) = epc + alhf										! sum of heat flux from phase change over soil column [w/m2]
-			
-			! If there is energy left over, use it to change soil layer temperature
-			phase_tsoi(:,i) = phase_tsoi(:,i) - (hfm(:,i) - alhf(:)) * dt / (phase_cv(:,i) * phase_dz(:,i))
-		
-		end where
+
+phase_cv(begg:endg,:) = soil_cv(begg:endg,:)
+phase_dz(begg:endg,:) = soil_dz(begg:endg,:)
+phase_maxice(begg:endg,:) = soil_maxice(begg:endg,:)
+phase_tsoi(begg:endg,:) = tsoi(begg:endg,:)
+phase_liq(begg:endg,:) = soil_liq(begg:endg,:)
+phase_ice(begg:endg,:) = soil_ice(begg:endg,:)
+
+!------------------------------------------------------
+
+!-----------------------------
+! Initialization
+wliq0(begg:endg,:) = phase_liq(begg:endg,:)  ! [kg/m2] per layer
+wice0(begg:endg,:) = phase_ice(begg:endg,:)
+wmass0(begg:endg,:) = wliq0(begg:endg,:) + wice0(begg:endg,:)  ! should equal 300/dz in all but top layer, where it should be 0
+tsoi0(begg:endg,:) = phase_tsoi(begg:endg,:)
+
+        !-----------------------------
+        ! Identify if layers should be melting or freezing
+        !	imelt = 0 -> no phase change
+        !	imelt = 1 -> melt
+        ! 	imelt = 2 -> freeze
+        imelt(begg:endg,:) = 0._r8
+
+        !do i = 1, mml_nsoi
+        do i = 1, mml_nsoi  ! should be no freezeable water in top layer... ie phase_ice and phase_liq should both ==0
+
+           ! Melting: if there is ice and phase_tsoi > 0
+           where (phase_ice(begg:endg,i) > 0._r8 .and. phase_tsoi(begg:endg,i) > tfrz)
+              imelt(:,i) = 1
+              phase_tsoi(:,i) = tfrz
+           end where
+
+           ! Freezing: if there is water and phase_tsoi < 0
+           where (phase_liq(begg:endg,i) > 0._r8 .and. phase_tsoi(begg:endg,i) < tfrz)
+              imelt(:,i) = 2
+              phase_tsoi(:,i) = tfrz
+           end where
+
+           ! otherwise, leave phase_tsoi as is and don't put energy into phase change
+
+        end do
+
+        !-----------------------------
+        ! Energy available for freezing or melting comes from difference between phase_tsoi(:,i) and
+        ! tfreeze
+        ! 
+
+        do i = 1, mml_nsoi
+
+           hfm(begg:endg,i) = 0._r8  ! all the palces imelt=0, no phase change
+
+           ! Energy for freezing or melting [W/m2]; hfm > 0 freezing, hfm < 0 melting
+           where (imelt(begg:endg,i) > 0)
+              hfm(:,i) = ( phase_tsoi(:,i) - tsoi0(:,i) ) * phase_cv(:,i) * phase_dz(:,i) / dt
+              ! if I accounted for cv water/ice here, too, would that fix part of the problem?
+
+              ! how much energy for freezing or melting based only off Delta T (if you've got excess, use for T change)
+              ! maybe I need to include water in cv to conserve energy? Hmm. Don't think gfdl does, though...
+           end where
+
+           ! Melting: maximum energy available for freezing or melting [W/m2]
+           where (imelt(begg:endg,i) == 1)  ! Melting case
+              hfmx(:,i) = - phase_ice(:,i) * hfus / dt  ! total meltable = depends how much ice you've got
+           end where
+
+           ! Freezing: maximum energy available for freezing or melting [W/m2]
+           where (imelt(begg:endg,i) == 2)  ! freezing case
+              hfmx(:,i) = phase_liq(:,i) * hfus / dt  ! total freezable = depends how much water you've got
+           end where
+
+        end do
+
+
+        !-----------------------------
+        ! Calculate phase change
+
+        epc(begg:endg) = 0._r8
+
+        do i = 1, mml_nsoi
+
+        where( imelt(begg:endg,i) > 0 )
+
+           ! Freeze or melt ice
+           rfm(:,i) = hfm(:,i) / hfus  ! change in ice (>0 freeze, <0 melt) [kg/m2/s]
+           phase_ice(:,i) = wice0(:,i) + rfm(:,i) * dt  ! update ice [kg/m2]
+           phase_ice(:,i) = max( 0.0 , phase_ice(:,i) )  ! can't melt more ice than is present
+           phase_ice(:,i) = min( wmass0(:,i) , phase_ice(:,i) )  ! can't exceed total water than is present (300*dz, should be)
+           phase_liq(:,i) = max( 0.0 , ( wmass0(:,i) - phase_ice(:,i) ) )  ! update liquid water (kg/m2)
+           alhf = hfus * (phase_ice(:,i) - wice0(:,i)) / dt  ! actual heat flux from phase change [w/m2]
+           epc = epc + alhf  ! sum of heat flux from phase change over soil column [w/m2]
+
+           ! If there is energy left over, use it to change soil layer temperature
+           phase_tsoi(:,i) = phase_tsoi(:,i) - (hfm(:,i) - alhf) * dt / (phase_cv(:,i) * phase_dz(:,i))
+
+        end where
 	
 	
 	!---------------------
@@ -2659,13 +2610,11 @@ end do
 	!------------------------
 	
 	end do
-  	
-  	! update out vars
-  	soil_liq = phase_liq
-  	soil_ice = phase_ice
-  	tsoi	 = phase_tsoi
-  	
 
+        ! update out vars
+        soil_liq(begg:endg,:) = phase_liq(begg:endg,:)
+        soil_ice(begg:endg,:) = phase_ice(begg:endg,:)
+        tsoi(begg:endg,:) = phase_tsoi(begg:endg,:)
 
 
   end subroutine phase_change
@@ -2692,27 +2641,27 @@ end do
   	implicit none
   	
 	! ----- Input Variables --------
-  	real(r8), intent(in)	:: soil_type(:)	! silt/sand/clay identified from a table (in theory... not yet :p )
-  	real(r8), intent(in)	:: soil_z(:,:)	! soil depth (mid point of soil layer)
-  	real(r8), intent(in)	:: soil_zh(:,:)	! soil depth (bottom interface of soil layer)
-  	real(r8), intent(in)	:: soil_dz(:,:)	! soil layer thickness
-  	real(r8), intent(in)	:: soil_liq(:,:)	! soil layer water content (kg/m2)
-  	real(r8), intent(in)	:: soil_ice(:,:)	! soil layer ice content (kg/m2)
+        integer, intent(in) :: mml_nsoi
+        integer, intent(in) :: begg, endg  ! spatial bounds
+        real(r8), intent(in) :: soil_type(begg:endg)  ! silt/sand/clay identified from a table (in theory... not yet :p )
+        real(r8), intent(in) :: soil_z(begg:endg,mml_nsoi)  ! soil depth (mid point of soil layer)
+        real(r8), intent(in) :: soil_zh(begg:endg,mml_nsoi)  ! soil depth (bottom interface of soil layer)
+        real(r8), intent(in) :: soil_dz(begg:endg,mml_nsoi)  ! soil layer thickness
+        real(r8), intent(in) :: soil_liq(begg:endg,mml_nsoi)  ! soil layer water content (kg/m2)
+        real(r8), intent(in) :: soil_ice(begg:endg,mml_nsoi)  ! soil layer ice content (kg/m2)
   	
-  	real(r8), intent(inout)	:: soil_tk_1d(:)	! nc prescribed soil tk (for all layers)
-  	real(r8), intent(inout)	:: soil_cv_1d(:)	! nc prescribed soil cv (for all layers)
-  	real(r8), intent(inout)	:: glc_tk_1d(:)	! nc prescribed soil tk (for all layers)
-  	real(r8), intent(inout)	:: glc_cv_1d(:)	! nc prescribed soil cv (for all layers)
+        real(r8), intent(in) :: soil_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
+        real(r8), intent(in) :: soil_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
+        real(r8), intent(in) :: glc_tk_1d(begg:endg)  ! nc prescribed soil tk (for all layers)
+        real(r8), intent(in) :: glc_cv_1d(begg:endg)  ! nc prescribed soil cv (for all layers)
   	
   	
-  	integer	, intent(in)	:: mml_nsoi
-  	integer	, intent(in)	:: begg, endg	! spatial bounds
-  	real(r8), intent(in)	:: glc_mask(:)	! mask of glaciated cells, use ice properties here.
+        real(r8), intent(in) :: glc_mask(begg:endg)  ! mask of glaciated cells, use ice properties here.
   	  	
   	! ----- Output Variables --------
-  	real(r8), intent(out)	:: soil_tk(:,:)	! soil thermal resistance at each layer
-  	real(r8), intent(out) 	:: soil_cv(:,:)	! soil heat capacity at each layer
-  	real(r8), intent(out) 	:: soil_tkh(:,:)! soil thermal resistance at the boundary (bottom) of each layer
+        real(r8), intent(out) :: soil_tk(begg:endg,mml_nsoi)  ! soil thermal resistance at each layer
+        real(r8), intent(out) :: soil_cv(begg:endg,mml_nsoi)  ! soil heat capacity at each layer
+        real(r8), intent(out) :: soil_tkh(begg:endg,mml_nsoi)  ! soil thermal resistance at the boundary (bottom) of each layer
   	
   	! ----- Local Variables --------
 	integer	:: i	! indexing variable
@@ -2744,70 +2693,65 @@ end do
 	! (consider using the table-implementation in Gordon's code and in the GFDL code)
   	
   	! calculate the volumetric liquid / ice water content in each soil layer:
-  	watliq = soil_liq / (rho_wat * soil_dz)		! [kg/m2] / ([kg/m3] * [m]) -> unitless? hmm... or m3/m3 I guess
-  	watice = soil_ice / (rho_ice * soil_dz)		! m3/m3 ?
+        watliq(begg:endg,:) = soil_liq(begg:endg,:) / (rho_wat * soil_dz(begg:endg,:))  ! [kg/m2] / ([kg/m3] * [m]) -> unitless? hmm... or m3/m3 I guess
+        watice(begg:endg,:) = soil_ice(begg:endg,:) / (rho_ice * soil_dz(begg:endg,:))  ! m3/m3 ?
   	
   	! I'm assuming matrix addition works as I expect in Fortran?
 	! ie I don't have to loop over g = begg,endg, do I? (I might if it goes spatially 
 	! varying and the equations aren't the same have to check. But for now, implement like this)
 	
 	do i = 1, mml_nsoi
-		
-		! For soil points (non-glaciated), use these values:
-		
-		!soil_tk(:,i) = 1.5_r8 		! [W/m/K]	! in the ballpark of that for various soils in LaD
-		soil_tk(:,i) = soil_tk_1d(:)
-		
-		!soil_cv(:,i) = 2.0e06_r8	! [J/m3/K]	! that used for "medium" soil in LaD
-		soil_cv(:,i) = soil_cv_1d(:)
-		
-		! If the point is a glacier (glc_mask=1), use these values instead:
-		where(glc_mask .eq. 1)	! really, I should make glc_mask a logical...
-		
-			! Using heat capacity and thermal resistance of ice
-			!soil_tk(:,i) = tk_ice	! [W/m/K]	
-			soil_tk(:,i) = glc_tk_1d(:)
-			
-			!2.3_r8 		! [W/m/K]
-			! value somewhat arbitrarily taken from:
-			! http://www.engineeringtoolbox.com/ice-thermal-properties-d_576.html
-			! ... find a more supportable value to use in the end
-			
-			!soil_cv(:,i) = cv_ice	! [J/m3/K]
-			soil_cv(:,i) =	glc_cv_1d(:)
-			
-			!1.8e06_r8	! [J/m3/K]
-			! value somewhat arbitrarily taken from:
-			! http://www.engineeringtoolbox.com/ice-thermal-properties-d_576.html
-			! ... find a more supportable value to use in the end
-			
-		end where
-		
-		
-		! later: add water to thermal resistance? or no? 
-		! is this right? soil_cv = actual_soil_cv + water_cv + ice_cv ?
-		!soil_cv(:,i) = 1.926e06 + cv_wat*watliq(:,i) + cv_ice*watice(:,i)	! [J/m3/K]
-		
-	enddo ! loop over all soil layers and assign them the 1d value
-	
-	
-	soil_tkh(:,:) = 0.0_r8 	! for now, just so each entry has a value (it should really be size (:, mml_soi-1), not (:,mml_nsoi)
-	! now find tkh
-	do i = 1, mml_nsoi-1 ! no heat diffusion through bottom layer
-		soil_tkh(:,i) = soil_tk(:,i) * soil_tk(:,i+1) * ( soil_z(:,i) - soil_z(:,i+1) ) / &
-						( soil_tk(:,i) * (soil_zh(:,i) - soil_z(:,i+1)) + &
-						  soil_tk(:,i+1) * (soil_z(:,i) - soil_zh(:,i)) )
-						  
-						  ! This LOOKS the same as the matlab eq'n... add zh to 
-						  ! output and see if that looks okay...
-						  
-		! NOTE: tk and tkh not currently dependent on water/ice content of layer!
-		! ... but I'll keep it like that, for now anyhow. More straightforward. 
-	enddo
-	
 
-  	
-   
+           ! For soil points (non-glaciated), use these values:
+
+           !soil_tk(:,i) = 1.5_r8 		! [W/m/K]	! in the ballpark of that for various soils in LaD
+           soil_tk(begg:endg,i) = soil_tk_1d(begg:endg)
+
+           !soil_cv(:,i) = 2.0e06_r8	! [J/m3/K]	! that used for "medium" soil in LaD
+           soil_cv(begg:endg,i) = soil_cv_1d(begg:endg)
+
+           ! If the point is a glacier (glc_mask=1), use these values instead:
+           where(glc_mask(begg:endg) == 1)  ! really, I should make glc_mask a logical...
+
+              ! Using heat capacity and thermal resistance of ice
+              !soil_tk(:,i) = tk_ice	! [W/m/K]	
+              soil_tk(:,i) = glc_tk_1d
+
+              !2.3_r8 		! [W/m/K]
+              ! value somewhat arbitrarily taken from:
+              ! http://www.engineeringtoolbox.com/ice-thermal-properties-d_576.html
+              ! ... find a more supportable value to use in the end
+
+              !soil_cv(:,i) = cv_ice	! [J/m3/K]
+              soil_cv(:,i) = glc_cv_1d
+
+              !1.8e06_r8	! [J/m3/K]
+              ! value somewhat arbitrarily taken from:
+              ! http://www.engineeringtoolbox.com/ice-thermal-properties-d_576.html
+              ! ... find a more supportable value to use in the end
+
+           end where
+
+           ! later: add water to thermal resistance? or no? 
+           ! is this right? soil_cv = actual_soil_cv + water_cv + ice_cv ?
+           !soil_cv(:,i) = 1.926e06 + cv_wat*watliq(:,i) + cv_ice*watice(:,i)	! [J/m3/K]
+
+        end do  ! loop over all soil layers and assign them the 1d value
+
+        soil_tkh(begg:endg,:) = 0.0_r8  ! for now, just so each entry has a value (it should really be size (:, mml_soi-1), not (:,mml_nsoi)
+        ! now find tkh
+        do i = 1, mml_nsoi-1 ! no heat diffusion through bottom layer
+           soil_tkh(begg:endg,i) = soil_tk(begg:endg,i) * soil_tk(begg:endg,i+1) * ( soil_z(begg:endg,i) - soil_z(begg:endg,i+1) ) / &
+           ( soil_tk(begg:endg,i) * (soil_zh(begg:endg,i) - soil_z(begg:endg,i+1)) + &
+           soil_tk(begg:endg,i+1) * (soil_z(begg:endg,i) - soil_zh(begg:endg,i)) )
+
+           ! This LOOKS the same as the matlab eq'n... add zh to 
+           ! output and see if that looks okay...
+
+           ! NOTE: tk and tkh not currently dependent on water/ice content of layer!
+           ! ... but I'll keep it like that, for now anyhow. More straightforward. 
+        enddo
+
   end subroutine soil_thermal_properties
   
   

@@ -17,15 +17,14 @@ module controlMod
   use abortutils                       , only: endrun
   use spmdMod                          , only: masterproc
   use decompMod                        , only: clump_pproc
-  use initInterpMod                    , only: initInterp_readnl
+  use clm_varpar                       , only: numrad
   use clm_varctl                       , only: iundef, rundef, nsrest, caseid, ctitle, nsrStartup, nsrContinue
   use clm_varctl                       , only: nsrBranch, brnch_retain_casename, hostname, username, source, version, conventions
-  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fsurdat, fatmgrid, fatmlndfrc, nrevsn
-  use clm_varctl                       , only: mml_surdat, finidat_interp_source, finidat_interp_dest, co2_type
-  use clm_varctl                       , only: wrtdia, co2_ppmv, nsegspc, rpntdir, rpntfil
+  use clm_varctl                       , only: iulog, outnc_large_files, finidat, fatmgrid
+  use clm_varctl                       , only: wrtdia, nsegspc, rpntdir, rpntfil
   use clm_varctl                       , only: NLFilename_in
   use clm_varctl                       , only: clm_varctl_set
-  use clm_varctl                       , only: single_column, finidat_interp_source
+  use clm_varctl                       , only: single_column
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -97,7 +96,6 @@ contains
     integer :: ierr                 ! error code
     integer :: unitn                ! unit for namelist file
     integer :: dtime                ! Integer time-step
-    integer :: override_nsrest      ! If want to override the startup type sent from driver
     !------------------------------------------------------------------------
 
     ! ----------------------------------------------------------------------
@@ -108,24 +106,12 @@ contains
 
     ! Input datasets
 
-    namelist /clm_inparm/ fsurdat
-
-    ! BGC info
-
-    namelist /clm_inparm / &
-         co2_type
-
-    ! Glacier_mec info
-    namelist /clm_inparm/ nlevsno
-
     ! Other options
 
     namelist /clm_inparm/  &
-         clump_pproc, wrtdia, &
-         nsegspc, co2_ppmv, override_nsrest
+         clump_pproc, wrtdia
 
     ! All old cpp-ifdefs are below and have been converted to namelist variables 
-    namelist /clm_inparm/ use_noio
 
     ! Items not really needed, but do need to be properly set as they are used
     namelist / clm_inparm/ single_column
@@ -153,13 +139,6 @@ contains
 #else
     clump_pproc = 1
 #endif
-    maxpatch_glcmec = 10
-    nlevsno = 5
-    h2osno_max = 1000.0_r8
-    int_snow_max = 1.e30_r8
-    n_melt_glcmec = 10.0_r8
-
-    override_nsrest = nsrest
 
     if (masterproc) then
 
@@ -194,32 +173,13 @@ contains
           call endrun(msg='ERROR SLIM can NOT run with single_column on'//errMsg(sourcefile, __LINE__))
        end if
 
-       ! Override start-type (can only override to branch (3)  and only 
-       ! if the driver is a startup type
-       if ( override_nsrest /= nsrest )then
-           if ( override_nsrest /= nsrBranch .and. nsrest /= nsrStartup )then
-              call endrun(msg= ' ERROR: can ONLY override clm start-type ' // &
-                   'to branch type and ONLY if driver is a startup type'// &
-                   errMsg(sourcefile, __LINE__))
-           end if
-           call clm_varctl_set( nsrest_in=override_nsrest )
-       end if
-
-       ! If nlevsno are equal to their junk
-       ! default value, then they were not specified by the user namelist and we generate
-       ! an error message. Also check nlevsno for bounds.
-       if (nlevsno < 3 .or. nlevsno > 12)  then
-          write(iulog,*)'ERROR: nlevsno = ',nlevsno,' is not supported, must be in range 3-12.'
-          call endrun(msg=' ERROR: invalid value for nlevsno in CLM namelist. '//&
-               errMsg(sourcefile, __LINE__))
-       endif
     endif   ! end of if-masterproc if-block
 
     ! ----------------------------------------------------------------------
     ! Read in other namelists for other modules
     ! ----------------------------------------------------------------------
 
-    call initInterp_readnl( NLFilename )
+!   call initInterp_readnl( NLFilename )
 
     ! ----------------------------------------------------------------------
     ! Broadcast all control information if appropriate
@@ -231,38 +191,11 @@ contains
     ! consistency checks
     ! ----------------------------------------------------------------------
 
-    ! Consistency settings for co2 type
-    if (co2_type /= 'constant' .and. co2_type /= 'prognostic' .and. co2_type /= 'diagnostic') then
-       write(iulog,*)'co2_type = ',co2_type,' is not supported'
-       call endrun(msg=' ERROR:: choices are constant, prognostic or diagnostic'//&
-            errMsg(sourcefile, __LINE__))
-    end if
-
     ! Check on run type
     if (nsrest == iundef) then
        call endrun(msg=' ERROR:: must set nsrest'//& 
             errMsg(sourcefile, __LINE__))
     end if
-    if (nsrest == nsrBranch .and. nrevsn == ' ') then
-       call endrun(msg=' ERROR: need to set restart data file name'//&
-            errMsg(sourcefile, __LINE__))
-    end if
-
-    ! Consistency settings for co2_ppvm
-    if ( (co2_ppmv <= 0.0_r8) .or. (co2_ppmv > 3000.0_r8) ) then
-       call endrun(msg=' ERROR: co2_ppmv is out of a reasonable range'//& 
-            errMsg(sourcefile, __LINE__))
-    end if
-
-    ! Consistency settings for nrevsn
-
-    if (nsrest == nsrStartup ) nrevsn = ' '
-    if (nsrest == nsrContinue) nrevsn = 'set by restart pointer file file'
-    if (nsrest /= nsrStartup .and. nsrest /= nsrContinue .and. nsrest /= nsrBranch ) then
-       call endrun(msg=' ERROR: nsrest NOT set to a valid value'//&
-            errMsg(sourcefile, __LINE__))
-    end if
-
     if (masterproc) then
        write(iulog,*) 'Successfully initialized run control settings'
        write(iulog,*)
@@ -404,25 +337,9 @@ contains
     call mpi_bcast (username, len(username), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (nsrest, 1, MPI_INTEGER, 0, mpicom, ier)
 
-    call mpi_bcast (use_noio, 1, MPI_LOGICAL, 0, mpicom, ier)
-
-    ! initial file variables
-    call mpi_bcast (fsurdat, len(fsurdat), MPI_CHARACTER, 0, mpicom, ier)
-    call mpi_bcast (fatmlndfrc,len(fatmlndfrc),MPI_CHARACTER, 0, mpicom, ier)
-
-	! mml input file vars for simple model
-	call mpi_bcast (mml_surdat,  len(mml_surdat),   MPI_CHARACTER, 0, mpicom, ier)
-	
-    call mpi_bcast (co2_type, len(co2_type), MPI_CHARACTER, 0, mpicom, ier)
-
     ! physics variables
-    call mpi_bcast (nsegspc, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (wrtdia, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (single_column,1, MPI_LOGICAL, 0, mpicom, ier)
-    call mpi_bcast (co2_ppmv, 1, MPI_REAL8,0, mpicom, ier)
-
-    ! snow pack variables
-    call mpi_bcast (nlevsno, 1, MPI_INTEGER, 0, mpicom, ier)
 
     ! restart file variables
 
@@ -456,49 +373,14 @@ contains
     write(iulog,*) '   username              = ',trim(username)
     write(iulog,*) '   hostname              = ',trim(hostname)
     write(iulog,*) 'process control parameters:'
-    write(iulog,*) '    use_noio = ', use_noio
 
     write(iulog,*) 'input data files:'
-    if (fsurdat == ' ') then
-       write(iulog,*) '   fsurdat, surface dataset not set'
-    else
-       write(iulog,*) '   surface data   = ',trim(fsurdat)
-    end if
-    if (fatmlndfrc == ' ') then
-       write(iulog,*) '   fatmlndfrc not set, setting frac/mask to 1'
-    else
-       write(iulog,*) '   land frac data = ',trim(fatmlndfrc)
-    end if
-    if (mml_surdat == ' ') then
-       write(iulog,*) '   mml_surdat NOT set, check that we are using the default'
-    else
-       write(iulog,*) '   mml_surdat IS set, and = ',trim(mml_surdat)
-    end if
-    write(iulog,*) '   Number of snow layers =', nlevsno
-
-    if (nsrest == nsrStartup) then
-       if (finidat /= ' ') then
-          write(iulog,*) '   initial data: ', trim(finidat)
-       else if (finidat_interp_source /= ' ') then
-          write(iulog,*) '   initial data interpolated from: ', trim(finidat_interp_source)
-       else
-          write(iulog,*) '   initial data created by model (cold start)'
-       end if
-    else
-       write(iulog,*) '   restart data   = ',trim(nrevsn)
-    end if
 
     write(iulog,*) '   atmospheric forcing data is from cesm atm model'
     write(iulog,*) 'Restart parameters:'
     write(iulog,*)'   restart pointer file directory     = ',trim(rpntdir)
     write(iulog,*)'   restart pointer file name          = ',trim(rpntfil)
     write(iulog,*) 'model physics parameters:'
-
-    if ( trim(co2_type) == 'constant' )then
-       write(iulog,*) '   CO2 volume mixing ratio   (umol/mol)   = ', co2_ppmv
-    else
-       write(iulog,*) '   CO2 volume mixing ratio                = ', co2_type
-    end if
 
     if (nsrest == nsrContinue) then
        write(iulog,*) 'restart warning:'
@@ -510,7 +392,6 @@ contains
        write(iulog,*) '   Namelist not checked for agreement with initial run.'
        write(iulog,*) '   Surface data set and reference date should not differ from initial run'
     end if
-    write(iulog,*) '   nsegspc              = ',nsegspc
 
   end subroutine control_print
 

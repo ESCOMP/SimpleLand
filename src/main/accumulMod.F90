@@ -26,9 +26,6 @@ module accumulMod
   use abortutils  , only: endrun
   use clm_varctl  , only: iulog, nsrest, nsrStartup
   use clm_varcon  , only: spval, ispval
-  use PatchType   , only : patch
-  use ColumnType  , only : col
-  use LandunitType, only : lun
   use GridcellType, only : grc
   !
   ! !PUBLIC TYPES:
@@ -160,7 +157,7 @@ contains
     character(len=*), intent(in)           :: desc         !field description
     character(len=*), intent(in)           :: accum_type   !field type: timeavg, runmean, runaccum
     integer , intent(in)                   :: accum_period !field accumulation period
-    character(len=*), intent(in)           :: subgrid_type !["gridcell","landunit","column" or "patch"]
+    character(len=*), intent(in)           :: subgrid_type !["gridcell"]
     integer , intent(in)                   :: numlev       !number of vertical levels
     real(r8), intent(in)                   :: init_value   !field initial or reset value
     character(len=*), intent(in), optional :: type2d       !level type (optional) - needed if numlev > 1
@@ -168,17 +165,12 @@ contains
     ! !LOCAL VARIABLES:
     integer :: nf           ! field index
     integer :: beg1d,end1d  ! beggining and end subgrid indices
-    integer :: begp, endp   ! per-proc beginning and ending patch indices
-    integer :: begc, endc   ! per-proc beginning and ending column indices
-    integer :: begl, endl   ! per-proc beginning and ending landunit indices
     integer :: begg, endg   ! per-proc gridcell ending gridcell indices
-    integer :: begCohort, endCohort   ! per-proc beg end cohort indices
     !------------------------------------------------------------------------
 
     ! Determine necessary indices
 
-    call get_proc_bounds(begg, endg, begl, endl, begc, endc, begp, endp, &
-         begCohort, endCohort )
+    call get_proc_bounds(begg, endg)
 
     ! update field index
     ! Consistency check that number of accumulated does not exceed maximum.
@@ -226,18 +218,6 @@ contains
        beg1d = begg
        end1d = endg
        accum(nf)%active => grc%active
-    case ('landunit')
-       beg1d = begl
-       end1d = endl
-       accum(nf)%active => lun%active
-    case ('column')
-       beg1d = begc
-       end1d = endc
-       accum(nf)%active => col%active
-    case ('pft')
-       beg1d = begp
-       end1d = endp
-       accum(nf)%active => patch%active
     case default
        write(iulog,*)'init_accum_field: unknown subgrid type ',subgrid_type
        call shr_sys_abort ()

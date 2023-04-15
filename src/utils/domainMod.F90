@@ -31,7 +31,6 @@ module domainMod
      real(r8),pointer :: latc(:)    ! latitude of grid cell (deg)
      real(r8),pointer :: lonc(:)    ! longitude of grid cell (deg)
      real(r8),pointer :: area(:)    ! grid cell area (km**2)
-     integer ,pointer :: pftm(:)    ! pft mask: 1=real, 0=fake, -1=notset
      character*16     :: set        ! flag to check if domain is set
      logical          :: decomped   ! decomposed locally or global copy
   end type domain_type
@@ -102,7 +101,7 @@ contains
        call domain_clean(domain)
     endif
     allocate(domain%mask(nb:ne),domain%frac(nb:ne),domain%latc(nb:ne), &
-             domain%pftm(nb:ne),domain%area(nb:ne),domain%lonc(nb:ne), &
+             domain%area(nb:ne),domain%lonc(nb:ne), &
              stat=ier)
     if (ier /= 0) then
        call shr_sys_abort('domain_init ERROR: allocate mask, frac, lat, lon, area ')
@@ -130,8 +129,6 @@ contains
     else
        domain%decomped = .true.
     endif
-
-    domain%pftm     = -9999
 
 end subroutine domain_init
 !------------------------------------------------------------------------------
@@ -163,7 +160,7 @@ end subroutine domain_init
           write(iulog,*) 'domain_clean: cleaning ',domain%ni,domain%nj
        endif
        deallocate(domain%mask,domain%frac,domain%latc, &
-                  domain%lonc,domain%area,domain%pftm, &
+                  domain%lonc,domain%area, &
                   stat=ier)
        if (ier /= 0) then
           call shr_sys_abort('domain_clean ERROR: deallocate mask, frac, lat, lon, area ')
@@ -222,7 +219,6 @@ end subroutine domain_clean
     write(iulog,*) '  domain_check mask      = ',minval(domain%mask),maxval(domain%mask)
     write(iulog,*) '  domain_check frac      = ',minval(domain%frac),maxval(domain%frac)
     write(iulog,*) '  domain_check area      = ',minval(domain%area),maxval(domain%area)
-    write(iulog,*) '  domain_check pftm      = ',minval(domain%pftm),maxval(domain%pftm)
     write(iulog,*) ' '
   endif
 

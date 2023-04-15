@@ -289,14 +289,13 @@ class TestPathUtils(unittest.TestCase):
             check_nml_initial_conditions(self.nmlgen, self.case)
 
     def test_check_set_user_defined(self):
-        """Test the check nml initial data subroutine for user_defined """
+        """Test the check nml initial data subroutine for user_defined"""
         self.case.set_value("SLIM_SCENARIO", "user_defined")
         self.InitNML()
         with self.assertRaisesRegex(
             SystemExit, "When SLIM_SCENARIO is set to user_defined, you must provide the mml_surdat"
         ):
             check_nml_data(self.nmlgen, self.case)
-
 
     def test_check_use_init_interp(self):
         """Test the check nml initial data subroutine for use_init_interp options"""
