@@ -36,7 +36,7 @@
       <option name="comment">smoke test with SOM for CAM5 at 1850 (historical starting in 1850) saving cplhist files</option>
     </options>
   </test>
-  <test name="ERS_Ld5" grid="f10_f10_mg37" compset="FLTHISTC5I5Slim" testmods="slim/default">
+  <test name="ERS_Ld5" grid="f10_f10_mg37" compset="FLTHISTC5I5Slim" testmods="slim/realistic_2000">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
