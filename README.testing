@@ -2,6 +2,8 @@
 #
 # The test list "aux_slim" is run as a test suite with the "create_test" script under cime/scripts
 # as follows.
+# NOTE: There are also tests for prealpha, prebeta for use with CESM testing
+#       And slim_sci to run a few standard tests for SLIM science
 #
 # Tests on cheyenne
 
