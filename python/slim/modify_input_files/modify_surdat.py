@@ -5,6 +5,7 @@ Run this code by using the following wrapper script:
 The wrapper script includes a full description and instructions.
 """
 
+import os
 import logging
 from configparser import ConfigParser
 
