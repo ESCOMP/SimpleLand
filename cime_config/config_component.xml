@@ -13,119 +13,62 @@
   -->
 
   <!-- Descriptions of all the different valid configurations for different model versions -->
-  <description modifier_mode="1">
-    <desc lnd="CLM45[%SP]">clm4.5:</desc>
-    <desc lnd="CLM50[%SP]">clm5.0:</desc>
-    <desc option="SP"     >Satellite phenology:</desc>
+  <description modifier_mode="?">
+    <desc lnd="SLIM" >Simple Land Model:</desc>
   </description>
 
   <entry id="COMP_LND">
     <type>char</type>
-    <valid_values>clm</valid_values>
-    <default_value>clm</default_value>
+    <valid_values>slim</valid_values>
+    <default_value>slim</default_value>
     <group>case_comp</group>
     <file>env_case.xml</file>
     <desc>Name of land component</desc>
   </entry>
 
-  <entry id="CLM_CONFIG_OPTS" >
+  <entry id="SLIM_SCENARIO">
     <type>char</type>
-    <default_value></default_value>
-    <values modifier='additive'>
-      <value compset="_CLM45"           >-phys clm4_5</value>
-      <value compset="_CLM50"           >-phys clm5_0</value>
-    </values>
-    <group>build_component_clm</group>
-    <file>env_build.xml</file>
-    <desc>Provides option(s) for the CLM configure utility.
-      CLM_CONFIG_OPTS are normally set as compset variables (e.g., -bgc cn)
-      and in general should not be modified for supported compsets.
-      It is recommended that if you want to modify this value for your experiment,
-      you should use your own user-defined component sets via using create_newcase
-      with a compset_file argument.
-      This is an advanced flag and should only be used by expert users.</desc>
-  </entry>
-
-  <entry id="CLM_NML_USE_CASE">
-    <type>char</type>
-    <default_value>UNSET</default_value>
+    <default_value>global_uniform</default_value>
+    <valid_values>global_uniform,realistic_from_1850,realistic_from_2000,user_defined</valid_values>
     <values>
-      <!-- Use rcp4.5 for PI to PDAY so will have data up to the current year available (for WACCM compsets that use PDAY) -->
-      <value compset="2000.*"		>2000_control</value>
-      <value compset="1850.*_"		>1850_control</value>
+      <value compset="2000.*"   >realistic_from_2000</value>
+      <value compset="1850.*_"  >realistic_from_1850</value>
+      <value compset="HIST.*_"  >realistic_from_1850</value>
     </values>
-    <group>run_component_clm</group>
+    <group>run_component_slim</group>
     <file>env_run.xml</file>
-    <desc>CLM namelist use_case.
-      Determines the use-case that will be sent to the CLM build-namelist utility.
-      This is normally set by the component set. This is an advanced flag and should only be
-      used by expert users.</desc>
+    <desc>SLIM namelist use_case scenario.
+      Determines the use-case scenario that will be used in the SLIM buildnml utility.
+      This is normally set by the component set.
+        'global_uniform' is for surface conditions are globally constant
+        'realistic_from_1850' are surface conditions taken from a 1850 control simulation with CTSM
+        'realistic_from_2000' are surface conditions taken from a 2000 control simulation with CTSM
+        'user_defined' means the user will provide their own surface condition file (mml_surdat)
+    </desc>
   </entry>
 
-  <!-- CLM_BLDNML_OPTS is not additive, we must list all possible combinations -->
-  <!-- ERROR: the node below is never matched, see bug 2025 -->
-  <entry id="CLM_BLDNML_OPTS">
+  <entry id="SLIM_START_TYPE">
     <type>char</type>
-    <default_value></default_value>
+    <valid_values>cold,any,required</valid_values>
+    <default_value>any</default_value>
     <values>
-      <value compset="_CLM45%[^_]*SP"		 >-bgc sp</value>
-      <value compset="_CLM50%[^_]*SP"		 >-bgc sp</value>
+      <value run_type="branch" >required</value>
+      <value run_type="hybrid" >required</value>
+      <value run_type="startup">any</value>
     </values>
-    <group>run_component_clm</group>
+    <group>run_component_slim</group>
     <file>env_run.xml</file>
-    <desc>CLM build-namelist options</desc>
-  </entry>
-
-  <entry id="CLM_CO2_TYPE">
-    <type>char</type>
-    <valid_values>constant,diagnostic,prognostic</valid_values>
-    <default_value>constant</default_value>
-    <values>
-      <value compset="_CAM"     >diagnostic</value>
-      <value compset="HIST.*_DATM" >diagnostic</value>
-    </values>
-    <group>run_component_clm</group>
-    <file>env_run.xml</file>
-    <desc>Determines how CLM will determine where CO2 is set.
-      If value is constant, it will be set to CCSM_CO2_PPMV,
-      if value is either diagnostic or prognostic, the atmosphere model
-      MUST send it to CLM. CLM_CO2_TYPE is normally set by the specific
-      compset, since it HAS to be coordinated with settings for the
-      atmospheric model. Do not modify this variable. If you want to modify for
-      your experiment, use your own user-defined component set
-      This is an advanced flag and should only be used by expert users.</desc>
-  </entry>
-
-  <entry id="CLM_NAMELIST_OPTS">
-    <type>char</type>
-    <default_value></default_value>
-    <group>run_component_clm</group>
-    <file>env_run.xml</file>
-    <desc>CLM-specific namelist settings for -namelist option in the CLM
-      build-namelist. CLM_NAMELIST_OPTS is normally set as a compset variable
-      and in general should not be modified for supported compsets.
-      It is recommended that if you want to modify this value for your experiment,
-      you should use your own user-defined component sets via using create_newcase
-      with a compset_file argument.
-      This is an advanced flag and should only be used by expert users.</desc>
-  </entry>
-
-  <entry id="CLM_FORCE_COLDSTART">
-    <type>char</type>
-    <valid_values>on,off</valid_values>
-    <default_value>off</default_value>
-    <group>run_component_clm</group>
-    <file>env_run.xml</file>
-    <desc>Flag to the CLM build-namelist command to force CLM to do a
-      cold start (finidat will be set to blanks).
-      A value of on forces the model to spin up from a cold-start
-      (arbitrary initial conditions). Setting this value in the xml file will take
-      precedence over any settings for finidat in the $CASEROOT/user_clm_clm file.</desc>
+    <desc>
+        SLIM run type.
+        'cold' is a cold start from arbitrary initial conditions, it will fail if you do provide initial conditions
+        'any' is a run using initial conditions if provided, OR arbitrary initial conditions if no files can be found
+        'required' is a run where starting from provided initial conditions is required, it will fail if they aren't
+    </desc>
   </entry>
 
   <help>
     =========================================
-    CLM naming conventions
+    SLIM naming conventions
     =========================================
     note: [^_]* means match zero or more of any character BUT an underbar.
     (in other words make sure there is NOT a underbar before the string afterwards)

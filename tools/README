@@ -6,7 +6,8 @@ SLIM tools for analysis of SLIM history files or
 I.  General directory structure:
 
     $SLIMROOT/tools
-	mksurfdat       -- Create surface datasets (surdat files) NOT AVAILABLE, YET.
+	mksurdat           Create SLIM surface dataset (surdat file) from CTSM
+                           history output files. TOOL NOT AVAILABLE
 
         modify_input_files Scripts to modify SLIM input files. Currently
                            there is one available tool and it can modify
@@ -22,5 +23,7 @@ II. Notes on building/running for each of the above tools:
 
 III. Create input datasets needed to run SLIM
 
-    1.) NOT AVAILABLE: Create surface dataset with mksurdat
-    2.) Add new file to XML data or using user_nl_clm (optional)
+    1.) Create surface dataset with mksurdat.ipynb. Detailed instructions here:
+/glade/work/slevis/git_slim/surdat_modifier/tools/mksurdat/README.mksurdat
+
+    2.) Add the new file to XML data or using user_nl_clm (optional)

@@ -17,17 +17,23 @@ import sys
 _SLIM_ROOT = os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir)
 )
+_SLIM_CIME_PY_ROOT = os.path.join(_SLIM_ROOT, "cime_config")
 
 # Candidates for the last path components to the SLIM directory within a
 # CESM checkout
-_CESM_SLIM_PATHS = [
-    os.path.join("components", "slim"),
-    os.path.join("components", "clm"),
-]
+_CESM_SLIM_PATHS = [os.path.join("components", "slim")]
 
 # ========================================================================
 # Public functions
 # ========================================================================
+
+
+def path_to_slim_cime_py_root():
+    """Returns the path to the buildnml directory of SLIM"""
+    if not os.path.isdir(_SLIM_CIME_PY_ROOT):
+        raise RuntimeError("Cannot find cime_config within SLIM checkout")
+
+    return _SLIM_CIME_PY_ROOT
 
 
 def path_to_slim_root():
@@ -90,10 +96,21 @@ def add_cime_lib_to_path(standalone_only=False):
     path_to_cime
     """
     cime_path = path_to_cime(standalone_only=standalone_only)
-    prepend_to_python_path(cime_path)
-    cime_lib_path = os.path.join(cime_path, "CIME", "Tools")
+    cime_lib_path = os.path.join(cime_path, "scripts", "lib")
+    prepend_to_python_path(cime_lib_path)
+    cime_lib_path = os.path.join(cime_path, "scripts", "Tools")
     prepend_to_python_path(cime_lib_path)
     return cime_path
+
+
+def add_slim_cime_pylib_to_path():
+    """Adds the slime_cime_py python library to the python path
+
+    Returns the path to the top-level slim_cime_py directory
+    """
+    slim_cime_py_path = path_to_slim_cime_py_root()
+    prepend_to_python_path(slim_cime_py_path)
+    return slim_cime_py_path
 
 
 # ========================================================================
