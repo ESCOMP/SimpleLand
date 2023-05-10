@@ -20,10 +20,11 @@ endif
 
 PYLINT=pylint
 PYLINT_ARGS=-j 4 --rcfile=slim/.pylintrc
-PYLINT_SRC = \
-	slim
+DIR_SRC = \
+	slim \
+	../cime_config/slim_cime_py
 
-all: test lint black
+all: lint black test
 test: utest stest
 
 .PHONY: utest
@@ -36,13 +37,22 @@ stest: FORCE
 
 .PHONY: lint
 lint: FORCE
-	$(PYLINT) $(PYLINT_ARGS) $(PYLINT_SRC)
+	$(PYLINT) $(PYLINT_ARGS) $(DIR_SRC)
 
 .PHONY: black
-# Run black on all of the python files here and undeneath.
+# Run black check on all of the python files here and undeneath.
+# Should be identical to run_black option below, other than the --check option added in
 # Use the black configure file to explicitly set a few things and specifiy the exact files.
 black: FORCE
-	black --check --config pyproject.toml .
+	black --check --config pyproject.toml $(DIR_SRC)
+
+.PHONY: run_black
+# Run black on all of the python files here and undeneath -- CHANGING THE FILES!
+# Should be identical to above, other than the "--check" option is removed.
+# Use the black configure file to explicitly set a few things and specifiy the exact files.
+run_black: FORCE
+	black --config pyproject.toml $(DIR_SRC)
+
 
 .PHONY: clean
 clean: FORCE

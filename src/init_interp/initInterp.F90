@@ -31,7 +31,6 @@ module initInterpMod
 
   ! Public methods
 
-! public :: initInterp_readnl  ! Read namelist
   public :: initInterp
 
   ! Private methods
@@ -53,56 +52,6 @@ module initInterpMod
 contains
 
   !=======================================================================
-
-  !-----------------------------------------------------------------------
-! subroutine initInterp_readnl(NLFilename)
-!   !
-!   ! !DESCRIPTION:
-!   ! Read the namelist for initInterp
-!   !
-!   ! !USES:
-!   use fileutils      , only : getavu, relavu, opnfil
-!   use shr_nl_mod     , only : shr_nl_find_group_name
-!   use spmdMod        , only : masterproc, mpicom
-!   use shr_mpi_mod    , only : shr_mpi_bcast
-!   !
-!   ! !ARGUMENTS:
-!   character(len=*), intent(in) :: NLFilename ! Namelist filename
-!   !
-!   ! !LOCAL VARIABLES:
-!   integer :: ierr                 ! error code
-!   integer :: unitn                ! unit for namelist file
-
-!   character(len=*), parameter :: subname = 'initInterp_readnl'
-!   !-----------------------------------------------------------------------
-
-!   ! Initialize options to default values, in case they are not specified in the namelist
-
-!   if (masterproc) then
-!      unitn = getavu()
-!      write(iulog,*) 'Read in clm_initinterp_inparm  namelist'
-!      call opnfil (NLFilename, unitn, 'F')
-!      call shr_nl_find_group_name(unitn, 'clm_initinterp_inparm', status=ierr)
-!      if (ierr == 0) then
-!         read(unitn, clm_initinterp_inparm, iostat=ierr)
-!         if (ierr /= 0) then
-!            call endrun(msg="ERROR reading clm_initinterp_inparm namelist"//errmsg(sourcefile, __LINE__))
-!         end if
-!      else
-!         call endrun(msg="ERROR finding clm_initinterp_inparm namelist"//errmsg(sourcefile, __LINE__))
-!      end if
-!      call relavu( unitn )
-!   end if
-
-!   if (masterproc) then
-!      write(iulog,*) ' '
-!      write(iulog,*) 'initInterp settings:'
-!      write(iulog,nml=clm_initinterp_inparm)
-!      write(iulog,*) ' '
-!   end if
-
-! end subroutine initInterp_readnl
-
 
   subroutine initInterp (filei, fileo, bounds)
 
