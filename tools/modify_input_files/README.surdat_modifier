@@ -1,0 +1,28 @@
+surdat_modifier is a tool that modifies SLIM surdat files. It reads a surface
+dataset (surdat file) and outputs a modified copy of the same file.
+
+SLIM's surdat_modifier used CTSM's fsurdat_modifier as a design template.
+
+Files involved
+--------------
+python/slim/modify_input_files/surdat_modifier.py
+python/slim/modify_input_files/modify_surdat.py
+tools/modify_input_files/surdat_modifier
+tools/modify_input_files/modify_surdat_template.cfg
+
+Instructions
+------------
+To run on Cheyenne/Casper/Izumi
+1) (Un)load, execute, and activate the following:
+module unload python
+module load conda
+./py_env_create
+conda activate slim_pylib  # conda activate ctsm_pylib UNTIL slim separates from ctsm
+(Use "deactivate" to reverse the latter.)
+2) Copy, then modify the configure file named modify_surdat_template.cfg, which
+contains all the arguments needed by the script.
+3) Run the script ./surdat_modifier pointing to the copied/modified .cfg file,
+e.g. modify_users_copy.cfg
+./surdat_modifier modify_users_copy.cfg
+See modify_surdat_template.cfg for required and optional settings.
+4) Use the --verbose option to see progress output on your screen

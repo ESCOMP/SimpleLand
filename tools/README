@@ -1,0 +1,29 @@
+$SLIMROOT/tools/README					Feb/28/2023
+
+SLIM tools for analysis of SLIM history files or
+           for creation or modification of SLIM input files.
+	
+I.  General directory structure:
+
+    $SLIMROOT/tools
+	mksurdat           Create SLIM surface dataset (surdat file) from CTSM
+                           history output files. TOOL NOT AVAILABLE
+
+        modify_input_files Scripts to modify SLIM input files. Currently
+                           there is one available tool and it can modify
+                           SLIM surdat files.
+
+    cime-tools ($CIMEROOT/tools/) (CIMEROOT is ../cime for a SLIM checkout and ../../../cime for a CESM checkout)
+        $CIMEROOT/mapping/gen_domain_files
+            gen_domain ------- Create data model domain datasets from SCRIP mapping datasets.
+
+II. Notes on building/running for each of the above tools:
+
+    Refer to each tool's README for more information.
+
+III. Create input datasets needed to run SLIM
+
+    1.) Create surface dataset with mksurdat.ipynb. Detailed instructions here:
+/glade/work/slevis/git_slim/surdat_modifier/tools/mksurdat/README.mksurdat
+
+    2.) Add the new file to XML data or using user_nl_clm (optional)
