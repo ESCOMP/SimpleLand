@@ -13,9 +13,9 @@
     TIME_ATM[%phys]_LND[%phys]_ICE[%phys]_OCN[%phys]_ROF[%phys]_GLC[%phys]_WAV[%phys][_BGC%phys]
     Where for the CAM specific compsets below the following is supported
     TIME = Time period (e.g. 2000, HIST, RCP8...)
-    ATM  = [CAM40, CAM50, CAM55]
+    ATM  = [CAM40, CAM50, CAM60]
     LND  = [SLIM, SLND]
-    ICE  = [CICE, DICE, SICE]
+    ICE  = [CICE, CICE5, DICE, SICE]
     OCN  = [DOCN, ,AQUAP, SOCN]
     ROF  = [RTM, SROF]
     GLC  = [SGLC]
@@ -41,18 +41,18 @@
   <!-- CAM6 -->
   <compset>
     <alias>ELT2000ClimoTESTC6I5Slim</alias>
-    <lname>2000_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>2000_CAM60_SLIM_CICE5_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
 
   <!-- This compset is currently not tested, but the 2000 one is -->
   <compset>
     <alias>ELT1850TESTC6I5Slim</alias>
-    <lname>1850_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>1850_CAM60_SLIM_CICE5_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
 
   <compset>
     <alias>FLT2000ClimoC6I5Slim</alias>
-    <lname>2000_CAM60_SLIM_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
+    <lname>2000_CAM60_SLIM_CICE5%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- CAM5 -->
