@@ -58,13 +58,13 @@
   <!-- CAM5 -->
   <compset>
     <alias>ELT2000ClimoTESTC5I5Slim</alias>
-    <lname>2000_CAM50_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+    <lname>2000_CAM50_SLIM_CICE5_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- CAM5 Historical -->
   <compset>
     <alias>FLTHISTC5I5Slim</alias>
-    <lname>HIST_CAM50_SLIM_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
+    <lname>HIST_CAM50_SLIM_CICE5%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!--
