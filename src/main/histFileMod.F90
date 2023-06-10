@@ -1521,7 +1521,7 @@ contains
                      long_name=long_name, units=units, missing_value=spval, fill_value=spval)
              else
                 call ncd_defvar(ncid=nfid(t), varname=trim(varnames(ifld)), xtype=tape(t)%ncprec, &
-                        dim1name=grlnd, dim2name='levgrnd', &
+                     dim1name=grlnd, dim2name='levgrnd', &
                      long_name=long_name, units=units, missing_value=spval, fill_value=spval)
              end if
           end if
@@ -1648,10 +1648,10 @@ contains
        if (mode == 'define') then
       	  ! Add MML soil layers
           call ncd_defvar(varname='mml_lev', xtype=tape(t)%ncprec, dim1name='mml_lev', &
-               long_name='mml soil levels', units='m', ncid=nfid(t))
+               long_name='mml soil levels', units='m', ncid=nfid(t), missing_value=spval, fill_value=spval)
           ! Add MML dust bins
           call ncd_defvar(varname='mml_dust', xtype=tape(t)%ncprec, dim1name='mml_dust', &
-               long_name='mml dust bins', units='unknown', ncid=nfid(t))
+               long_name='mml dust bins', units='unknown', ncid=nfid(t), missing_value=spval, fill_value=spval)
       
        elseif (mode == 'write') then
 		   ! Add MML soil layers
@@ -1679,7 +1679,7 @@ contains
        dim1id(1) = time_dimid
        str = 'days since ' // basedate // " " // basesec
        call ncd_defvar(nfid(t), 'time', tape(t)%ncprec, 1, dim1id, varid, &
-            long_name='time',units=str) 
+            long_name='time',units=str, missing_value=spval, fill_value=spval)
        cal = get_calendar()
        if (      trim(cal) == NO_LEAP_C   )then
           caldesc = "noleap"
@@ -2059,16 +2059,20 @@ contains
           ! Define gridcell info
 
           call ncd_defvar(varname='grid1d_lon', xtype=ncd_double, dim1name=nameg, &
-               long_name='gridcell longitude', units='degrees_east', ncid=ncid)
+               long_name='gridcell longitude', units='degrees_east', ncid=ncid, &
+               missing_value=spval, fill_value=spval)
 
           call ncd_defvar(varname='grid1d_lat', xtype=ncd_double,  dim1name=nameg, &
-               long_name='gridcell latitude', units='degrees_north', ncid=ncid)
+               long_name='gridcell latitude', units='degrees_north', ncid=ncid, &
+               missing_value=spval, fill_value=spval)
 
           call ncd_defvar(varname='grid1d_ixy', xtype=ncd_int, dim1name=nameg, &
-               long_name='2d longitude index of corresponding gridcell', ncid=ncid)
+               long_name='2d longitude index of corresponding gridcell', ncid=ncid, &
+               missing_value=spval, fill_value=spval)
 
           call ncd_defvar(varname='grid1d_jxy', xtype=ncd_int, dim1name=nameg, &
-               long_name='2d latitude index of corresponding gridcell', ncid=ncid)
+               long_name='2d latitude index of corresponding gridcell', ncid=ncid, &
+               missing_value=spval, fill_value=spval)
 
     else if (mode == 'write') then
 
@@ -2495,33 +2499,41 @@ contains
                    if (num2d == 1) then
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name), xtype=ncd_double, & 
                            dim1name=dim1name, &
-                           long_name=trim(long_name), units=trim(units))
+                           long_name=trim(long_name), units=trim(units), &
+                           missing_value=spval, fill_value=spval)
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name_acc), xtype=ncd_int,  &
                            dim1name=dim1name, &
-                           long_name=trim(long_name_acc), units=trim(units_acc))
+                           long_name=trim(long_name_acc), units=trim(units_acc), &
+                           missing_value=spval, fill_value=spval)
                    else
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name), xtype=ncd_double, &
                            dim1name=dim1name, dim2name=type2d, &
-                           long_name=trim(long_name), units=trim(units))
+                           long_name=trim(long_name), units=trim(units), &
+                           missing_value=spval, fill_value=spval)
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name_acc), xtype=ncd_int,  &
                            dim1name=dim1name, dim2name=type2d, &
-                           long_name=trim(long_name_acc), units=trim(units_acc))
+                           long_name=trim(long_name_acc), units=trim(units_acc), &
+                           missing_value=spval, fill_value=spval)
                    end if
                 else
                    if (num2d == 1) then
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name), xtype=ncd_double, &
                            dim1name=dim1name, dim2name=dim2name, &
-                           long_name=trim(long_name), units=trim(units))
+                           long_name=trim(long_name), units=trim(units), &
+                           missing_value=spval, fill_value=spval)
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name_acc), xtype=ncd_int,  &
                            dim1name=dim1name, dim2name=dim2name, &
-                           long_name=trim(long_name_acc), units=trim(units_acc))
+                           long_name=trim(long_name_acc), units=trim(units_acc), &
+                           missing_value=spval, fill_value=spval)
                    else
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name), xtype=ncd_double, &
                            dim1name=dim1name, dim2name=dim2name, dim3name=type2d, &
-                           long_name=trim(long_name), units=trim(units))
+                           long_name=trim(long_name), units=trim(units), &
+                           missing_value=spval, fill_value=spval)
                       call ncd_defvar(ncid=ncid_hist(t), varname=trim(name_acc), xtype=ncd_int,  &
                            dim1name=dim1name, dim2name=dim2name, dim3name=type2d, &
-                           long_name=trim(long_name_acc), units=trim(units_acc))
+                           long_name=trim(long_name_acc), units=trim(units_acc), &
+                           missing_value=spval, fill_value=spval)
                    end if
                 endif
              end do
