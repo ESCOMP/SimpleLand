@@ -41,5 +41,23 @@
       <issue>ESCOMP/SimpleLand#17</issue>
     </phase>
   </test>
+  <test name="SMS_Lm3_Vmct.f19_f19_mg16.FLT2000ClimoC6I5Slim.cheyenne_intel.slim-Monthly">
+    <phase name="GENERATE">
+      <status>FAIL</status>
+      <issue>ESCOMP/SimpleLand#79</issue>
+    </phase>
+  </test>
+  <test name="SMS_Lm3_Vmct.f19_g16.ELT2000ClimoTESTC5I5Slim.cheyenne_gnu.slim-global_uniform_g16_SOM">
+    <phase name="GENERATE">
+      <status>FAIL</status>
+      <issue>ESCOMP/SimpleLand#79</issue>
+    </phase>
+  </test>
+  <test name="SMS_Lm3_Vmct.f19_g16.ELT2000ClimoTESTC5I5Slim.cheyenne_intel.slim-global_uniform_g16_SOM">
+    <phase name="GENERATE">
+      <status>FAIL</status>
+      <issue>ESCOMP/SimpleLand#79</issue>
+    </phase>
+  </test>
 
 </expectedFails> 
