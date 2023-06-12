@@ -1845,7 +1845,9 @@ contains
        end if
        call ncd_io(varname='area'    , data=ldomain%area, dim1name=grlnd, ncid=nfid(t), flag='write')
        call ncd_io(varname='landfrac', data=ldomain%frac, dim1name=grlnd, ncid=nfid(t), flag='write')
-       call ncd_io(varname='landmask', data=ldomain%mask, dim1name=grlnd, ncid=nfid(t), flag='write')
+       ! ---- Comment out writing of landmask because of #82 -- EBK 06/11/2023 ----
+       !call ncd_io(varname='landmask', data=ldomain%mask, dim1name=grlnd, ncid=nfid(t), flag='write')
+       ! --------------------------------------------------------------------------
 
     end if  ! (define/write mode
 
