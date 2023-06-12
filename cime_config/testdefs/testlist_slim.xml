@@ -6,6 +6,8 @@
   <!-- should have both 1850 and 2000 and realistic as well as global uniform -->
   <!-- need debug on and off, intel and gnu compilers and restart tests, don't need a DOCN case, nor PEM -->
   <!-- Run one longer test with production compiler for a few months to make sure longer science runs will continue to work -->
+
+  <!-- CAM5 with CICE5 tests -->
   <test name="SMS_Lm3_Vmct" grid="f19_g16" compset="ELT2000ClimoTESTC5I5Slim" testmods="slim/global_uniform_g16_SOM">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
@@ -75,6 +77,65 @@
   <!-- PEM tests should ONLY be with DOCN -->
   <!-- Run one longer test with production compiler for a few months to make sure longer science runs will continue to work -->
   <!-- The important science simualtions for this configuration is the 2000_CMIP6_AMIP_ensemble case for Wenwen -->
+
+
+  <!-- CAM-DEV with CICE6 latest tests -->
+  <!-- This will be added later -->
+
+  <!-- CAM6 with CICE6 tests -->
+<!--- Turn off the CICE6 tests until we have a NUOPC cap avaialble
+      CICE6 requires a NUOPC cap and can NOT be run under MCT
+  <test name="SMS_Vnuopc" grid="f19_g16" compset="ELT2000ClimoTESTC6I6Slim" testmods="slim/global_uniform_g16_SOM">
+    <machines>
+      <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="prebeta"/>
+    </machines>
+    <options>
+      <option name="wallclock">01:00:00</option>
+      <option name="comment">smoke test with SOM for CAM6 for global uniform w CICE6</option>
+    </options>
+  </test>
+  <test name="SMS_Vnuopc" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/default">
+    <machines>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">01:00:00</option>
+      <option name="comment">smoke test with DOCN for realistic 2000 w CICE6</option>
+    </options>
+  </test>
+  <test name="SMS_Lm3_Vnuopc" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/Monthly">
+    <machines>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="slim_sci"/>
+    </machines>
+    <options>
+      <option name="wallclock">01:40:00</option>
+      <option name="comment">Longer smoke test with DOCN for realistic 2000 w CICE6</option>
+    </options>
+  </test>
+  <test name="PEM_Vnuopc" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/default">
+    <machines>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="prealpha"/>
+    </machines>
+    <options>
+      <option name="wallclock">01:00:00</option>
+      <option name="comment">change Processors test with DOCN for realistic 2000 w CICE6</option>
+    </options>
+  </test>
+  <test name="ERS_Ld60_Vnuopc" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/Monthly">
+    <machines>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">01:40:00</option>
+      <option name="comment">Restart test with DOCN for realistic 2000 w CICE6</option>
+    </options>
+  </test>
+-->
+  <!-- CAM6 with CICE5 tests -->
   <test name="SMS_Vmct" grid="f19_g16" compset="ELT2000ClimoTESTC6I5Slim" testmods="slim/global_uniform_g16_SOM">
     <machines>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
@@ -86,17 +147,6 @@
       <option name="comment">smoke test with SOM for CAM6 for global uniform</option>
     </options>
   </test>
-  <test name="SMS_Vmct" grid="f19_g16" compset="ELT2000ClimoTESTC6I6Slim" testmods="slim/global_uniform_g16_SOM">
-    <machines>
-      <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
-      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
-      <machine name="cheyenne" compiler="intel" category="prebeta"/>
-    </machines>
-    <options>
-      <option name="wallclock">01:00:00</option>
-      <option name="comment">smoke test with SOM for CAM6 for global uniform w CICE6</option>
-    </options>
-  </test>
   <test name="SMS_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
@@ -104,15 +154,6 @@
     <options>
       <option name="wallclock">01:00:00</option>
       <option name="comment">smoke test with DOCN for realistic 2000</option>
-    </options>
-  </test>
-  <test name="SMS_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/default">
-    <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
-    </machines>
-    <options>
-      <option name="wallclock">01:00:00</option>
-      <option name="comment">smoke test with DOCN for realistic 2000 w CICE6</option>
     </options>
   </test>
   <test name="SMS_Lm3_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/Monthly">
@@ -125,16 +166,6 @@
       <option name="comment">Longer smoke test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="SMS_Lm3_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/Monthly">
-    <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
-      <machine name="cheyenne" compiler="intel" category="slim_sci"/>
-    </machines>
-    <options>
-      <option name="wallclock">01:40:00</option>
-      <option name="comment">Longer smoke test with DOCN for realistic 2000 w CICE6</option>
-    </options>
-  </test>
   <test name="PEM_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
@@ -145,16 +176,6 @@
       <option name="comment">change Processors test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="PEM_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/default">
-    <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
-      <machine name="cheyenne" compiler="intel" category="prealpha"/>
-    </machines>
-    <options>
-      <option name="wallclock">01:00:00</option>
-      <option name="comment">change Processors test with DOCN for realistic 2000 w CICE6</option>
-    </options>
-  </test>
   <test name="ERS_Ld60_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/Monthly">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
@@ -162,15 +183,6 @@
     <options>
       <option name="wallclock">01:40:00</option>
       <option name="comment">Restart test with DOCN for realistic 2000</option>
-    </options>
-  </test>
-  <test name="ERS_Ld60_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I6Slim" testmods="slim/Monthly">
-    <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
-    </machines>
-    <options>
-      <option name="wallclock">01:40:00</option>
-      <option name="comment">Restart test with DOCN for realistic 2000 w CICE6</option>
     </options>
   </test>
 
