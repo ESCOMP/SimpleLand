@@ -1057,15 +1057,31 @@ contains
        call ncd_putatt(ncid, varid, 'cell_methods', trim(str))
     end if
     if (present(fill_value)) then
+       if ( lxtype /= ncd_float .and. lxtype /= ncd_double )then
+            call shr_sys_abort(' ERROR: fill_value given, but data type is NOT double or float'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, '_FillValue', fill_value, lxtype)
     end if
     if (present(missing_value)) then
+       if ( lxtype /= ncd_float .and. lxtype /= ncd_double )then
+            call shr_sys_abort(' ERROR: missing_value given, but data type is NOT double or float'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, 'missing_value', missing_value, lxtype)
     end if
     if (present(ifill_value)) then
+       if ( lxtype /= ncd_int )then
+            call shr_sys_abort(' ERROR: ifill_value given, but data type is NOT int'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, '_FillValue', ifill_value, lxtype)
     end if
     if (present(imissing_value)) then
+       if ( lxtype /= ncd_int )then
+            call shr_sys_abort(' ERROR: imissing_value given, but data type is NOT int'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, 'missing_value', imissing_value, lxtype)
     end if
     if (present(nvalid_range)) then
