@@ -44,15 +44,30 @@
     <lname>2000_CAM60_SLIM_CICE5_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
 
-  <!-- This compset is currently not tested, but the 2000 one is -->
+  <compset>
+    <alias>ELT2000ClimoTESTC6I6Slim</alias>
+    <lname>2000_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+
+
+  <!-- These two compsets are currently not tested, but the 2000 one is -->
   <compset>
     <alias>ELT1850TESTC6I5Slim</alias>
     <lname>1850_CAM60_SLIM_CICE5_DOCN%SOM_SROF_SGLC_SWAV</lname>
   </compset>
+  <compset>
+    <alias>ELT1850TESTC6I6Slim</alias>
+    <lname>1850_CAM60_SLIM_CICE_DOCN%SOM_SROF_SGLC_SWAV</lname>
+  </compset>
+
 
   <compset>
     <alias>FLT2000ClimoC6I5Slim</alias>
     <lname>2000_CAM60_SLIM_CICE5%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
+  </compset>
+  <compset>
+    <alias>FLT2000ClimoC6I6Slim</alias>
+    <lname>2000_CAM60_SLIM_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
   </compset>
   
   <!-- CAM5 -->
