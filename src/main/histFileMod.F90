@@ -1612,6 +1612,7 @@ contains
     
     ! MML soil z:
     real(r8)	 :: mml_zsoi(10)	! MML soil levels (hard coding to have 6...)
+    real(r8)	 :: mml_dust(4)
     integer  :: mml_nsoi
     
     integer :: ind
@@ -1640,6 +1641,8 @@ contains
 	
 	
 	
+
+        mml_dust = spval
     !-------------------------------------------------------------------------------
     !***     Time constant grid variables only on first time-sample of file ***
     !-------------------------------------------------------------------------------
@@ -1656,6 +1659,7 @@ contains
        elseif (mode == 'write') then
 		   ! Add MML soil layers
           call ncd_io(varname='mml_lev', data=mml_zsoi, ncid=nfid(t), flag='write')
+          call ncd_io(varname='mml_dust', data=mml_dust, ncid=nfid(t), flag='write')
           
        endif
     endif
@@ -1819,17 +1823,19 @@ contains
               long_name='land fraction', ncid=nfid(t), &
               missing_value=spval, fill_value=spval)
        end if
-       if (ldomain%isgrid2d) then
-          call ncd_defvar(varname='landmask', xtype=ncd_int, &
-              dim1name='lon', dim2name='lat', &
-              long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       else
-          call ncd_defvar(varname='landmask', xtype=ncd_int, &
-              dim1name=grlnd, &
-              long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
-       end if
+       ! ---- Comment out writing of landmask because of #82 -- EBK 06/11/2023 ----
+       !if (ldomain%isgrid2d) then
+          !call ncd_defvar(varname='landmask', xtype=ncd_int, &
+              !dim1name='lon', dim2name='lat', &
+              !long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
+              !imissing_value=ispval, ifill_value=ispval)
+       !else
+          !call ncd_defvar(varname='landmask', xtype=ncd_int, &
+              !dim1name=grlnd, &
+              !long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
+              !imissing_value=ispval, ifill_value=ispval)
+       !end if
+       ! --------------------------------------------------------------------------
 
     else if (mode == 'write') then
 
