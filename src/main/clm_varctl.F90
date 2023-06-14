@@ -11,8 +11,6 @@ module clm_varctl
   ! !PUBLIC MEMBER FUNCTIONS:
   implicit none
   public :: clm_varctl_set    ! Set variables
-  public :: cnallocate_carbon_only_set
-  public :: cnallocate_carbon_only
   !
   private
   save
@@ -85,30 +83,19 @@ module clm_varctl
   !----------------------------------------------------------
 
   character(len=fname_len), public :: finidat    = ' '        ! initial conditions file name
-  character(len=fname_len), public :: fsurdat    = ' '        ! surface data file name
   character(len=fname_len), public :: fatmgrid   = ' '        ! atm grid file name
   character(len=fname_len), public :: fatmlndfrc = ' '        ! lnd frac file on atm grid
-  character(len=fname_len), public :: paramfile  = ' '        ! ASCII data file with PFT physiological constants
   character(len=fname_len), public :: nrevsn     = ' '        ! restart data file name for branch run
-  character(len=fname_len), public :: fsnowoptics  = ' '      ! snow optical properties file name
-  character(len=fname_len), public :: fsnowaging   = ' '      ! snow aging parameters file name
 
   !----------------------------------------------------------
   ! MML input files
   !----------------------------------------------------------
   character(len=fname_len), public :: mml_surdat   = ' '      ! MML surface data file for simple model
   	
-  !----------------------------------------------------------
-  ! Flag to read ndep rather than obtain it from coupler
-  !----------------------------------------------------------
-  
-  logical, public :: ndep_from_cpl = .false.
 
   !----------------------------------------------------------
   ! Interpolation of finidat if requested
   !----------------------------------------------------------
-
-  logical, public :: bound_h2osoi = .true. ! for debugging 
 
   ! If finidat_interp_source is non-blank and finidat is blank then interpolation will be
   ! done from finidat_interp_source to finidat_interp_dest. Note that
@@ -119,156 +106,12 @@ module clm_varctl
   character(len=fname_len), public :: finidat_interp_dest   = 'finidat_interp_dest.nc'     
 
   !----------------------------------------------------------
-  ! Crop & Irrigation logic
-  !----------------------------------------------------------
-
-  ! If prognostic crops are turned on
-  logical, public :: use_crop = .false.
-
-  ! true => separate crop landunit is not created by default
-  logical, public :: create_crop_landunit = .true.
-  
-  ! do not irrigate by default
-  logical, public :: irrigate = .false.            
-
-  !----------------------------------------------------------
-  ! Other subgrid logic
-  !----------------------------------------------------------
-
-  ! true => make ALL patches, cols & landunits active (even if weight is 0)
-  logical, public :: all_active = .false.          
-
-  !----------------------------------------------------------
-  ! BGC logic and datasets
-  !----------------------------------------------------------
-
-  ! values of 'prognostic','diagnostic','constant'
-  character(len=16), public :: co2_type = 'constant'    
-
-  ! State of the model for the accelerated decomposition (AD) spinup. 
-  ! 0 (default) = normal model; 1 = AD SPINUP
-  integer, public :: spinup_state = 0 
-
-  ! true => anoxia is applied to heterotrophic respiration also considered in CH4 model
-  ! default value reset in controlMod
-  logical, public :: anoxia  = .true. 
-
-  ! used to override an error check on reading in restart files
-  logical, public :: override_bgc_restart_mismatch_dump = .false. 
-
-  ! Set in CNAllocationInit (TODO - had to move it here to avoid circular dependency)
-  logical, private:: carbon_only      
-
-  ! Set in CNNDynamicsInit 
-  ! NOTE (mvertens, 2014-9 had to move it here to avoid confusion when carbon data types
-  ! wehre split - TODO - should move it our of this module) 
-  ! NOTE(bandre, 2013-10) according to Charlie Koven, nfix_timeconst
-  ! is currently used as a flag and rate constant. 
-  ! Rate constant: time over which to exponentially relax the npp flux for N fixation term
-  ! (days) time over which to exponentially relax the npp flux for N fixation term
-  ! flag: (if  <=  0. or  >=  365; use old annual method). 
-  ! Default value is junk that should always be overwritten by the namelist or init function!
-  !
-  real(r8), public :: nfix_timeconst = -1.2345_r8 
-
-  !----------------------------------------------------------
   ! Physics
   !----------------------------------------------------------
-
-  ! use subgrid fluxes
-  integer,  public :: subgridflag = 1                   
 
   ! true => write global average diagnostics to std out
   logical,  public :: wrtdia       = .false.            
 
-  ! atmospheric CO2 molar ratio (by volume) (umol/mol)
-  real(r8), public :: co2_ppmv     = 355._r8            !
-
-  !----------------------------------------------------------
-  ! C isotopes
-  !----------------------------------------------------------
-
-  logical, public :: use_c13 = .false.                  ! true => use C-13 model
-  logical, public :: use_c14 = .false.                  ! true => use C-14 model
-
-  !----------------------------------------------------------
-  !  FATES switches
-  !----------------------------------------------------------
-
-  logical, public :: use_fates = .false.            ! true => use fates
-
-  ! These are INTERNAL to the FATES module
-  logical, public            :: use_fates_spitfire = .false.           ! true => use spitfire model
-  logical, public            :: use_fates_logging = .false.            ! true => turn on logging module
-  logical, public            :: use_fates_planthydro = .false.         ! true => turn on fates hydro
-  logical, public            :: use_fates_ed_st3   = .false.           ! true => static stand structure
-  logical, public            :: use_fates_ed_prescribed_phys = .false. ! true => prescribed physiology
-  logical, public            :: use_fates_inventory_init = .false.     ! true => initialize fates from inventory
-  character(len=256), public :: fates_inventory_ctrl_filename = ''     ! filename for inventory control
-
-  !----------------------------------------------------------
-  !  LUNA switches		
-  !----------------------------------------------------------
-
-  logical, public :: use_luna = .false.            ! true => use  LUNA
-
-  !----------------------------------------------------------
-  !  flexibleCN
-  !----------------------------------------------------------
-  !  TODO(bja, 2015-08) some of these need to be moved into the
-  !  appropriate module.
-  logical, public :: use_flexibleCN = .false.
-  logical, public :: MM_Nuptake_opt = .false.
-  logical, public :: downreg_opt = .true.
-  integer, public :: plant_ndemand_opt = 0
-  logical, public :: substrate_term_opt = .true.
-  logical, public :: nscalar_opt = .true.
-  logical, public :: temp_scalar_opt = .true.
-  logical, public :: CNratio_floating = .false.
-  logical, public :: lnc_opt = .false.
-  logical, public :: reduce_dayl_factor = .false.
-  integer, public :: vcmax_opt = 0
-  integer, public :: CN_residual_opt = 0
-  integer, public :: CN_partition_opt = 0
-  integer, public :: CN_evergreen_phenology_opt = 0
-  integer, public :: carbon_resp_opt = 0
-
-  !----------------------------------------------------------
-  ! lai streams switch for Sat. Phenology
-  !----------------------------------------------------------
-
-  logical, public :: use_lai_streams = .false. ! true => use lai streams in SatellitePhenologyMod.F90
-
-  !----------------------------------------------------------
-  ! bedrock / soil depth switch
-  !----------------------------------------------------------
-
-  logical,           public :: use_bedrock = .false. ! true => use spatially variable soil depth
-  character(len=16), public :: soil_layerstruct = '10SL_3.5m'
-
-  !----------------------------------------------------------
-  ! plant hydraulic stress switch
-  !----------------------------------------------------------
-
-  logical, public :: use_hydrstress = .false. ! true => use plant hydraulic stress calculation
-
-  !----------------------------------------------------------
-  ! dynamic root switch
-  !----------------------------------------------------------
-
-  logical, public :: use_dynroot = .false. ! true => use dynamic root module
-
-  !----------------------------------------------------------
-  ! glacier_mec control variables: default values (may be overwritten by namelist)
-  !----------------------------------------------------------
-
-  ! true => CLM glacier area & topography changes dynamically 
-  logical , public :: glc_do_dynglacier = .false.           
-
-  ! number of days before one considers the perennially snow-covered point 'land ice'
-  integer , public :: glc_snow_persistence_max_days = 7300  
-
-  !
   !----------------------------------------------------------
   ! single column control variables
   !----------------------------------------------------------
@@ -302,36 +145,10 @@ module clm_varctl
   ! file name for local restart pointer file
   character(len=256), public :: rpntfil = 'rpointer.lnd' 
 
-  ! moved hist_wrtch4diag from histFileMod.F90 to here - caused compiler error with intel
-  ! namelist: write CH4 extra diagnostic output
-  logical, public :: hist_wrtch4diag = .false.         
-
-  !----------------------------------------------------------
-  ! FATES
-  !----------------------------------------------------------
-  character(len=fname_len), public :: fates_paramfile  = ' '
-
   !----------------------------------------------------------
   ! Migration of CPP variables
   !----------------------------------------------------------
-
-  logical, public :: use_lch4            = .false.
-  logical, public :: use_nitrif_denitrif = .false.
-  logical, public :: use_vertsoilc       = .false.
-  logical, public :: use_extralakelayers = .false.
-  logical, public :: use_vichydro        = .false.
-  logical, public :: use_century_decomp  = .false.
-  logical, public :: use_cn              = .false.
-  logical, public :: use_cndv            = .false.
-  logical, public :: use_grainproduct    = .false.
-  logical, public :: use_fertilizer      = .false.
-  logical, public :: use_ozone           = .false.
-  logical, public :: use_snicar_frc      = .false.
-  logical, public :: use_vancouver       = .false.
-  logical, public :: use_mexicocity      = .false.
   logical, public :: use_noio            = .false.
-
-  logical, public :: use_nguardrail      = .false.
 
   !----------------------------------------------------------
   ! To retrieve namelist
@@ -381,16 +198,5 @@ contains
     if ( present(hostname_in     ) ) hostname      = hostname_in
 
   end subroutine clm_varctl_set
-
-  ! Set module carbon_only flag
-  subroutine cnallocate_carbon_only_set(carbon_only_in)
-    logical, intent(in) :: carbon_only_in
-    carbon_only = carbon_only_in
-  end subroutine cnallocate_carbon_only_set
-
-  ! Get module carbon_only flag
-  logical function CNAllocate_Carbon_only()
-    cnallocate_carbon_only = carbon_only
-  end function CNAllocate_Carbon_only
 
 end module clm_varctl

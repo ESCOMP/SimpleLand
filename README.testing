@@ -2,6 +2,8 @@
 #
 # The test list "aux_slim" is run as a test suite with the "create_test" script under cime/scripts
 # as follows.
+# NOTE: There are also tests for prealpha, prebeta for use with CESM testing
+#       And slim_sci to run a few standard tests for SLIM science
 #
 # Tests on cheyenne
 
@@ -23,7 +25,5 @@ nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> mac
 --xml-category aux_slim --xml-machine izumi --xml-compiler nag &
 nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
 --xml-category aux_slim --xml-machine izumi --xml-compiler gnu &
-nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
---xml-category aux_slim --xml-machine izumi --xml-compiler pgi &
 nohup ./create_test --compare <baseline_comp> --generate <baseline_generate> machine izumi -r cases \
 --xml-category aux_slim --xml-machine izumi --xml-compiler intel &

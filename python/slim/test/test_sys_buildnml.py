@@ -12,12 +12,12 @@ import logging
 
 from pathlib import Path
 
-from CIME.BuildTools.configure import FakeCase
-from CIME.utils import expect
-
 # pylint: disable=wrong-import-order,unused-import
 from slim import add_slim_cime_py_to_path
 from slim import unit_testing
+
+from CIME.BuildTools.configure import configure, FakeCase
+from CIME.utils import expect
 
 from slim_cime_py.buildnml import buildnml
 
@@ -32,12 +32,13 @@ def getVariableFromNML(nmlfile, variable):
     """Get a variable from the namelist file"""
     with open(nmlfile, "r") as nfile:
         for line in nfile:
-            if variable in line:
+            match = re.search(r"\s*" + variable + r"\s*=", line)
+            if match is not None:
                 print("lnd_in:" + line)
-                match = re.search('= ["]*([ a-zA-Z0-9._//-]+)["]*', line)
+                match = re.search(r'= ["]*([ a-zA-Z0-9._//-]+)["]*', line)
                 if match is not None:
                     return match.group(1)
-                match = re.search("= [']*([ a-zA-Z0-9._//-]+)[']*", line)
+                match = re.search(r"= [']*([ a-zA-Z0-9._//-]+)[']*", line)
                 if match is not None:
                     return match.group(1)
     return None
@@ -70,8 +71,9 @@ class TestBuildNML(unittest.TestCase):
                 os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, os.pardir
             )
         )
-        self.case = FakeCase(compiler=None, mpilib=None, debug=None)
+        self.case = FakeCase(compiler=None, comp_interface="nuopc", mpilib=None, debug=None)
         self.case.set_value("CASEROOT", self._testdir)
+        self.case.set_value("COMPSET", "2000_DATM%GSWP3v1_SLIM_SICE_SOCN_SROF_SGLC_SWAV")
         self.case.set_value("RUN_TYPE", "any")
         self.case.set_value("RUN_STARTDATE", "2000-01-01")
         self.case.set_value("RUN_REFCASE", "case.std")
@@ -255,7 +257,7 @@ class TestBuildNML(unittest.TestCase):
                 "Input data list file should exist after running buildnml",
             )
             value = getVariableFromNML("lnd_in", "finidat")
-            self.assertEqual(value, finidat, msg="finidat not set as expected")
+            self.assertEqual(value, finidat, msg="finidat not set as expected: type=" + stype)
         stype = "required"
         finidat = "TESTFINIDATFILENAME.nc"
         Path(finidat).touch()

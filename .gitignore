@@ -3,6 +3,9 @@
 manage_externals.log
 cime/
 components/
+ccs_config/
+libraries/
+share/
 
 # ignore svn directories
 **/.svn/**

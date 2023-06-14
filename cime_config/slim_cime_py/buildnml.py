@@ -332,6 +332,12 @@ def check_nml_data(nmlgen, case):
 
     mml_surdat = nmlgen.get_value("mml_surdat")
     if mml_surdat == "UNSET":
+        slim_scenario = case.get_value("SLIM_SCENARIO")
+        if slim_scenario == "user_defined":
+            raise SystemExit(
+                "When SLIM_SCENARIO is set to user_defined, you must provide the mml_surdat "
+                + "file by adding it to the user_nl_slim file to add it to the namelist"
+            )
         raise SystemExit("mml_surdat file is NOT set and is required")
 
     #
@@ -360,13 +366,6 @@ def check_nml_data(nmlgen, case):
     if finidat_dest is not None and not interp:
         raise SystemExit("finidat_interp_dest can NOT be set if use_init_interp is not on")
 
-    # -----------------------------------------------------------------------------------------
-    # Requirements still in clm_inparm
-    # -----------------------------------------------------------------------------------------
-    fsurdat = nmlgen.get_value("fsurdat")
-    if fsurdat == "UNSET":
-        raise SystemExit("fsurdat file is NOT set and is required")
-
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 # Turn off unused-argument for inst_string, since isn't in place right now
@@ -388,6 +387,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # ------------------------------------------------------
     config = {}
     config["lnd_grid"] = case.get_value("LND_GRID")
+    config["compset"] = case.get_value("COMPSET")
     config["slim_scenario"] = case.get_value("SLIM_SCENARIO")
     config["slim_start_type"] = case.get_value("SLIM_START_TYPE")
 
@@ -413,7 +413,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # ----------------------------------------------------
     logger.info("Write namelists")
     namelist_file = os.path.join(confdir, "lnd_in")
-    # Include clm_inparm until can be removed...
     nmlgen.write_output_file(
         namelist_file,
         data_list_path,
@@ -423,8 +422,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
             "slim_history",
             "slim_perf",
             "finidat_consistency_checks",
-            "clm_initinterp_inparm",
-            "clm_inparm",
         ],
     )
 
@@ -455,7 +452,7 @@ def buildnml(case, caseroot, compname):
     # Set confdir
     # -----------------------------------------------------
 
-    confdir = os.path.join(caseroot, "Buildconf", "slimconf")
+    confdir = os.path.join(caseroot, "Buildconf", compname + "conf")
     if not os.path.isdir(confdir):
         os.makedirs(confdir)
 

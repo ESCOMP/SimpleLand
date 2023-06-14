@@ -8,12 +8,12 @@ module atm2lndType
   use shr_kind_mod  , only : r8 => shr_kind_r8
   use shr_infnan_mod, only : nan => shr_infnan_nan, assignment(=)
   use shr_log_mod   , only : errMsg => shr_log_errMsg
-  use clm_varpar    , only : numrad, ndst, nlevgrnd !ndst = number of dust bins.  ! MML: numrad = 2, 1=vis, 2=nir
-  use clm_varcon    , only : rair, grav, cpair, hfus, tfrz, spval
-  use clm_varctl    , only : iulog, use_cn, use_cndv, use_fates, use_luna
+  use clm_varpar    , only : numrad  ! MML: numrad = 2, 1=vis, 2=nir
+  use clm_varcon    , only : spval
+  use clm_varctl    , only : iulog
   use decompMod     , only : bounds_type
   use abortutils    , only : endrun
-  use PatchType     , only : patch
+! use PatchType     , only : patch
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -21,38 +21,6 @@ module atm2lndType
   save
   !
   ! !PUBLIC DATA TYPES:
-
-  type, public :: atm2lnd_params_type
-     ! true => repartition rain/snow from atm based on temperature
-     logical :: repartition_rain_snow
-
-     ! true => downscale longwave radiation
-     logical :: glcmec_downscale_longwave
-
-     ! Surface temperature lapse rate (K m-1)
-     real(r8) :: lapse_rate
-
-     ! longwave radiation lapse rate (W m-2 m-1)
-     real(r8) :: lapse_rate_longwave
-
-     ! Relative limit for how much longwave downscaling can be done (unitless)
-     ! The pre-normalized, downscaled longwave is restricted to be in the range
-     ! [lwrad*(1-longwave_downscaling_limit), lwrad*(1+longwave_downscaling_limit)]
-     real(r8) :: longwave_downscaling_limit
-
-     ! Rain-snow ramp for glacier landunits
-     ! frac_rain = (temp - all_snow_t) * frac_rain_slope
-     ! (all_snow_t is in K)
-     real(r8) :: precip_repartition_glc_all_snow_t
-     real(r8) :: precip_repartition_glc_frac_rain_slope
-
-     ! Rain-snow ramp for non-glacier landunits
-     ! frac_rain = (temp - all_snow_t) * frac_rain_slope
-     ! (all_snow_t is in K)
-     real(r8) :: precip_repartition_nonglc_all_snow_t
-     real(r8) :: precip_repartition_nonglc_frac_rain_slope
-  end type atm2lnd_params_type
-
   !----------------------------------------------------
   ! atmosphere -> land variables structure
   !
@@ -68,39 +36,26 @@ module atm2lndType
   ! MML: I don't think this applies to me... I'm working at the grc level, not the col level...
   !----------------------------------------------------
   type, public :: atm2lnd_type
-     type(atm2lnd_params_type) :: params
 
      ! atm->lnd not downscaled
      real(r8), pointer :: forc_u_grc                    (:)   => null() ! atm wind speed, east direction (m/s)
      real(r8), pointer :: forc_v_grc                    (:)   => null() ! atm wind speed, north direction (m/s)
      real(r8), pointer :: forc_wind_grc                 (:)   => null() ! atmospheric wind speed
      real(r8), pointer :: forc_hgt_grc                  (:)   => null() ! atmospheric reference height (m)
-     real(r8), pointer :: forc_topo_grc                 (:)   => null() ! atmospheric surface height (m)
      real(r8), pointer :: forc_hgt_u_grc                (:)   => null() ! obs height of wind [m] (new)
      real(r8), pointer :: forc_hgt_t_grc                (:)   => null() ! obs height of temperature [m] (new)
      real(r8), pointer :: forc_hgt_q_grc                (:)   => null() ! obs height of humidity [m] (new)
      ! mml maybe use these
      real(r8), pointer :: forc_vp_grc                   (:)   => null() ! atmospheric vapor pressure (Pa)
-     real(r8), pointer :: forc_rh_grc                   (:)   => null() ! atmospheric relative humidity (%)
      real(r8), pointer :: forc_psrf_grc                 (:)   => null() ! surface pressure (Pa)
-     real(r8), pointer :: forc_pco2_grc                 (:)   => null() ! CO2 partial pressure (Pa)
-     real(r8), pointer :: forc_pco2_240_patch           (:)   => null() ! 10-day mean CO2 partial pressure (Pa)
      real(r8), pointer :: forc_solad_grc                (:,:) => null() ! direct beam radiation (numrad) (vis=forc_sols , nir=forc_soll )
      real(r8), pointer :: forc_solai_grc                (:,:) => null() ! diffuse radiation (numrad) (vis=forc_solsd, nir=forc_solld)
      real(r8), pointer :: forc_solar_grc                (:)   => null() ! incident solar radiation
-     real(r8), pointer :: forc_ndep_grc                 (:)   => null() ! nitrogen deposition rate (gN/m2/s)
-     real(r8), pointer :: forc_pc13o2_grc               (:)   => null() ! C13O2 partial pressure (Pa)
-     real(r8), pointer :: forc_po2_grc                  (:)   => null() ! O2 partial pressure (Pa)
-     real(r8), pointer :: forc_po2_240_patch            (:)   => null() ! 10-day mean O2 partial pressure (Pa)
-     real(r8), pointer :: forc_aer_grc                  (:,:) => null() ! aerosol deposition array
-     real(r8), pointer :: forc_pch4_grc                 (:)   => null() ! CH4 partial pressure (Pa)
 
      real(r8), pointer :: forc_t_not_downscaled_grc     (:)   => null() ! not downscaled atm temperature (Kelvin)       
-     real(r8), pointer :: forc_th_not_downscaled_grc    (:)   => null() ! not downscaled atm potential temperature (Kelvin)    
      real(r8), pointer :: forc_q_not_downscaled_grc     (:)   => null() ! not downscaled atm specific humidity (kg/kg)  
      			! MML: I think this is the q I need to check if the negative LH is too big. 
      real(r8), pointer :: forc_pbot_not_downscaled_grc  (:)   => null() ! not downscaled atm pressure (Pa)   
-     real(r8), pointer :: forc_pbot240_downscaled_patch (:)   => null() ! 10-day mean downscaled atm pressure (Pa)           
      real(r8), pointer :: forc_rho_not_downscaled_grc   (:)   => null() ! not downscaled atm density (kg/m**3)                      
      real(r8), pointer :: forc_rain_not_downscaled_grc  (:)   => null() ! not downscaled atm rain rate [mm/s]                       
      real(r8), pointer :: forc_snow_not_downscaled_grc  (:)   => null() ! not downscaled atm snow rate [mm/s]                       
@@ -183,7 +138,6 @@ module atm2lndType
 	real(r8), pointer :: mml_atm_rhomol_grc		(:)	  => null() ! molar density of air at ref height [mol/m3]
 	real(r8), pointer :: mml_atm_rhoair_grc		(:)	  => null() ! density of air at ref height [kg/m3]
 	real(r8), pointer :: mml_atm_cp_grc			(:)	  => null() ! specific heat of air at const pressure + ref height [J/kg/K]	
-	real(r8), pointer :: mml_atm_pco2			(:)	  => null() ! partial pressure of co2
 	! Hydrology:
 	real(r8), pointer :: mml_atm_prec_liq_grc    (:)   => null() ! liquid precipitation (rain) [mm/s] ! MML 20180615 - bug: used to say m/s, changing to mm/s
 	real(r8), pointer :: mml_atm_prec_frz_grc	 (:)   => null() ! frozen precipitation (snow) [mm/s]
@@ -276,68 +230,23 @@ module atm2lndType
 	
 	 
 	! ------------------------------------------------------------------------------------
-	
-	 	 
-     ! atm->lnd downscaled
-     real(r8), pointer :: forc_t_downscaled_col         (:)   => null() ! downscaled atm temperature (Kelvin)
-     real(r8), pointer :: forc_th_downscaled_col        (:)   => null() ! downscaled atm potential temperature (Kelvin)
-     real(r8), pointer :: forc_q_downscaled_col         (:)   => null() ! downscaled atm specific humidity (kg/kg)
-     real(r8), pointer :: forc_pbot_downscaled_col      (:)   => null() ! downscaled atm pressure (Pa)
-     real(r8), pointer :: forc_rho_downscaled_col       (:)   => null() ! downscaled atm density (kg/m**3)
-     real(r8), pointer :: forc_rain_downscaled_col      (:)   => null() ! downscaled atm rain rate [mm/s]
-     real(r8), pointer :: forc_snow_downscaled_col      (:)   => null() ! downscaled atm snow rate [mm/s]
-     real(r8), pointer :: forc_lwrad_downscaled_col     (:)   => null() ! downscaled atm downwrd IR longwave radiation (W/m**2)
-
-     !  rof->lnd
-     real(r8), pointer :: forc_flood_grc                (:)   => null() ! rof flood (mm/s)
-     real(r8), pointer :: volr_grc                      (:)   => null() ! rof volr total volume (m3)
-     real(r8), pointer :: volrmch_grc                   (:)   => null() ! rof volr main channel (m3)
-
-     ! anomaly forcing
-     real(r8), pointer :: af_precip_grc                 (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_uwind_grc                  (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_vwind_grc                  (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_tbot_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_pbot_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_shum_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_swdn_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: af_lwdn_grc                   (:)   => null() ! anomaly forcing 
-     real(r8), pointer :: bc_precip_grc                 (:)   => null() ! anomaly forcing - add bias correction
 
      ! time averaged quantities
-     real(r8) , pointer :: fsd24_patch                  (:)   => null() ! patch 24hr average of direct beam radiation 
-     real(r8) , pointer :: fsd240_patch                 (:)   => null() ! patch 240hr average of direct beam radiation 
-     real(r8) , pointer :: fsi24_patch                  (:)   => null() ! patch 24hr average of diffuse beam radiation 
-     real(r8) , pointer :: fsi240_patch                 (:)   => null() ! patch 240hr average of diffuse beam radiation 
-     real(r8) , pointer :: prec365_col                  (:)   => null() ! col 365-day running mean of tot. precipitation (see comment in UpdateAccVars regarding why this is col-level despite other prec accumulators being patch-level)
-     real(r8) , pointer :: prec60_patch                 (:)   => null() ! patch 60-day running mean of tot. precipitation (mm/s) 
-     real(r8) , pointer :: prec10_patch                 (:)   => null() ! patch 10-day running mean of tot. precipitation (mm/s) 
-     real(r8) , pointer :: rh30_patch                   (:)   => null() ! patch 30-day running mean of relative humidity 
-     real(r8) , pointer :: prec24_patch                 (:)   => null() ! patch 24-hour running mean of tot. precipitation (mm/s) 
-     real(r8) , pointer :: rh24_patch                   (:)   => null() ! patch 24-hour running mean of relative humidity
-     real(r8) , pointer :: wind24_patch                 (:)   => null() ! patch 24-hour running mean of wind
-     real(r8) , pointer :: t_mo_patch                   (:)   => null() ! patch 30-day average temperature (Kelvin)
-     real(r8) , pointer :: t_mo_min_patch               (:)   => null() ! patch annual min of t_mo (Kelvin)
+!    real(r8) , pointer :: fsd240_patch                 (:)   => null() ! patch 240hr average of direct beam radiation 
 
    contains
 
      procedure, public  :: Init
-     procedure, public  :: InitForTesting  ! version of Init meant for unit testing
-     procedure, private :: ReadNamelist
      procedure, private :: InitAllocate
      procedure, private :: InitHistory  
      procedure, private :: InitCold    		! MML 2016.01.15 adding InitCold to give accumulating variables a starting point 
-     procedure, public  :: InitAccBuffer
-     procedure, public  :: InitAccVars
-     procedure, public  :: UpdateAccVars
+!    procedure, public  :: InitAccBuffer
+!    procedure, public  :: InitAccVars
+!    procedure, public  :: UpdateAccVars
      procedure, public  :: Restart
      procedure, public  :: Clean
 
   end type atm2lnd_type
-
-  interface atm2lnd_params_type
-     module procedure atm2lnd_params_constructor
-  end interface atm2lnd_params_type
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -345,155 +254,13 @@ module atm2lndType
 
 contains
 
-  !-----------------------------------------------------------------------
-  function atm2lnd_params_constructor(repartition_rain_snow, glcmec_downscale_longwave, &
-       lapse_rate, lapse_rate_longwave, longwave_downscaling_limit, &
-       precip_repartition_glc_all_snow_t, precip_repartition_glc_all_rain_t, &
-       precip_repartition_nonglc_all_snow_t, precip_repartition_nonglc_all_rain_t) &
-       result(params)
-    !
-    ! !DESCRIPTION:
-    ! Creates a new instance of atm2lnd_params_type
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    type(atm2lnd_params_type) :: params  ! function result
-    logical, intent(in) :: repartition_rain_snow
-    logical, intent(in) :: glcmec_downscale_longwave
-
-    ! Surface temperature lapse rate (K m-1)
-    real(r8), intent(in) :: lapse_rate
-
-    ! Longwave radiation lapse rate (W m-2 m-1)
-    ! Must be present if glcmec_downscale_longwave is true; ignored otherwise
-    real(r8), intent(in), optional :: lapse_rate_longwave
-
-    ! Relative limit for how much longwave downscaling can be done (unitless)
-    ! Must be present if glcmec_downscale_longwave is true; ignored otherwise
-    real(r8), intent(in), optional :: longwave_downscaling_limit
-
-    ! End-points of the rain-snow ramp for glacier landunits (degrees C)
-    ! Must be present if repartition_rain_snow is true; ignored otherwise
-    real(r8), intent(in), optional :: precip_repartition_glc_all_snow_t
-    real(r8), intent(in), optional :: precip_repartition_glc_all_rain_t
-
-    ! End-points of the rain-snow ramp for non-glacier landunits (degrees C)
-    ! Must be present if repartition_rain_snow is true; ignored otherwise
-    real(r8), intent(in), optional :: precip_repartition_nonglc_all_snow_t
-    real(r8), intent(in), optional :: precip_repartition_nonglc_all_rain_t
-    !
-    ! !LOCAL VARIABLES:
-
-    character(len=*), parameter :: subname = 'atm2lnd_params_constructor'
-    !-----------------------------------------------------------------------
-
-    params%repartition_rain_snow = repartition_rain_snow
-    params%glcmec_downscale_longwave = glcmec_downscale_longwave
-
-    params%lapse_rate = lapse_rate
-
-    if (glcmec_downscale_longwave) then
-       if (.not. present(lapse_rate_longwave)) then
-          call endrun(subname // &
-               ' ERROR: For glcmec_downscale_longwave true, lapse_rate_longwave must be provided')
-       end if
-       if (.not. present(longwave_downscaling_limit)) then
-          call endrun(subname // &
-               ' ERROR: For glcmec_downscale_longwave true, longwave_downscaling_limit must be provided')
-       end if
-
-       if (longwave_downscaling_limit < 0._r8 .or. &
-            longwave_downscaling_limit > 1._r8) then
-          call endrun(subname // &
-               ' ERROR: longwave_downscaling_limit must be between 0 and 1')
-       end if
-
-       params%lapse_rate_longwave = lapse_rate_longwave
-       params%longwave_downscaling_limit = longwave_downscaling_limit
-    else
-       params%lapse_rate_longwave = nan
-       params%longwave_downscaling_limit = nan
-    end if
-
-    if (repartition_rain_snow) then
-
-       ! Make sure all of the repartitioning-related parameters are present
-
-       if (.not. present(precip_repartition_glc_all_snow_t)) then
-          call endrun(subname // &
-               ' ERROR: For repartition_rain_snow true, precip_repartition_glc_all_snow_t must be provided')
-       end if
-       if (.not. present(precip_repartition_glc_all_rain_t)) then
-          call endrun(subname // &
-               ' ERROR: For repartition_rain_snow true, precip_repartition_glc_all_rain_t must be provided')
-       end if
-       if (.not. present(precip_repartition_nonglc_all_snow_t)) then
-          call endrun(subname // &
-               ' ERROR: For repartition_rain_snow true, precip_repartition_nonglc_all_snow_t must be provided')
-       end if
-       if (.not. present(precip_repartition_nonglc_all_rain_t)) then
-          call endrun(subname // &
-               ' ERROR: For repartition_rain_snow true, precip_repartition_nonglc_all_rain_t must be provided')
-       end if
-
-       ! Do some other error checking
-
-       if (precip_repartition_glc_all_rain_t <= precip_repartition_glc_all_snow_t) then
-          call endrun(subname // &
-               ' ERROR: Must have precip_repartition_glc_all_snow_t < precip_repartition_glc_all_rain_t')
-       end if
-
-       if (precip_repartition_nonglc_all_rain_t <= precip_repartition_nonglc_all_snow_t) then
-          call endrun(subname // &
-               ' ERROR: Must have precip_repartition_nonglc_all_snow_t < precip_repartition_nonglc_all_rain_t')
-       end if
-
-       ! Convert to the form of the parameters we want for the main code
-
-       call compute_ramp_params( &
-            all_snow_t_c = precip_repartition_glc_all_snow_t, &
-            all_rain_t_c = precip_repartition_glc_all_rain_t, &
-            all_snow_t_k = params%precip_repartition_glc_all_snow_t, &
-            frac_rain_slope = params%precip_repartition_glc_frac_rain_slope)
-
-       call compute_ramp_params( &
-            all_snow_t_c = precip_repartition_nonglc_all_snow_t, &
-            all_rain_t_c = precip_repartition_nonglc_all_rain_t, &
-            all_snow_t_k = params%precip_repartition_nonglc_all_snow_t, &
-            frac_rain_slope = params%precip_repartition_nonglc_frac_rain_slope)
-
-    else  ! .not. repartition_rain_snow
-       params%precip_repartition_glc_all_snow_t = nan
-       params%precip_repartition_glc_frac_rain_slope = nan
-       params%precip_repartition_nonglc_all_snow_t = nan
-       params%precip_repartition_nonglc_frac_rain_slope = nan
-    end if
-
-  contains
-    subroutine compute_ramp_params(all_snow_t_c, all_rain_t_c, &
-         all_snow_t_k, frac_rain_slope)
-      real(r8), intent(in)  :: all_snow_t_c  ! Temperature at which precip falls entirely as rain (deg C)
-      real(r8), intent(in)  :: all_rain_t_c  ! Temperature at which precip falls entirely as snow (deg C)
-      real(r8), intent(out) :: all_snow_t_k  ! Temperature at which precip falls entirely as snow (K)
-      real(r8), intent(out) :: frac_rain_slope ! Slope of the frac_rain vs. T relationship
-
-      frac_rain_slope = 1._r8 / (all_rain_t_c - all_snow_t_c)
-      all_snow_t_k = all_snow_t_c + tfrz
-    end subroutine compute_ramp_params
-
-  end function atm2lnd_params_constructor
-
-
   !------------------------------------------------------------------------
-  subroutine Init(this, bounds, NLFilename)
+  subroutine Init(this, bounds)
 
     class(atm2lnd_type) :: this
     type(bounds_type), intent(in) :: bounds
-    character(len=*), intent(in) :: NLFilename ! namelist filename
 
     call this%InitAllocate(bounds)
-    call this%ReadNamelist(NLFilename)
     call this%InitHistory(bounds)
     
     ! MML 2016.01.15 adding call to InitCold (make sure it doesn't keep using the 
@@ -501,156 +268,6 @@ contains
     call this%InitCold(bounds)	
     
   end subroutine Init
-
-  !-----------------------------------------------------------------------
-  subroutine InitForTesting(this, bounds, params)
-    !
-    ! !DESCRIPTION:
-    ! Does initialization needed for unit testing. Allows caller to prescribe parameter
-    ! values (bypassing the namelist read)
-    !
-    ! !USES:
-    !
-    ! !ARGUMENTS:
-    class(atm2lnd_type) :: this
-    type(bounds_type), intent(in) :: bounds
-
-    ! If params isn't provided, we use default values
-    type(atm2lnd_params_type), intent(in), optional :: params
-    !
-    ! !LOCAL VARIABLES:
-    type(atm2lnd_params_type) :: l_params
-
-    character(len=*), parameter :: subname = 'InitForTesting'
-    !-----------------------------------------------------------------------
-
-    if (present(params)) then
-       l_params = params
-    else
-       ! Use arbitrary values
-       l_params = atm2lnd_params_type( &
-            repartition_rain_snow = .false., &
-            glcmec_downscale_longwave = .false., &
-            lapse_rate = 0.01_r8)
-    end if
-
-    call this%InitAllocate(bounds)
-    this%params = l_params
-
-  end subroutine InitForTesting
-
-
-  !-----------------------------------------------------------------------
-  subroutine ReadNamelist(this, NLFilename)
-    !
-    ! !DESCRIPTION:
-    ! Read the atm2lnd namelist
-    !
-    ! !USES:
-    use fileutils      , only : getavu, relavu, opnfil
-    use shr_nl_mod     , only : shr_nl_find_group_name
-    use spmdMod        , only : masterproc, mpicom
-    use shr_mpi_mod    , only : shr_mpi_bcast
-    !
-    ! !ARGUMENTS:
-    character(len=*), intent(in) :: NLFilename ! Namelist filename
-    class(atm2lnd_type), intent(inout) :: this
-    !
-    ! !LOCAL VARIABLES:
-
-    ! temporary variables corresponding to the components of atm2lnd_params_type
-    logical :: repartition_rain_snow
-    logical :: glcmec_downscale_longwave
-    real(r8) :: lapse_rate
-    real(r8) :: lapse_rate_longwave
-    real(r8) :: longwave_downscaling_limit
-    real(r8) :: precip_repartition_glc_all_snow_t
-    real(r8) :: precip_repartition_glc_all_rain_t
-    real(r8) :: precip_repartition_nonglc_all_snow_t
-    real(r8) :: precip_repartition_nonglc_all_rain_t
-
-    integer :: ierr                 ! error code
-    integer :: unitn                ! unit for namelist file
-    character(len=*), parameter :: nmlname = 'atm2lnd_inparm'
-
-    character(len=*), parameter :: subname = 'ReadNamelist'
-    !-----------------------------------------------------------------------
-
-    namelist /atm2lnd_inparm/ repartition_rain_snow, glcmec_downscale_longwave, &
-         lapse_rate, lapse_rate_longwave, longwave_downscaling_limit, &
-         precip_repartition_glc_all_snow_t, precip_repartition_glc_all_rain_t, &
-         precip_repartition_nonglc_all_snow_t, precip_repartition_nonglc_all_rain_t
-
-    ! Initialize namelist variables to defaults
-    repartition_rain_snow = .false.
-    glcmec_downscale_longwave = .false.
-    lapse_rate = nan
-    lapse_rate_longwave = nan
-    longwave_downscaling_limit = nan
-    precip_repartition_glc_all_snow_t = nan
-    precip_repartition_glc_all_rain_t = nan
-    precip_repartition_nonglc_all_snow_t = nan
-    precip_repartition_nonglc_all_rain_t = nan
-
-    if (masterproc) then
-       unitn = getavu()
-       call opnfil (NLFilename, unitn, 'F')
-       call shr_nl_find_group_name(unitn, nmlname, status=ierr)
-       if (ierr == 0) then
-          read(unitn, nml=atm2lnd_inparm, iostat=ierr)
-          if (ierr /= 0) then
-             call endrun(msg="ERROR reading "//nmlname//"namelist"//errmsg(sourcefile, __LINE__))
-          end if
-       else
-          write(iulog,*) "could NOT find "//nmlname//"namelist"
-       end if
-       call relavu( unitn )
-    end if
-
-    call shr_mpi_bcast(repartition_rain_snow, mpicom)
-    call shr_mpi_bcast(glcmec_downscale_longwave, mpicom)
-    call shr_mpi_bcast(lapse_rate, mpicom)
-    call shr_mpi_bcast(lapse_rate_longwave, mpicom)
-    call shr_mpi_bcast(longwave_downscaling_limit, mpicom)
-    call shr_mpi_bcast(precip_repartition_glc_all_snow_t, mpicom)
-    call shr_mpi_bcast(precip_repartition_glc_all_rain_t, mpicom)
-    call shr_mpi_bcast(precip_repartition_nonglc_all_snow_t, mpicom)
-    call shr_mpi_bcast(precip_repartition_nonglc_all_rain_t, mpicom)
-
-    if (masterproc) then
-       write(iulog,*) ' '
-       write(iulog,*) nmlname//' settings:'
-       ! Write settings one-by-one rather than with a nml write because some settings may
-       ! be NaN if certain options are turned off.
-       write(iulog,*) 'repartition_rain_snow = ', repartition_rain_snow
-       write(iulog,*) 'glcmec_downscale_longwave = ', glcmec_downscale_longwave
-       write(iulog,*) 'lapse_rate = ', lapse_rate
-       if (glcmec_downscale_longwave) then
-          write(iulog,*) 'lapse_rate_longwave = ', lapse_rate_longwave
-          write(iulog,*) 'longwave_downscaling_limit = ', longwave_downscaling_limit
-       end if
-       if (repartition_rain_snow) then
-          write(iulog,*) 'precip_repartition_glc_all_snow_t = ', precip_repartition_glc_all_snow_t
-          write(iulog,*) 'precip_repartition_glc_all_rain_t = ', precip_repartition_glc_all_rain_t
-          write(iulog,*) 'precip_repartition_nonglc_all_snow_t = ', precip_repartition_nonglc_all_snow_t
-          write(iulog,*) 'precip_repartition_nonglc_all_rain_t = ', precip_repartition_nonglc_all_rain_t
-       end if
-       write(iulog,*) ' '
-    end if
-
-    this%params = atm2lnd_params_type( &
-         repartition_rain_snow = repartition_rain_snow, &
-         glcmec_downscale_longwave = glcmec_downscale_longwave, &
-         lapse_rate = lapse_rate, &
-         lapse_rate_longwave = lapse_rate_longwave, &
-         longwave_downscaling_limit = longwave_downscaling_limit, &
-         precip_repartition_glc_all_snow_t = precip_repartition_glc_all_snow_t, &
-         precip_repartition_glc_all_rain_t = precip_repartition_glc_all_rain_t, &
-         precip_repartition_nonglc_all_snow_t = precip_repartition_nonglc_all_snow_t, &
-         precip_repartition_nonglc_all_rain_t = precip_repartition_nonglc_all_rain_t)
-
-  end subroutine ReadNamelist
-
 
   !------------------------------------------------------------------------
   subroutine InitAllocate(this, bounds)
@@ -665,46 +282,28 @@ contains
     ! !LOCAL VARIABLES:
     real(r8) :: ival  = 0.0_r8  ! initial value
     integer  :: begg, endg
-    integer  :: begc, endc
-    integer  :: begp, endp
     !------------------------------------------------------------------------
 
     begg = bounds%begg; endg= bounds%endg
-    begc = bounds%begc; endc= bounds%endc
-    begp = bounds%begp; endp= bounds%endp
 
     ! atm->lnd
     allocate(this%forc_u_grc                    (begg:endg))        ; this%forc_u_grc                    (:)   = ival
     allocate(this%forc_v_grc                    (begg:endg))        ; this%forc_v_grc                    (:)   = ival
     allocate(this%forc_wind_grc                 (begg:endg))        ; this%forc_wind_grc                 (:)   = ival
-    allocate(this%forc_rh_grc                   (begg:endg))        ; this%forc_rh_grc                   (:)   = ival
     allocate(this%forc_hgt_grc                  (begg:endg))        ; this%forc_hgt_grc                  (:)   = ival
-    allocate(this%forc_topo_grc                 (begg:endg))        ; this%forc_topo_grc                 (:)   = ival
     allocate(this%forc_hgt_u_grc                (begg:endg))        ; this%forc_hgt_u_grc                (:)   = ival
     allocate(this%forc_hgt_t_grc                (begg:endg))        ; this%forc_hgt_t_grc                (:)   = ival
     allocate(this%forc_hgt_q_grc                (begg:endg))        ; this%forc_hgt_q_grc                (:)   = ival
     allocate(this%forc_vp_grc                   (begg:endg))        ; this%forc_vp_grc                   (:)   = ival
     allocate(this%forc_psrf_grc                 (begg:endg))        ; this%forc_psrf_grc                 (:)   = ival
-    allocate(this%forc_pco2_grc                 (begg:endg))        ; this%forc_pco2_grc                 (:)   = ival
     allocate(this%forc_solad_grc                (begg:endg,numrad)) ; this%forc_solad_grc                (:,:) = ival
     allocate(this%forc_solai_grc                (begg:endg,numrad)) ; this%forc_solai_grc                (:,:) = ival
     allocate(this%forc_solar_grc                (begg:endg))        ; this%forc_solar_grc                (:)   = ival
-    allocate(this%forc_ndep_grc                 (begg:endg))        ; this%forc_ndep_grc                 (:)   = ival
-    allocate(this%forc_pc13o2_grc               (begg:endg))        ; this%forc_pc13o2_grc               (:)   = ival
-    allocate(this%forc_po2_grc                  (begg:endg))        ; this%forc_po2_grc                  (:)   = ival
-    allocate(this%forc_aer_grc                  (begg:endg,14))     ; this%forc_aer_grc                  (:,:) = ival
-    allocate(this%forc_pch4_grc                 (begg:endg))        ; this%forc_pch4_grc                 (:)   = ival
-    if(use_luna)then
-     allocate(this%forc_pco2_240_patch          (begp:endp))        ; this%forc_pco2_240_patch           (:)   = ival
-     allocate(this%forc_po2_240_patch           (begp:endp))        ; this%forc_po2_240_patch            (:)   = ival
-     allocate(this%forc_pbot240_downscaled_patch(begp:endp))        ; this%forc_pbot240_downscaled_patch (:)   = ival
-    endif
 
     ! atm->lnd not downscaled
     allocate(this%forc_t_not_downscaled_grc     (begg:endg))        ; this%forc_t_not_downscaled_grc     (:)   = ival
     allocate(this%forc_q_not_downscaled_grc     (begg:endg))        ; this%forc_q_not_downscaled_grc     (:)   = ival
     allocate(this%forc_pbot_not_downscaled_grc  (begg:endg))        ; this%forc_pbot_not_downscaled_grc  (:)   = ival
-    allocate(this%forc_th_not_downscaled_grc    (begg:endg))        ; this%forc_th_not_downscaled_grc    (:)   = ival
     allocate(this%forc_rho_not_downscaled_grc   (begg:endg))        ; this%forc_rho_not_downscaled_grc   (:)   = ival
     allocate(this%forc_lwrad_not_downscaled_grc (begg:endg))        ; this%forc_lwrad_not_downscaled_grc (:)   = ival
     allocate(this%forc_rain_not_downscaled_grc  (begg:endg))        ; this%forc_rain_not_downscaled_grc  (:)   = ival
@@ -757,7 +356,6 @@ contains
 	allocate(this%mml_atm_rhomol_grc    	(begg:endg))     	; this%mml_atm_rhomol_grc     	(:)   = ival
 	allocate(this%mml_atm_rhoair_grc    	(begg:endg))     	; this%mml_atm_rhoair_grc     	(:)   = ival
 	allocate(this%mml_atm_cp_grc    	 	(begg:endg))     	; this%mml_atm_cp_grc	     	(:)   = ival
-	allocate(this%mml_atm_pco2    	 		(begg:endg))     	; this%mml_atm_pco2	     		(:)   = ival
 	allocate(this%mml_atm_prec_liq_grc    	(begg:endg))     	; this%mml_atm_prec_liq_grc     (:)   = ival
 	allocate(this%mml_atm_prec_frz_grc    	(begg:endg))     	; this%mml_atm_prec_frz_grc     (:)   = ival
 	
@@ -847,48 +445,7 @@ contains
 	
 	! ---------------------------------------
 
-    
-    ! atm->lnd downscaled
-    allocate(this%forc_t_downscaled_col         (begc:endc))        ; this%forc_t_downscaled_col         (:)   = ival
-    allocate(this%forc_q_downscaled_col         (begc:endc))        ; this%forc_q_downscaled_col         (:)   = ival
-    allocate(this%forc_pbot_downscaled_col      (begc:endc))        ; this%forc_pbot_downscaled_col      (:)   = ival
-    allocate(this%forc_th_downscaled_col        (begc:endc))        ; this%forc_th_downscaled_col        (:)   = ival
-    allocate(this%forc_rho_downscaled_col       (begc:endc))        ; this%forc_rho_downscaled_col       (:)   = ival
-    allocate(this%forc_lwrad_downscaled_col     (begc:endc))        ; this%forc_lwrad_downscaled_col     (:)   = ival
-    allocate(this%forc_rain_downscaled_col      (begc:endc))        ; this%forc_rain_downscaled_col      (:)   = ival
-    allocate(this%forc_snow_downscaled_col      (begc:endc))        ; this%forc_snow_downscaled_col      (:)   = ival
-
-    ! rof->lnd
-    allocate(this%forc_flood_grc                (begg:endg))        ; this%forc_flood_grc                (:)   = ival
-    allocate(this%volr_grc                      (begg:endg))        ; this%volr_grc                      (:)   = ival
-    allocate(this%volrmch_grc                   (begg:endg))        ; this%volrmch_grc                   (:)   = ival
-
-    ! anomaly forcing
-    allocate(this%bc_precip_grc                 (begg:endg))        ; this%bc_precip_grc                 (:)   = ival
-    allocate(this%af_precip_grc                 (begg:endg))        ; this%af_precip_grc                 (:)   = ival
-    allocate(this%af_uwind_grc                  (begg:endg))        ; this%af_uwind_grc                  (:)   = ival
-    allocate(this%af_vwind_grc                  (begg:endg))        ; this%af_vwind_grc                  (:)   = ival
-    allocate(this%af_tbot_grc                   (begg:endg))        ; this%af_tbot_grc                   (:)   = ival
-    allocate(this%af_pbot_grc                   (begg:endg))        ; this%af_pbot_grc                   (:)   = ival
-    allocate(this%af_shum_grc                   (begg:endg))        ; this%af_shum_grc                   (:)   = ival
-    allocate(this%af_swdn_grc                   (begg:endg))        ; this%af_swdn_grc                   (:)   = ival
-    allocate(this%af_lwdn_grc                   (begg:endg))        ; this%af_lwdn_grc                   (:)   = ival
-
-    allocate(this%fsd24_patch                   (begp:endp))        ; this%fsd24_patch                   (:)   = nan
-    allocate(this%fsd240_patch                  (begp:endp))        ; this%fsd240_patch                  (:)   = nan
-    allocate(this%fsi24_patch                   (begp:endp))        ; this%fsi24_patch                   (:)   = nan
-    allocate(this%fsi240_patch                  (begp:endp))        ; this%fsi240_patch                  (:)   = nan
-    allocate(this%prec10_patch                  (begp:endp))        ; this%prec10_patch                  (:)   = nan
-    allocate(this%prec60_patch                  (begp:endp))        ; this%prec60_patch                  (:)   = nan
-    allocate(this%rh30_patch                    (begp:endp))        ; this%rh30_patch                    (:)   = nan 
-    allocate(this%prec365_col                   (begc:endc))        ; this%prec365_col                   (:)   = nan
-    if (use_fates) then
-       allocate(this%prec24_patch               (begp:endp))        ; this%prec24_patch                  (:)   = nan
-       allocate(this%rh24_patch                 (begp:endp))        ; this%rh24_patch                    (:)   = nan
-       allocate(this%wind24_patch               (begp:endp))        ; this%wind24_patch                  (:)   = nan
-    end if
-    allocate(this%t_mo_patch                    (begp:endp))        ; this%t_mo_patch               (:)   = nan
-    allocate(this%t_mo_min_patch                (begp:endp))        ; this%t_mo_min_patch           (:)   = spval ! TODO - initialize this elsewhere
+!   allocate(this%fsd240_patch                  (begp:endp))        ; this%fsd240_patch                  (:)   = nan
 
   end subroutine InitAllocate
 
@@ -898,7 +455,7 @@ contains
     ! !USES:
     ! use histFileMod, only : hist_addfld1d 
     ! MML:
-    use histFileMod, only : hist_addfld1d, hist_addfld2d, hist_addfld_decomp
+    use histFileMod, only : hist_addfld1d, hist_addfld2d
     !
     ! !ARGUMENTS:
     class(atm2lnd_type) :: this
@@ -906,8 +463,6 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer  :: begg, endg
-    integer  :: begc, endc
-    integer  :: begp, endp
     
     integer  :: mml_nsoi ! number of soil levels
     !---------------------------------------------------------------------
@@ -915,93 +470,28 @@ contains
 	mml_nsoi = 10
 	
     begg = bounds%begg; endg= bounds%endg
-    begc = bounds%begc; endc= bounds%endc
-    begp = bounds%begp; endp= bounds%endp
 	
 	!write(iulog,*)  'MML trying write h0 - start'
 	
-    this%forc_flood_grc(begg:endg) = spval
-    call hist_addfld1d (fname='QFLOOD',  units='mm/s',  &
-         avgflag='A', long_name='runoff from river flooding', &
-         ptr_lnd=this%forc_flood_grc)
-
-    this%volr_grc(begg:endg) = spval
-    call hist_addfld1d (fname='VOLR',  units='m3',  &
-         avgflag='A', long_name='river channel total water storage', &
-         ptr_lnd=this%volr_grc)
-
-    this%volrmch_grc(begg:endg) = spval
-    call hist_addfld1d (fname='VOLRMCH',  units='m3',  &
-         avgflag='A', long_name='river channel main channel water storage', &
-         ptr_lnd=this%volrmch_grc)
-
     this%forc_wind_grc(begg:endg) = spval
     call hist_addfld1d (fname='WIND', units='m/s',  &
          avgflag='A', long_name='atmospheric wind velocity magnitude', &
          ptr_lnd=this%forc_wind_grc)
-    ! Rename of WIND for Urban intercomparision project
-    call hist_addfld1d (fname='Wind', units='m/s',  &
-         avgflag='A', long_name='atmospheric wind velocity magnitude', &
-         ptr_gcell=this%forc_wind_grc, default = 'inactive')
 
     this%forc_hgt_grc(begg:endg) = spval
     call hist_addfld1d (fname='ZBOT', units='m',  &
          avgflag='A', long_name='atmospheric reference height', &
          ptr_lnd=this%forc_hgt_grc)
 
-    this%forc_topo_grc(begg:endg) = spval
-    call hist_addfld1d (fname='ATM_TOPO', units='m', &
-         avgflag='A', long_name='atmospheric surface height', &
-         ptr_lnd=this%forc_topo_grc)
-
     this%forc_solar_grc(begg:endg) = spval
     call hist_addfld1d (fname='FSDS', units='W/m^2',  &
          avgflag='A', long_name='atmospheric incident solar radiation', &
          ptr_lnd=this%forc_solar_grc)
 
-    this%forc_pco2_grc(begg:endg) = spval
-    call hist_addfld1d (fname='PCO2', units='Pa',  &
-         avgflag='A', long_name='atmospheric partial pressure of CO2', &
-         ptr_lnd=this%forc_pco2_grc)
-
-    this%forc_solar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='SWdown', units='W/m^2',  &
-         avgflag='A', long_name='atmospheric incident solar radiation', &
-         ptr_gcell=this%forc_solar_grc, default='inactive')
-
-    this%forc_rh_grc(begg:endg) = spval
-    call hist_addfld1d (fname='RH', units='%',  &
-         avgflag='A', long_name='atmospheric relative humidity', &
-         ptr_gcell=this%forc_rh_grc, default='inactive')
-
     this%forc_t_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='Tair_from_atm', units='K',  &
          avgflag='A', long_name='atmospheric air temperature received from atmosphere (pre-downscaling)', &
          ptr_gcell=this%forc_t_not_downscaled_grc, default='inactive')
-
-    this%forc_t_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='TBOT', units='K',  &
-         avgflag='A', long_name='atmospheric air temperature (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_t_downscaled_col)
-    call hist_addfld1d (fname='Tair', units='K', &
-         avgflag='A', long_name='atmospheric air temperature (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_t_downscaled_col, default='inactive')
-
-    this%forc_pbot_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='PBOT', units='Pa',  &
-         avgflag='A', long_name='atmospheric pressure at surface (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_pbot_downscaled_col)
-    call hist_addfld1d (fname='PSurf', units='Pa',  &
-         avgflag='A', long_name='atmospheric pressure at surface (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_pbot_downscaled_col, default='inactive')
-
-    this%forc_lwrad_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='FLDS', units='W/m^2',  &
-         avgflag='A', long_name='atmospheric longwave radiation (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_lwrad_downscaled_col)
-    call hist_addfld1d (fname='LWdown', units='W/m^2',  &
-         avgflag='A', long_name='atmospheric longwave radiation (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_lwrad_downscaled_col, default='inactive')
 
     this%forc_rain_not_downscaled_grc(begg:endg) = spval
     call hist_addfld1d (fname='RAIN_FROM_ATM', units='mm/s',  &
@@ -1013,41 +503,6 @@ contains
          avgflag='A', long_name='atmospheric snow received from atmosphere (pre-repartitioning)', &
          ptr_lnd=this%forc_snow_not_downscaled_grc)
 
-    this%forc_rain_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='RAIN', units='mm/s',  &
-         avgflag='A', long_name='atmospheric rain, after rain/snow repartitioning based on temperature', &
-         ptr_col=this%forc_rain_downscaled_col)
-    call hist_addfld1d (fname='Rainf', units='mm/s',  &
-         avgflag='A', long_name='atmospheric rain, after rain/snow repartitioning based on temperature', &
-         ptr_col=this%forc_rain_downscaled_col, default='inactive')
-
-    this%forc_snow_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='SNOW', units='mm/s',  &
-         avgflag='A', long_name='atmospheric snow, after rain/snow repartitioning based on temperature', &
-         ptr_col=this%forc_snow_downscaled_col)
-
-    this%forc_th_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='THBOT', units='K',  &
-         avgflag='A', long_name='atmospheric air potential temperature (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_th_downscaled_col)
-         
-!	! MML: 2016.01.14 Try and add a new history field variable equal to 2TBOT
-!	! (just to see if it will print)
-!	this%forc_2t_not_downscaled_grc(begg:endg) = spval
-!    call hist_addfld1d (fname='T2BOT', units='K',  &
-!         avgflag='A', long_name='2x atmospheric air temperature MML Test', &
-!         ptr_lnd=this%forc_2t_not_downscaled_grc)
-	
-    this%forc_q_downscaled_col(begc:endc) = spval
-    call hist_addfld1d (fname='QBOT', units='kg/kg',  &
-         avgflag='A', long_name='atmospheric specific humidity (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_q_downscaled_col)
-    ! Rename of QBOT for Urban intercomparison project
-    call hist_addfld1d (fname='Qair', units='kg/kg',  &
-         avgflag='A', long_name='atmospheric specific humidity (downscaled to columns in glacier regions)', &
-         ptr_col=this%forc_q_downscaled_col, default='inactive')
-
-        
     !-----------------------------------------------------------------------
     ! MML: 2016.01.14 Simple Land Energy and Hydrology variables (gridscale)
     
@@ -1057,57 +512,57 @@ contains
     ! (don't typically print these - waste of space. But for now, could be useful... 
     ! Skipping because I'm lazy; add later
 !    this%mml_nc_alb_grc(begg:endg) = spval
-!    call hist_addfld1d (fname='MML_albdeo', units='unitless',  &
-!         avgflag='A', long_name='MML prescribed snow-free surface albedo', &
+!    call hist_addfld1d (fname='albedo', units='unitless',  &
+!         avgflag='A', long_name='prescribed snow-free surface albedo', &
 !         ptr_lnd=this%mml_nc_alb_grc)
 !         
 !	this%mml_nc_snoalb_grc(begg:endg) = spval
-!    call hist_addfld1d (fname='MML_snow_albdeo', units='unitless',  &
-!         avgflag='A', long_name='MML prescribed deep-snow albedo', &
+!    call hist_addfld1d (fname='snow_albedo', units='unitless',  &
+!         avgflag='A', long_name='prescribed deep-snow albedo', &
 !         ptr_lnd=this%mml_nc_snoalb_grc)
     
          
 	this%mml_nc_snowmask_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_snowmaskdepth', units='kg/m2',  &
-         avgflag='A', long_name='MML snow required to toggle deep snow albedo', &
+    call hist_addfld1d (fname='snowmaskdepth', units='kg/m2',  &
+         avgflag='A', long_name='snow required to toggle deep snow albedo', &
          ptr_lnd=this%mml_nc_snowmask_grc)
     
     this%mml_nc_evaprs_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_evap_rs', units='s/m',  &
-         avgflag='A', long_name='MML like stomatal resistance of soil', &
+    call hist_addfld1d (fname='evap_rs', units='s/m',  &
+         avgflag='A', long_name='like stomatal resistance of soil', &
          ptr_lnd=this%mml_nc_evaprs_grc)
     
     this%mml_nc_bucket_cap_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_bucket_cap', units='kg/m2',  &
-         avgflag='A', long_name='MML soil water bucket capacity (maximum water soil can hold)', &
+    call hist_addfld1d (fname='bucket_cap', units='kg/m2',  &
+         avgflag='A', long_name='soil water bucket capacity (maximum water soil can hold)', &
          ptr_lnd=this%mml_nc_bucket_cap_grc)
     
     !this%mml_nc_soil_maxice_grc(begg:endg,:) = spval
-    !call hist_addfld1d (fname='MML_maxice', units='kg/m3',  &
-    !     avgflag='A', long_name='MML maximum freezable water in each soil layer; for thermal calculations', &
+    !call hist_addfld1d (fname='maxice', units='kg/m3',  &
+    !     avgflag='A', long_name='maximum freezable water in each soil layer; for thermal calculations', &
     !     ptr_lnd=this%mml_nc_soil_maxice_grc)
     !data2dptr => this%mml_nc_soil_maxice_grc(begg:endg,:)
-    !fieldname = 'MML_maxice'
-    !longname =  'MML maximum freezable water in each soil layer; for thermal calculations'
+    !fieldname = 'maxice'
+    !longname =  'maximum freezable water in each soil layer; for thermal calculations'
     
     this%mml_nc_soil_type_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_soiltype', units='unitless',  &
-         avgflag='A', long_name='MML Soil type (sand/clay), of 11 possible types; for thermal calculations', &
+    call hist_addfld1d (fname='soiltype', units='unitless',  &
+         avgflag='A', long_name='Soil type (sand/clay), of 11 possible types; for thermal calculations', &
          ptr_lnd=this%mml_nc_soil_type_grc)
     
     this%mml_nc_roughness_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_roughness', units='m',  &
-         avgflag='A', long_name='MML surface roughness length (e.g. canopy height) ', &
+    call hist_addfld1d (fname='roughness', units='m',  &
+         avgflag='A', long_name='surface roughness length (e.g. canopy height) ', &
          ptr_lnd=this%mml_nc_roughness_grc)
     
     this%mml_nc_emiss_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_emiss', units='unitless',  &
-         avgflag='A', long_name='MML surface emissivity ', &
+    call hist_addfld1d (fname='emiss', units='unitless',  &
+         avgflag='A', long_name='surface emissivity ', &
          ptr_lnd=this%mml_nc_emiss_grc)
          
     this%mml_nc_glcmask_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_glcmask', units='unitless',  &
-         avgflag='A', long_name='MML logical mask saying which cells should be treated as glaciers', &
+    call hist_addfld1d (fname='glcmask', units='unitless',  &
+         avgflag='A', long_name='logical mask saying which cells should be treated as glaciers', &
          ptr_lnd=this%mml_nc_glcmask_grc)     
     
    
@@ -1115,356 +570,346 @@ contains
     ! Carried from atmosphere:
    ! write(iulog,*)  'MML write to h0: atm vars '
     
-    this%mml_atm_fsds_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsds', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave radiation', &
-         ptr_lnd=this%mml_atm_fsds_grc)
+    this%forc_solar_grc(begg:endg) = spval
+    call hist_addfld1d (fname='fsds', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave radiation', &
+         ptr_lnd=this%forc_solar_grc)
     
     this%mml_atm_fsdsnd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsnd', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave nir direct radiation', &
+    call hist_addfld1d (fname='fsdsnd', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave nir direct radiation', &
          ptr_lnd=this%mml_atm_fsdsnd_grc)
-	
-	this%mml_atm_fsdsvd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsvd', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave visible direct radiation', &
+
+    this%mml_atm_fsdsvd_grc(begg:endg) = spval
+    call hist_addfld1d (fname='fsdsvd', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave visible direct radiation', &
          ptr_lnd=this%mml_atm_fsdsvd_grc)
     
     this%mml_atm_fsdsni_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsni', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave nir diffuse radiation', &
+    call hist_addfld1d (fname='fsdsni', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave nir diffuse radiation', &
          ptr_lnd=this%mml_atm_fsdsni_grc)
     
     this%mml_atm_fsdsvi_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsdsvi', units='W/m2',  &
-         avgflag='A', long_name='MML incoming shortwave visible diffuse radiation', &
+    call hist_addfld1d (fname='fsdsvi', units='W/m2',  &
+         avgflag='A', long_name='incoming shortwave visible diffuse radiation', &
          ptr_lnd=this%mml_atm_fsdsvi_grc)
          
-    this%mml_atm_lwdn_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lwdn', units='W/m2',  &
-         avgflag='A', long_name='MML incoming longwave radiation', &
-         ptr_lnd=this%mml_atm_lwdn_grc)
+    this%forc_lwrad_not_downscaled_grc(begg:endg) = spval
+    call hist_addfld1d (fname='lwdn', units='W/m2',  &
+         avgflag='A', long_name='incoming longwave radiation', &
+         ptr_lnd=this%forc_lwrad_not_downscaled_grc)
     
-    this%mml_atm_zref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_zref', units='m',  &
-         avgflag='A', long_name='MML height of atm reference level', &
-         ptr_lnd=this%mml_atm_zref_grc)
+    this%forc_hgt_grc(begg:endg) = spval
+    call hist_addfld1d (fname='zref', units='m',  &
+         avgflag='A', long_name='height of atm reference level', &
+         ptr_lnd=this%forc_hgt_grc)
     
     this%mml_atm_tbot_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tbot', units='K',  &
-         avgflag='A', long_name='MML temperature midpoint of lowest atm layer', &
+    call hist_addfld1d (fname='tbot', units='K',  &
+         avgflag='A', long_name='temperature midpoint of lowest atm layer', &
          ptr_lnd=this%mml_atm_tbot_grc)
     
     this%mml_atm_thref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_thref', units='K',  &
-         avgflag='A', long_name='MML potential temperature theta at reference height', &
+    call hist_addfld1d (fname='thref', units='K',  &
+         avgflag='A', long_name='potential temperature theta at reference height', &
          ptr_lnd=this%mml_atm_thref_grc)
     
-    this%mml_atm_qbot_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qbot', units='kg/kg',  &
-         avgflag='A', long_name='MML specific humidity midpoint of lowest atm layer', &
-         ptr_lnd=this%mml_atm_qbot_grc)
+    this%forc_q_not_downscaled_grc(begg:endg) = spval
+    call hist_addfld1d (fname='qbot', units='kg/kg',  &
+         avgflag='A', long_name='specific humidity midpoint of lowest atm layer', &
+         ptr_lnd=this%forc_q_not_downscaled_grc)
     
-    this%mml_atm_uref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_uref', units='m/s',  &
-         avgflag='A', long_name='MML wind speed at reference height', &
-         ptr_lnd=this%mml_atm_uref_grc)
+    this%forc_wind_grc(begg:endg) = spval
+    call hist_addfld1d (fname='uref', units='m/s',  &
+         avgflag='A', long_name='wind speed at reference height', &
+         ptr_lnd=this%forc_wind_grc)
     
-    this%mml_atm_eref_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_eref', units='Pa',  &
-         avgflag='A', long_name='MML vapor pressure at reference height', &
-         ptr_lnd=this%mml_atm_eref_grc)
+    this%forc_vp_grc(begg:endg) = spval
+    call hist_addfld1d (fname='eref', units='Pa',  &
+         avgflag='A', long_name='vapor pressure at reference height', &
+         ptr_lnd=this%forc_vp_grc)
     
-    this%mml_atm_pbot_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_pbot', units='Pa',  &
-         avgflag='A', long_name='MML atmospheric pressure midpoint of lowest atm layer', &
-         ptr_lnd=this%mml_atm_pbot_grc)
+    this%forc_pbot_not_downscaled_grc(begg:endg) = spval
+    call hist_addfld1d (fname='pbot', units='Pa',  &
+         avgflag='A', long_name='atmospheric pressure midpoint of lowest atm layer', &
+         ptr_lnd=this%forc_pbot_not_downscaled_grc)
     
     this%mml_atm_psrf_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_psrf', units='Pa',  &
-         avgflag='A', long_name='MML atmospheric pressure surface', &
+    call hist_addfld1d (fname='psrf', units='Pa',  &
+         avgflag='A', long_name='atmospheric pressure surface', &
          ptr_lnd=this%mml_atm_psrf_grc)
     
     this%mml_atm_rhomol_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_rhomol', units='mol/m3',  &
-         avgflag='A', long_name='MML molar density of air at reference height', &
+    call hist_addfld1d (fname='rhomol', units='mol/m3',  &
+         avgflag='A', long_name='molar density of air at reference height', &
          ptr_lnd=this%mml_atm_rhomol_grc)
     
-    this%mml_atm_rhoair_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_rhoair', units='kg/m3',  &
-         avgflag='A', long_name='MML mass density of air at reference height', &
-         ptr_lnd=this%mml_atm_rhoair_grc)
+    this%forc_rho_not_downscaled_grc(begg:endg) = spval
+    call hist_addfld1d (fname='rhoair', units='kg/m3',  &
+         avgflag='A', long_name='mass density of air at reference height', &
+         ptr_lnd=this%forc_rho_not_downscaled_grc)
          
     this%mml_atm_cp_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_cpair', units='J/kg/K',  &
-         avgflag='A', long_name='MML specific heat of air at constant pressure at ref height', &
+    call hist_addfld1d (fname='cpair', units='J/kg/K',  &
+         avgflag='A', long_name='specific heat of air at constant pressure at ref height', &
          ptr_lnd=this%mml_atm_cp_grc)
     
-    this%mml_atm_pco2(begg:endg) = spval
-    call hist_addfld1d (fname='MML_pco2', units='Pa',  &
-         avgflag='A', long_name='MML partial pressure of co2', &
-         ptr_lnd=this%mml_atm_pco2)
-         
-    this%mml_atm_prec_liq_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_prec_liq', units='mm/s',  &	! or mm/s? 
-         avgflag='A', long_name='MML rate of liquid precipitation (rain)', &
-         ptr_lnd=this%mml_atm_prec_liq_grc)
+    this%forc_rain_not_downscaled_grc(begg:endg) = spval
+    call hist_addfld1d (fname='prec_liq', units='mm/s',  &	! or mm/s? 
+         avgflag='A', long_name='rate of liquid precipitation (rain)', &
+         ptr_lnd=this%forc_rain_not_downscaled_grc)
     
-    this%mml_atm_prec_frz_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_prec_frz', units='mm/s',  &
-         avgflag='A', long_name='MML rate of frozen precipitation (snow)', &
-         ptr_lnd=this%mml_atm_prec_frz_grc)
+    this%forc_snow_not_downscaled_grc(begg:endg) = spval
+    call hist_addfld1d (fname='prec_frz', units='mm/s',  &
+         avgflag='A', long_name='rate of frozen precipitation (snow)', &
+         ptr_lnd=this%forc_snow_not_downscaled_grc)
     
     ! Land calculated surface variables
     !write(iulog,*)  'MML write to h0: 1d land vars '
     
     this%mml_lnd_ts_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_ts', units='K',  &
-         avgflag='A', long_name='MML surface skin temperature', &
+    call hist_addfld1d (fname='ts', units='K',  &
+         avgflag='A', long_name='surface skin temperature', &
          ptr_lnd=this%mml_lnd_ts_grc)
     
     this%mml_lnd_qs_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qs', units='kg/kg',  &
+    call hist_addfld1d (fname='qs', units='kg/kg',  &
          avgflag='A', long_name='surface specific humidity [kg/kg] or [mol/mol]', &
          ptr_lnd=this%mml_lnd_qs_grc)
     
     this%mml_lnd_qa_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qa', units='W/m2',  &
-         avgflag='A', long_name='MML radiative forcing (SWin*albedo + LWin)', &
+    call hist_addfld1d (fname='qa', units='W/m2',  &
+         avgflag='A', long_name='radiative forcing (SWin*albedo + LWin)', &
          ptr_lnd=this%mml_lnd_qa_grc)
     
     this%mml_lnd_swabs_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_swabs', units='W/m2',  &
-         avgflag='A', long_name='MML absorbed shortwave radiation', &
+    call hist_addfld1d (fname='swabs', units='W/m2',  &
+         avgflag='A', long_name='absorbed shortwave radiation', &
          ptr_lnd=this%mml_lnd_swabs_grc)
     
     this%mml_lnd_fsr_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsr', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave radation', &
+    call hist_addfld1d (fname='fsr', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave radation', &
          ptr_lnd=this%mml_lnd_fsr_grc)
     
     this%mml_lnd_fsrnd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrnd', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave nir direct radation', &
+    call hist_addfld1d (fname='fsrnd', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave nir direct radation', &
          ptr_lnd=this%mml_lnd_fsrnd_grc)
     
     this%mml_lnd_fsrni_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrni', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave nir diffuse radation', &
+    call hist_addfld1d (fname='fsrni', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave nir diffuse radation', &
          ptr_lnd=this%mml_lnd_fsrni_grc)
     
     this%mml_lnd_fsrvd_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrvd', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave visible direct radation', &
+    call hist_addfld1d (fname='fsrvd', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave visible direct radation', &
          ptr_lnd=this%mml_lnd_fsrvd_grc)
     
     this%mml_lnd_fsrvi_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsrvi', units='W/m2',  &
-         avgflag='A', long_name='MML reflected shortwave visible diffuse radation', &
+    call hist_addfld1d (fname='fsrvi', units='W/m2',  &
+         avgflag='A', long_name='reflected shortwave visible diffuse radation', &
          ptr_lnd=this%mml_lnd_fsrvi_grc)
     
     this%mml_lnd_lwup_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lwup', units='W/m2',  &
-         avgflag='A', long_name='MML emitted longwave radiation', &
+    call hist_addfld1d (fname='lwup', units='W/m2',  &
+         avgflag='A', long_name='emitted longwave radiation', &
          ptr_lnd=this%mml_lnd_lwup_grc)
     
     this%mml_lnd_shflx_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_shflx', units='W/m2',  &
-         avgflag='A', long_name='MML sensible heat flux', &
+    call hist_addfld1d (fname='shflx', units='W/m2',  &
+         avgflag='A', long_name='sensible heat flux', &
          ptr_lnd=this%mml_lnd_shflx_grc)
     
     this%mml_lnd_lhflx_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lhflx', units='W/m2',  &
-         avgflag='A', long_name='MML latent heat flux', &
+    call hist_addfld1d (fname='lhflx', units='W/m2',  &
+         avgflag='A', long_name='latent heat flux', &
          ptr_lnd=this%mml_lnd_lhflx_grc)
     
     this%mml_lnd_gsoi_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_gsoi', units='W/m2',  &
-         avgflag='A', long_name='MML flux of energy into the soil', &
+    call hist_addfld1d (fname='gsoi', units='W/m2',  &
+         avgflag='A', long_name='flux of energy into the soil', &
          ptr_lnd=this%mml_lnd_gsoi_grc)
     
     this%mml_lnd_gsnow_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_gsnow', units='W/m2',  &
-         avgflag='A', long_name='MML flux of energy into snowmelt', &
+    call hist_addfld1d (fname='gsnow', units='W/m2',  &
+         avgflag='A', long_name='flux of energy into snowmelt', &
          ptr_lnd=this%mml_lnd_gsnow_grc)
     
     this%mml_lnd_evap_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_evap', units='kg H20 / m2 / s = mm/s',  &
-         avgflag='A', long_name='MML evapotranspiration (in kg water over whole time step)', &
+    call hist_addfld1d (fname='evap', units='kg H20 / m2 / s = mm/s',  &
+         avgflag='A', long_name='evapotranspiration (in kg water over whole time step)', &
          ptr_lnd=this%mml_lnd_evap_grc)
     
     this%mml_lnd_ustar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_ustar', units='m/s',  &
-         avgflag='A', long_name='MML friction velocity from MO theory', &
+    call hist_addfld1d (fname='ustar', units='m/s',  &
+         avgflag='A', long_name='friction velocity from MO theory', &
          ptr_lnd=this%mml_lnd_ustar_grc)
     
     this%mml_lnd_tstar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tstar', units='K',  &
-         avgflag='A', long_name='MML temperature scale from MO theory', &
+    call hist_addfld1d (fname='tstar', units='K',  &
+         avgflag='A', long_name='temperature scale from MO theory', &
          ptr_lnd=this%mml_lnd_tstar_grc)
          
     this%mml_lnd_qstar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_qstar', units='kg/kg',  &
-         avgflag='A', long_name='MML humidity scale (?) from MO theory', &
+    call hist_addfld1d (fname='qstar', units='kg/kg',  &
+         avgflag='A', long_name='humidity scale (?) from MO theory', &
          ptr_lnd=this%mml_lnd_qstar_grc)
          
     this%mml_lnd_tvstar_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tvstar', units='K',  &
-         avgflag='A', long_name='MML virtual potential temperature scale from MO theory', &
+    call hist_addfld1d (fname='tvstar', units='K',  &
+         avgflag='A', long_name='virtual potential temperature scale from MO theory', &
          ptr_lnd=this%mml_lnd_tvstar_grc)
     
     this%mml_lnd_obu_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_obu', units='m',  &
-         avgflag='A', long_name='MML Obukhov length from MO theory', &
+    call hist_addfld1d (fname='obu', units='m',  &
+         avgflag='A', long_name='Obukhov length from MO theory', &
          ptr_lnd=this%mml_lnd_obu_grc)
     
     this%mml_lnd_ram_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_ram', units='s/m',  &
-         avgflag='A', long_name='MML aerodynamic resistance for momentum (and moisture; from MO theory)', &
+    call hist_addfld1d (fname='ram', units='s/m',  &
+         avgflag='A', long_name='aerodynamic resistance for momentum (and moisture; from MO theory)', &
          ptr_lnd=this%mml_lnd_ram_grc)
     
     this%mml_lnd_rah_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_rah', units='s/m',  &
-         avgflag='A', long_name='MML aerodynamic resistance for heat', &
+    call hist_addfld1d (fname='rah', units='s/m',  &
+         avgflag='A', long_name='aerodynamic resistance for heat', &
          ptr_lnd=this%mml_lnd_rah_grc)
          
     this%mml_lnd_res_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_res_tot', units='s/m',  &
-         avgflag='A', long_name='MML lid resistance + aerodynamic resistance for heat (MML_evap_rs + MML_rah)', &
+    call hist_addfld1d (fname='res_tot', units='s/m',  &
+         avgflag='A', long_name='lid resistance + aerodynamic resistance for heat (evap_rs + rah)', &
          ptr_lnd=this%mml_lnd_res_grc)
 
     this%mml_lnd_effective_res_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_res_effective', units='s/m',  &
-         avgflag='A', long_name='MML effective surface resistance = 1/beta * (MML_evap_rs + MML_rah)', &
+    call hist_addfld1d (fname='res_effective', units='s/m',  &
+         avgflag='A', long_name='effective surface resistance = 1/beta * (evap_rs + rah)', &
          ptr_lnd=this%mml_lnd_effective_res_grc)
 
     this%mml_lnd_beta_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_beta', units='unitless',  &
-         avgflag='A', long_name='MML beta factor for resistance due to bucket emptiness (between 0 and 1)', &
+    call hist_addfld1d (fname='beta', units='unitless',  &
+         avgflag='A', long_name='beta factor for resistance due to bucket emptiness (between 0 and 1)', &
          ptr_lnd=this%mml_lnd_beta_grc)
                      
     this%mml_lnd_z0m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_z0m', units='m',  &
-         avgflag='A', long_name='MML roughness length for momentum', &
+    call hist_addfld1d (fname='z0m', units='m',  &
+         avgflag='A', long_name='roughness length for momentum', &
          ptr_lnd=this%mml_lnd_z0m_grc)
     
     this%mml_lnd_z0h_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_z0h', units='m',  &
-         avgflag='A', long_name='MML roughness length for heat', &
+    call hist_addfld1d (fname='z0h', units='m',  &
+         avgflag='A', long_name='roughness length for heat', &
          ptr_lnd=this%mml_lnd_z0h_grc)
     
     this%mml_lnd_alb_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_alb', units='unitless',  &
-         avgflag='A', long_name='MML actual albedo (accounting for snow) used', &
+    call hist_addfld1d (fname='alb', units='unitless',  &
+         avgflag='A', long_name='actual albedo (accounting for snow) used', &
          ptr_lnd=this%mml_lnd_alb_grc)
     
     this%mml_lnd_fsns_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_fsns', units='W/m2',  &
-         avgflag='A', long_name='MML net flux of shortwave at surface (in - out), pos into land', &
+    call hist_addfld1d (fname='fsns', units='W/m2',  &
+         avgflag='A', long_name='net flux of shortwave at surface (in - out), pos into land', &
          ptr_lnd=this%mml_lnd_fsns_grc)
     
     this%mml_lnd_flns_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_flns', units='W/m2',  &
-         avgflag='A', long_name='MML net flux of longwave at surface (out-in), pos out of land', &
+    call hist_addfld1d (fname='flns', units='W/m2',  &
+         avgflag='A', long_name='net flux of longwave at surface (out-in), pos out of land', &
          ptr_lnd=this%mml_lnd_flns_grc)
          
     this%mml_lnd_snowmelt(begg:endg) = spval
-    call hist_addfld1d (fname='MML_snowmelt', units='kg/m2',  &
-         avgflag='A', long_name='MML snow that melted into water bucket', &
+    call hist_addfld1d (fname='snowmelt', units='kg/m2',  &
+         avgflag='A', long_name='snow that melted into water bucket', &
          ptr_lnd=this%mml_lnd_snowmelt)
          
     ! Soil variables
 ! start 2d
   
-    ! 2d example from SoilBiogeochemCarbonStateType.F90
-    !call hist_addfld2d (fname=fieldname, units='gC/m^3',  type2d='levdcmp', &
-    !              avgflag='A', long_name=longname, &
-    !              ptr_col=data2dptr)
-    
     ! I wanted to add an mml case to the type2d, but for now change it back, since its crashing
  
  	!write(iulog,*)  'MML write to h0: 2d soil vars '
  	
  	this%mml_nc_dust_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_dust_2atm', units='unknown',  type2d='mml_dust', &
-         avgflag='A', long_name='MML surface dust flux to atmosphere ', &
+    call hist_addfld2d (fname='dust_2atm', units='unknown',  type2d='mml_dust', &
+         avgflag='A', long_name='surface dust flux to atmosphere ', &
          ptr_lnd=this%mml_nc_dust_grc)
  	
     this%mml_nc_soil_maxice_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_maxice', units='kg/m3',  type2d='mml_lev', &
-         avgflag='A', long_name='MML maximum freezable water in each soil layer; for thermal calculations', &
+    call hist_addfld2d (fname='maxice', units='kg/m3',  type2d='mml_lev', &
+         avgflag='A', long_name='maximum freezable water in each soil layer; for thermal calculations', &
          ptr_lnd=this%mml_nc_soil_maxice_grc)     
 
 
     this%mml_nc_soil_levels_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soilz', units='m',  type2d='mml_lev', &
-         avgflag='A', long_name='MML depth (negative) from surface of midpoint of each soil layer', &
+    call hist_addfld2d (fname='soilz', units='m',  type2d='mml_lev', &
+         avgflag='A', long_name='depth (negative) from surface of midpoint of each soil layer', &
          ptr_lnd=this%mml_nc_soil_levels_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_t_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soil_t', units='K', type2d='mml_lev', &
-         avgflag='A', long_name='MML soil temperature at each layer', &
+    call hist_addfld2d (fname='soil_t', units='K', type2d='mml_lev', &
+         avgflag='A', long_name='soil temperature at each layer', &
          ptr_lnd=this%mml_soil_t_grc, mml_dim=mml_nsoi)
          
     
     this%mml_soil_liq_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soil_liq', units='kg/m2',  type2d='mml_lev', &
-         avgflag='A', long_name='MML kg of liquid water in each soil layer (Thermodynamic ONLY)', &
+    call hist_addfld2d (fname='soil_liq', units='kg/m2',  type2d='mml_lev', &
+         avgflag='A', long_name='kg of liquid water in each soil layer (Thermodynamic ONLY)', &
          ptr_lnd=this%mml_soil_liq_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_ice_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_soil_ice', units='kg/m2', type2d='mml_lev',  &
-         avgflag='A', long_name='MML kg of frozen water in each soil layer (Thermodynamic ONLY)', &
+    call hist_addfld2d (fname='soil_ice', units='kg/m2', type2d='mml_lev',  &
+         avgflag='A', long_name='kg of frozen water in each soil layer (Thermodynamic ONLY)', &
          ptr_lnd=this%mml_soil_ice_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_dz_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_dz', units='m', type2d='mml_lev',  &
-         avgflag='A', long_name='MML thickness of each soil layer', &
+    call hist_addfld2d (fname='dz', units='m', type2d='mml_lev',  &
+         avgflag='A', long_name='thickness of each soil layer', &
          ptr_lnd=this%mml_soil_dz_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_zh_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_zh', units='m', type2d='mml_lev',  &
-         avgflag='A', long_name='MML soil depth at interface between each soil layer', &
+    call hist_addfld2d (fname='zh', units='m', type2d='mml_lev',  &
+         avgflag='A', long_name='soil depth at interface between each soil layer', &
          ptr_lnd=this%mml_soil_zh_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_tk_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_tk', units='W/m/K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML thermal conductivity of each soil layer', &
+    call hist_addfld2d (fname='tk', units='W/m/K', type2d='mml_lev',  &
+         avgflag='A', long_name='thermal conductivity of each soil layer', &
          ptr_lnd=this%mml_soil_tk_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_tk_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_tk_1d', units='W/m/K',  &
-         avgflag='A', long_name='MML thermal resistance of every soil layer', &
+    call hist_addfld1d (fname='tk_1d', units='W/m/K',  &
+         avgflag='A', long_name='thermal resistance of every soil layer', &
          ptr_lnd=this%mml_soil_tk_1d_grc)
     
     this%mml_soil_tkh_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_tkh', units='W/m/K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML thermal conductivity at bottom boundary of each soil layer', &
+    call hist_addfld2d (fname='tkh', units='W/m/K', type2d='mml_lev',  &
+         avgflag='A', long_name='thermal conductivity at bottom boundary of each soil layer', &
          ptr_lnd=this%mml_soil_tkh_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_dtsoi_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_dtsoi', units='K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temperature tendency in each soil layer', &
+    call hist_addfld2d (fname='dtsoi', units='K', type2d='mml_lev',  &
+         avgflag='A', long_name='temperature tendency in each soil layer', &
          ptr_lnd=this%mml_soil_dtsoi_grc, mml_dim=mml_nsoi)
     
     this%mml_soil_cv_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_cv', units='J/m3/K', type2d='mml_lev',  &
-         avgflag='A', long_name='MML heat capacity of each soil layer (depends on soil type)', &
+    call hist_addfld2d (fname='cv', units='J/m3/K', type2d='mml_lev',  &
+         avgflag='A', long_name='heat capacity of each soil layer (depends on soil type)', &
          ptr_lnd=this%mml_soil_cv_grc, mml_dim=mml_nsoi)
 	
 	this%mml_soil_cv_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_cv_1d', units='J/m3/K',  &
-         avgflag='A', long_name='MML heat capacity of every soil layer', &
+    call hist_addfld1d (fname='cv_1d', units='J/m3/K',  &
+         avgflag='A', long_name='heat capacity of every soil layer', &
          ptr_lnd=this%mml_soil_cv_1d_grc)
 	
 	this%mml_glc_tk_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_glc_tk_1d', units='W/m/K',  &
-         avgflag='A', long_name='MML thermal resistance of every ice layer where glaciated', &
+    call hist_addfld1d (fname='glc_tk_1d', units='W/m/K',  &
+         avgflag='A', long_name='thermal resistance of every ice layer where glaciated', &
          ptr_lnd=this%mml_glc_tk_1d_grc)
     
     this%mml_glc_cv_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_glc_cv_1d', units='J/m3/K',  &
-         avgflag='A', long_name='MML heat capacity of every ice layer where glaciated', &
+    call hist_addfld1d (fname='glc_cv_1d', units='J/m3/K',  &
+         avgflag='A', long_name='heat capacity of every ice layer where glaciated', &
          ptr_lnd=this%mml_glc_cv_1d_grc)
          
 ! end 2d
@@ -1472,126 +917,126 @@ contains
     !write(iulog,*)  'MML write to h0: 1d soil vars '
     
     this%mml_soil_water_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_water', units='kg/m2',   &
-         avgflag='A', long_name='MML total amount of liquid water in soil bucket (hydrology)', &
+    call hist_addfld1d (fname='water', units='kg/m2',   &
+         avgflag='A', long_name='total amount of liquid water in soil bucket (hydrology)', &
          ptr_lnd=this%mml_soil_water_grc)
     
     this%mml_soil_snow_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_snow', units='kg/m2',  &
-         avgflag='A', long_name='MML total amount of snow in snow bucket (hydrology)', &
+    call hist_addfld1d (fname='snow', units='kg/m2',  &
+         avgflag='A', long_name='total amount of snow in snow bucket (hydrology)', &
          ptr_lnd=this%mml_soil_snow_grc)
     
     this%mml_soil_runoff_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_runoff', units='kg/m2',  &
-         avgflag='A', long_name='MML water in excess of bucket capacity (runoff, but it disappears)', &
+    call hist_addfld1d (fname='runoff', units='kg/m2',  &
+         avgflag='A', long_name='water in excess of bucket capacity (runoff, but it disappears)', &
          ptr_lnd=this%mml_soil_runoff_grc)
     
     ! lnd2atm MML vars
     this%mml_out_tref2m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_tref2m', units='K',  &
-         avgflag='A', long_name='MML 2m ref height temperature calculated from tsrf and tstar', &
+    call hist_addfld1d (fname='l2a_tref2m', units='K',  &
+         avgflag='A', long_name='2m ref height temperature calculated from tsrf and tstar', &
          ptr_lnd=this%mml_out_tref2m_grc)
     
     this%mml_out_qref2m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_qref2m', units='kg/kg',  &
-         avgflag='A', long_name='MML 2m ref height humidity calculated from qsrf and qstar', &
+    call hist_addfld1d (fname='l2a_qref2m', units='kg/kg',  &
+         avgflag='A', long_name='2m ref height humidity calculated from qsrf and qstar', &
          ptr_lnd=this%mml_out_qref2m_grc)
     
     this%mml_out_uref10m_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_uref10m', units='m/s',  &
-         avgflag='A', long_name='MML 10m ref wind calculated from ustar', &
+    call hist_addfld1d (fname='l2a_uref10m', units='m/s',  &
+         avgflag='A', long_name='10m ref wind calculated from ustar', &
          ptr_lnd=this%mml_out_uref10m_grc)
     
     this%mml_out_taux(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_taux', units='m/s',  &
-         avgflag='A', long_name='MML zonal surface stress	', &
+    call hist_addfld1d (fname='l2a_taux', units='m/s',  &
+         avgflag='A', long_name='zonal surface stress	', &
          ptr_lnd=this%mml_out_taux)
     
     this%mml_out_tauy(begg:endg) = spval
-    call hist_addfld1d (fname='MML_l2a_tauy', units='m/s',  &
-         avgflag='A', long_name='MML meridional surface stress	', &
+    call hist_addfld1d (fname='l2a_tauy', units='m/s',  &
+         avgflag='A', long_name='meridional surface stress	', &
          ptr_lnd=this%mml_out_tauy)
     
     ! MML check if latent heat flux is larger than atm can support (giant dew)
     this%mml_q_excess(begg:endg) = spval
-    call hist_addfld1d (fname='MML_q_excess', units='kg/m2/s',  &
-         avgflag='A', long_name='MML over-demand of dew (positive downwards) by land from atmosphere', &
+    call hist_addfld1d (fname='q_excess', units='kg/m2/s',  &
+         avgflag='A', long_name='over-demand of dew (positive downwards) by land from atmosphere', &
          ptr_lnd=this%mml_q_excess)
     
     this%mml_lh_excess(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lh_excess', units='W/m2',  &
-         avgflag='A', long_name='MML over-demand of latent heat flux (dew; positive downwards) by land from atmosphere', &
+    call hist_addfld1d (fname='lh_excess', units='W/m2',  &
+         avgflag='A', long_name='over-demand of latent heat flux (dew; positive downwards) by land from atmosphere', &
          ptr_lnd=this%mml_lh_excess)
     
     this%mml_q_demand(begg:endg) = spval
-    call hist_addfld1d (fname='MML_q_demand', units='kg/m2/s',  &
-         avgflag='A', long_name='MML initial demand of water flux by land from atmosphere (before correction for excess dew)', &
+    call hist_addfld1d (fname='q_demand', units='kg/m2/s',  &
+         avgflag='A', long_name='initial demand of water flux by land from atmosphere (before correction for excess dew)', &
          ptr_lnd=this%mml_q_demand)
     
     this%mml_lh_demand(begg:endg) = spval
-    call hist_addfld1d (fname='MML_lh_demand', units='W/m2',  &
-         avgflag='A', long_name='MML initial demand of latent heat flux by land from atmosphere (before correction for excess dew)', &
+    call hist_addfld1d (fname='lh_demand', units='W/m2',  &
+         avgflag='A', long_name='initial demand of latent heat flux by land from atmosphere (before correction for excess dew)', &
          ptr_lnd=this%mml_lh_demand)
          
          
     ! mml diagnostic vars (temproary)
     
     this%mml_diag1_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_diag1_1d', units='n/a',  &
-         avgflag='A', long_name='MML temporary 1d diagnostic var 1', &
+    call hist_addfld1d (fname='diag1_1d', units='n/a',  &
+         avgflag='A', long_name='temporary 1d diagnostic var 1', &
          ptr_lnd=this%mml_diag1_1d_grc)
     
     this%mml_diag2_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_diag2_1d', units='n/a',  &
-         avgflag='A', long_name='MML temporary 1d diagnostic var 2', &
+    call hist_addfld1d (fname='diag2_1d', units='n/a',  &
+         avgflag='A', long_name='temporary 1d diagnostic var 2', &
          ptr_lnd=this%mml_diag2_1d_grc)
     
     this%mml_diag3_1d_grc(begg:endg) = spval
-    call hist_addfld1d (fname='MML_diag3_1d', units='n/a',  &
-         avgflag='A', long_name='MML temporary 1d diagnostic var 3', &
+    call hist_addfld1d (fname='diag3_1d', units='n/a',  &
+         avgflag='A', long_name='temporary 1d diagnostic var 3', &
          ptr_lnd=this%mml_diag3_1d_grc)
     
     this%mml_diag1_2d_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_diag1_2d', units='n/a', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temporary 2d diagnostic var 1', &
+    call hist_addfld2d (fname='diag1_2d', units='n/a', type2d='mml_lev',  &
+         avgflag='A', long_name='temporary 2d diagnostic var 1', &
          ptr_lnd=this%mml_diag1_2d_grc, mml_dim=mml_nsoi)
     
     this%mml_diag2_2d_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_diag2_2d', units='n/a', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temporary 2d diagnostic var 2', &
+    call hist_addfld2d (fname='diag2_2d', units='n/a', type2d='mml_lev',  &
+         avgflag='A', long_name='temporary 2d diagnostic var 2', &
          ptr_lnd=this%mml_diag2_2d_grc, mml_dim=mml_nsoi)
     
     this%mml_diag3_2d_grc(begg:endg,:) = spval
-    call hist_addfld2d (fname='MML_diag3_2d', units='n/a', type2d='mml_lev',  &
-         avgflag='A', long_name='MML temporary 2d diagnostic var 3', &
+    call hist_addfld2d (fname='diag3_2d', units='n/a', type2d='mml_lev',  &
+         avgflag='A', long_name='temporary 2d diagnostic var 3', &
          ptr_lnd=this%mml_diag3_2d_grc, mml_dim=mml_nsoi)
     
     
     ! mml error flux/balance vars
     
     this%mml_err_h2o(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_h2o', units='n/a',  &
-         avgflag='A', long_name='MML total water conservation error', &
+    call hist_addfld1d (fname='err_h2o', units='n/a',  &
+         avgflag='A', long_name='total water conservation error', &
          ptr_lnd=this%mml_err_h2o)
          
     this%mml_err_h2osno(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_h2osno', units='n/a',  &
-         avgflag='A', long_name='MML imbalance in snow depth (liquid water)', &
+    call hist_addfld1d (fname='err_h2osno', units='n/a',  &
+         avgflag='A', long_name='imbalance in snow depth (liquid water)', &
          ptr_lnd=this%mml_err_h2osno) 
     
     this%mml_err_seb(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_seb', units='n/a',  &
-         avgflag='A', long_name='MML surface energy conservation error', &
+    call hist_addfld1d (fname='err_seb', units='n/a',  &
+         avgflag='A', long_name='surface energy conservation error', &
          ptr_lnd=this%mml_err_seb)
          
     this%mml_err_soi(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_soi', units='n/a',  &
-         avgflag='A', long_name='MML soil/lake energy conservation error', &
+    call hist_addfld1d (fname='err_soi', units='n/a',  &
+         avgflag='A', long_name='soil/lake energy conservation error', &
          ptr_lnd=this%mml_err_soi)
          
     this%mml_err_sol(begg:endg) = spval
-    call hist_addfld1d (fname='mml_err_sol', units='n/a',  &
-         avgflag='A', long_name='MML solar radiation conservation error', &
+    call hist_addfld1d (fname='err_sol', units='n/a',  &
+         avgflag='A', long_name='solar radiation conservation error', &
          ptr_lnd=this%mml_err_sol)
          
                            
@@ -1600,66 +1045,6 @@ contains
                      
 	! End MML simple land model added variables
 	!-----------------------------------------------------------------------
-
-
-    ! Time averaged quantities
-    this%fsi24_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSI24', units='K',  &
-         avgflag='A', long_name='indirect radiation (last 24hrs)', &
-         ptr_patch=this%fsi24_patch, default='inactive')
-
-    this%fsi240_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSI240', units='K',  &
-         avgflag='A', long_name='indirect radiation (last 240hrs)', &
-         ptr_patch=this%fsi240_patch, default='inactive')
-
-    this%fsd24_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSD24', units='K',  &
-         avgflag='A', long_name='direct radiation (last 24hrs)', &
-         ptr_patch=this%fsd24_patch, default='inactive')
-
-    this%fsd240_patch(begp:endp) = spval
-    call hist_addfld1d (fname='FSD240', units='K',  &
-         avgflag='A', long_name='direct radiation (last 240hrs)', &
-         ptr_patch=this%fsd240_patch, default='inactive')
-
-    if (use_cn) then
-       this%rh30_patch(begp:endp) = spval
-       call hist_addfld1d (fname='RH30', units='%',  &
-            avgflag='A', long_name='30-day running mean of relative humidity', &
-            ptr_patch=this%rh30_patch, default='inactive')
-
-       this%prec10_patch(begp:endp) = spval
-       call hist_addfld1d (fname='PREC10', units='MM H2O/S',  &
-            avgflag='A', long_name='10-day running mean of PREC', &
-            ptr_patch=this%prec10_patch, default='inactive')
-
-       this%prec60_patch(begp:endp) = spval
-       call hist_addfld1d (fname='PREC60', units='MM H2O/S',  &
-            avgflag='A', long_name='60-day running mean of PREC', &
-            ptr_patch=this%prec60_patch, default='inactive')
-    end if
-
-    if (use_cndv) then
-       call hist_addfld1d (fname='TDA', units='K',  &
-            avgflag='A', long_name='daily average 2-m temperature', &
-            ptr_patch=this%t_mo_patch)
-    end if
-
-    if(use_luna)then
-       this%forc_pco2_240_patch = spval
-       call hist_addfld1d (fname='PCO2_240', units='Pa',  &
-            avgflag='A', long_name='10 day running mean of CO2 pressure', &
-            ptr_patch=this%forc_pco2_240_patch, default='inactive')
-       this%forc_po2_240_patch = spval
-      call hist_addfld1d (fname='PO2_240', units='Pa',  &
-            avgflag='A', long_name='10 day running mean of O2 pressure', &
-            ptr_patch=this%forc_po2_240_patch, default='inactive')
-       this%forc_pbot240_downscaled_patch = spval
-       call hist_addfld1d (fname='PBOT_240', units='Pa',  &
-            avgflag='A', long_name='10 day running mean of air pressure', &
-            ptr_patch=this%forc_pbot240_downscaled_patch, default='inactive')
-    endif
 
   end subroutine InitHistory
 
@@ -1853,368 +1238,114 @@ contains
 ! MML: InitAccBuffer sounds like what I actually want... unless it only initializes a 
 ! value with the necessity of having a r0 file overwrite it. 
   !-----------------------------------------------------------------------
-  subroutine InitAccBuffer (this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize accumulation buffer for all required module accumulated fields
-    ! This routine set defaults values that are then overwritten by the
-    ! restart file for restart or branch runs
-    !
-    ! !USES 
-    use clm_varcon  , only : spval
-    use accumulMod  , only : init_accum_field
-    !
-    ! !ARGUMENTS:
-    class(atm2lnd_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !---------------------------------------------------------------------
+! subroutine InitAccBuffer (this, bounds)
+!   !
+!   ! !DESCRIPTION:
+!   ! Initialize accumulation buffer for all required module accumulated fields
+!   ! This routine set defaults values that are then overwritten by the
+!   ! restart file for restart or branch runs
+!   !
+!   ! !USES 
+!   use clm_varcon  , only : spval
+!   use accumulMod  , only : init_accum_field
+!   !
+!   ! !ARGUMENTS:
+!   class(atm2lnd_type) :: this
+!   type(bounds_type), intent(in) :: bounds  
+!   !---------------------------------------------------------------------
 
-    this%fsd24_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSD24', units='W/m2',                                             &
-         desc='24hr average of direct solar radiation',  accum_type='runmean', accum_period=-1,    &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
+!   this%fsd240_patch(bounds%begp:bounds%endp) = spval
+!   call init_accum_field (name='FSD240', units='W/m2',                                            &
+!        desc='240hr average of direct solar radiation',  accum_type='runmean', accum_period=-10,  &
+!        subgrid_type='pft', numlev=1, init_value=0._r8)
 
-    this%fsd240_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSD240', units='W/m2',                                            &
-         desc='240hr average of direct solar radiation',  accum_type='runmean', accum_period=-10,  &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
+! end subroutine InitAccBuffer
 
-    this%fsi24_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSI24', units='W/m2',                                             &
-         desc='24hr average of diffuse solar radiation',  accum_type='runmean', accum_period=-1,   &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
+! !-----------------------------------------------------------------------
+! subroutine InitAccVars(this, bounds)
+!   !
+!   ! !DESCRIPTION:
+!   ! Initialize module variables that are associated with
+!   ! time accumulated fields. This routine is called for both an initial run
+!   ! and a restart run (and must therefore must be called after the restart file 
+!   ! is read in and the accumulation buffer is obtained)
+!   !
+!   ! !USES 
+!   use accumulMod       , only : extract_accum_field
+!   use clm_time_manager , only : get_nstep
+!   !
+!   ! !ARGUMENTS:
+!   class(atm2lnd_type) :: this
+!   type(bounds_type), intent(in) :: bounds  
+!   !
+!   ! !LOCAL VARIABLES:
+!   integer  :: begp, endp
+!   integer  :: nstep
+!   integer  :: ier
+!   real(r8), pointer :: rbufslp(:)  ! temporary
+!   !---------------------------------------------------------------------
 
-    this%fsi240_patch(bounds%begp:bounds%endp) = spval
-    call init_accum_field (name='FSI240', units='W/m2',                                            &
-         desc='240hr average of diffuse solar radiation',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=0._r8)
+!   begp = bounds%begp; endp = bounds%endp
 
-    if (use_cn) then
-       call init_accum_field (name='PREC10', units='MM H2O/S', &
-            desc='10-day running mean of total precipitation', accum_type='runmean', accum_period=-10, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
+!   ! Allocate needed dynamic memory for single level patch field
+!   allocate(rbufslp(begp:endp), stat=ier)
+!   if (ier/=0) then
+!      write(iulog,*)' in '
+!      call endrun(msg="InitAccVars allocation error for rbufslp"//&
+!           errMsg(sourcefile, __LINE__))
+!   endif
 
-       call init_accum_field (name='PREC60', units='MM H2O/S', &
-            desc='60-day running mean of total precipitation', accum_type='runmean', accum_period=-60, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
-    
-       call init_accum_field (name='RH30', units='%', &
-            desc='30-day running mean of relative humidity', accum_type='runmean', accum_period=-30, &
-            subgrid_type='pft', numlev=1, init_value=100._r8)
-    end if
+!   ! Determine time step
+!   nstep = get_nstep()
 
-    if (use_cndv) then
-       ! The following is a running mean with the accumulation period is set to -365 for a 365-day running mean.
-       call init_accum_field (name='PREC365', units='MM H2O/S', &
-            desc='365-day running mean of total precipitation', accum_type='runmean', accum_period=-365, &
-            subgrid_type='column', numlev=1, init_value=0._r8)
-    end if
+!   call extract_accum_field ('FSD240', rbufslp, nstep)
+!   this%fsd240_patch(begp:endp) = rbufslp(begp:endp)
 
-    if ( use_fates ) then
-       call init_accum_field (name='PREC24', units='m', &
-            desc='24hr sum of precipitation', accum_type='runmean', accum_period=-1, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
+!   deallocate(rbufslp)
 
-       ! Fudge - this neds to be initialized from the restat file eventually. 
-       call init_accum_field (name='RH24', units='m', &
-            desc='24hr average of RH', accum_type='runmean', accum_period=-1, &
-            subgrid_type='pft', numlev=1, init_value=100._r8) 
+! end subroutine InitAccVars
 
-       call init_accum_field (name='WIND24', units='m', &
-            desc='24hr average of wind', accum_type='runmean', accum_period=-1, &
-            subgrid_type='pft', numlev=1, init_value=0._r8)
-    end if
+! !-----------------------------------------------------------------------
+! subroutine UpdateAccVars (this, bounds)
+!   !
+!   ! USES
+!   use clm_time_manager, only : get_nstep
+!   use accumulMod      , only : update_accum_field, extract_accum_field
+!   !
+!   ! !ARGUMENTS:
+!   class(atm2lnd_type)                 :: this
+!   type(bounds_type)      , intent(in) :: bounds  
+!   !
+!   ! !LOCAL VARIABLES:
+!   integer :: g,c,p                     ! indices
+!   integer :: nstep                     ! timestep number
+!   integer :: ier                       ! error status
+!   integer :: begp, endp
+!   real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
+!   !---------------------------------------------------------------------
 
-    if(use_luna) then
-      this%forc_po2_240_patch(bounds%begp:bounds%endp) = spval
-      call init_accum_field (name='po2_240', units='Pa',                                            &
-         desc='10-day running mean of parial O2 pressure',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=21223._r8)
+!   begp = bounds%begp; endp = bounds%endp
 
-      this%forc_pco2_240_patch(bounds%begp:bounds%endp) = spval
-      call init_accum_field (name='pco2_240', units='Pa',                                            &
-         desc='10-day running mean of parial CO2 pressure',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=28._r8)
+!   nstep = get_nstep()
 
-      this%forc_pbot240_downscaled_patch(bounds%begp:bounds%endp) = spval
-      call init_accum_field (name='pbot240', units='Pa',                                            &
-         desc='10-day running mean of air pressure',  accum_type='runmean', accum_period=-10, &
-         subgrid_type='pft', numlev=1, init_value=101325._r8)
+!   ! Allocate needed dynamic memory for single level patch field
+!   allocate(rbufslp(begp:endp), stat=ier)
+!   if (ier/=0) then
+!      write(iulog,*)'UpdateAccVars allocation error for rbufslp'
+!      call endrun(msg=errMsg(sourcefile, __LINE__))
+!   endif
 
-    endif
+!   ! Accumulate and extract forc_solad24 & forc_solad240 
+!   do p = begp,endp
+!      g = patch%gridcell(p)
+!      rbufslp(p) = this%forc_solad_grc(g,1)
+!   end do
+!   call update_accum_field  ('FSD240', rbufslp               , nstep)
+!   call extract_accum_field ('FSD240', this%fsd240_patch     , nstep)
 
-  end subroutine InitAccBuffer
+!   deallocate(rbufslp)
 
-  !-----------------------------------------------------------------------
-  subroutine InitAccVars(this, bounds)
-    !
-    ! !DESCRIPTION:
-    ! Initialize module variables that are associated with
-    ! time accumulated fields. This routine is called for both an initial run
-    ! and a restart run (and must therefore must be called after the restart file 
-    ! is read in and the accumulation buffer is obtained)
-    !
-    ! !USES 
-    use accumulMod       , only : extract_accum_field
-    use clm_time_manager , only : get_nstep
-    !
-    ! !ARGUMENTS:
-    class(atm2lnd_type) :: this
-    type(bounds_type), intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer  :: begp, endp
-    integer  :: begc, endc
-    integer  :: nstep
-    integer  :: ier
-    real(r8), pointer :: rbufslp(:)  ! temporary
-    real(r8), pointer :: rbufslc(:)  ! temporary
-    !---------------------------------------------------------------------
-
-    begp = bounds%begp; endp = bounds%endp
-    begc = bounds%begc; endc = bounds%endc
-
-    ! Allocate needed dynamic memory for single level patch field
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)' in '
-       call endrun(msg="InitAccVars allocation error for rbufslp"//&
-            errMsg(sourcefile, __LINE__))
-    endif
-    ! Allocate needed dynamic memory for single level col field
-    allocate(rbufslc(begc:endc), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)' in '
-       call endrun(msg="InitAccVars allocation error for rbufslc"//&
-            errMsg(sourcefile, __LINE__))
-    endif
-
-    ! Determine time step
-    nstep = get_nstep()
-
-    call extract_accum_field ('FSD24', rbufslp, nstep)
-    this%fsd24_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('FSD240', rbufslp, nstep)
-    this%fsd240_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('FSI24', rbufslp, nstep)
-    this%fsi24_patch(begp:endp) = rbufslp(begp:endp)
-
-    call extract_accum_field ('FSI240', rbufslp, nstep)
-    this%fsi240_patch(begp:endp) = rbufslp(begp:endp)
-
-    if (use_cn) then
-       call extract_accum_field ('PREC10', rbufslp, nstep)
-       this%prec10_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('PREC60', rbufslp, nstep)
-       this%prec60_patch(begp:endp) = rbufslp(begp:endp)
-   
-       call extract_accum_field ('RH30', rbufslp, nstep)
-       this%rh30_patch(begp:endp) = rbufslp(begp:endp)
-    end if
-
-    if (use_cndv) then
-       call extract_accum_field ('PREC365' , rbufslc, nstep) 
-       this%prec365_col(begc:endc) = rbufslc(begc:endc)
-
-       call extract_accum_field ('TDA', rbufslp, nstep) 
-       this%t_mo_patch(begp:endp) = rbufslp(begp:endp)
-    end if
-
-    if (use_fates) then
-       call extract_accum_field ('PREC24', rbufslp, nstep)
-       this%prec24_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('RH24', rbufslp, nstep)
-       this%rh24_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('WIND24', rbufslp, nstep)
-       this%wind24_patch(begp:endp) = rbufslp(begp:endp)
-    end if
-
-    if(use_luna) then
-       call extract_accum_field ('po2_240', rbufslp, nstep)
-       this%forc_po2_240_patch(begp:endp) = rbufslp(begp:endp)
-
-       call extract_accum_field ('pco2_240', rbufslp, nstep)
-       this%forc_pco2_240_patch(begp:endp) = rbufslp(begp:endp)   
-
-       call extract_accum_field ('pbot240', rbufslp, nstep)
-       this%forc_pbot240_downscaled_patch(begp:endp) = rbufslp(begp:endp)  
- 
-    endif
-
-    deallocate(rbufslp)
-    deallocate(rbufslc)
-
-  end subroutine InitAccVars
-
-  !-----------------------------------------------------------------------
-  subroutine UpdateAccVars (this, bounds)
-    !
-    ! USES
-    use clm_time_manager, only : get_nstep
-    use accumulMod      , only : update_accum_field, extract_accum_field
-    !
-    ! !ARGUMENTS:
-    class(atm2lnd_type)                 :: this
-    type(bounds_type)      , intent(in) :: bounds  
-    !
-    ! !LOCAL VARIABLES:
-    integer :: g,c,p                     ! indices
-    integer :: dtime                     ! timestep size [seconds]
-    integer :: nstep                     ! timestep number
-    integer :: ier                       ! error status
-    integer :: begp, endp
-    integer :: begc, endc
-    real(r8), pointer :: rbufslp(:)      ! temporary single level - patch level
-    real(r8), pointer :: rbufslc(:)      ! temporary single level - column level
-    !---------------------------------------------------------------------
-
-    begp = bounds%begp; endp = bounds%endp
-    begc = bounds%begc; endc = bounds%endc
-
-    nstep = get_nstep()
-
-    ! Allocate needed dynamic memory for single level patch field
-    allocate(rbufslp(begp:endp), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)'UpdateAccVars allocation error for rbufslp'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-    ! Allocate needed dynamic memory for single level col field
-    allocate(rbufslc(begc:endc), stat=ier)
-    if (ier/=0) then
-       write(iulog,*)'UpdateAccVars allocation error for rbufslc'
-       call endrun(msg=errMsg(sourcefile, __LINE__))
-    endif
-
-    ! Accumulate and extract forc_solad24 & forc_solad240 
-    do p = begp,endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_solad_grc(g,1)
-    end do
-    call update_accum_field  ('FSD240', rbufslp               , nstep)
-    call extract_accum_field ('FSD240', this%fsd240_patch     , nstep)
-    call update_accum_field  ('FSD24' , rbufslp               , nstep)
-    call extract_accum_field ('FSD24' , this%fsd24_patch      , nstep)
-
-    ! Accumulate and extract forc_solai24 & forc_solai240 
-    do p = begp,endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_solai_grc(g,1)
-    end do
-    call update_accum_field  ('FSI24' , rbufslp               , nstep)
-    call extract_accum_field ('FSI24' , this%fsi24_patch      , nstep)
-    call update_accum_field  ('FSI240', rbufslp               , nstep)
-    call extract_accum_field ('FSI240', this%fsi240_patch     , nstep)
-
-    ! Precipitation accumulators
-    !
-    ! For CNDV, we use a column-level accumulator. We cannot use a patch-level
-    ! accumulator for CNDV because this is used for establishment, so must be available
-    ! for inactive patches. In principle, we could/should switch to column-level for the
-    ! other precip accumulators, too; we'd just need to be careful about backwards
-    ! compatibility with old restart files.
-
-    do p = begp,endp
-       c = patch%column(p)
-       rbufslp(p) = this%forc_rain_downscaled_col(c) + this%forc_snow_downscaled_col(c)
-       rbufslc(c) = this%forc_rain_downscaled_col(c) + this%forc_snow_downscaled_col(c)
-    end do
-
-    if (use_cn) then
-       ! Accumulate and extract PREC60 (accumulates total precipitation as 60-day running mean)
-       call update_accum_field  ('PREC60', rbufslp, nstep)
-       call extract_accum_field ('PREC60', this%prec60_patch, nstep)
-
-       ! Accumulate and extract PREC10 (accumulates total precipitation as 10-day running mean)
-       call update_accum_field  ('PREC10', rbufslp, nstep)
-       call extract_accum_field ('PREC10', this%prec10_patch, nstep)
-    end if
-
-    if (use_cndv) then
-       ! Accumulate and extract PREC365 (accumulates total precipitation as 365-day running mean)
-       ! See above comment regarding why this is at the column-level despite other prec
-       ! accumulators being at the patch level.
-       call update_accum_field  ('PREC365', rbufslc, nstep)
-       call extract_accum_field ('PREC365', this%prec365_col, nstep)
-
-       ! Accumulate and extract TDA (accumulates TBOT as 30-day average) and 
-       ! also determines t_mo_min
-       
-       do p = begp,endp
-          c = patch%column(p)
-          rbufslp(p) = this%forc_t_downscaled_col(c)
-       end do
-       call update_accum_field  ('TDA', rbufslp, nstep)
-       call extract_accum_field ('TDA', rbufslp, nstep)
-       do p = begp,endp
-          this%t_mo_patch(p) = rbufslp(p)
-          this%t_mo_min_patch(p) = min(this%t_mo_min_patch(p), rbufslp(p))
-       end do
-
-    end if
-
-    if (use_fates) then
-       call update_accum_field  ('PREC24', rbufslp, nstep)
-       call extract_accum_field ('PREC24', this%prec24_patch, nstep)
-
-       do p = bounds%begp,bounds%endp
-          g = patch%gridcell(p) 
-          rbufslp(p) = this%forc_wind_grc(g) 
-       end do
-       call update_accum_field  ('WIND24', rbufslp, nstep)
-       call extract_accum_field ('WIND24', this%wind24_patch, nstep)
-
-       do p = bounds%begp,bounds%endp
-          g = patch%gridcell(p) 
-          rbufslp(p) = this%forc_rh_grc(g) 
-       end do
-       call update_accum_field  ('RH24', rbufslp, nstep)
-       call extract_accum_field ('RH24', this%rh24_patch, nstep)
-    end if
-
-    if(use_luna) then
-     do p = bounds%begp,bounds%endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_pco2_grc(g) 
-     enddo
-     call update_accum_field  ('pco2_240', rbufslp, nstep)
-     call extract_accum_field ('pco2_240', this%forc_pco2_240_patch, nstep)
-
-     do p = bounds%begp,bounds%endp
-       g = patch%gridcell(p)
-       rbufslp(p) = this%forc_po2_grc(g) 
-     enddo
-     call update_accum_field  ('po2_240', rbufslp, nstep)
-     call extract_accum_field ('po2_240', this%forc_po2_240_patch, nstep)
-
-     do p = bounds%begp,bounds%endp
-       c = patch%column(p)
-       rbufslp(p) = this%forc_pbot_downscaled_col(c) 
-     enddo
-     call update_accum_field  ('pbot240', rbufslp, nstep)
-     call extract_accum_field ('pbot240', this%forc_pbot240_downscaled_patch, nstep)
-
-    endif
-
-    if (use_cn) then
-       do p = begp,endp
-          g = patch%gridcell(p) 
-          rbufslp(p) = this%forc_rh_grc(g)
-       end do
-       ! Accumulate and extract RH30 (accumulates RH as 30-day running mean)
-       call update_accum_field  ('RH30', rbufslp, nstep)
-       call extract_accum_field ('RH30', this%rh30_patch, nstep)
-    endif
-
-    deallocate(rbufslp)
-    deallocate(rbufslc)
-
-  end subroutine UpdateAccVars
+! end subroutine UpdateAccVars
 
   !------------------------------------------------------------------------
   subroutine Restart(this, bounds, ncid, flag)
@@ -2233,165 +1364,61 @@ contains
     logical            :: readvar 
     !------------------------------------------------------------------------
 
-    call restartvar(ncid=ncid, flag=flag, varname='qflx_floodg', xtype=ncd_double, &
-         dim1name='gridcell', &
-         long_name='flood water flux', units='mm/s', &
-         interpinic_flag='skip', readvar=readvar, data=this%forc_flood_grc)
-    if (flag == 'read' .and. .not. readvar) then
-       ! initial run, readvar=readvar, not restart: initialize flood to zero
-       this%forc_flood_grc = 0._r8
-    endif
-
-    if (use_cndv) then
-       call restartvar(ncid=ncid, flag=flag, varname='T_MO_MIN', xtype=ncd_double,  &
-            dim1name='pft', long_name='', units='', &
-            interpinic_flag='interp', readvar=readvar, data=this%t_mo_min_patch)
-    end if
-
-    if(use_luna)then
-       call restartvar(ncid=ncid, flag=flag, varname='pco2_240', xtype=ncd_double,  &
-            dim1name='pft', long_name='10-day mean CO2 partial pressure', units='Pa', &
-            interpinic_flag='interp', readvar=readvar, data=this%forc_pco2_240_patch )
-       call restartvar(ncid=ncid, flag=flag, varname='po2_240', xtype=ncd_double,  &
-            dim1name='pft', long_name='10-day mean O2 partial pressure', units='Pa', &
-            interpinic_flag='interp', readvar=readvar, data=this%forc_po2_240_patch )
-       call restartvar(ncid=ncid, flag=flag, varname='pbot240', xtype=ncd_double,  &
-            dim1name='pft', long_name='10 day mean atmospheric pressure(Pa)', units='Pa', &
-            interpinic_flag='interp', readvar=readvar, data=this%forc_pbot240_downscaled_patch )
-    endif
-    
     ! -----------------------------------------------------------------------
     ! Start MML simple land model restart variables section		! MML 2016.01.15
     
      write(iulog,*)  ' MML trying to write r 1d restart vars '
     
     ! MML: surface
-    call restartvar(ncid=ncid, flag=flag, varname='mml_lnd_ts_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='lnd_ts_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='Surface Temperature for MO', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_lnd_ts_grc) 
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_lnd_qs_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='lnd_qs_grc', xtype=ncd_double, &
          dim1name='gridcell',  &
          long_name='surface specific humidity for MO', units='kg/kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_lnd_qs_grc) 
     
   	! MML soil:
   	! MML Hydrology variables:
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_water_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_water_grc', xtype=ncd_double, &
          dim1name='gridcell', &
          long_name='soil bucket water content', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_water_grc)
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_snow_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_snow_grc', xtype=ncd_double, &
          dim1name='gridcell', &
          long_name='snow bucket snow content', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_snow_grc)
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_runoff_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_runoff_grc', xtype=ncd_double, &
          dim1name='gridcell', &
          long_name='water runoff', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_runoff_grc)
     
    !  write(iulog,*)  'MML trying to write r 2d restart vars '
     ! MML Thermodynamic vars for each soil level (3d)
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_liq_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_liq_grc', xtype=ncd_double, &
          dim1name='gridcell',  dim2name='mml_lev', switchdim=.true., &  ! dim2 mml_lev?
          long_name='amount of liquid water in each soil layer', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_liq_grc)
          
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_ice_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_ice_grc', xtype=ncd_double, &
          dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
          long_name='amount of frozen water in each soil layer', units='kg', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_ice_grc)          
    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_t_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_t_grc', xtype=ncd_double, &
          dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
-         long_name='MML soil temperature at each layer', units='K', &
+         long_name='soil temperature at each layer', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_t_grc)   
 
-    call restartvar(ncid=ncid, flag=flag, varname='mml_soil_dtsoi_grc', xtype=ncd_double, &
+    call restartvar(ncid=ncid, flag=flag, varname='soil_dtsoi_grc', xtype=ncd_double, &
          dim1name='gridcell', dim2name='mml_lev', switchdim=.true., &
-         long_name='MML temperature tendency in each soil layer', units='K', &
+         long_name='temperature tendency in each soil layer', units='K', &
          interpinic_flag='skip', readvar=readvar, data=this%mml_soil_dtsoi_grc) 
 
- 
-    ! MML nc vars, so if I stop mid-month / mid-day I can still know what that month's nc params are
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gvd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground visible direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gvd_grc) 
-         
-     call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_svd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Snow visible direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_svd_grc) 
-       
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gnd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground NIR direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gnd_grc) 
-       
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_snd_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Snow NIR direct albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_snd_grc) 
-     
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gvf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground visible diffuse albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gvf_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_svf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='snow visible diffuse albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_svf_grc) 
-         
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_gnf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Ground NIR diffuse albedo (from netcdf file)', units='K', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_gnf_grc) 
-         
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_alb_snf_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Snow NIR diffuse albedo (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_alb_snf_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_snowmask_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Amount of snow required to fully mask ground albedo (from netcdf file)', units='kg/m2', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_snowmask_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_evaprs_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Evaporative resistance (from netcdf file)', units='s/m', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_evaprs_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_bucket_cap_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Bucket Capacity (from netcdf file)', units='kg/m2', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_bucket_cap_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_roughness_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Surface roughness (vegetation height) (from netcdf file)', units='m', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_roughness_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_emiss_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Surface emissivity (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_emiss_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_glcmask_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Mask of glaciated points (from netcdf file)', units='none', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_glcmask_grc) 
-    
-    call restartvar(ncid=ncid, flag=flag, varname='mml_nc_dust_grc', xtype=ncd_double, &
-         dim1name='gridcell',  &
-         long_name='Dust flux to atm (from netcdf file)', units='unknown', &
-         interpinic_flag='skip', readvar=readvar, data=this%mml_nc_dust_grc) 
-    
     write(iulog,*)  ' MML end of 1d restart vars '
     
     ! 3d restart var example (soilbiogeochem carbon mod):
@@ -2400,8 +1427,8 @@ contains
     !           long_name='',  units='', fill_value=spval, &
     !           interpinic_flag='interp', readvar=readvar, data=ptr2d)
                          
-	! End MML simple land model added variables
-	!-----------------------------------------------------------------------
+    ! End MML simple land model added variables
+    !-----------------------------------------------------------------------
 
   end subroutine Restart
 
@@ -2425,74 +1452,26 @@ contains
     deallocate(this%forc_u_grc)
     deallocate(this%forc_v_grc)
     deallocate(this%forc_wind_grc)
-    deallocate(this%forc_rh_grc)
     deallocate(this%forc_hgt_grc)
-    deallocate(this%forc_topo_grc)
     deallocate(this%forc_hgt_u_grc)
     deallocate(this%forc_hgt_t_grc)
     deallocate(this%forc_hgt_q_grc)
     deallocate(this%forc_vp_grc)
     deallocate(this%forc_psrf_grc)
-    deallocate(this%forc_pco2_grc)
     deallocate(this%forc_solad_grc)
     deallocate(this%forc_solai_grc)
     deallocate(this%forc_solar_grc)
-    deallocate(this%forc_ndep_grc)
-    deallocate(this%forc_pc13o2_grc)
-    deallocate(this%forc_po2_grc)
-    deallocate(this%forc_aer_grc)
-    deallocate(this%forc_pch4_grc)
 
     ! atm->lnd not downscaled
     deallocate(this%forc_t_not_downscaled_grc)
     deallocate(this%forc_q_not_downscaled_grc)
     deallocate(this%forc_pbot_not_downscaled_grc)
-    deallocate(this%forc_th_not_downscaled_grc)
     deallocate(this%forc_rho_not_downscaled_grc)
     deallocate(this%forc_lwrad_not_downscaled_grc)
     deallocate(this%forc_rain_not_downscaled_grc)
     deallocate(this%forc_snow_not_downscaled_grc)
     
-    ! atm->lnd downscaled
-    deallocate(this%forc_t_downscaled_col)
-    deallocate(this%forc_q_downscaled_col)
-    deallocate(this%forc_pbot_downscaled_col)
-    deallocate(this%forc_th_downscaled_col)
-    deallocate(this%forc_rho_downscaled_col)
-    deallocate(this%forc_lwrad_downscaled_col)
-    deallocate(this%forc_rain_downscaled_col)
-    deallocate(this%forc_snow_downscaled_col)
-
-    ! rof->lnd
-    deallocate(this%forc_flood_grc)
-    deallocate(this%volr_grc)
-    deallocate(this%volrmch_grc)
-
-    ! anomaly forcing
-    deallocate(this%bc_precip_grc)
-    deallocate(this%af_precip_grc)
-    deallocate(this%af_uwind_grc)
-    deallocate(this%af_vwind_grc)
-    deallocate(this%af_tbot_grc)
-    deallocate(this%af_pbot_grc)
-    deallocate(this%af_shum_grc)
-    deallocate(this%af_swdn_grc)
-    deallocate(this%af_lwdn_grc)
-
-    deallocate(this%fsd24_patch)
-    deallocate(this%fsd240_patch)
-    deallocate(this%fsi24_patch)
-    deallocate(this%fsi240_patch)
-    deallocate(this%prec10_patch)
-    deallocate(this%prec60_patch)
-    deallocate(this%prec365_col)
-    if (use_fates) then
-       deallocate(this%prec24_patch)
-       deallocate(this%rh24_patch)
-       deallocate(this%wind24_patch)
-    end if
-    deallocate(this%t_mo_patch)
-    deallocate(this%t_mo_min_patch)
+!   deallocate(this%fsd240_patch)
     
     ! MML: deallocate mml vars:
     
@@ -2535,7 +1514,6 @@ contains
 	deallocate(this%mml_atm_rhomol_grc   )
 	deallocate(this%mml_atm_rhoair_grc   )
 	deallocate(this%mml_atm_cp_grc    	 )
-	deallocate(this%mml_atm_pco2    	 )
 	deallocate(this%mml_atm_prec_liq_grc )
 	deallocate(this%mml_atm_prec_frz_grc )
 	

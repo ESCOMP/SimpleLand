@@ -17,7 +17,7 @@ module ncdio_pio
   use shr_log_mod    , only : errMsg => shr_log_errMsg
   use spmdMod        , only : masterproc, mpicom, iam, npes
   use spmdMod        , only : MPI_REAL8, MPI_INTEGER, MPI_LOGICAL
-  use clm_varcon     , only : spval,ispval, grlnd, nameg, namel, namec, namep
+  use clm_varcon     , only : spval,ispval, grlnd, nameg
   use clm_varctl     , only : single_column, iulog
   use shr_sys_mod    , only : shr_sys_flush
   use decompMod      , only : get_clmlevel_gsize,get_clmlevel_gsmap
@@ -1057,15 +1057,31 @@ contains
        call ncd_putatt(ncid, varid, 'cell_methods', trim(str))
     end if
     if (present(fill_value)) then
+       if ( lxtype /= ncd_float .and. lxtype /= ncd_double )then
+            call shr_sys_abort(' ERROR: fill_value given, but data type is NOT double or float'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, '_FillValue', fill_value, lxtype)
     end if
     if (present(missing_value)) then
+       if ( lxtype /= ncd_float .and. lxtype /= ncd_double )then
+            call shr_sys_abort(' ERROR: missing_value given, but data type is NOT double or float'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, 'missing_value', missing_value, lxtype)
     end if
     if (present(ifill_value)) then
+       if ( lxtype /= ncd_int )then
+            call shr_sys_abort(' ERROR: ifill_value given, but data type is NOT int'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, '_FillValue', ifill_value, lxtype)
     end if
     if (present(imissing_value)) then
+       if ( lxtype /= ncd_int )then
+            call shr_sys_abort(' ERROR: imissing_value given, but data type is NOT int'//&
+                     errMsg(sourcefile, __LINE__))
+       end if
        call ncd_putatt(ncid, varid, 'missing_value', imissing_value, lxtype)
     end if
     if (present(nvalid_range)) then
@@ -1362,9 +1378,14 @@ contains
        call ncd_inqvid  (ncid, varname, varid, vardesc)
 #if ({DIMS}==0) 
        start(1) = 1  ; count(1) = 1
-       if (present(nt)) start(1) = nt ; count(1) = 1
-       temp(1) = data
-       status = pio_put_var(ncid, varid, start(1:1), count(1:1), temp)
+       if (present(nt))then
+          start(1) = nt
+          count(1) = 1
+          temp(1) = data
+          status = pio_put_var(ncid, varid, start(1:1), count(1:1), temp)
+       else
+          status = pio_put_var(ncid, varid, data)
+       end if
 #elif ({DIMS}==1) 
        start(1) = 1 ; count(1) = size(data) 
        start(2) = 1 ; count(2) = 1
@@ -2062,15 +2083,6 @@ contains
     integer              :: cc,i,ii           ! index variable
     integer              :: data_offset       ! offset into land array 1st column 
     integer              :: ndata             ! number of column (or pft points to read)
-    real(r8) , pointer   :: cols1dlon(:)      ! holds cols1d_ixy var
-    real(r8) , pointer   :: cols1dlat(:)      ! holds cols1d_jxy var
-    real(r8) , pointer   :: pfts1dlon(:)      ! holds pfts1d_ixy var
-    real(r8) , pointer   :: pfts1dlat(:)      ! holds pfts1d_jxy var
-    real(r8) , pointer   :: land1dlon(:)      ! holds land1d_ixy var
-    real(r8) , pointer   :: land1dlat(:)      ! holds land1d_jxy var
-    integer, allocatable :: cols(:)           ! grid cell columns for scam
-    integer, allocatable :: pfts(:)           ! grid cell pfts for scam
-    integer, allocatable :: landunits(:)      ! grid cell landunits for scam
     integer, allocatable :: dids(:)           ! dim ids
     integer              :: varid             ! netCDF variable id
     integer              :: status            ! return code
@@ -2118,113 +2130,6 @@ contains
        else if ( trim(dimname)=='ni'.or. trim(dimname)=='lon'.or. trim(dimname)=='lsmlon') then
           start(i)=lonidx
           count(i)=1
-       else if ( trim(dimname)=='column') then
-
-          allocate (cols1dlon(dimlen))
-          allocate (cols1dlat(dimlen))
-          allocate (cols(dimlen))
-
-          status = pio_inq_varid(ncid, 'cols1d_lon', varid)
-          status = pio_get_var(ncid, varid, cols1dlon)
-          status = pio_inq_varid(ncid, 'cols1d_lat', varid)
-          status = pio_get_var(ncid, varid, cols1dlat)
-
-          cols(:)     = huge(1)
-          data_offset = huge(1)
-          ii = 1
-          ndata = 0
-          do cc = 1, dimlen
-             if (cols1dlon(cc) == closelon.and.cols1dlat(cc) == closelat) then
-                cols(ii)=cc
-                ndata  =ii
-                ii=ii+1
-             end if
-          end do
-          if (ndata == 0) then
-             write(iulog,*)'couldnt find any columns for this latitude ',latidx,' and longitude ',lonidx
-             call shr_sys_abort('ERROR:: no columns for this position'//errMsg(sourcefile, __LINE__))
-          else
-             data_offset=cols(1)
-          end if
-
-          deallocate (cols1dlon)
-          deallocate (cols1dlat)
-          deallocate (cols)
-
-          start(i) = data_offset
-          count(i) = ndata
-       else if ( trim(dimname)=='pft') then
-
-          allocate (pfts1dlon(dimlen))
-          allocate (pfts1dlat(dimlen))
-          allocate (pfts(dimlen))
-
-          status = pio_inq_varid(ncid, 'pfts1d_lon', varid)
-          status = pio_get_var(ncid, varid, pfts1dlon)
-
-          status = pio_inq_varid(ncid, 'pfts1d_lat', varid)
-          status = pio_get_var(ncid, varid, pfts1dlat)
-
-          pfts(:)     = huge(1)
-          data_offset = huge(1)
-          ii     = 1
-          ndata = 0
-          do cc = 1, dimlen
-             if (pfts1dlon(cc) == closelon.and.pfts1dlat(cc) == closelat) then
-                pfts(ii)=cc
-                ndata  =ii
-                ii=ii+1
-             end if
-          end do
-          if (ndata == 0) then
-             write(iulog,*)'couldnt find any pfts for this latitude ',closelat,' and longitude ',closelon
-             call shr_sys_abort('ERROR:: no PFTs for this position'//errMsg(sourcefile, __LINE__))
-          else
-             data_offset=pfts(1)
-          end if
-
-          deallocate (pfts1dlon)
-          deallocate (pfts1dlat)
-          deallocate (pfts)
-
-          start(i) = data_offset
-          count(i) = ndata
-       else if ( trim(dimname)=='landunit') then
-
-          allocate (land1dlon(dimlen))
-          allocate (land1dlat(dimlen))
-          allocate (landunits(dimlen))
-
-          status = pio_inq_varid(ncid, 'land1d_lon', varid)
-          status = pio_get_var(ncid, varid, land1dlon)
-
-          status = pio_inq_varid(ncid, 'land1d_lat', varid)
-          status = pio_get_var(ncid, varid, land1dlat)
-
-          landunits(:) = huge(1)
-          data_offset  = huge(1)
-          ii     = 1
-          ndata = 0
-          do cc = 1, dimlen
-             if (land1dlon(cc) == closelon.and.land1dlat(cc) == closelat) then
-                landunits(ii)=cc
-                ndata  =ii
-                ii=ii+1
-             end if
-          end do
-          if (ndata == 0) then
-             write(iulog,*)'couldnt find any landunits for this latitude ',closelat,' and longitude ',closelon
-             call shr_sys_abort('ERROR:: no landunits for this position'//errMsg(sourcefile, __LINE__))
-          else
-             data_offset=landunits(1)
-          end if
-
-          deallocate (land1dlon)
-          deallocate (land1dlat)
-          deallocate (landunits)
-
-          start(i) = data_offset
-          count(i) = ndata
        else
           start(i)=1
           count(i)=dimlen

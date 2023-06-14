@@ -57,7 +57,7 @@ class TestPathUtils(unittest.TestCase):
 
         setup_logging(logging.DEBUG)
         os.chdir(self._testdir)
-        self.case = FakeCase(compiler=None, mpilib=None, debug=None)
+        self.case = FakeCase(compiler=None, comp_interface="nuopc", mpilib=None, debug=None)
         self.case.set_value("RUNDIR", self._testdir)
         self.case.set_value("RUN_TYPE", "startup")
         self.case.set_value("RUN_STARTDATE", "2000-01-01")
@@ -287,6 +287,15 @@ class TestPathUtils(unittest.TestCase):
             SystemExit, "nrevsn can NOT be set except when RUN_TYPE is a branch"
         ):
             check_nml_initial_conditions(self.nmlgen, self.case)
+
+    def test_check_set_user_defined(self):
+        """Test the check nml initial data subroutine for user_defined"""
+        self.case.set_value("SLIM_SCENARIO", "user_defined")
+        self.InitNML()
+        with self.assertRaisesRegex(
+            SystemExit, "When SLIM_SCENARIO is set to user_defined, you must provide the mml_surdat"
+        ):
+            check_nml_data(self.nmlgen, self.case)
 
     def test_check_use_init_interp(self):
         """Test the check nml initial data subroutine for use_init_interp options"""
