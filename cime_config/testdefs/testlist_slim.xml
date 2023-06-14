@@ -277,6 +277,7 @@
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
+      <machine name="izumi"    compiler="nag"   category="aux_slim"/>
     </machines>
     <options>
       <option name="wallclock">01:20:00</option>
