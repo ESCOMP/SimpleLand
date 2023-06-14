@@ -176,15 +176,6 @@
       <option name="comment">change Processors test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="ERS_Ld60_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/Monthly">
-    <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
-    </machines>
-    <options>
-      <option name="wallclock">01:40:00</option>
-      <option name="comment">Restart test with DOCN for realistic 2000</option>
-    </options>
-  </test>
 
   <!-- SLIM standalone tests -->
   <!-- Also run on the CGD cluster for all of these as it's quicker and cheaper -->
