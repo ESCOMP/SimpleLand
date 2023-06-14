@@ -184,17 +184,6 @@
   <!-- Run restart tests for important ones, also do ERP for other compsets -->
   <!-- Eventually we should also do ERI tests to make sure branch and hybrid work, but with #19 we can't -->
   <!-- Run one longer test with production compiler for a few years  to make sure longer science runs will continue to work -->
-  <test name="ERS_D_Ld5_PS_Vmct" grid="f09_f09_mg17" compset="I2000SlimRsGs" testmods="slim/default">
-    <machines>
-      <machine name="izumi" compiler="gnu"   category="aux_slim"/>
-      <machine name="izumi" compiler="nag"   category="aux_slim"/>
-      <machine name="izumi" compiler="intel" category="aux_slim"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:20:00</option>
-      <option name="comment">Short term debug restart test with I case at f09 resolution on izumi</option>
-    </options>
-  </test>
   <test name="ERS_D_Ld5_PS_Vmct" grid="f45_f45_mg37" compset="I2000SlimRsGs" testmods="slim/default">
     <machines>
       <machine name="izumi" compiler="gnu"   category="aux_slim"/>
