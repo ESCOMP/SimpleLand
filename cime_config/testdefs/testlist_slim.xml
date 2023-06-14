@@ -229,7 +229,19 @@
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
-      <option name="comment">Short term debug restart test with I case at f10 resolution on izumi</option>
+      <option name="comment">Short term debug restart test with I case at f10 resolution</option>
+    </options>
+  </test>
+  <test name="ERI_Ld9_PS_Vmct" grid="f10_f10_mg37" compset="I2000SlimRsGs" testmods="slim/default">
+    <machines>
+      <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
+      <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+      <machine name="izumi" compiler="gnu"   category="aux_slim"/>
+      <machine name="izumi" compiler="intel" category="aux_slim"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">Short term ERI restart test with I case at f10 resolution in production mode</option>
     </options>
   </test>
   <test name="SMS_D_PS_Vnuopc" grid="f10_f10_mg37" compset="I2000SlimRsGs" testmods="slim/default">
