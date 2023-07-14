@@ -166,7 +166,7 @@
       <option name="comment">Longer smoke test with DOCN for realistic 2000</option>
     </options>
   </test>
-  <test name="PEM_Vmct" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
+  <test name="PEM_Vmct_P144x1" grid="f19_f19_mg16" compset="FLT2000ClimoC6I5Slim" testmods="slim/default">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="cheyenne" compiler="intel" category="prealpha"/>
