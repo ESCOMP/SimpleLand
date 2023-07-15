@@ -203,6 +203,7 @@
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
       <machine name="cheyenne" compiler="gnu"   category="prealpha"/>
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
+      <machine name="cheyenne" compiler="nvhpc" category="aux_slim"/>
       <machine name="izumi" compiler="gnu"   category="aux_slim"/>
       <machine name="izumi" compiler="nag"   category="aux_slim"/>
       <machine name="izumi" compiler="intel" category="aux_slim"/>
@@ -288,6 +289,7 @@
       <machine name="cheyenne" compiler="intel" category="aux_slim"/>
       <machine name="cheyenne" compiler="gnu"   category="aux_slim"/>
       <machine name="cheyenne" compiler="gnu"   category="prebeta"/>
+      <machine name="cheyenne" compiler="nvhpc" category="aux_slim"/>
       <machine name="cheyenne" compiler="intel" category="slim_sci"/>
       <machine name="izumi"    compiler="intel" category="aux_slim"/>
       <machine name="izumi"    compiler="nag"   category="aux_slim"/>
